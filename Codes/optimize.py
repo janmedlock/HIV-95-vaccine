@@ -19,7 +19,7 @@ def get_net_benefit(qalys, cost, CE_threshold, parameters):
         net_benefit = qalys
     else:
         net_benefit = (
-            qalys - (cost / CE_threshold / parameters.GDP_per_capita))
+            qalys - cost / parameters.GDP_per_capita / CE_threshold)
 
     return net_benefit
 
@@ -71,9 +71,9 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     bounds = ((0, 1), ) * 3
 
     # Get an approximate scale to normalize the objective values.
-    scale = objective_function((b[0] for b in bounds),
-                               CE_threshold,
-                               parameters)
+    scale = numpy.abs(objective_function((b[0] for b in bounds),
+                                         CE_threshold,
+                                         parameters))
 
     args = (CE_threshold, parameters, scale)
 
@@ -154,7 +154,7 @@ def maximize_incremental_net_benefit(country, CE_threshold,
 
 
 if __name__ == '__main__':
-    country = 'India'
+    country = 'Nigeria'
 
     # 0 is just cost.
     # inf is just QALYs.
@@ -162,7 +162,7 @@ if __name__ == '__main__':
     CE_threshold = 1
 
     (target_values,
-     incremental_qalys,
+     incremental_effectiveness,
      incremental_cost,
      incremental_net_benefit) = maximize_incremental_net_benefit(
          country,
@@ -172,7 +172,7 @@ if __name__ == '__main__':
 
     print('target values = {}'.format(target_values))
     print('incremental effectiveness = {:g} QALYs gained'.format(
-        incremental_qalys))
+        incremental_effectiveness))
     print('incremental cost = {:g} USD'.format(incremental_cost))
     print('incremental net benefit = {:g} QALYs'.format(
         incremental_net_benefit))

@@ -203,25 +203,19 @@ def solve(target_values, parameters):
     return (t, state, target_funcs)
 
 
-# Find the coefficient that gives 80-20.
-def f_80_20(a):
-    return (4 * (numpy.exp(a * 0.8) - 1 - 0.8 * a)
-            - (numpy.exp(a) - numpy.exp(0.8 * a) - 0.2 * a))
-# res_80_20 = optimize.root(f_80_20, 8, tol = 1e-12)
-# a_80_20 = numpy.asscalar(res_80_20.x)
-a_80_20 = 8.000463231639765
-
+m_80_20 = 2 * (2 * 0.8  - 1) / (1 - 0.8) ** 3
 def relative_cost_of_effort(p):
     '''
     Gives 80% of total cost in last 20%:
     4 * \int_0^{0.8} f(p) dp = \int_{0.8}^1 f(p) dp.
 
-    Normalized so that the value at p = 0 is 0
-    and the derivative at p = 0 is 1:
-    f(0) = 0, f'(0) = 1.
+    Normalized so that the value at p = 0 is 0,
+    and the derivative at p = 0 is 1.
     '''
-    # return 1 / a_80_20 * (numpy.exp(a_80_20 * p) - 1)
-    return numpy.ones_like(p)
+    return numpy.where(
+        p < 0.8, p,
+        (0.8 + (1 - 0.8 * m_80_20) * (p - 0.8)
+         + m_80_20 / 2 * (p ** 2 - 0.8 ** 2)))
 
 
 def get_qalys_and_cost(t, state, target_funcs, parameters):
@@ -327,8 +321,8 @@ if __name__ == '__main__':
     print('incremental cost = {:g} USD'.format(incremental_cost))
     print('incremental cost = {:g} GDP per capita'.format(
         incremental_cost / parameters.GDP_per_capita))
-    print('ICER = {:g} USD per QALY averted'.format(ICER))
-    print('ICER = {:g} x per capita GDP'.format(ICER
-                                                / parameters.GDP_per_capita))
+    print('ICER = {:g} USD per QALY'.format(ICER))
+    print('ICER = {:g} GDP per capita per QALY'.format(
+        ICER / parameters.GDP_per_capita))
 
     plot_solution(t, state, target_funcs)

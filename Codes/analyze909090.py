@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import pickle
+
 import datasheet
 import simulation
 
@@ -36,3 +38,5 @@ if __name__ == '__main__':
     for country in datasheet.get_country_list():
         results[country] = analyze909090(country)
         print()
+
+    pickle.dump(results, open('analyze909090.pkl', 'wb'))
