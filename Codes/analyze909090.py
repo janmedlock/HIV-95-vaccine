@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import datasheet
 import simulation
 
@@ -26,8 +28,11 @@ def analyze909090(country):
     print('ICER = {:g} GDP per capita per QALY averted'.format(
         ICER / parameters.GDP_per_capita))
 
+    return ICER / parameters.GDP_per_capita
+
 
 if __name__ == '__main__':
+    results = {}
     for country in datasheet.get_country_list():
-        analyze909090(country)
+        results[country] = analyze909090(country)
         print()
