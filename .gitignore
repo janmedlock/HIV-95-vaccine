@@ -1,0 +1,9 @@
+__pycache__
+Codes/__cartopy__
+Codes/__shelve__
+Codes/old
+Documents/Latex/*.aux
+Documents/Latex/*.log
+Documents/Latex/*.pdf
+Documents/Latex/*.synctex.gz
+Documents/Office
