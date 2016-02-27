@@ -1,10 +1,13 @@
-#!/usr/bin/python3
-
 import numpy
 import pandas
+import os.path
+import inspect
 
 
-datafile = 'DataSheet.xlsx'
+datafile = '../DataSheet.xlsx'
+# It's relative to this module file,
+# not files that might import it.
+datapath = os.path.join(os.path.dirname(__file__), datafile)
 
 
 class Parameters:
@@ -15,7 +18,7 @@ class Parameters:
     def __init__(self, country):
         self.country = country
 
-        with pandas.ExcelFile(datafile) as data:
+        with pandas.ExcelFile(datapath) as data:
             self.read_parameters_sheet(data)
             self.read_initial_conditions_sheet(data)
             self.read_costs_sheet(data)
@@ -165,34 +168,34 @@ class Parameters:
         #     = cost_adherence_annual
 
         years_in_symptomatic = 1
-        daly_rate_D = (
+        DALY_rate_D = (
             ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
              * 0.038)
             + (years_in_symptomatic * self.progression_rate_unsuppressed
                * 0.274))
-        daly_rate_T = (
+        DALY_rate_T = (
             ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
              * 0.078)
             + (years_in_symptomatic * self.progression_rate_unsuppressed
                * 0.314))
-        daly_rate_V = (
+        DALY_rate_V = (
             ((1 - years_in_symptomatic * self.progression_rate_suppressed)
              * 0.039)
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
         # Entries are states S, A, U, D, T, V, W
-        self.daly_rates_per_person = numpy.array(
+        self.DALY_rates_per_person = numpy.array(
             (0,           # S
              0.16,        # A
              0.038,       # U
-             daly_rate_D, # D
-             daly_rate_T, # T
-             daly_rate_V, # V
+             DALY_rate_D, # D
+             DALY_rate_T, # T
+             DALY_rate_V, # V
              0.582))      # W
 
         # Entries are states S, A, U, D, T, V, W
-        self.qaly_rates_per_person = 1 - self.daly_rates_per_person
+        self.QALY_rates_per_person = 1 - self.DALY_rates_per_person
 
 
     def read_GDP_sheet(self, data):
@@ -215,7 +218,7 @@ class Parameters:
 
 
 def get_country_list():
-    with pandas.ExcelFile(datafile) as data:
+    with pandas.ExcelFile(datapath) as data:
         # Skip header column
         costs = data.parse('Costs').iloc[0 : 6, 1 : ]
 
@@ -225,13 +228,5 @@ def get_country_list():
 
 
 def read_all_initial_conditions():
-    with pandas.ExcelFile(datafile) as data:
+    with pandas.ExcelFile(datapath) as data:
         return data.parse('Initial Conditions', index_col = 0).T
-
-
-if __name__ == '__main__':
-    country = 'Nigeria'
-
-    parameters = Parameters(country)
-
-    print(parameters)

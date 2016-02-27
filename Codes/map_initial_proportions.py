@@ -2,11 +2,11 @@
 
 import pandas
 
-import datasheet
+import model
 import mapplot
 
 
-data = datasheet.read_all_initial_conditions()
+data = model.read_all_initial_conditions()
 
 countries = data.index
 

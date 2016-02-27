@@ -1,35 +1,17 @@
-#!/usr/bin/python3
-
 import numpy
 from scipy import optimize
 import joblib
 import operator
 import functools
 
-import datasheet
-import simulation
-
-
-def get_net_benefit(qalys, cost, CE_threshold, parameters):
-    if CE_threshold == 0:
-        # Just cost.
-        net_benefit = - cost
-    elif CE_threshold == numpy.inf:
-        # Just QALYs.
-        net_benefit = qalys
-    else:
-        net_benefit = (
-            qalys - cost / parameters.GDP_per_capita / CE_threshold)
-
-    return net_benefit
+from . import datasheet
+from . import CE_stats
 
 
 def objective_function(target_values, CE_threshold, parameters, scale = 1):
-    qalys, cost = simulation.solve_and_get_qalys_and_cost(
-        target_values, parameters)
-
-    net_benefit = get_net_benefit(qalys, cost, CE_threshold, parameters)
-
+    net_benefit = CE_stats.solve_and_get_net_benefit(target_values,
+                                                     CE_threshold,
+                                                     parameters)
     return - net_benefit / scale
 
 
@@ -70,7 +52,8 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     # All variables are between 0 and 1.
     bounds = ((0, 1), ) * 3
 
-    # Get an approximate scale to normalize the objective values.
+    # Get an approximate scale to normalize the objective values
+    # by running at the lower bounds (0, 0, 0).
     scale = numpy.abs(objective_function((b[0] for b in bounds),
                                          CE_threshold,
                                          parameters))
@@ -107,10 +90,10 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     initial_guesses = numpy.random.uniform(*zip(*bounds),
                                            size = (nruns, len(bounds)))
 
+    # verbose = 100 if debug else 0
+    verbose = 0
     # Parallel, using all available processors.
-    # with joblib.Parallel(n_jobs = -1, verbose = 100 if debug else 0) \
-    #      as parallel:
-    with joblib.Parallel(n_jobs = -1) as parallel:
+    with joblib.Parallel(n_jobs = -1, verbose = verbose) as parallel:
         # res = parallel(
         #     joblib.delayed(optimize.minimize)(objective_function,
         #                                       x0,
@@ -137,42 +120,15 @@ def maximize_incremental_net_benefit(country, CE_threshold,
 
     net_benefit = - best.fun * scale
 
-    qalys, cost = simulation.solve_and_get_qalys_and_cost(
-        target_values, parameters)
+    incremental_effectiveness, incremental_cost, ICER \
+        = CE_stats.solve_and_get_incremental_CE_stats(target_values,
+                                                      parameters)
 
-    qalys_base, cost_base = simulation.solve_and_get_qalys_and_cost(
-        'base', parameters)
-    net_benefit_base = get_net_benefit(qalys_base, cost_base,
-                                       CE_threshold, parameters)
+    incremental_net_benefit = CE_stats.get_net_benefit(
+        incremental_effectiveness,
+        incremental_cost,
+        CE_threshold,
+        parameters)
 
-    incremental_qalys = qalys - qalys_base
-    incremental_cost = cost - cost_base
-    incremental_net_benefit = net_benefit - net_benefit_base
-
-    return (target_values, incremental_qalys, incremental_cost,
+    return (target_values, incremental_effectiveness, incremental_cost,
             incremental_net_benefit)
-
-
-if __name__ == '__main__':
-    country = 'Nigeria'
-
-    # 0 is just cost.
-    # inf is just QALYs.
-    # Other values are multiples of per-capita GDP.
-    CE_threshold = 1
-
-    (target_values,
-     incremental_effectiveness,
-     incremental_cost,
-     incremental_net_benefit) = maximize_incremental_net_benefit(
-         country,
-         CE_threshold,
-         method = 'cobyla',
-         debug = True)
-
-    print('target values = {}'.format(target_values))
-    print('incremental effectiveness = {:g} QALYs gained'.format(
-        incremental_effectiveness))
-    print('incremental cost = {:g} USD'.format(incremental_cost))
-    print('incremental net benefit = {:g} QALYs'.format(
-        incremental_net_benefit))
