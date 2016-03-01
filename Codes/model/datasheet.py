@@ -112,7 +112,7 @@ class Parameters:
         # One-time cost of new diagnosis.
         # This gets multiplied by
         # the relative cost of effort (increasing marginal costs)
-        # for diagnosis (target_func[0]),
+        # for diagnosis (targets[0]),
         # the level of diagnosis control (controls[0]),
         # and the number of people Undiagnosed (state[2]).
         # (SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?)
@@ -129,7 +129,7 @@ class Parameters:
         # Recurring cost of nonadherance,
         # This gets multiplied by
         # the relative cost of effort (increasing marginal costs)
-        # for nonadherance (target_func[2]),
+        # for nonadherance (targets[2]),
         # and the number of people Treated and Suppressed
         # (state[4] and state[5]).
         # (SHOULD THIS BE JUST Suppressed INSTEAD?)
@@ -138,7 +138,7 @@ class Parameters:
         # Recurring cost of treatment.
         # This gets multiplied by
         # the relative cost of effort (increasing marginal costs)
-        # for treatment (target_func[1]),
+        # for treatment (targets[1]),
         # and the number of people Treated and Suppressed
         # (state[4] and state[5]).
         # 

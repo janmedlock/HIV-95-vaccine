@@ -8,8 +8,8 @@ from . import datasheet
 from . import CE_stats
 
 
-def objective_function(target_values, CE_threshold, parameters, scale = 1):
-    net_benefit = CE_stats.solve_and_get_net_benefit(target_values,
+def objective_function(targs, CE_threshold, parameters, scale = 1):
+    net_benefit = CE_stats.solve_and_get_net_benefit(targs,
                                                      CE_threshold,
                                                      parameters)
     return - net_benefit / scale
@@ -41,7 +41,7 @@ def maximize_incremental_net_benefit(country, CE_threshold,
                                      method = 'l-bfgs-b', nruns = 8,
                                      debug = False):
     '''
-    Find the target_values that maximize the net benefit in the country.
+    Find the targets that maximize the net benefit in the country.
     
     Possible methods are 'cobyla', 'l-bfgs-b', 'tnc', 'slsqp'.
 
@@ -116,12 +116,12 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     assert best.success, ('The lowest function value is from '
                           + 'a run with res.success = False.')
 
-    target_values = best.x
+    targs = best.x
 
     net_benefit = - best.fun * scale
 
     incremental_effectiveness, incremental_cost, ICER \
-        = CE_stats.solve_and_get_incremental_CE_stats(target_values,
+        = CE_stats.solve_and_get_incremental_CE_stats(targs,
                                                       parameters)
 
     incremental_net_benefit = CE_stats.get_net_benefit(
@@ -130,5 +130,5 @@ def maximize_incremental_net_benefit(country, CE_threshold,
         CE_threshold,
         parameters)
 
-    return (target_values, incremental_effectiveness, incremental_cost,
+    return (targs, incremental_effectiveness, incremental_cost,
             incremental_net_benefit)

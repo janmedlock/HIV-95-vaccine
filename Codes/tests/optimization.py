@@ -13,7 +13,7 @@ country = 'Nigeria'
 # Other values are multiples of per-capita GDP.
 CE_threshold = 1
 
-(target_values,
+(targs,
  incremental_effectiveness,
  incremental_cost,
  incremental_net_benefit) = model.maximize_incremental_net_benefit(
@@ -22,7 +22,7 @@ CE_threshold = 1
      method = 'cobyla',
      debug = True)
 
-print('target values = {}'.format(target_values))
+print('target values = {}'.format(targs))
 
 print('incremental effectiveness = {:g} QALYs gained'.format(
     incremental_effectiveness))

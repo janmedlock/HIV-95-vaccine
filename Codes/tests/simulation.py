@@ -12,9 +12,9 @@ print(country)
 
 parameters = model.Parameters(country)
 
-t, state, target_funcs = model.solve('909090', parameters)
+t, state = model.solve('909090', parameters)
 
-QALYs, cost = model.get_CE_stats(t, state, target_funcs, parameters)
+QALYs, cost = model.get_CE_stats(t, state, '909090', parameters)
 
 QALYs_base, cost_base = model.solve_and_get_CE_stats('base', parameters)
 
@@ -24,4 +24,4 @@ incremental_QALYs, incremental_cost, ICER = model.get_incremental_CE_stats(
 model.print_incremental_CE_stats(incremental_QALYs, incremental_cost, ICER,
                                  parameters)
 
-model.plot_solution(t, state, target_funcs)
+model.plot_solution(t, state, '909090', parameters)

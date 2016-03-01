@@ -14,12 +14,12 @@ country = 'Nigeria'
 parameters = model.Parameters(country)
 
 time0 = time.time()
-t, state, target_funcs = model.solve('909090', parameters, use_log = False)
+t, state = model.solve('909090', parameters, use_log = False)
 time1 = time.time()
 print('Non-log model took {} sec.'.format(time1 - time0))
 
 time0_ = time.time()
-t_, state_, target_funcs_ = model.solve('909090', parameters, use_log = True)
+t_, state_ = model.solve('909090', parameters, use_log = True)
 time1_ = time.time()
 print('Log model took {} sec.'.format(time1_ - time0_))
 

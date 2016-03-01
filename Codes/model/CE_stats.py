@@ -2,6 +2,7 @@ import numpy
 from scipy import integrate
 
 from . import simulation
+from . import targets
 from . import control_rates
 
 
@@ -49,11 +50,12 @@ test_relative_cost_of_effort(0.8)
 test_relative_cost_of_effort(0.9)
 
 
-def get_CE_stats(t, state, target_funcs, parameters):
+def get_CE_stats(t, state, targs, parameters):
     QALYs_rate = state @ parameters.QALY_rates_per_person
     QALYs = integrate.simps(QALYs_rate, t)
 
-    controls = control_rates.get_control_rates(t, state, target_funcs)
+    target_values = targets.get_target_values(t, targs, parameters)
+    controls = control_rates.get_control_rates(t, state, targs, parameters)
 
     cost_rate = (
         (
@@ -61,8 +63,8 @@ def get_CE_stats(t, state, target_funcs, parameters):
             parameters.cost_of_testing_onetime_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for diagnosis (target_func[0]),
-            * relative_cost_of_effort(target_funcs[0](t))
+            # for diagnosis (target_values[0]),
+            * relative_cost_of_effort(target_values[..., 0])
             # the level of diagnosis control (controls[0]),
             * controls[..., 0]
             # and the number of people Undiagnosed (state[2])
@@ -82,8 +84,8 @@ def get_CE_stats(t, state, target_funcs, parameters):
             parameters.cost_treatment_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for treatment (target_func[1]),
-            * relative_cost_of_effort(target_funcs[1](t))
+            # for treatment (target_values[1]),
+            * relative_cost_of_effort(target_values[..., 1])
             # and the number of people Treated and Suppressed
             # (state[4] and state[5]).
             * state[..., 4 : 6].sum(-1)
@@ -92,8 +94,8 @@ def get_CE_stats(t, state, target_funcs, parameters):
             parameters.cost_nonadherance_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for nonadherance (target_func[2]),
-            * relative_cost_of_effort(target_funcs[2](t))
+            # for nonadherance (target_values[2]),
+            * relative_cost_of_effort(target_values[..., 2])
             # and the number of people Treated and Suppressed
             # (state[4] and state[5]).
             * state[..., 4 : 6].sum(-1)
@@ -113,10 +115,10 @@ def get_CE_stats(t, state, target_funcs, parameters):
     return QALYs, cost
 
 
-def solve_and_get_CE_stats(target_values, parameters):
-    t, state, target_funcs = simulation.solve(target_values, parameters)
+def solve_and_get_CE_stats(targs, parameters):
+    t, state = simulation.solve(targs, parameters)
 
-    return get_CE_stats(t, state, target_funcs, parameters)
+    return get_CE_stats(t, state, targs, parameters)
 
 
 def get_incremental_CE_stats(effectiveness, cost,
@@ -130,8 +132,8 @@ def get_incremental_CE_stats(effectiveness, cost,
     return (incremental_effectiveness, incremental_cost, ICER)
 
 
-def solve_and_get_incremental_CE_stats(target_values, parameters):
-    effectiveness, cost = solve_and_get_CE_stats(target_values, parameters)
+def solve_and_get_incremental_CE_stats(targs, parameters):
+    effectiveness, cost = solve_and_get_CE_stats(targs, parameters)
 
     effectiveness_base, cost_base = solve_and_get_CE_stats('base', parameters)
 
@@ -167,6 +169,6 @@ def get_net_benefit(effectiveness, cost, CE_threshold, parameters):
     return net_benefit
 
 
-def solve_and_get_net_benefit(target_values, CE_threshold, parameters):
-     effectiveness, cost = solve_and_get_CE_stats(target_values, parameters)
+def solve_and_get_net_benefit(targs, CE_threshold, parameters):
+     effectiveness, cost = solve_and_get_CE_stats(targs, parameters)
      return get_net_benefit(effectiveness, cost, CE_threshold, parameters)

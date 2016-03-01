@@ -1,7 +1,6 @@
 import numpy
 from scipy import integrate
 
-from . import target_functions
 from . import control_rates
 from . import proportions
 
@@ -9,7 +8,7 @@ from . import proportions
 t_end = 10
 
 
-def ODEs(state, t, parameters, target_funcs):
+def ODEs(state, t, targs, parameters):
     # S is susceptible.
     # A is acute infection.
     # U is undiagnosed.
@@ -22,7 +21,7 @@ def ODEs(state, t, parameters, target_funcs):
     # Total sexually active population.
     N = S + A + U + D + T + V
 
-    controls = control_rates.get_control_rates(t, state, target_funcs)
+    controls = control_rates.get_control_rates(t, state, targs, parameters)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -66,7 +65,7 @@ def ODEs(state, t, parameters, target_funcs):
     return (dS, dA, dU, dD, dT, dV, dW)
 
 
-def ODEs_log(state_log, t, parameters, target_funcs):
+def ODEs_log(state_log, t, targs, parameters):
     state = numpy.exp(state_log)
     # S is susceptible.
     # A is acute infection.
@@ -80,13 +79,19 @@ def ODEs_log(state_log, t, parameters, target_funcs):
 
     # Total sexually active population.
     N = S + A + U + D + T + V
+    N_log = numpy.log(N)
 
-    controls = control_rates.get_control_rates(t, state, target_funcs)
+    controls = control_rates.get_control_rates(t, state, targs, parameters)
 
     force_of_infection = (
-        parameters.transmission_rate_acute * A
-        + parameters.transmission_rate_unsuppressed * (U + D + T)
-        + parameters.transmission_rate_suppressed * V) / N
+        (parameters.transmission_rate_acute
+         * numpy.exp(A_log - N_log))
+        + (parameters.transmission_rate_unsuppressed
+           * (numpy.exp(U_log - N_log)
+              + numpy.exp(D_log - N_log)
+              + numpy.exp(T_log - N_log)))
+        + (parameters.transmission_rate_suppressed
+           * numpy.exp(V_log - N_log)))
 
     dS_log = (parameters.birth_rate * N * numpy.exp(- S_log)
               - force_of_infection
@@ -129,9 +134,7 @@ def ODEs_log(state_log, t, parameters, target_funcs):
     return (dS_log, dA_log, dU_log, dD_log, dT_log, dV_log, dW_log)
 
 
-def solve(target_values, parameters, use_log = True):
-    target_funcs = target_functions.get_target_funcs(target_values, parameters)
-
+def solve(targs, parameters, use_log = True):
     t = numpy.linspace(0, t_end, 1001)
 
     if use_log:
@@ -145,7 +148,7 @@ def solve(target_values, parameters, use_log = True):
     Y = integrate.odeint(fcn,
                          Y0,
                          t,
-                         args = (parameters, target_funcs),
+                         args = (targs, parameters),
                          mxstep = 1000)
 
     if use_log:
@@ -153,7 +156,7 @@ def solve(target_values, parameters, use_log = True):
     else:
         state = Y
 
-    return (t, state, target_funcs)
+    return (t, state)
 
 
 def split_state(state):
