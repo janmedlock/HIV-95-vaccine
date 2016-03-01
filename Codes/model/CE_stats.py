@@ -55,7 +55,6 @@ def get_CE_stats(t, state, target_funcs, parameters):
 
     controls = control_rates.get_control_rates(t, state, target_funcs)
 
-    # Note: No cost for the nonadherence control!
     cost_rate = (
         (
             # One-time cost of new diagnosis,
