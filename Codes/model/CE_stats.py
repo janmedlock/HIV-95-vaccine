@@ -56,9 +56,9 @@ def get_CE_stats(t, state, target_funcs, parameters):
     controls = control_rates.get_control_rates(t, state, target_funcs)
 
     # Note: No cost for the nonadherence control!
-    control_cost_rate = (
+    cost_rate = (
         (
-            # Cost of new diagnosis,
+            # One-time cost of new diagnosis,
             parameters.cost_of_testing_onetime_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
@@ -71,12 +71,17 @@ def get_CE_stats(t, state, target_funcs, parameters):
             # SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?
             # * state[..., 0 : 3].sum(-1)
         ) + (
-            # Cost of new treatment,
+            # One-time cost of new treatment,
             parameters.cost_of_treatment_onetime_constant
             # multiplied by the treatment control (controls[1])
             * controls[..., 1]
             # and the number of people Diagnosed (state[3]).
             * state[..., 3]
+        ) + (
+            # Recurring cost of AIDS,
+            parameters.cost_AIDS_recurring_constant
+            # multiplied by the number of people with AIDS (state[6])
+            * state[..., 6]
         )
     )
 
@@ -84,11 +89,10 @@ def get_CE_stats(t, state, target_funcs, parameters):
     relative_cost_of_control = relative_cost_of_effort(target_func_values)
 
     state_cost_rates_per_person = (
-        (relative_cost_of_control
-         @ parameters.state_cost_rates_per_person_increasing)
-        + parameters.state_cost_rates_per_person_constant)
+        relative_cost_of_control
+        @ parameters.state_cost_rates_per_person_increasing)
 
-    total_cost_rate = (control_cost_rate
+    total_cost_rate = (cost_rate
                        + (state_cost_rates_per_person * state).sum(1))
     cost = integrate.simps(total_cost_rate, t)
 

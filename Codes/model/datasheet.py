@@ -109,7 +109,7 @@ class Parameters:
          cost_AIDS_annual,
          cost_AIDS_death) = costs_raw[ : 6]
 
-        # Cost of new diagnosis.
+        # One-time cost of new diagnosis.
         # This gets multiplied by
         # the relative cost of diagnosis (increasing marginal costs;
         # target_func[0]),
@@ -118,26 +118,28 @@ class Parameters:
         # (SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?)
         self.cost_of_testing_onetime_increasing = cost_test
 
-        # Cost of new treatment.
+        # One-time cost of new treatment.
         # This gets multiplied by the treatment control (controls[1])
         # and the number of people Diagnosed (state[3]).
         self.cost_of_treatment_onetime_constant = cost_CD4 + cost_viral_load
 
         # Note: No cost for the nonadherence control!
+        # This would show up as p_V -> V
+        # self.state_cost_rates_per_person_increasing[2, 5] \
+        #     = cost_adherence_annual
+        # and maybe as p_V -> T
+        # self.state_cost_rates_per_person_increasing[2, 4] \
+        #     = cost_adherence_annual
+
 
         # treatment is ART + 1 viral load test per year + 2 CD4 tests per year.
         cost_treatment_annual = (cost_ART_annual
                                  + cost_viral_load
                                  + 2 * cost_CD4)
 
-        cost_AIDS_annual_total = (cost_AIDS_annual
-                                  + self.death_rate_AIDS * cost_AIDS_death)
-
-        # Cost rates for being in each state that don't have increasing
-        # marginal costs.
-        # Entries are states S, A, U, D, T, V, W
-        self.state_cost_rates_per_person_constant = numpy.array(
-            (0, 0, 0, 0, 0, 0, cost_AIDS_annual_total))
+        self.cost_AIDS_recurring_constant = (cost_AIDS_annual
+                                             + (self.death_rate_AIDS
+                                                * cost_AIDS_death))
 
         # Cost rates for being in each state that have increasing
         # marginal costs.
@@ -154,14 +156,6 @@ class Parameters:
         # for state[5] (V).
         self.state_cost_rates_per_person_increasing[1, 5] \
             = cost_treatment_annual
-
-        # No cost yet of p_V.
-        # This would show up as p_V -> V
-        # self.state_cost_rates_per_person_increasing[2, 5] \
-        #     = cost_adherence_annual
-        # and maybe as p_V -> T
-        # self.state_cost_rates_per_person_increasing[2, 4] \
-        #     = cost_adherence_annual
 
         years_in_symptomatic = 1
         DALY_rate_D = (
