@@ -89,6 +89,18 @@ def get_CE_stats(t, state, target_funcs, parameters):
             # (state[4] and state[5]).
             * state[..., 4 : 6].sum(-1)
         ) + (
+            # Recurring cost of nonadherance,
+            parameters.cost_nonadherance_recurring_increasing
+            # multiplied by
+            # the relative cost of effort (increasing marginal costs)
+            # for nonadherance (target_func[2]),
+            * relative_cost_of_effort(target_funcs[2](t))
+            # and the number of people Treated and Suppressed
+            # (state[4] and state[5]).
+            * state[..., 4 : 6].sum(-1)
+            # SHOULD THIS BE JUST Suppressed INSTEAD?
+            # * state[..., 5]
+        ) + (
             # Recurring cost of AIDS,
             parameters.cost_AIDS_recurring_constant
             # multiplied by

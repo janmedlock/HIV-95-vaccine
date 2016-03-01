@@ -123,14 +123,17 @@ class Parameters:
         # and the number of people Diagnosed (state[3]).
         self.cost_of_treatment_onetime_constant = cost_CD4 + cost_viral_load
 
-        # Note: No cost for the nonadherence control!
-        # This would show up as p_V -> V
-        # self.state_cost_rates_per_person_increasing[2, 5] \
-        #     = cost_adherence_annual
-        # and maybe as p_V -> T
-        # self.state_cost_rates_per_person_increasing[2, 4] \
-        #     = cost_adherence_annual
-
+        ###############################################
+        # Note: No cost for the nonadherence control! #
+        ###############################################
+        # Recurring cost of nonadherance,
+        # This gets multiplied by
+        # the relative cost of effort (increasing marginal costs)
+        # for nonadherance (target_func[2]),
+        # and the number of people Treated and Suppressed
+        # (state[4] and state[5]).
+        # (SHOULD THIS BE JUST Suppressed INSTEAD?)
+        self.cost_nonadherance_recurring_increasing = 0
 
         # Recurring cost of treatment.
         # This gets multiplied by
