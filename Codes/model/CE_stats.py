@@ -38,14 +38,15 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
         p < breakpoint, p,
         p + slope / 2 * (p - breakpoint) ** 2)
 
-def relative_cost_of_effort_test(b):
+
+def test_relative_cost_of_effort(b):
     assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
                           - relative_cost_of_effort(b, breakpoint = b))
                          / relative_cost_of_effort(1, breakpoint = b),
                          b)
 
-relative_cost_of_effort_test(0.8)
-relative_cost_of_effort_test(0.9)
+test_relative_cost_of_effort(0.8)
+test_relative_cost_of_effort(0.9)
 
 
 def get_CE_stats(t, state, target_funcs, parameters):
