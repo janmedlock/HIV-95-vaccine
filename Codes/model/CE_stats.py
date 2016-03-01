@@ -54,8 +54,6 @@ def get_CE_stats(t, state, target_funcs, parameters):
     QALYs = integrate.simps(QALYs_rate, t)
 
     controls = control_rates.get_control_rates(t, state, target_funcs)
-    target_func_values = numpy.column_stack(v(t) for v in target_funcs)
-    relative_cost_of_control = relative_cost_of_effort(target_func_values)
 
     # Note: No cost for the nonadherence control!
     control_cost_rate = (
@@ -65,22 +63,25 @@ def get_CE_stats(t, state, target_funcs, parameters):
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for diagnosis (target_func[0]),
-            * relative_cost_of_effort(target_func[0](t))
+            * relative_cost_of_effort(target_funcs[0](t))
             # the level of diagnosis control (controls[0]),
-            * controls[0]
+            * controls[..., 0]
             # and the number of people Undiagnosed (state[2])
-            * state[2]
+            * state[..., 2]
             # SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?
-            # * state[0 : 3].sum(0)
+            # * state[..., 0 : 3].sum(-1)
         ) + (
             # Cost of new treatment,
             parameters.cost_of_treatment_onetime_constant
             # multiplied by the treatment control (controls[1])
-            * controls[1]
+            * controls[..., 1]
             # and the number of people Diagnosed (state[3]).
-            * state[3]
+            * state[..., 3]
         )
     )
+
+    target_func_values = numpy.column_stack(v(t) for v in target_funcs)
+    relative_cost_of_control = relative_cost_of_effort(target_func_values)
 
     state_cost_rates_per_person = (
         (relative_cost_of_control
