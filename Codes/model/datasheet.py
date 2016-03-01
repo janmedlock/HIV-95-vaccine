@@ -109,25 +109,21 @@ class Parameters:
          cost_AIDS_annual,
          cost_AIDS_death) = costs_raw[ : 6]
 
-        # Costs for control transistions that don't have increasing marginal
-        # costs.
-        # Rows are controls p_D, p_T, p_V.
-        # Columns are states S, A, U, D, T, V, W.
-        self.control_cost_per_transition_constant = numpy.zeros((3, 7))
-        # Cost of moving D->T (treatment),
-        # controlled by control[1] (p_T),
-        # per person in state[3] (D).
-        self.control_cost_per_transition_constant[1, 3] = (cost_CD4
-                                                           + cost_viral_load)
+        # Cost of new diagnosis.
+        # This gets multiplied by
+        # the relative cost of diagnosis (increasing marginal costs;
+        # target_func[0]),
+        # the level of diagnosis control (controls[0]),
+        # and the number of people Undiagnosed (state[2]).
+        # (SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?)
+        self.cost_of_testing_onetime_increasing = cost_test
 
-        # Costs for control transistions that have increasing marginal costs.
-        # Rows are controls p_D, p_T, p_V.
-        # Columns are states S, A, U, D, T, V, W.
-        self.control_cost_per_transition_increasing = numpy.zeros((3, 7))
-        # Cost of moving U->D (diagnosis),
-        # controlled by control[0] (p_D),
-        # per person in state[2] (U).
-        self.control_cost_per_transition_increasing[0, 2] = cost_test
+        # Cost of new treatment.
+        # This gets multiplied by the treatment control (controls[1])
+        # and the number of people Diagnosed (state[3]).
+        self.cost_of_treatment_onetime_constant = cost_CD4 + cost_viral_load
+
+        # Note: No cost for the nonadherence control!
 
         # treatment is ART + 1 viral load test per year + 2 CD4 tests per year.
         cost_treatment_annual = (cost_ART_annual
