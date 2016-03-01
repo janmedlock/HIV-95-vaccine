@@ -21,10 +21,16 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
     Gives proportion b of total cost in last (1 - b):
     (F(1) - F(b)) / F(1) = b
-    '''
 
-    assert numpy.all((0 < breakpoint) & (breakpoint < 1))
-    assert numpy.all((0 < p) & (p < 1))
+    This only makes sense for
+    0 <= p <= 1
+    and
+    0.5 <= b < 1
+    (the slope is negative for b < 0.5
+    and the slope is infinity for b = 1).
+    '''
+    assert (0.5 <= breakpoint < 1)
+    assert numpy.all((0 <= p) & (p <= 1))
     
     slope = 2 * (2 * breakpoint  - 1) / (1 - breakpoint) ** 3
 
@@ -43,7 +49,7 @@ relative_cost_of_effort_test(0.9)
 
 
 def get_CE_stats(t, state, target_funcs, parameters):
-    QALYs_rate = state @ (parameters.QALY_rates_per_person)
+    QALYs_rate = state @ parameters.QALY_rates_per_person
     QALYs = integrate.simps(QALYs_rate, t)
 
     controls = control_rates.get_control_rates(t, state, target_funcs)
