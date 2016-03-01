@@ -5,23 +5,41 @@ from . import simulation
 from . import control_rates
 
 
-m_80_20 = 2 * (2 * 0.8  - 1) / (1 - 0.8) ** 3
-
-def relative_cost_of_effort(p):
+def relative_cost_of_effort(p, breakpoint = 0.8):
     '''
     Total cost of effort p.
 
-    Derived from marginal costs:
-    1                        if p <= 0.8,
-    1 + m_80_20 * (p - 0.8)  if p >= 0.8.
+    This total cost is the integral of the marginal cost
+    f = { 1                if p <= b,
+        { 1 + m * (p - b)  if p >= b.
+    I.e.
 
-    Gives 80% of total cost in last 20%:
-    4 * \int_0^{0.8} f(p) dp = \int_{0.8}^1 f(p) dp.
+               / 1 + m (1 - b)
+    1 ________/
+
+     0        b  1
+
+    Gives proportion b of total cost in last (1 - b):
+    (F(1) - F(b)) / F(1) = b
     '''
+
+    assert numpy.all((0 < breakpoint) & (breakpoint < 1))
+    assert numpy.all((0 < p) & (p < 1))
+    
+    slope = 2 * (2 * breakpoint  - 1) / (1 - breakpoint) ** 3
+
     return numpy.where(
-        p < 0.8, p,
-        (0.8 + (1 - 0.8 * m_80_20) * (p - 0.8)
-         + m_80_20 / 2 * (p ** 2 - 0.8 ** 2)))
+        p < breakpoint, p,
+        p + slope / 2 * (p - breakpoint) ** 2)
+
+def relative_cost_of_effort_test(b):
+    assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
+                          - relative_cost_of_effort(b, breakpoint = b))
+                         / relative_cost_of_effort(1, breakpoint = b),
+                         b)
+
+relative_cost_of_effort_test(0.8)
+relative_cost_of_effort_test(0.9)
 
 
 def get_CE_stats(t, state, target_funcs, parameters):
