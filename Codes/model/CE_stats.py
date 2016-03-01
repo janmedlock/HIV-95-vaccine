@@ -73,28 +73,31 @@ def get_CE_stats(t, state, target_funcs, parameters):
         ) + (
             # One-time cost of new treatment,
             parameters.cost_of_treatment_onetime_constant
-            # multiplied by the treatment control (controls[1])
+            # multiplied by
+            # the treatment control (controls[1])
             * controls[..., 1]
             # and the number of people Diagnosed (state[3]).
             * state[..., 3]
         ) + (
+            # Recurring cost of treatment,
+            parameters.cost_treatment_recurring_increasing
+            # multiplied by
+            # the relative cost of effort (increasing marginal costs)
+            # for treatment (target_func[1]),
+            * relative_cost_of_effort(target_funcs[1](t))
+            # and the number of people Treated and Suppressed
+            # (state[4] and state[5]).
+            * state[..., 4 : 6].sum(-1)
+        ) + (
             # Recurring cost of AIDS,
             parameters.cost_AIDS_recurring_constant
-            # multiplied by the number of people with AIDS (state[6])
+            # multiplied by
+            # the number of people with AIDS (state[6])
             * state[..., 6]
         )
     )
 
-    target_func_values = numpy.column_stack(v(t) for v in target_funcs)
-    relative_cost_of_control = relative_cost_of_effort(target_func_values)
-
-    state_cost_rates_per_person = (
-        relative_cost_of_control
-        @ parameters.state_cost_rates_per_person_increasing)
-
-    total_cost_rate = (cost_rate
-                       + (state_cost_rates_per_person * state).sum(1))
-    cost = integrate.simps(total_cost_rate, t)
+    cost = integrate.simps(cost_rate, t)
 
     return QALYs, cost
 

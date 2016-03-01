@@ -111,8 +111,8 @@ class Parameters:
 
         # One-time cost of new diagnosis.
         # This gets multiplied by
-        # the relative cost of diagnosis (increasing marginal costs;
-        # target_func[0]),
+        # the relative cost of effort (increasing marginal costs)
+        # for diagnosis (target_func[0]),
         # the level of diagnosis control (controls[0]),
         # and the number of people Undiagnosed (state[2]).
         # (SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?)
@@ -132,31 +132,29 @@ class Parameters:
         #     = cost_adherence_annual
 
 
-        # treatment is ART + 1 viral load test per year + 2 CD4 tests per year.
-        cost_treatment_annual = (cost_ART_annual
-                                 + cost_viral_load
-                                 + 2 * cost_CD4)
+        # Recurring cost of treatment.
+        # This gets multiplied by
+        # the relative cost of effort (increasing marginal costs)
+        # for treatment (target_func[1]),
+        # and the number of people Treated and Suppressed
+        # (state[4] and state[5]).
+        # 
+        # Treatment is ART + 1 viral load test per year + 2 CD4 tests per year.
+        self.cost_treatment_recurring_increasing = (cost_ART_annual
+                                                    + cost_viral_load
+                                                    + 2 * cost_CD4)
 
+        # Recurring cost of AIDS.
+        # This get multiplied by the number of people with AIDS (state[6]).
+        #
+        # This is calculated as the annual cost of living with AIDS
+        # (cost_AIDS_annual) plus the cost of AIDS death
+        # (cost_AIDS_death * death_rate_AIDS).
         self.cost_AIDS_recurring_constant = (cost_AIDS_annual
                                              + (self.death_rate_AIDS
                                                 * cost_AIDS_death))
 
-        # Cost rates for being in each state that have increasing
-        # marginal costs.
-        # Rows are controls p_D, p_T, p_V.
-        # Columns are states S, A, U, D, T, V, W.
-        self.state_cost_rates_per_person_increasing = numpy.zeros((3, 7))
-        # Cost rate of treatment,
-        # controlled by control[1] (p_T),
-        # for state[4] (T).
-        self.state_cost_rates_per_person_increasing[1, 4] \
-            = cost_treatment_annual
-        # Cost rate of treatment,
-        # controlled by control[1] (p_T),
-        # for state[5] (V).
-        self.state_cost_rates_per_person_increasing[1, 5] \
-            = cost_treatment_annual
-
+        # Annual DALYs, assuming 1 year in symptomatic phase.
         years_in_symptomatic = 1
         DALY_rate_D = (
             ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
