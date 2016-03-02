@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import numpy
 import pickle
 from matplotlib import pyplot
 from matplotlib import colors as mcolors
@@ -50,6 +51,11 @@ m.choropleth(countries, values,
 cbar = pyplot.colorbar(orientation = 'horizontal',
                        shrink = 0.8)
 cbar.set_label('ICER (GDP per capita per DALY averted)')
-cbar.set_ticks((0, 1, 3))
+cmax = numpy.floor(numpy.max(values))
+if cmax > 3:
+    cticks = (0, 1, 3, cmax)
+else:
+    cticks = (0, 1, 3)
+cbar.set_ticks(cticks)
 
 pyplot.show()
