@@ -1,6 +1,6 @@
 __pycache__
-Codes/__cartopy__
-Codes/__shelve__
+Codes/_cartopy
+Codes/_shelve
 Codes/old
 Documents/Latex/*.aux
 Documents/Latex/*.log
