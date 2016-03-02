@@ -30,7 +30,7 @@ import cartopy
 # to a subdirectory so it'll go in Google Drive.
 cartopy.config['data_dir'] = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    '__cartopy__')
+    '_cartopy')
 
 
 class Locator:
@@ -46,7 +46,7 @@ class shelved:
 
         # Put the cache file in the same directory as the caller.
         funcdir = os.path.dirname(inspect.getfile(self._func))
-        cachedir = os.path.join(funcdir, '__shelve__')
+        cachedir = os.path.join(funcdir, '_shelve')
         if not os.path.exists(cachedir):
             os.mkdir(cachedir)
 
