@@ -51,11 +51,13 @@ m.choropleth(countries, values,
 cbar = pyplot.colorbar(orientation = 'horizontal',
                        shrink = 0.8)
 cbar.set_label('ICER (GDP per capita per DALY averted)')
+cticks = [0, 1, 3]
+cmin = numpy.ceil(numpy.min(values))
 cmax = numpy.floor(numpy.max(values))
+if cmin < 0:
+    cticks.insert(0, cmin)
 if cmax > 3:
-    cticks = (0, 1, 3, cmax)
-else:
-    cticks = (0, 1, 3)
+    cticks.append(cmax)
 cbar.set_ticks(cticks)
 
 pyplot.show()
