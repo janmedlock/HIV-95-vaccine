@@ -110,45 +110,25 @@ class Parameters:
          cost_AIDS_death) = costs_raw[ : 6]
 
         # One-time cost of new diagnosis.
-        # This gets multiplied by
-        # the relative cost of effort (increasing marginal costs)
-        # for diagnosis (targets[0]),
-        # the level of diagnosis control (controls[0]),
-        # and the number of people Undiagnosed (state[2]).
-        # (SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?)
         self.cost_of_testing_onetime_increasing = cost_test
 
         # One-time cost of new treatment.
-        # This gets multiplied by the treatment control (controls[1])
-        # and the number of people Diagnosed (state[3]).
         self.cost_of_treatment_onetime_constant = cost_CD4 + cost_viral_load
 
         ###############################################
         # Note: No cost for the nonadherence control! #
         ###############################################
-        # Recurring cost of nonadherance,
-        # This gets multiplied by
-        # the relative cost of effort (increasing marginal costs)
-        # for nonadherance (targets[2]),
-        # and the number of people Treated and Suppressed
-        # (state[4] and state[5]).
-        # (SHOULD THIS BE JUST Suppressed INSTEAD?)
+        # Recurring cost of nonadherance.
         self.cost_nonadherance_recurring_increasing = 0
 
         # Recurring cost of treatment.
-        # This gets multiplied by
-        # the relative cost of effort (increasing marginal costs)
-        # for treatment (targets[1]),
-        # and the number of people Treated and Suppressed
-        # (state[4] and state[5]).
-        # 
-        # Treatment is ART + 1 viral load test per year + 2 CD4 tests per year.
+        # Treatment is ART + 1 viral load test per year
+        # + 2 CD4 tests per year.
         self.cost_treatment_recurring_increasing = (cost_ART_annual
                                                     + cost_viral_load
                                                     + 2 * cost_CD4)
 
         # Recurring cost of AIDS.
-        # This get multiplied by the number of people with AIDS (state[6]).
         #
         # This is calculated as the annual cost of living with AIDS
         # (cost_AIDS_annual) plus the cost of AIDS death

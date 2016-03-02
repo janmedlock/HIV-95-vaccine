@@ -67,10 +67,9 @@ def get_CE_stats(t, state, targs, parameters):
             * relative_cost_of_effort(target_values[..., 0])
             # the level of diagnosis control (controls[0]),
             * controls[..., 0]
-            # and the number of people Undiagnosed (state[2])
-            * state[..., 2]
-            # SHOULD THIS BE Susceptible + Acute + Diagnosed INSTEAD?
-            # * state[..., 0 : 3].sum(-1)
+            # and the number of Susceptible, Acute, & Undiagnosed
+            # (state[[0, 1, 2]]).
+            * state[..., [0, 1, 2]].sum(-1)
         ) + (
             # One-time cost of new treatment,
             parameters.cost_of_treatment_onetime_constant
@@ -86,9 +85,9 @@ def get_CE_stats(t, state, targs, parameters):
             # the relative cost of effort (increasing marginal costs)
             # for treatment (target_values[1]),
             * relative_cost_of_effort(target_values[..., 1])
-            # and the number of people Treated and Suppressed
-            # (state[4] and state[5]).
-            * state[..., 4 : 6].sum(-1)
+            # and the number of people Treated & Suppressed
+            # (state[[4, 5]]).
+            * state[..., [4, 5]].sum(-1)
         ) + (
             # Recurring cost of nonadherance,
             parameters.cost_nonadherance_recurring_increasing
@@ -97,10 +96,8 @@ def get_CE_stats(t, state, targs, parameters):
             # for nonadherance (target_values[2]),
             * relative_cost_of_effort(target_values[..., 2])
             # and the number of people Treated and Suppressed
-            # (state[4] and state[5]).
-            * state[..., 4 : 6].sum(-1)
-            # SHOULD THIS BE JUST Suppressed INSTEAD?
-            # * state[..., 5]
+            # (state[[4, 5]]).
+            * state[..., [4, 5]].sum(-1)
         ) + (
             # Recurring cost of AIDS,
             parameters.cost_AIDS_recurring_constant
