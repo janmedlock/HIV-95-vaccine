@@ -14,7 +14,7 @@ End time.
 '''
 t_end = 10
 
-def ODEs(state, t, targs, parameters):
+def _ODEs(state, t, targs, parameters):
     # S is susceptible.
     # A is acute infection.
     # U is undiagnosed.
@@ -71,7 +71,7 @@ def ODEs(state, t, targs, parameters):
     return (dS, dA, dU, dD, dT, dV, dW)
 
 
-def ODEs_log(state_log, t, targs, parameters):
+def _ODEs_log(state_log, t, targs, parameters):
     state = numpy.exp(state_log)
     # S is susceptible.
     # A is acute infection.
@@ -146,10 +146,10 @@ def solve(targs, parameters, use_log = True):
     if use_log:
         # Take log, but map 0 to e^-20.
         Y0 = numpy.ma.log(parameters.initial_conditions).filled(-20)
-        fcn = ODEs_log
+        fcn = _ODEs_log
     else:
         Y0 = parameters.initial_conditions.copy()
-        fcn = ODEs
+        fcn = _ODEs
         
     Y = integrate.odeint(fcn,
                          Y0,

@@ -1,13 +1,14 @@
 model
 =====
-
-model.CE_stats
---------------
-.. automodule:: model.CE_stats
+.. automodule:: model
 
 model.analyze909090
 -------------------
 .. automodule:: model.analyze909090
+
+model.CE_stats
+--------------
+.. automodule:: model.CE_stats
 
 model.control_rates
 -------------------

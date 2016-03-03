@@ -13,17 +13,17 @@ from . import datasheet
 from . import CE_stats
 
 
-def objective_function(targs, CE_threshold, parameters, scale = 1):
+def _objective_function(targs, CE_threshold, parameters, scale = 1):
     net_benefit = CE_stats.solve_and_get_net_benefit(targs,
                                                      CE_threshold,
                                                      parameters)
     return - net_benefit / scale
 
 
-def lower_bound(b, i, x):
+def _lower_bound(b, i, x):
     return x[i] - b[0]
 
-def upper_bound(b, i, x):
+def _upper_bound(b, i, x):
     return b[1] - x[i]
 
 
@@ -59,9 +59,9 @@ def maximize_incremental_net_benefit(country, CE_threshold,
 
     # Get an approximate scale to normalize the objective values
     # by running at the lower bounds (0, 0, 0).
-    scale = numpy.abs(objective_function((b[0] for b in bounds),
-                                         CE_threshold,
-                                         parameters))
+    scale = numpy.abs(_objective_function((b[0] for b in bounds),
+                                          CE_threshold,
+                                          parameters))
 
     args = (CE_threshold, parameters, scale)
 
@@ -78,10 +78,10 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     if method == 'cobyla':
         # Convert bounds into contraint functions.
         constraints = ([dict(type = 'ineq',
-                             fun = functools.partial(lower_bound, b, i))
+                             fun = functools.partial(_lower_bound, b, i))
                         for (i, b) in enumerate(bounds)]
                        + [dict(type = 'ineq',
-                               fun = functools.partial(upper_bound, b, i))
+                               fun = functools.partial(_upper_bound, b, i))
                           for (i, b) in enumerate(bounds)])
 
         kwds.update(constraints = constraints)

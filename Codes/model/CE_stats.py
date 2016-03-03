@@ -46,7 +46,7 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
         p + slope / 2 * (p - breakpoint) ** 2)
 
 
-def test_relative_cost_of_effort(b):
+def _test_relative_cost_of_effort(b):
     '''
     Test :func:`relative_cost_of_effort`.
 
@@ -57,8 +57,8 @@ def test_relative_cost_of_effort(b):
 
     .. doctest::
 
-       >>> test_relative_cost_of_effort(0.8)
-       >>> test_relative_cost_of_effort(0.9)
+       >>> _test_relative_cost_of_effort(0.8)
+       >>> _test_relative_cost_of_effort(0.9)
     '''
     assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
                           - relative_cost_of_effort(b, breakpoint = b))
