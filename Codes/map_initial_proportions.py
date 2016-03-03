@@ -10,7 +10,7 @@ import model
 import mapplot
 
 
-def main():
+def _main():
     data = model.read_all_initial_conditions()
 
     countries = data.index
@@ -84,4 +84,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _main()

@@ -15,7 +15,7 @@ import mapplot
 import seaborn
 
 
-def main():
+def _main():
     results = pickle.load(open('analyze909090.pkl', 'rb'))
     countries, values = zip(*results.items())
 
@@ -68,4 +68,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _main()

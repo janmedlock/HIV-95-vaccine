@@ -48,8 +48,8 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     '''
     Find the targets that maximize the net benefit in the country.
     
-    Possible values for `method`
-    are 'cobyla', 'l-bfgs-b', 'tnc', 'slsqp'.
+    Valid values for `method`
+    are ``'cobyla'``, ``'l-bfgs-b'``, ``'tnc'``, ``'slsqp'``.
 
     Uses `nruns` random uniform restarts.
     '''

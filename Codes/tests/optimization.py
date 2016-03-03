@@ -10,7 +10,7 @@ sys.path.append('..')
 import model
 
 
-def main():
+def _main():
     country = 'Nigeria'
 
     # 0 is just cost.
@@ -37,4 +37,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _main()

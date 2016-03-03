@@ -14,7 +14,7 @@ sys.path.append('..')
 import mapplot
 
 
-def main():
+def _main():
     countries = ('Canada', 'United States of America', 'Mexico',
                  'Guatemala', 'Honduras', 'El Salvador', 'Belize',
                  'Costa Rica', 'Nicaragua', 'Panama')
@@ -37,4 +37,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _main()

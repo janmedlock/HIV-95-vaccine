@@ -101,6 +101,12 @@ class Basemap:
                 record.geometry, self.border_crs)
 
 
+    def _get_colors(self, c):
+        if isinstance(c, str):
+            return seaborn.color_palette(c)
+        else:
+            return c
+
     def set_fig_size_for_ax_aspect_ratio(self):
         # Adjust aspect ratio of the figure to match the map.
         # self.fig.canvas.draw()
@@ -155,7 +161,7 @@ class Basemap:
              wedgeprops = dict(linewidth = 0),
              startangle = 90,
              counterclock = False,
-             colors = seaborn.color_palette('bright'),
+             colors = 'bright',
              *args, **kwargs):
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
@@ -175,12 +181,12 @@ class Basemap:
                             wedgeprops = wedgeprops,
                             startangle = startangle,
                             counterclock = counterclock,
-                            colors = colors,
+                            colors = self._get_colors(colors),
                             *args,
                             **kwargs)
 
     def bars(self, countries, values,
-             color = seaborn.color_palette('bright'),
+             color = 'bright',
              widthscale = 1,
              heightscale = 1,
              linewidth = 0,
@@ -203,7 +209,7 @@ class Basemap:
             lefts = x + width * (numpy.arange(N) - N / 2)
 
             self.ax.bar(lefts, heights, width, bottom,
-                        color = color,
+                        color = self._get_colors(color),
                         linewidth = linewidth,
                         *args,
                         **kwargs)
@@ -223,7 +229,7 @@ class Basemap:
 
 
     def barhs(self, countries, values,
-              color = seaborn.color_palette('bright'),
+              color = 'bright',
               widthscale = 1,
               heightscale = 1,
               linewidth = 0,
@@ -246,7 +252,7 @@ class Basemap:
             left = x - max(widths) / 2
 
             self.ax.barh(bottoms, widths, height, left,
-                         color = color,
+                         color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)
@@ -266,7 +272,7 @@ class Basemap:
 
 
     def barhls(self, countries, values,
-               color = seaborn.color_palette('bright'),
+               color = 'bright',
                widthscale = 1,
                heightscale = 1,
                linewidth = 0,
@@ -289,7 +295,7 @@ class Basemap:
             lefts = x + max(widths) / 2 - widths
 
             self.ax.barh(bottoms, widths, height, lefts,
-                         color = color,
+                         color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)
@@ -309,7 +315,7 @@ class Basemap:
 
 
     def pyramids(self, countries, values,
-             color = seaborn.color_palette('bright'),
+             color = 'bright',
              widthscale = 1,
              heightscale = 1,
              linewidth = 0,
@@ -331,7 +337,7 @@ class Basemap:
             lefts = x - widths / 2
 
             self.ax.barh(bottoms, widths, height, lefts,
-                         color = color,
+                         color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)

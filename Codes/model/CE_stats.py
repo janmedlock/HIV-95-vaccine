@@ -12,9 +12,15 @@ from . import targets
 
 def relative_cost_of_effort(p, breakpoint = 0.8):
     r'''
-    Total cost of effort for p.
+    Total cost of effort for level `p`,
+    designed to follow the 80–20 rule.
 
-    This total cost is the integral of the marginal cost
+    This total cost is the integral
+
+    .. math::
+      F(p) = \int_0^p f(p') \mathrm{d}p'
+
+    of the marginal cost
 
     .. math::
        f(p) =
@@ -28,6 +34,10 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
     .. math::
        \frac{F(1) - F(b)}{F(1)} = b.
+       :label: eightytwenty
+
+    Particularly, with :math:`b = 0.8`, it gives the 80–20 rule,
+    where 80% of the total cost is to cover the last 20%.
 
     This only makes sense for
     :math:`0 \leq p \leq 1`
@@ -38,7 +48,7 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
     :Testing:
 
-    Check that :math:`\frac{F(1) - F(b)}{F(1)} = b`.
+    Check that this function satisfies :eq:`eightytwenty`:
 
     .. doctest::
 

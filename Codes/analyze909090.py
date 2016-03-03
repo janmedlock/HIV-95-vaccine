@@ -11,7 +11,7 @@ import pickle
 import model
 
 
-def main():
+def _main():
     results = {}
     for country in model.get_country_list():
         results[country] = model.analyze909090(country)
@@ -21,4 +21,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    _main()
