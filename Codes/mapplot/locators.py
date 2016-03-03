@@ -56,7 +56,7 @@ class CentroidLocator(Locator):
     Use the centroid from the country map borders to get country coordinates.
     '''
 
-    equalarea_crs = cartopy.crs.AlbersEqualArea()
+    _equalarea_crs = cartopy.crs.AlbersEqualArea()
     def __init__(self, borders):
         self.borders = borders
 
@@ -68,7 +68,7 @@ class CentroidLocator(Locator):
         for g in border.geometries():
             centroids.append(g.centroid.xy)
             areas.append(
-                self.equalarea_crs.project_geometry(g, border.crs).area)
+                self._equalarea_crs.project_geometry(g, border.crs).area)
 
         centroid = numpy.average(centroids, weights = areas,
                                  axis = 0).squeeze()
