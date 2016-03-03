@@ -1,7 +1,9 @@
 __pycache__
+*.pkl
 Codes/mapplot/_cartopy
 Codes/mapplot/_shelve
 Codes/old
+Codes/docs
 Documents/Latex/*.aux
 Documents/Latex/*.log
 Documents/Latex/*.pdf

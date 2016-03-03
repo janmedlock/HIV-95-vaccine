@@ -12,13 +12,13 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
     This total cost is the integral of the marginal cost
     f = { 1                if p <= b,
-        { 1 + m * (p - b)  if p >= b.
+    _   { 1 + m * (p - b)  if p >= b.
     I.e.
 
-               / 1 + m (1 - b)
+    _          / 1 + m (1 - b)
     1 ________/
 
-     0        b  1
+    _0        b  1
 
     Gives proportion b of total cost in last (1 - b):
     (F(1) - F(b)) / F(1) = b
@@ -51,7 +51,9 @@ test_relative_cost_of_effort(0.9)
 
 
 def get_CE_stats(t, state, targs, parameters):
-    QALYs_rate = state @ parameters.QALY_rates_per_person
+    # A component of Sphinx chokes on the '@'.
+    # QALYs_rate = state @ parameters.QALY_rates_per_person
+    QALYs_rate = numpy.dot(state, parameters.QALY_rates_per_person)
     QALYs = integrate.simps(QALYs_rate, t)
 
     target_values = targets.get_target_values(t, targs, parameters)

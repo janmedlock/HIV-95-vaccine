@@ -1,13 +1,15 @@
 #!/usr/bin/python3
 
-import sys
-sys.path.append('..')
 
-import model
+if __name__ == '__main__':
+    import sys
+    sys.path.append('..')
+
+    import model
 
 
-country = 'Nigeria'
+    country = 'Nigeria'
 
-parameters = model.Parameters(country)
+    parameters = model.Parameters(country)
 
-print(parameters)
+    print(parameters)

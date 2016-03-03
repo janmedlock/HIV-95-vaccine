@@ -11,9 +11,9 @@ control_rates_max = numpy.array([1, 10, 1])
 def ramp(x, tol = 0.0001):
     '''
     Piecewise linear:
-           { 0        if x < 0
+    _      { 0        if x < 0
     f(x) = { x / tol  if 0 <= x <= tol
-           { 1        if x > tol
+    _      { 1        if x > tol
     '''
     return numpy.clip(x / tol, 0, 1)
 
@@ -24,17 +24,17 @@ def get_control_rates(t, state, targs, parameters):
 
     rates['diagnosis'] is:
     rates_max['diagnosis']
-             if targets['diagnosed'](t) > current_proprtions['diagnosed'],
+    _        if targets['diagnosed'](t) > current_proprtions['diagnosed'],
     0                       otherwise
 
     rates['treatment'] is:
     rates_max['treatment']
-                if targets['treated'](t) > current_proportions['treated'],
+    _           if targets['treated'](t) > current_proportions['treated'],
     0                       otherwise.
 
     rates['nonadherance'] is:
     rates_max['nonadherance']
-         if targets['suppressed'](t) < current_proportions['suppressed'],
+    _    if targets['suppressed'](t) < current_proportions['suppressed'],
     0                    otherwise.
 
     OK, so we actually use a piecewise linear function ('ramp' below)
