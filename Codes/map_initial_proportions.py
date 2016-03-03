@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 
-'Map the initial proportions diagnosed, treated, and viral suppressed.'
+'''
+Map the initial proportions diagnosed, treated, and viral suppressed.
+'''
+
+import pandas
+
+import model
+import mapplot
 
 
-if __name__ == '__main__':
-    import pandas
-
-    import model
-    import mapplot
-
-
+def main():
     data = model.read_all_initial_conditions()
 
     countries = data.index
@@ -80,3 +81,7 @@ if __name__ == '__main__':
 
 
     mapplot.pyplot.show()
+
+
+if __name__ == '__main__':
+    main()

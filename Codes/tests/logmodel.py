@@ -6,17 +6,16 @@ versus the non-log model :func:`model.simulation.ODEs`
 for correctness and speed.
 '''
 
+import sys
+import time
 
-if __name__ == '__main__':
-    import numpy
-    import time
+import numpy
 
-    import sys
-    sys.path.append('..')
-
-    import model
+sys.path.append('..')
+import model
 
 
+def main():
     country = 'Nigeria'
 
     parameters = model.Parameters(country)
@@ -38,3 +37,8 @@ if __name__ == '__main__':
 
     print('Max absolute error = {}'.format(maxabserr))
     print('Max relative error = {}'.format(maxrelerr))
+
+
+
+if __name__ == '__main__':
+    main()

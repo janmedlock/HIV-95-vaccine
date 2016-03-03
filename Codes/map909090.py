@@ -1,22 +1,23 @@
 #!/usr/bin/python3
 
-'Map the 90-90-90 results.'
+'''
+Map the 90-90-90 results.
+'''
+
+import pickle
+
+import numpy
+from matplotlib import pyplot
+from matplotlib import colors as mcolors
+
+import mapplot
+
+import seaborn
 
 
-if __name__ == '__main__':
-    import numpy
-    import pickle
-    from matplotlib import pyplot
-    from matplotlib import colors as mcolors
-
-    import mapplot
-
-    import seaborn
-
-
+def main():
     results = pickle.load(open('analyze909090.pkl', 'rb'))
     countries, values = zip(*results.items())
-
 
     colors = seaborn.color_palette('Paired', 8)
     # Reorder: move last two to the front.
@@ -46,7 +47,6 @@ if __name__ == '__main__':
 
     cmap = mcolors.LinearSegmentedColormap('CEthresholds', cdict)
 
-
     pyplot.figure()
     m = mapplot.Basemap()
     m.choropleth(countries, values,
@@ -65,3 +65,7 @@ if __name__ == '__main__':
     cbar.set_ticks(cticks)
 
     pyplot.show()
+
+
+if __name__ == '__main__':
+    main()

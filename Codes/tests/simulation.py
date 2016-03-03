@@ -1,15 +1,17 @@
 #!/usr/bin/python3
 
-'Test :mod:`model.simulation`.'
+'''
+Test :mod:`model.simulation`.
+'''
 
 
-if __name__ == '__main__':
-    import sys
-    sys.path.append('..')
+import sys
 
-    import model
+sys.path.append('..')
+import model
 
 
+def main():
     country = 'Nigeria'
 
     print(country)
@@ -29,3 +31,7 @@ if __name__ == '__main__':
                                      parameters)
 
     model.plot_solution(t, state, '909090', parameters)
+
+
+if __name__ == '__main__':
+    main()

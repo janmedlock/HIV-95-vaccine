@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 
-'Test the :mod:`model.optimization`.'
+'''
+Test the :mod:`model.optimization`.
+'''
+
+import sys
+
+sys.path.append('..')
+import model
 
 
-if __name__ == '__main__':
-    import sys
-    sys.path.append('..')
-
-    import model
-
-
+def main():
     country = 'Nigeria'
 
     # 0 is just cost.
@@ -33,3 +34,7 @@ if __name__ == '__main__':
     print('incremental cost = {:g} USD'.format(incremental_cost))
     print('incremental net benefit = {:g} QALYs'.format(
         incremental_net_benefit))
+
+
+if __name__ == '__main__':
+    main()

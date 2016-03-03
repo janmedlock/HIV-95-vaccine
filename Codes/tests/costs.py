@@ -7,16 +7,15 @@ against known fixed values.
 It is designed to catch errors introduced when changing the code.
 '''
 
+import sys
 
-if __name__ == '__main__':
-    import numpy
+import numpy
 
-    import sys
-    sys.path.append('..')
-
-    import model
+sys.path.append('..')
+import model
 
 
+def main():
     country = 'Nigeria'
 
     parameters = model.Parameters(country)
@@ -43,3 +42,7 @@ if __name__ == '__main__':
                               1.4022532713128841)))
 
     # model.print_incremental_CE_stats(*ICE_stats, parameters)
+
+
+if __name__ == '__main__':
+    main()
