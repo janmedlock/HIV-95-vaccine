@@ -1,11 +1,5 @@
 '''
 Compute cost and effectiveness statistics.
-
-.. doctest::
-
-   >>> from model.CE_stats import _test_relative_cost_of_effort
-   >>> _test_relative_cost_of_effort(0.8)
-   >>> _test_relative_cost_of_effort(0.9)
 '''
 
 import numpy
@@ -41,6 +35,18 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
     :math:`0.5 \leq b < 1`.
     (The slope is negative for :math:`b < 0.5`
     and the slope is infinite for :math:`b = 1`.)
+
+    :Testing:
+
+    Check that :math:`\frac{F(1) - F(b)}{F(1)} = b`.
+
+    .. doctest::
+
+       >>> import numpy
+       >>> import model.CE_stats
+       >>> F = model.CE_stats.relative_cost_of_effort
+       >>> for b in numpy.arange(0.5, 1, 0.1):
+       ...    assert numpy.isclose((F(1, b) - F(b, b)) / F(1, b), b)
     '''
     assert (0.5 <= breakpoint < 1), 'Bad breakpoint = {}.'.format(breakpoint)
     # assert numpy.all((0 <= p) & (p <= 1)), 'Bad p = {}.'.format(p)
@@ -50,16 +56,6 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
     return numpy.where(
         p < breakpoint, p,
         p + slope / 2 * (p - breakpoint) ** 2)
-
-
-def _test_relative_cost_of_effort(b):
-    '''
-    Check that :math:`\frac{F(1) - F(b)}{F(1)} = b`.
-    '''
-    assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
-                          - relative_cost_of_effort(b, breakpoint = b))
-                         / relative_cost_of_effort(1, breakpoint = b),
-                         b)
 
 
 def get_CE_stats(t, state, targs, parameters):
