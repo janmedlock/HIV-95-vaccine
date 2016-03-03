@@ -12,16 +12,18 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
     This total cost is the integral of the marginal cost
 
-    .. math:: f(p) =
-              \begin{cases}
-              1 & \text{if $p \leq b$},
-              \\
-              1 + m (p - b) & \text{if $p \geq b$}.
-              \end{cases}
+    .. math::
+       f(p) =
+       \begin{cases}
+       1 & \text{if $p \leq b$},
+       \\
+       1 + m (p - b) & \text{if $p \geq b$}.
+       \end{cases}
 
     This gives proportion :math:`b` of total cost in last :math:`(1 - b)`,
 
-    .. math:: \frac{F(1) - F(b)}{F(1)} = b.
+    .. math::
+       \frac{F(1) - F(b)}{F(1)} = b.
 
     This only makes sense for
     :math:`0 \leq p \leq 1`
@@ -42,13 +44,24 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
 
 
 def test_relative_cost_of_effort(b):
+    '''
+    Test :func:`relative_cost_of_effort`.
+
+
+    .. testsetup::
+
+       from model.CE_stats import *
+
+    .. doctest::
+
+       >>> test_relative_cost_of_effort(0.8)
+       >>> test_relative_cost_of_effort(0.9)
+    '''
+
     assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
                           - relative_cost_of_effort(b, breakpoint = b))
                          / relative_cost_of_effort(1, breakpoint = b),
                          b)
-
-test_relative_cost_of_effort(0.8)
-test_relative_cost_of_effort(0.9)
 
 
 def get_CE_stats(t, state, targs, parameters):
