@@ -1,5 +1,12 @@
 #!/usr/bin/python3
 
+'''
+Test the cost and effectiveness calculations in :mod:`model.CE_stats`
+against known fixed values.
+
+It is designed to catch errors introduced when changing the code.
+'''
+
 
 if __name__ == '__main__':
     import numpy

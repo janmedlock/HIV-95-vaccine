@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+'Test the :mod:`model.optimization`.'
+
 
 if __name__ == '__main__':
     import sys

@@ -7,29 +7,30 @@ from . import control_rates
 
 
 def relative_cost_of_effort(p, breakpoint = 0.8):
-    '''
-    Total cost of effort p.
+    r'''
+    Total cost of effort for p.
 
     This total cost is the integral of the marginal cost
-    f = { 1                if p <= b,
-    _   { 1 + m * (p - b)  if p >= b.
-    I.e.
 
-    _          / 1 + m (1 - b)
-    1 ________/
+    .. math:: f(p) =
+              \begin{cases}
+              1 & \text{if $p \leq b$},
+              \\
+              1 + m (p - b) & \text{if $p \geq b$}.
+              \end{cases}
 
-    _0        b  1
+    This gives proportion :math:`b` of total cost in last :math:`(1 - b)`,
 
-    Gives proportion b of total cost in last (1 - b):
-    (F(1) - F(b)) / F(1) = b
+    .. math:: \frac{F(1) - F(b)}{F(1)} = b.
 
     This only makes sense for
-    0 <= p <= 1
+    :math:`0 \leq p \leq 1`
     and
-    0.5 <= b < 1
-    (the slope is negative for b < 0.5
-    and the slope is infinity for b = 1).
+    :math:`0.5 \leq b < 1`.
+    (The slope is negative for :math:`b < 0.5`
+    and the slope is infinite for :math:`b = 1`.)
     '''
+
     assert (0.5 <= breakpoint < 1)
     assert numpy.all((0 <= p) & (p <= 1))
     

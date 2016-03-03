@@ -4,42 +4,67 @@ from . import proportions
 from . import targets
 
 
+def ramp(x, tol = 0.0001):
+    r'''
+    Piecewise linear:
+
+    .. math:: f(x) =
+              \begin{cases}
+              0 & \text{if $x \leq 0$},
+              \\
+              \frac{x}{\epsilon} & \text{if $0 \leq x \leq \epsilon$},
+              \\
+              1 & \text{if $x \geq \epsilon$}.
+              \end{cases}
+    '''
+
+    return numpy.clip(x / tol, 0, 1)
+
+
 # diagnosis, treatment, nonadherance
 control_rates_max = numpy.array([1, 10, 1])
 
 
-def ramp(x, tol = 0.0001):
-    '''
-    Piecewise linear:
-    _      { 0        if x < 0
-    f(x) = { x / tol  if 0 <= x <= tol
-    _      { 1        if x > tol
-    '''
-    return numpy.clip(x / tol, 0, 1)
-
-
 def get_control_rates(t, state, targs, parameters):
-    '''
+    r'''
     Rates for diagnosis, treatment, & nonadherance are piecewise constant.
 
-    rates['diagnosis'] is:
-    rates_max['diagnosis']
-    _        if targets['diagnosed'](t) > current_proprtions['diagnosed'],
-    0                       otherwise
+    The diagnosis rate is:
 
-    rates['treatment'] is:
-    rates_max['treatment']
-    _           if targets['treated'](t) > current_proportions['treated'],
-    0                       otherwise.
+    .. math:: r_{\text{diagnosis}} =
+              \begin{cases}
+              R_{\text{diagnosis}}
+              &
+              \text{if $p_{\text{diagnosed}} < T_{\text{diagnosed}}(t)$},
+              \\
+              0 & \text{otherwise}.
+              \end{cases}
 
-    rates['nonadherance'] is:
-    rates_max['nonadherance']
-    _    if targets['suppressed'](t) < current_proportions['suppressed'],
-    0                    otherwise.
+    The treatment rate is
 
-    OK, so we actually use a piecewise linear function ('ramp' below)
+    .. math:: r_{\text{treatment}} =
+              \begin{cases}
+              R_{\text{treatment}}
+              &
+              \text{if $p_{\text{treated}} < T_{\text{treated}}(t)$},
+              \\
+              0 & \text{otherwise}.
+              \end{cases}
+
+    The nonadherance rate is
+
+    .. math:: r_{\text{nonadherance}} =
+              \begin{cases}
+              0 &
+              \text{if $p_{\text{suppressed}} < T_{\text{suppressed}}(t)$},
+              \\
+              R_{\text{nonadherance}} & \text{otherwise}.
+              \end{cases}
+
+    OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
+
     current_proportions = proportions.get_proportions(state)
 
     target_values = targets.get_target_values(t, targs, parameters)

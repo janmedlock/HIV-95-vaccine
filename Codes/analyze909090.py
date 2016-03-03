@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 
+'''
+Analyze the 90-90-90 policies for all the countries.
+
+See :func:`model.analyze909090.analyze909090`.
+'''
+
 
 if __name__ == '__main__':
     import pickle

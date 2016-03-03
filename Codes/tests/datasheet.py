@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+'Test the loading of data from the datasheet using :mod:`model.datasheet`.'
+
 
 if __name__ == '__main__':
     import sys
