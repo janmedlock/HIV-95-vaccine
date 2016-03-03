@@ -9,6 +9,7 @@ mapplot.basemap
 mapplot.locators
 ----------------
 .. automodule:: mapplot.locators
+   :inherited-members:
 
 mapplot.test
 ------------

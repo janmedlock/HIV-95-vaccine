@@ -59,19 +59,19 @@ class Basemap:
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
 
-        self.do_basemap()
+        self._do_basemap()
 
-        self.load_borders()
+        self._load_borders()
 
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
 
 
-    def do_basemap(self,
-                   zorder = 0,
-                   land_color = cartopy.feature.COLORS['land_alt1'],
-                   ocean_color = cartopy.feature.COLORS['water'],
-                   *args, **kwargs):
+    def _do_basemap(self,
+                    zorder = 0,
+                    land_color = cartopy.feature.COLORS['land_alt1'],
+                    ocean_color = cartopy.feature.COLORS['water'],
+                    *args, **kwargs):
         self.ax.add_feature(cartopy.feature.LAND,
                             facecolor = land_color,
                             zorder = zorder)
@@ -84,7 +84,7 @@ class Basemap:
         # self.ax.add_feature(cartopy.feature.RIVERS, zorder = zorder)
 
 
-    def load_borders(self):
+    def _load_borders(self):
         border_feature = cartopy.io.shapereader.natural_earth(
             resolution = '110m',
             category = 'cultural',

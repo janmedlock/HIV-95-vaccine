@@ -27,7 +27,7 @@ def _upper_bound(b, i, x):
     return b[1] - x[i]
 
 
-def do_minimize(*args, **kwds):
+def _do_minimize(*args, **kwds):
     '''
     multiprocessing is having trouble with the hess_inv attribute
     of the result.  This function converts that to a dense matrix.
@@ -48,9 +48,10 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     '''
     Find the targets that maximize the net benefit in the country.
     
-    Possible methods are 'cobyla', 'l-bfgs-b', 'tnc', 'slsqp'.
+    Possible values for `method`
+    are 'cobyla', 'l-bfgs-b', 'tnc', 'slsqp'.
 
-    Uses nruns random uniform restarts.
+    Uses `nruns` random uniform restarts.
     '''
     parameters = datasheet.Parameters(country)
 
@@ -59,7 +60,8 @@ def maximize_incremental_net_benefit(country, CE_threshold,
 
     # Get an approximate scale to normalize the objective values
     # by running at the lower bounds (0, 0, 0).
-    scale = numpy.abs(_objective_function((b[0] for b in bounds),
+    targs0 = [b[0] for b in bounds]
+    scale = numpy.abs(_objective_function(targs0,
                                           CE_threshold,
                                           parameters))
 
@@ -100,7 +102,7 @@ def maximize_incremental_net_benefit(country, CE_threshold,
     # Parallel, using all available processors.
     with joblib.Parallel(n_jobs = -1, verbose = verbose) as parallel:
         # res = parallel(
-        #     joblib.delayed(optimize.minimize)(objective_function,
+        #     joblib.delayed(optimize.minimize)(_objective_function,
         #                                       x0,
         #                                       **kwds)
         #     for x0 in initial_guesses)
@@ -108,7 +110,7 @@ def maximize_incremental_net_benefit(country, CE_threshold,
         # multiprocessing is having trouble with the sparse hess_inv
         # attribute of the optimization result.
         res = parallel(
-            joblib.delayed(do_minimize)(objective_function, x0, **kwds)
+            joblib.delayed(_do_minimize)(_objective_function, x0, **kwds)
             for x0 in initial_guesses)
 
     if debug:

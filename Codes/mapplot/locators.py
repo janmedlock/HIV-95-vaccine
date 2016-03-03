@@ -15,21 +15,21 @@ warnings.filterwarnings(
 import cartopy
 
 
-class Locator:
+class _Locator:
     '''
     Abstract base class for locators.
     '''
 
     def get_locations(self, countries):
         '''
-        Do many calls to get_location() and stack results.
+        Do many calls to :meth:`get_location` and stack results.
         '''
 
         coords = numpy.vstack(map(self.get_location, countries)).T
         return coords
     
 
-class GeocodeLocator(Locator):
+class GeocodeLocator(_Locator):
     '''
     Use :mod:`geopy.geocoders.Nominatim` to get country coordinates.
     '''
@@ -51,7 +51,7 @@ class GeocodeLocator(Locator):
         return location.longitude, location.latitude
 
 
-class CentroidLocator(Locator):
+class CentroidLocator(_Locator):
     '''
     Use the centroid from the country map borders to get country coordinates.
     '''
