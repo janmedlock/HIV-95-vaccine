@@ -5,12 +5,12 @@ Test :mod:`mapplot`.
 '''
 
 
+import sys
+
 import numpy
 from matplotlib import pyplot
 
-import sys
 sys.path.append('..')
-
 import mapplot
 
 
