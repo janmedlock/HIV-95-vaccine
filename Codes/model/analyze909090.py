@@ -1,5 +1,9 @@
-from . import datasheet
+'''
+Analyze the 90-90-90 policy.
+'''
+
 from . import CE_stats
+from . import datasheet
 
 
 def analyze909090(country):

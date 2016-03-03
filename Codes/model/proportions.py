@@ -1,3 +1,8 @@
+'''
+Get the proportions diagnosed, treated, and viral suppressed from
+the current number of people in the model compartments.
+'''
+
 import numpy
 
 from . import simulation

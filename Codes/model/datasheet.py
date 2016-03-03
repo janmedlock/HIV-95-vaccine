@@ -1,7 +1,12 @@
-import numpy
-import pandas
+'''
+Load parameter data from the datafile.
+'''
+
 import os.path
 import inspect
+
+import numpy
+import pandas
 
 
 datafile = '../DataSheet.xlsx'
@@ -11,7 +16,9 @@ datapath = os.path.join(os.path.dirname(__file__), datafile)
 
 
 class Parameters:
-    'Convert parameter data in datafile into object for use in simulations.'
+    '''
+    Convert parameter data in datafile into object for use in simulations.
+    '''
 
     def __init__(self, country):
         self.country = country

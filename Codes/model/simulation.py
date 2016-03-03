@@ -1,3 +1,7 @@
+'''
+Solve the HIV model.
+'''
+
 import numpy
 from scipy import integrate
 
@@ -5,8 +9,10 @@ from . import control_rates
 from . import proportions
 
 
+'''
+End time.
+'''
 t_end = 10
-
 
 def ODEs(state, t, targs, parameters):
     # S is susceptible.

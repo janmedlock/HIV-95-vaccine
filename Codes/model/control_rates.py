@@ -1,3 +1,7 @@
+'''
+Compute the value of the control rates.
+'''
+
 import numpy
 
 from . import proportions
@@ -18,13 +22,13 @@ def ramp(x, tol = 0.0001):
        1 & \text{if $x \geq \epsilon$}.
        \end{cases}
     '''
-
     return numpy.clip(x / tol, 0, 1)
 
 
-# diagnosis, treatment, nonadherance
+'''
+Maximum rates for diagnosis, treatment, & nonadherance.
+'''
 control_rates_max = numpy.array([1, 10, 1])
-
 
 def get_control_rates(t, state, targs, parameters):
     r'''
@@ -68,7 +72,6 @@ def get_control_rates(t, state, targs, parameters):
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
-
     current_proportions = proportions.get_proportions(state)
 
     target_values = targets.get_target_values(t, targs, parameters)

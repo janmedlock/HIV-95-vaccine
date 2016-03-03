@@ -1,7 +1,13 @@
+'''
+Make plots of the :mod:`model.simulation` solutions.
+'''
+
+import warnings
+
 import numpy
 from matplotlib import pyplot
+
 # Silence warnings from matplotlib trigged by seaborn
-import warnings
 warnings.filterwarnings(
     'ignore',
     module = 'matplotlib',
@@ -10,10 +16,10 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
-from . import simulation
-from . import proportions
-from . import targets
 from . import control_rates
+from . import proportions
+from . import simulation
+from . import targets
 
 
 def plot_solution(t, state, targs, parameters, show = True):

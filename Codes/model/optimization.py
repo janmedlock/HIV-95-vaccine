@@ -1,8 +1,13 @@
+'''
+Find optimal target values.
+'''
+
+import functools
+import operator
+
+import joblib
 import numpy
 from scipy import optimize
-import joblib
-import operator
-import functools
 
 from . import datasheet
 from . import CE_stats

@@ -1,5 +1,11 @@
-import numpy
+'''
+Get the current target values for diagnosis, treatment, and viral suppression
+from the overall target goals.
+'''
+
 import functools
+
+import numpy
 
 from . import proportions
 

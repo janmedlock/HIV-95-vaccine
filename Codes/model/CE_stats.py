@@ -1,9 +1,13 @@
+'''
+Compute cost and effectiveness statistics.
+'''
+
 import numpy
 from scipy import integrate
 
+from . import control_rates
 from . import simulation
 from . import targets
-from . import control_rates
 
 
 def relative_cost_of_effort(p, breakpoint = 0.8):
@@ -32,7 +36,6 @@ def relative_cost_of_effort(p, breakpoint = 0.8):
     (The slope is negative for :math:`b < 0.5`
     and the slope is infinite for :math:`b = 1`.)
     '''
-
     assert (0.5 <= breakpoint < 1)
     assert numpy.all((0 <= p) & (p <= 1))
     
@@ -57,7 +60,6 @@ def test_relative_cost_of_effort(b):
        >>> test_relative_cost_of_effort(0.8)
        >>> test_relative_cost_of_effort(0.9)
     '''
-
     assert numpy.isclose((relative_cost_of_effort(1, breakpoint = b)
                           - relative_cost_of_effort(b, breakpoint = b))
                          / relative_cost_of_effort(1, breakpoint = b),
