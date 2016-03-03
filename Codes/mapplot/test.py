@@ -1,6 +1,15 @@
 #!/usr/bin/python3
 
+'''
+Test :mod:`mapplot`.
+'''
+
+
 import numpy
+from matplotlib import pyplot
+
+import sys
+sys.path.append('..')
 
 import mapplot
 
@@ -24,7 +33,7 @@ def main():
            s = 40 * data[-1],
            wedgeprops = dict(linewidth = 0, zorder = 3))
     
-    mapplot.pyplot.show()
+    pyplot.show()
 
 
 if __name__ == '__main__':

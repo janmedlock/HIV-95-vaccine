@@ -1,16 +1,12 @@
-#!/usr/bin/python3
-
-import numpy
+from collections import abc
 import itertools
-import collections.abc
-import shelve
-import os
-import inspect
-from matplotlib import pyplot
-
-# Silence warnings from matplotlib trigged by seaborn and cartopy
+import os.path
 import warnings
 
+import numpy
+from matplotlib import pyplot
+
+# Silence warnings from matplotlib trigged by seaborn.
 warnings.filterwarnings(
     'ignore',
     module = 'matplotlib',
@@ -19,6 +15,7 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
+# Silence warnings from matplotlib trigged by cartopy.
 warnings.filterwarnings(
     'ignore',
     module = 'matplotlib',
@@ -26,81 +23,14 @@ warnings.filterwarnings(
                'axes property.  A removal date has not been set.'))
 import cartopy
 
+from . import locators
+
+
 # Change cartopy cache from ~/.local/share
 # to a subdirectory so it'll go in Google Drive.
 cartopy.config['data_dir'] = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     '_cartopy')
-
-
-class Locator:
-    def get_locations(self, countries):
-        'Do many calls to get_location() and stack results.'
-        coords = numpy.vstack(map(self.get_location, countries)).T
-        return coords
-    
-
-class shelved:
-    def __init__(self, func):
-        self._func = func
-
-        # Put the cache file in the same directory as the caller.
-        funcdir = os.path.dirname(inspect.getfile(self._func))
-        cachedir = os.path.join(funcdir, '_shelve')
-        if not os.path.exists(cachedir):
-            os.mkdir(cachedir)
-
-        # Name the cache file func.__name__
-        cachefile = os.path.join(cachedir,
-                                 str(self._func.__name__))
-        self.cache = shelve.open(cachefile)
-
-    def __call__(self, *args, **kwargs):
-        key = str((args, set(kwargs.items())))
-        
-        try:
-            'Try to get value from the cache.'
-            val = self.cache[key]
-        except KeyError:
-            'Get the value and store it in the cache.'
-            val = self.cache[key] = self._func(*args, **kwargs)
-        return val
-
-
-class GeocodeLocator(Locator):
-    def __init__(self, *args, **kwargs):
-        import geopy
-
-        self.geolocator = geopy.geocoders.Nominatim(*args, **kwargs)
-
-        # cache geolocator lookups to disk for speed.
-        self.get_location = shelved(self.get_location)
-
-    def get_location(self, country):
-        location = self.geolocator.geocode(dict(country = country))
-        if location is None:
-            raise ValueError('Couldn\'t find country "{}".'.format(country))
-        return location.longitude, location.latitude
-
-
-class CentroidLocator(Locator):
-    equalarea_crs = cartopy.crs.AlbersEqualArea()
-    def __init__(self, borders):
-        self.borders = borders
-
-    def get_location(self, country):
-        border = self.borders[country]
-
-        centroids = []
-        areas = []
-        for g in border.geometries():
-            centroids.append(g.centroid.xy)
-            areas.append(
-                self.equalarea_crs.project_geometry(g, border.crs).area)
-
-        centroid = numpy.average(centroids, weights = areas,
-                                 axis = 0).squeeze()
-        return centroid
 
 
 class Basemap:
@@ -115,6 +45,7 @@ class Basemap:
         extent is the map limits in longitude and latitude.
         rect is the shape of plot in (0, 1) coordinates.
         '''
+
         self.fig = fig or pyplot.gcf()
 
         proj = cartopy.crs.PlateCarree(
@@ -132,8 +63,8 @@ class Basemap:
 
         self.load_borders()
 
-        # self.locator = CentroidLocator(self.borders)
-        self.locator = GeocodeLocator()
+        # self.locator = locators.CentroidLocator(self.borders)
+        self.locator = locators.GeocodeLocator()
 
 
     def do_basemap(self,
@@ -185,6 +116,7 @@ class Basemap:
         '''
         Color whole countries depending on the values.
         '''
+
         cmap_norm = pyplot.cm.ScalarMappable(
             norm = kwargs.pop('norm', None),
             cmap = kwargs.pop('cmap', None))
@@ -229,7 +161,7 @@ class Basemap:
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         radius = numpy.sqrt(s) / numpy.pi
-        if not isinstance(radius, collections.abc.Iterable):
+        if not isinstance(radius, abc.Iterable):
             radius = itertools.repeat(radius)
         for (xyz, v, r) in zip(coords_t, numpy.asarray(values), radius):
             x, y, z = xyz
@@ -405,12 +337,12 @@ class Basemap:
                          **kwargs)
 
 
-    def star(self, values,
-             center = (0, 0),
-             scale = 1,
-             linewidth = 0.5,
-             # linestyle = (0, (1, 2)),
-             *args, **kwargs):
+    def _star(self, values,
+              center = (0, 0),
+              scale = 1,
+              linewidth = 0.5,
+              # linestyle = (0, (1, 2)),
+              *args, **kwargs):
         values = numpy.asarray(values)
 
         kwargs['linewidth'] = linewidth
@@ -453,10 +385,10 @@ class Basemap:
             self.border_crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
-            self.star(v,
-                      center = (x, y),
-                      scale = scale,
-                      *args, **kwargs)
+            self._star(v,
+                       center = (x, y),
+                       scale = scale,
+                       *args, **kwargs)
 
 
     def label(self, countries,
@@ -473,25 +405,3 @@ class Basemap:
                          verticalalignment = verticalalignment,
                          *args,
                          **kwargs)
-
-
-if __name__ == '__main__':
-    countries = ('Canada', 'United States of America', 'Mexico',
-                 'Guatemala', 'Honduras', 'El Salvador', 'Belize',
-                 'Costa Rica', 'Nicaragua', 'Panama')
-
-    data = numpy.random.uniform(size = (len(countries), 5))
-
-    m = Basemap()
-
-    m.choropleth(countries, data[:, 0], zorder = 1)
-
-    m.scatter(countries, c = data[:, 1], s = 40 * data[:, 2],
-              zorder = 2)
-
-    data_normalized = data[:, 0 : -1] / data[:, 0 : -1].sum(1)[:, numpy.newaxis]
-    m.pies(countries, data_normalized,
-           s = 40 * data[-1],
-           wedgeprops = dict(linewidth = 0, zorder = 3))
-    
-    pyplot.show()
