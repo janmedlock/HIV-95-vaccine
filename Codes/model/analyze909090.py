@@ -19,4 +19,4 @@ def analyze909090(country):
                                         ICER,
                                         parameters)
 
-    return ICER
+    return (incremental_effectiveness, incremental_cost, ICER)
