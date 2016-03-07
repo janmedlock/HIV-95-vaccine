@@ -1,5 +1,26 @@
 '''
 Compute cost and effectiveness statistics.
+
+.. doctest::
+
+   >>> from numpy import isclose
+   >>> from model.datasheet import Parameters
+   >>> from model.CE_stats import (solve_and_get_CE_stats,
+   ...                             get_incremental_CE_stats)
+   >>> country = 'Nigeria'
+   >>> parameters = Parameters(country)
+   >>> CE_stats = solve_and_get_CE_stats('909090', parameters)
+   >>> assert all(isclose(CE_stats, (955467777.4644835,
+   ...                               12706118534.633265)))
+   >>> CE_stats_base = solve_and_get_CE_stats('base', parameters)
+   >>> assert all(isclose(CE_stats_base, (953452147.986305,
+   ...                                    3652246123.4073505)))
+   >>> ICE_stats = get_incremental_CE_stats(*CE_stats,
+   ...                                      *CE_stats_base,
+   ...                                      parameters)
+   >>> assert all(isclose(ICE_stats, (2015629.4781785011,
+   ...                                9053872411.225914,
+   ...                                1.4022532713128841)))
 '''
 
 import numpy
