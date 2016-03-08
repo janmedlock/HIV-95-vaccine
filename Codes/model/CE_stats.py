@@ -241,7 +241,8 @@ def print_incremental_CE_stats(incremental_DALYs,
 
 
 def get_net_benefit(DALYs, QALYs, cost, CE_threshold, parameters):
-    effectiveness = QALYs
+    # effectiveness = QALYs
+    effectiveness = - DALYs
 
     if CE_threshold == 0:
         # Just cost.
