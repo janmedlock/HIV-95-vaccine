@@ -1,18 +1,46 @@
 '''
 Compute cost and effectiveness statistics.
 
+For disability weights :math:`\mathbf{w}`, DALYs are
+
+.. math::
+
+   D = \int_0^{t_\mathrm{end}} \mathbf{w}^{\mathrm{T}}
+   \mathbf{y}(t)\;\mathrm{d} t,
+
+and QALYs are
+
+.. math::
+
+   Q = \int_0^{t_\mathrm{end}} (\mathbf{1} - \mathbf{w})^{\mathrm{T}}
+   \mathbf{y}(t)\;\mathrm{d} t,
+
+so DALYs and QALYs are related by
+
+.. math::
+
+   Q = \int_0^{t_\mathrm{end}} \mathbf{1}^{\mathrm{T}}
+   \mathbf{y}(t)\;\mathrm{d} t - D.
+
+
 .. doctest::
 
    >>> from numpy import isclose
+   >>> from scipy.integrate import simps
    >>> from model.datasheet import Parameters
-   >>> from model.CE_stats import (solve_and_get_CE_stats,
+   >>> from model.CE_stats import (get_CE_stats,
+   ...                             solve_and_get_CE_stats,
    ...                             get_incremental_CE_stats)
+   >>> from model.simulation import solve
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
-   >>> CE_stats = solve_and_get_CE_stats('909090', parameters)
+   >>> t, state = solve('909090', parameters)
+   >>> CE_stats = get_CE_stats(t, state, '909090', parameters)
    >>> assert all(isclose(CE_stats, (10319780.049174752,
    ...                               955467777.4644835,
    ...                               12706118534.633265)))
+   >>> DALYs, QALYs, cost = CE_stats
+   >>> assert isclose(simps(state.sum(1), t) - DALYs, QALYs)
    >>> CE_stats_base = solve_and_get_CE_stats('base', parameters)
    >>> assert all(isclose(CE_stats_base, (12162172.669438632,
    ...                                    953452147.986305,
@@ -20,11 +48,11 @@ Compute cost and effectiveness statistics.
    >>> ICE_stats = get_incremental_CE_stats(*CE_stats,
    ...                                      *CE_stats_base,
    ...                                      parameters)
-   >>> assert all(isclose(ICE_stats, (1842392.6202638801,
-   ...                                2015631.942163229,
-   ...                                9053869705.7548714,
-   ...                                1.5341041609991664,
-   ...                                1.4022511381257359)))
+   >>> assert all(isclose(ICE_stats, (1842406.9221042246,
+   ...                                2015565.2220605612,
+   ...                                9053824223.9566383,
+   ...                                1.5340845459263648,
+   ...                                1.4022905116502979)))
 '''
 
 import numpy
