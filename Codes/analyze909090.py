@@ -20,7 +20,7 @@ def _main():
             joblib.delayed(model.analyze909090)(country)
             for country in model.get_country_list())
 
-    results = dict(results)
+    results = {country: v for (country, v) in results}
 
     pickle.dump(results, open('analyze909090.pkl', 'wb'))
 

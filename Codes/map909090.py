@@ -16,7 +16,7 @@ import mapplot.cmap
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
-    relative_effectiveness = ((effectiveness - effectiveness_base)
+    relative_effectiveness = ((effectiveness_base - effectiveness)
                               / effectiveness_base)
 
     fig = pyplot.figure()
@@ -101,12 +101,11 @@ def plot_ICER(countries, ICER):
 def _main():
     results = pickle.load(open('analyze909090.pkl', 'rb'))
     countries, values = zip(*results.items())
-    effectiveness, cost, effectiveness_base, cost_base, ICER \
-        = map(numpy.array, zip(*values))
+    stats, stats_base, stats_inc = map(numpy.array, zip(*values))
 
-    plot_effectiveness(countries, effectiveness, effectiveness_base)
-    plot_cost(countries, cost, cost_base)
-    plot_ICER(countries, ICER)
+    plot_effectiveness(countries, stats[:, 0], stats_base[:, 0])
+    plot_cost(countries, stats[:, -1], stats_base[:, -1])
+    plot_ICER(countries, stats_inc[:, 3])
 
     pyplot.show()
 

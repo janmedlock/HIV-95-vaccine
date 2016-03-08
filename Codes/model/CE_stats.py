@@ -119,6 +119,11 @@ def get_CE_stats(t, state, targs, parameters):
     QALYs_rate = numpy.dot(state, parameters.QALY_rates_per_person)
     QALYs = integrate.simps(QALYs_rate, t)
 
+    # A component of Sphinx chokes on the '@'.
+    # DALYs_rate = state @ parameters.DALY_rates_per_person
+    DALYs_rate = numpy.dot(state, parameters.DALY_rates_per_person)
+    DALYs = integrate.simps(DALYs_rate, t)
+
     target_values = targets.get_target_values(t, targs, parameters)
     controls = control_rates.get_control_rates(t, state, targs, parameters)
 
@@ -174,7 +179,7 @@ def get_CE_stats(t, state, targs, parameters):
 
     cost = integrate.simps(cost_rate, t)
 
-    return QALYs, cost
+    return DALYs, QALYs, cost
 
 
 def solve_and_get_CE_stats(targs, parameters):
@@ -183,17 +188,23 @@ def solve_and_get_CE_stats(targs, parameters):
     return get_CE_stats(*solution, targs, parameters)
 
 
-def get_incremental_CE_stats(effectiveness, cost,
-                             effectiveness_base, cost_base,
+def get_incremental_CE_stats(DALYs, QALYs, cost,
+                             DALYs_base, QALYs_base, cost_base,
                              parameters):
-    incremental_effectiveness = effectiveness - effectiveness_base
+    incremental_DALYs = DALYs_base - DALYs
+    incremental_QALYs = QALYs - QALYs_base
     incremental_cost = cost - cost_base
-    ICER = (incremental_cost
-            / incremental_effectiveness
-            / parameters.GDP_per_capita)
-    return (incremental_effectiveness,
+    ICER_DALYs = (incremental_cost
+                  / incremental_DALYs
+                  / parameters.GDP_per_capita)
+    ICER_QALYs = (incremental_cost
+                  / incremental_QALYs
+                  / parameters.GDP_per_capita)
+    return (incremental_DALYs,
+            incremental_QALYs,
             incremental_cost,
-            ICER)
+            ICER_DALYs,
+            ICER_QALYs)
 
 
 def solve_and_get_incremental_CE_stats(targs, parameters):
@@ -204,21 +215,30 @@ def solve_and_get_incremental_CE_stats(targs, parameters):
     return get_incremental_CE_stats(*stats, *stats_base, parameters)
 
 
-def print_incremental_CE_stats(incremental_effectiveness,
-                               incremental_cost, ICER,
+def print_incremental_CE_stats(incremental_DALYs,
+                               incremental_QALYs,
+                               incremental_cost, ICER_DALYs, ICER_QALYs,
                                parameters):
+    print('incremental effectiveness = {:g} DALYs'.format(
+        incremental_DALYs))
     print('incremental effectiveness = {:g} QALYs'.format(
-        incremental_effectiveness))
+        incremental_QALYs))
     print('incremental cost = {:g} USD'.format(incremental_cost))
     print('incremental cost = {:g} GDP per capita'.format(
         incremental_cost / parameters.GDP_per_capita))
+    print('ICER = {:g} USD per DALY'.format(
+        ICER_DALYs * parameters.GDP_per_capita))
+    print('ICER = {:g} GDP per capita per DALY'.format(
+        ICER_DALYs))
     print('ICER = {:g} USD per QALY'.format(
-        ICER * parameters.GDP_per_capita))
+        ICER_QALYs * parameters.GDP_per_capita))
     print('ICER = {:g} GDP per capita per QALY'.format(
-        ICER))
+        ICER_QALYs))
 
 
-def get_net_benefit(effectiveness, cost, CE_threshold, parameters):
+def get_net_benefit(DALYs, QALYs, cost, CE_threshold, parameters):
+    effectiveness = QALYs
+
     if CE_threshold == 0:
         # Just cost.
         net_benefit = - cost
