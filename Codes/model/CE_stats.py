@@ -145,6 +145,12 @@ class RelativeCostOfEffort:
             p + slope / 2 * (p - breakpoint) ** 2)
 
 
+'''
+If we assume that susceptible people have less risk of contracting HIV
+than people who have HIV, then this number should be > 0 (and < 1).
+'''
+susceptible_testing_discount = 0
+
 def get_CE_stats(t, state, targs, parameters):
     # A component of Sphinx chokes on the '@'.
     # QALYs_rate = state @ parameters.QALY_rates_per_person
@@ -171,7 +177,8 @@ def get_CE_stats(t, state, targs, parameters):
             * controls[..., 0]
             # and the number of Susceptible, Acute, & Undiagnosed
             # (state[[0, 1, 2]]).
-            * state[..., [0, 1, 2]].sum(-1)
+            * ((1 - susceptible_testing_discount) * state[..., 0]
+               + state[..., [1, 2]].sum(-1))
         ) + (
             # One-time cost of new treatment,
             parameters.cost_of_treatment_onetime_constant
