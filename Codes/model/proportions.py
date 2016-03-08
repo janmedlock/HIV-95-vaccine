@@ -9,7 +9,7 @@ from . import simulation
 
 
 def get_proportions(state):
-    S, A, U, D, T, V, W = simulation.split_state(state)
+    S, A, U, D, T, V, W, Z = simulation.split_state(state)
 
     proportions = numpy.ma.empty(state.shape[ : -1] + (3, ))
 

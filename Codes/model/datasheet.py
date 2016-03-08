@@ -100,6 +100,9 @@ class Parameters:
             initial_conditions['W'] += newAIDS
             initial_conditions[k]   -= newAIDS
 
+        # Add people dead from AIDS.
+        initial_conditions['Z'] = 0
+
         # Now convert to numpy object for speed.
         self.initial_conditions = initial_conditions.as_matrix()
 
@@ -160,16 +163,20 @@ class Parameters:
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
-        # Entries are states S, A, U, D, T, V, W
+        # Entries are states S, A, U, D, T, V, W, Z
         disability = numpy.array((0,            # S
                                   0.16,         # A
                                   0.038,        # U
                                   disability_D, # D
                                   disability_T, # T
                                   disability_V, # V
-                                  0.582))       # W
+                                  0.582,        # W
+                                  1))           # Z
 
         self.QALY_rates_per_person = 1 - disability
+
+        self.DALY_rates_per_person = disability
+
 
     def read_GDP_sheet(self, data):
         GDP_raw = data.parse('GDP')[self.country]
