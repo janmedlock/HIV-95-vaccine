@@ -178,9 +178,9 @@ def get_CE_stats(t, state, targs, parameters):
 
 
 def solve_and_get_CE_stats(targs, parameters):
-    t, state = simulation.solve(targs, parameters)
+    solution = simulation.solve(targs, parameters)
 
-    return get_CE_stats(t, state, targs, parameters)
+    return get_CE_stats(*solution, targs, parameters)
 
 
 def get_incremental_CE_stats(effectiveness, cost,
@@ -191,21 +191,22 @@ def get_incremental_CE_stats(effectiveness, cost,
     ICER = (incremental_cost
             / incremental_effectiveness
             / parameters.GDP_per_capita)
-    return (incremental_effectiveness, incremental_cost, ICER)
+    return (incremental_effectiveness,
+            incremental_cost,
+            ICER)
 
 
 def solve_and_get_incremental_CE_stats(targs, parameters):
-    effectiveness, cost = solve_and_get_CE_stats(targs, parameters)
+    stats = solve_and_get_CE_stats(targs, parameters)
 
-    effectiveness_base, cost_base = solve_and_get_CE_stats('base', parameters)
+    stats_base = solve_and_get_CE_stats('base', parameters)
 
-    return get_incremental_CE_stats(effectiveness, cost,
-                                    effectiveness_base, cost_base,
-                                    parameters)
+    return get_incremental_CE_stats(*stats, *stats_base, parameters)
 
 
-def print_incremental_CE_stats(incremental_effectiveness, incremental_cost,
-                               ICER, parameters):
+def print_incremental_CE_stats(incremental_effectiveness,
+                               incremental_cost, ICER,
+                               parameters):
     print('incremental effectiveness = {:g} QALYs'.format(
         incremental_effectiveness))
     print('incremental cost = {:g} USD'.format(incremental_cost))
@@ -232,5 +233,5 @@ def get_net_benefit(effectiveness, cost, CE_threshold, parameters):
 
 
 def solve_and_get_net_benefit(targs, CE_threshold, parameters):
-     effectiveness, cost = solve_and_get_CE_stats(targs, parameters)
-     return get_net_benefit(effectiveness, cost, CE_threshold, parameters)
+    stats = solve_and_get_CE_stats(targs, parameters)
+    return get_net_benefit(*stats, CE_threshold, parameters)

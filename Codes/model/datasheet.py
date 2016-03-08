@@ -142,37 +142,34 @@ class Parameters:
                                              + (self.death_rate_AIDS
                                                 * cost_AIDS_death))
 
-        # Annual DALYs, assuming 1 year in symptomatic phase.
+        # Disability weights, assuming 1 year in symptomatic phase.
         years_in_symptomatic = 1
-        DALY_rate_D = (
+        disability_D = (
             ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
              * 0.038)
             + (years_in_symptomatic * self.progression_rate_unsuppressed
                * 0.274))
-        DALY_rate_T = (
+        disability_T = (
             ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
              * 0.078)
             + (years_in_symptomatic * self.progression_rate_unsuppressed
                * 0.314))
-        DALY_rate_V = (
+        disability_V = (
             ((1 - years_in_symptomatic * self.progression_rate_suppressed)
              * 0.039)
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
         # Entries are states S, A, U, D, T, V, W
-        self.DALY_rates_per_person = numpy.array(
-            (0,           # S
-             0.16,        # A
-             0.038,       # U
-             DALY_rate_D, # D
-             DALY_rate_T, # T
-             DALY_rate_V, # V
-             0.582))      # W
+        disability = numpy.array((0,            # S
+                                  0.16,         # A
+                                  0.038,        # U
+                                  disability_D, # D
+                                  disability_T, # T
+                                  disability_V, # V
+                                  0.582))       # W
 
-        # Entries are states S, A, U, D, T, V, W
-        self.QALY_rates_per_person = 1 - self.DALY_rates_per_person
-
+        self.QALY_rates_per_person = 1 - disability
 
     def read_GDP_sheet(self, data):
         GDP_raw = data.parse('GDP')[self.country]

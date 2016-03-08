@@ -1,10 +1,6 @@
 test scripts
 ============
 
-costs
------
-.. automodule:: tests.costs
-
 datasheet
 ---------
 .. automodule:: tests.datasheet

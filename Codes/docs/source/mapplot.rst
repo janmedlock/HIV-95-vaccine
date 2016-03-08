@@ -6,6 +6,10 @@ mapplot.basemap
 ---------------
 .. automodule:: mapplot.basemap
 
+mapplot.cmap
+------------
+.. automodule:: mapplot.cmap
+
 mapplot.locators
 ----------------
 .. automodule:: mapplot.locators

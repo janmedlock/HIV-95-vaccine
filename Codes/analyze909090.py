@@ -8,14 +8,19 @@ See :func:`model.analyze909090.analyze909090`.
 
 import pickle
 
+import joblib
+
 import model
 
 
 def _main():
     results = {}
-    for country in model.get_country_list():
-        results[country] = model.analyze909090(country)
-        print()
+    with joblib.Parallel(n_jobs = -1) as parallel:
+        results = parallel(
+            joblib.delayed(model.analyze909090)(country)
+            for country in model.get_country_list())
+
+    results = dict(results)
 
     pickle.dump(results, open('analyze909090.pkl', 'wb'))
 
