@@ -148,6 +148,7 @@ class RelativeCostOfEffort:
 '''
 If we assume that susceptible people have less risk of contracting HIV
 than people who have HIV, then this number should be > 0 (and < 1).
+That is, susceptibles should be less likely to be tested than Undiagnosed.
 '''
 susceptible_testing_discount = 0
 
