@@ -10,17 +10,21 @@ Compute cost and effectiveness statistics.
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
    >>> CE_stats = solve_and_get_CE_stats('909090', parameters)
-   >>> assert all(isclose(CE_stats, (955467777.4644835,
+   >>> assert all(isclose(CE_stats, (10319780.049174752,
+   ...                               955467777.4644835,
    ...                               12706118534.633265)))
    >>> CE_stats_base = solve_and_get_CE_stats('base', parameters)
-   >>> assert all(isclose(CE_stats_base, (953452147.986305,
+   >>> assert all(isclose(CE_stats_base, (12162172.669438632,
+   ...                                    953452147.986305,
    ...                                    3652246123.4073505)))
    >>> ICE_stats = get_incremental_CE_stats(*CE_stats,
    ...                                      *CE_stats_base,
    ...                                      parameters)
-   >>> assert all(isclose(ICE_stats, (2015629.4781785011,
-   ...                                9053872411.225914,
-   ...                                1.4022532713128841)))
+   >>> assert all(isclose(ICE_stats, (1842392.6202638801,
+   ...                                2015631.942163229,
+   ...                                9053869705.7548714,
+   ...                                1.5341041609991664,
+   ...                                1.4022511381257359)))
 '''
 
 import numpy
