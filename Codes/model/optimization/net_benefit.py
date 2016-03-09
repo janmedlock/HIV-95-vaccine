@@ -127,15 +127,9 @@ def maximize(country, CE_threshold,
 
     net_benefit = - best.fun * scale
 
-    incremental_effectiveness, incremental_cost, ICER \
-        = cost_effectiveness.solve_and_get_incremental_CE_stats(targs,
-                                                                parameters)
+    net_benefit_base = cost_effectiveness.solve_and_get_net_benefit(
+        'base', CE_threshold, parameters)
 
-    incremental_net_benefit = cost_effectiveness.get_net_benefit(
-        incremental_effectiveness,
-        incremental_cost,
-        CE_threshold,
-        parameters)
+    incremental_net_benefit = net_benefit - net_benefit_base
 
-    return (targs, incremental_effectiveness, incremental_cost,
-            incremental_net_benefit)
+    return (targs, incremental_net_benefit)

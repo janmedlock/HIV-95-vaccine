@@ -10,7 +10,7 @@ from . import targets
 
 def ramp(x, tol = 0.0001):
     r'''
-    Piecewise linear:
+    Piecewise linear
 
     .. math::
        f(x) =
@@ -19,8 +19,10 @@ def ramp(x, tol = 0.0001):
        \\
        \frac{x}{\epsilon} & \text{if $0 \leq x \leq \epsilon$},
        \\
-       1 & \text{if $x \geq \epsilon$}.
+       1 & \text{if $x \geq \epsilon$},
        \end{cases}
+
+    where :math:`\epsilon` is `tol`.
     '''
     return numpy.clip(x / tol, 0, 1)
 
@@ -68,6 +70,8 @@ def get_control_rates(t, state, targs, parameters):
        \\
        R_{\text{nonadherance}} & \text{otherwise}.
        \end{cases}
+
+    The :math:`R`'s are :const:`control_rates_max`.
 
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.

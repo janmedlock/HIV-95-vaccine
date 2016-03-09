@@ -1,7 +1,9 @@
 '''
 Compute effectiveness.
 
-For disability weights :math:`\mathbf{w}`, DALYs are
+For disability weights :math:`\mathbf{w}`
+and state variables :math:`\mathbf{y}(t)`,
+DALYs are
 
 .. math::
 

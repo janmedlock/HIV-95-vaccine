@@ -35,6 +35,7 @@ class RelativeCostOfEffort:
        1 + m (p - b) & \text{if $p \geq b$},
        \end{cases}
 
+    where :math:`b` is `breakpoint`,
     and the total cost is
 
     .. math::

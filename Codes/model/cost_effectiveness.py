@@ -89,9 +89,21 @@ def print_cost_effectiveness_stats(incremental_DALYs, incremental_QALYs,
 
 
 def get_net_benefit(DALYs, QALYs, cost_, cost_effectiveness_threshold,
-                    parameters):
-    # effectiveness_ = QALYs
-    effectiveness_ = - DALYs
+                    parameters, effectiveness_ = 'DALYs'):
+    r'''Net benefit is
+
+    .. math::
+    
+       N = E - \frac{C}{T G},
+
+    where :math:`E` is `effectiveness`, :math:`C` is `cost`, :math:`T`
+    is `cost_effectiveness_threshold`, and :math:`G` is
+    :attr:`model.datasheet.Parameters.GDP_per_capita`.
+    '''
+    if effectiveness_ == 'DALYs':
+        effectiveness_ = - DALYs
+    elif effectiveness_ == 'QALYs':
+        effectiveness_ = QALYs
 
     if cost_effectiveness_threshold == 0:
         # Just cost.

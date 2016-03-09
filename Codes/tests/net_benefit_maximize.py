@@ -16,24 +16,23 @@ def _main():
     # 0 is just cost.
     # inf is just QALYs.
     # Other values are multiples of per-capita GDP.
-    CE_threshold = 1
+    cost_effectiveness_threshold = 1
 
     (targs,
-     incremental_effectiveness,
-     incremental_cost,
      incremental_net_benefit) = model.optimization.net_benefit.maximize(
          country,
-         CE_threshold,
+         cost_effectiveness_threshold,
          method = 'cobyla',
          debug = True)
 
     print('target values = {}'.format(targs))
 
-    print('incremental effectiveness = {:g} QALYs gained'.format(
-        incremental_effectiveness))
-    print('incremental cost = {:g} USD'.format(incremental_cost))
     print('incremental net benefit = {:g} QALYs'.format(
         incremental_net_benefit))
+
+    CE_stats = model.solve_and_get_cost_effectiveness_stats(targs, parameters)
+
+    model.print_cost_effectiveness_stats(*(CE_stats + (parameters, )))
 
 
 if __name__ == '__main__':

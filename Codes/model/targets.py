@@ -13,10 +13,11 @@ from . import proportions
 def get_target_values(t, targs, parameters,
                       time_to_full_implementation = 5):
     '''
-    From the initial value initial_proportion,
-    the target_values go linearly from initial_proportions to targs
-    in time_to_full_implementation years, then stays constant at
-    targs after that.
+    From the initial proportions read from
+    :attr:`model.datasheet.Parameters.initial_conditions`,
+    the target values go linearly from the initial proportions to `targs`
+    in `time_to_full_implementation` years, then stay constant at
+    `targs` after that.
     '''
     initial_proportions = proportions.get_proportions(
         parameters.initial_conditions)
