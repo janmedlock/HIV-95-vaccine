@@ -197,13 +197,20 @@ class Parameters:
         return retval
 
 
-def get_country_list():
+def get_country_list(sheet = 'Parameters'):
     with pandas.ExcelFile(datapath) as data:
         # Skip header column
-        costs = data.parse('Costs').iloc[0 : 6, 1 : ]
+        if sheet == 'Costs':
+            data = data.parse('Costs').iloc[ : 6, 1 : ]
+        elif sheet == 'Parameters':
+            data = data.parse('Parameters').iloc[ : 12, 1 : ]
+        elif sheet == 'Initial Conditions':
+            data = data.parse('Initial Conditions').iloc[ : 6, 1 : ]
+        elif sheet == 'GDP':
+            data = data.parse('GDP').iloc[ : 2, 1 : ]
 
-    ix = costs.notnull().all(0)
-    countries = list(costs.columns[ix])
+    ix = data.notnull().all(0)
+    countries = list(data.columns[ix])
     return countries
 
 
