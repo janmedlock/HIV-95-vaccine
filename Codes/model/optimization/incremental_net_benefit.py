@@ -1,5 +1,5 @@
 '''
-Find optimal target values.
+Find target values that maximize the incremental net benefit.
 '''
 
 import functools

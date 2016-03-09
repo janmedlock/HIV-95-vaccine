@@ -9,9 +9,9 @@ logmodel
 --------
 .. automodule:: tests.logmodel
 
-optimization
-------------
-.. automodule:: tests.optimization
+incremental_net_benefit_maximize
+--------------------------------
+.. automodule:: tests.incremental_net_benefit_maximize
 
 simulation
 ----------

@@ -22,6 +22,14 @@ model.optimization
 ------------------
 .. automodule:: model.optimization
 
+model.optimization.effectiveness
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: model.optimization.effectiveness
+
+model.optimization.incremental_net_benefit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: model.optimization.incremental_net_benefit
+
 model.plot_solution
 -------------------
 .. automodule:: model.plot_solution
