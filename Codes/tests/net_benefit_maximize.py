@@ -30,6 +30,8 @@ def _main():
     print('incremental net benefit = {:g} QALYs'.format(
         incremental_net_benefit))
 
+    parameters = model.Parameters('Nigeria')
+
     CE_stats = model.solve_and_get_cost_effectiveness_stats(targs, parameters)
 
     model.print_cost_effectiveness_stats(*(CE_stats + (parameters, )))
