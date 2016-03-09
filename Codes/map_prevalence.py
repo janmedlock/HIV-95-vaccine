@@ -21,7 +21,6 @@ def _main():
     nHIV = data.iloc[:, 1 : ].sum(1)
     pHIV = nHIV / data.sum(1)
 
-
     m = mapplot.Basemap()
 
     m.choropleth(countries, 100 * pHIV,
@@ -29,10 +28,18 @@ def _main():
                                         vmax = 100 * max(pHIV)),
                  cmap = 'Purples')
 
-    cbar = pyplot.colorbar(orientation = 'horizontal',
+    cbar = pyplot.colorbar(format = '%g%%',
+                           orientation = 'horizontal',
+                           fraction = 0.2,
+                           pad = 0,
                            shrink = 0.8,
-                           format = '%g%%')
-    cbar.set_label('Prevalence')
+                           panchor = False)
+    cbar.set_label('Initial Prevalence')
+
+    w, h = m.fig.get_size_inches()
+    extent = m.ax.get_extent()
+    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
+    m.fig.set_size_inches(w, w * aspect, forward = True)
 
     mapplot.pyplot.show()
 

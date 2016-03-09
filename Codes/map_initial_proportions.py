@@ -3,6 +3,8 @@
 Map the initial proportions diagnosed, treated, and viral suppressed.
 '''
 
+from matplotlib import patches
+from matplotlib import pyplot
 import pandas
 
 import model
@@ -47,39 +49,49 @@ def _main():
     cp = mapplot.seaborn.color_palette('Set1')
     colors = (cp[0], cp[1], cp[4], cp[2])
 
-
+    pyplot.clf()
     m = mapplot.Basemap()
 
-    # Two rows & two columns of choropleths to show
-    # 4 different values for each country.
-    # nrows = 2
-    # ncols = 2
-    # mapplot.pyplot.clf()
-    # for i in range(p.shape[-1]):
-    #     height = 1 / nrows
-    #     width = 1 / ncols
-    #     left = (i % ncols) * width
-    #     bottom = (1 - i // nrows) * height
-    #     m = mapplot.Basemap(rect = (left, bottom, height, width))
-    #     m.choropleth(countries, p.iloc[:, i],
-    #                  vmin = 0, vmax = 1)
-
-    # m.pies(countries, p, s = 35, colors = colors)
-
-    # m.stars(countries, p_overlapping, scale = 5, color = 'green')
-
-    # m.bars(countries, p_overlapping,
-    #        widthscale = 1.5, heightscale = 4.5, color = colors)
     m.barhs(countries, p_overlapping,
             widthscale = 4.5, heightscale = 1.5, color = colors)
-    # m.barhls(countries, p_overlapping,
-    #          widthscale = 4.5, heightscale = 1.5, color = colors)
 
-    # m.pyramids(countries, p_overlapping,
-    #            widthscale = 6, heightscale = 1.5, color = colors)
+    # Legend
+    X, Y = (-155, -30)
+    m.rectangle_coords(X - 5.5, Y - 7, 78, 17.5,
+                       facecolor = 'white', linewidth = 0.1)
+    # xy = m.ax.projection.transform_point(X - 5.5, Y - 7, m.border_crs)
+    # m.ax.add_patch(patches.Rectangle(xy, 78, 17.5, facecolor = 'white',
+    #                                  linewidth = 0.1))
 
+    m.barh_coords(X, Y, [1, 0.9, 0.9 ** 2, 0.9 ** 3],
+                  widthscale = 2 * 4.5, heightscale = 2 * 1.5,
+                  color = colors)
 
-    mapplot.pyplot.show()
+    m.text_coords(X - 4.5, Y + 8, 'Treatment Cascade',
+                  fontdict = dict(size = 5, weight = 'bold'),
+                  verticalalignment = 'center',
+                  horizontalalignment = 'left')
+
+    labels = ('Proportion Living with HIV (all countries scaled to length 1)',
+              'Proportion Diagnosed',
+              'Proportion Treated',
+              'Proportion with Viral Suppression')
+    size = 4
+    X_ = X + 6.5
+    Y_ = Y - 4.5
+    dY_ = 3
+    for (l, c) in zip(labels, colors):
+        m.text_coords(X_, Y_, l,
+                      fontdict = dict(color = c, size = 4),
+                      verticalalignment = 'center',
+                      horizontalalignment = 'left')
+        Y_ += dY_
+
+    m.tighten()
+
+    m.fig.savefig('initial_proportions.pdf')
+
+    pyplot.show()
 
 
 if __name__ == '__main__':

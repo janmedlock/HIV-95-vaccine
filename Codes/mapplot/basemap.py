@@ -4,6 +4,7 @@ import os.path
 import warnings
 
 import numpy
+from matplotlib import patches
 from matplotlib import pyplot
 
 # Silence warnings from matplotlib trigged by seaborn.
@@ -52,6 +53,7 @@ class Basemap:
             central_longitude = central_longitude)
 
         self.ax = self.fig.add_axes(rect, projection = proj,
+                                    anchor = 'N',
                                     axis_bgcolor = 'none')
 
         self.ax.set_extent(extent, proj)
@@ -65,7 +67,6 @@ class Basemap:
 
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
-
 
     def _do_basemap(self,
                     zorder = 0,
@@ -83,7 +84,6 @@ class Basemap:
         # self.ax.add_feature(cartopy.feature.LAKES, alpha=0.5, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.RIVERS, zorder = zorder)
 
-
     def _load_borders(self):
         border_feature = cartopy.io.shapereader.natural_earth(
             resolution = '110m',
@@ -100,23 +100,23 @@ class Basemap:
             self.borders[country] = cartopy.feature.ShapelyFeature(
                 record.geometry, self.border_crs)
 
-
     def _get_colors(self, c):
         if isinstance(c, str):
             return seaborn.color_palette(c)
         else:
             return c
 
-    def set_fig_size_for_ax_aspect_ratio(self):
-        # Adjust aspect ratio of the figure to match the map.
+    def tighten(self):
+        '''
+        Adjust aspect ratio of the figure to match the map.
+        '''
         # self.fig.canvas.draw()
         self.ax.autoscale_view()
-        axw, axh = self.ax.get_position().size
-        fw, fh = self.fig.get_size_inches()
-        axaspect = axw * fw / axh / fh
-        fw_ = fh * axaspect
-        self.fig.set_size_inches(fw_, fh, forward = True)
 
+        w, h = self.fig.get_size_inches()
+        extent = self.ax.get_extent()
+        aspect = (extent[3] - extent[2]) / (extent[1] - extent[0])
+        self.fig.set_size_inches(w, w * aspect, forward = True)
 
     def choropleth(self, countries, values, *args, **kwargs):
         '''
@@ -148,14 +148,12 @@ class Basemap:
 
         return cmap_norm
 
-
     def scatter(self, countries, *args, **kwargs):
         x, y = self.locator.get_locations(countries)
         self.ax.scatter(x, y,
                         transform = self.border_crs,
                         *args,
                         **kwargs)
-
 
     def pies(self, countries, values, s = 20,
              wedgeprops = dict(linewidth = 0),
@@ -227,7 +225,6 @@ class Basemap:
                              *args,
                              **kwargs)
 
-
     def barhs(self, countries, values,
               color = 'bright',
               widthscale = 1,
@@ -270,6 +267,31 @@ class Basemap:
                              *args,
                              **kwargs)
 
+    def barh_coords(self, X, Y, values,
+                    color = 'bright',
+                    widthscale = 1,
+                    heightscale = 1,
+                    linewidth = 0,
+                    frame = False,
+                    *args, **kwargs):
+        values = numpy.asarray(values)
+
+        x, y = self.ax.projection.transform_point(
+            X, Y, self.border_crs)
+
+        height = heightscale
+        widths = values * widthscale
+        # Center on y
+        N = len(values)
+        bottoms = y + height * (numpy.arange(N) - N / 2)
+        # Center on x
+        left = x - max(widths) / 2
+
+        self.ax.barh(bottoms, widths, height, left,
+                     color = self._get_colors(color),
+                     linewidth = linewidth,
+                     *args,
+                     **kwargs)
 
     def barhls(self, countries, values,
                color = 'bright',
@@ -313,7 +335,6 @@ class Basemap:
                              *args,
                              **kwargs)
 
-
     def pyramids(self, countries, values,
              color = 'bright',
              widthscale = 1,
@@ -341,7 +362,6 @@ class Basemap:
                          linewidth = linewidth,
                          *args,
                          **kwargs)
-
 
     def _star(self, values,
               center = (0, 0),
@@ -380,7 +400,6 @@ class Basemap:
                          # linestyle = ':',
                          *args, **kwargs)
 
-
     def stars(self, countries, values,
               scale = 1,
               *args, **kwargs):
@@ -396,18 +415,33 @@ class Basemap:
                        scale = scale,
                        *args, **kwargs)
 
-
     def label(self, countries,
               horizontalalignment = 'center',
               verticalalignment = 'center',
+              replace = dict(),
               *args, **kwargs):
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         for (xyz, country) in zip(coords_t, countries):
             x, y, z = xyz
-            self.ax.text(x, y, country,
+            if country in replace:
+                label = replace[country]
+            else:
+                label = country
+            self.ax.text(x, y, label,
                          horizontalalignment = horizontalalignment,
                          verticalalignment = verticalalignment,
                          *args,
                          **kwargs)
+
+    def text_coords(self, X, Y, s,
+                   *args, **kwargs):
+        x, y = self.ax.projection.transform_point(
+            X, Y, self.border_crs)
+        self.ax.text(x, y, s, *args, **kwargs)
+
+    def rectangle_coords(self, X, Y, w, h, *args, **kwargs):
+        xy = self.ax.projection.transform_point(
+            X, Y, self.border_crs)
+        self.ax.add_patch(patches.Rectangle(xy, w, h, *args, **kwargs))

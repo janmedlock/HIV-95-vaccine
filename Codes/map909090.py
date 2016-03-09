@@ -35,17 +35,31 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
     fig = pyplot.figure()
     m = mapplot.Basemap()
     a = min(min(relative_effectiveness), 0)
+    b = max(max(relative_effectiveness), 0.225)
     m.choropleth(countries, 100 * relative_effectiveness,
                  vmin = 100 * a,
+                 vmax = 100 * b,
                  cmap = 'Oranges')
-    cbar = pyplot.colorbar(orientation = 'horizontal',
+    cbar = pyplot.colorbar(format = '%g%%',
+                           orientation = 'horizontal',
+                           fraction = 0.2,
+                           pad = 0,
                            shrink = 0.8,
-                           format = '%g%%')
-    cbar.set_label('Effectiveness (DALYs averted), Relative to Baseline')
+                           panchor = False)
+    cbar.set_label('Effectiveness (Proportion of DALYs Averted Below Baseline)')
 
-    m.label(countries, fontdict = dict(size = 8,
-                                       color = 'black',
-                                       weight = 'bold'))
+    w, h = fig.get_size_inches()
+    extent = m.ax.get_extent()
+    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
+    fig.set_size_inches(w, w * aspect, forward = True)
+
+    m.label(countries,
+            replace = {'Democratic Republic of the Congo': 'DR Congo'},
+            fontdict = dict(size = 3,
+                            color = 'black',
+                            weight = 'bold'))
+
+    fig.savefig('909090effectiveness.pdf')
 
     return m
 
@@ -59,8 +73,8 @@ def plot_cost(countries, cost, cost_base):
 
     relative_cost = (cost - cost_base) / cost_base
 
-    a = min(min(relative_cost), 0)
-    b = max(max(relative_cost), 0)
+    a = min(min(relative_cost), -0.5)
+    b = max(max(relative_cost), 4)
 
     clist = []
     if a < 0:
@@ -73,15 +87,29 @@ def plot_cost(countries, cost, cost_base):
     m = mapplot.Basemap()
     m.choropleth(countries, 100 * relative_cost,
                  vmin = 100 * a,
+                 vmax = 100 * b,
                  cmap = cmap)
-    cbar = pyplot.colorbar(orientation = 'horizontal',
+    cbar = pyplot.colorbar(format = '%g%%',
+                           orientation = 'horizontal',
+                           fraction = 0.2,
+                           pad = 0,
                            shrink = 0.8,
-                           format = '%g%%')
-    cbar.set_label('Increased Cost, Relative to Baseline')
+                           panchor = False)
+    cbar.set_label('Cost (Proportion Added Above Baseline)')
 
-    m.label(countries, fontdict = dict(size = 8,
-                                       color = 'black',
-                                       weight = 'bold'))
+    w, h = fig.get_size_inches()
+    extent = m.ax.get_extent()
+    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
+    fig.set_size_inches(w, w * aspect, forward = True)
+
+    m.label(countries,
+            replace = {'Democratic Republic of the Congo': 'DR Congo'},
+            fontdict = dict(size = 3,
+                            color = 'black',
+                            weight = 'bold'))
+
+    fig.savefig('909090cost.pdf')
+
     return m
 
 
@@ -100,8 +128,9 @@ def plot_ICER(countries, ICER):
     # from 3 to max, colors[6] -> colors[7].
     # Make sure the min is at most 0.
     # Make sure the max is at least 3.
-    a = min(min(ICER), 0)
-    b = max(max(ICER), 3)
+    a = min(numpy.floor(min(ICER)), 0)
+    # b = max(max(ICER), 3)
+    b = min(max(max(ICER), 3), 10)
     # Map [a, b] to [0, 1]
     def f(x):
         return (x - a) / (b - a)
@@ -121,20 +150,64 @@ def plot_ICER(countries, ICER):
                  vmin = a, vmax = b,
                  cmap = cmap)
     cbar = pyplot.colorbar(orientation = 'horizontal',
-                           shrink = 0.8)
+                           fraction = 0.2,
+                           pad = 0,
+                           shrink = 0.8,
+                           panchor = False)
     cbar.set_label('ICER (GDP per capita per DALY averted)')
+
     cticks = [0, 1, 3]
-    cmin = numpy.ceil(numpy.min(ICER))
-    cmax = numpy.floor(numpy.max(ICER))
+    cticklabels = list(map(str, cticks))
+    cmin = numpy.ceil(a)
+    cmax = numpy.floor(b)
     if cmin < 0:
         cticks.insert(0, cmin)
+        cticklabels.insert(0, '{:g}'.format(cmin))
     if cmax > 3:
         cticks.append(cmax)
+        # cticklabels.append(str(cmax))
+        cticklabels.append('{:g}+'.format(cmax))
     cbar.set_ticks(cticks)
+    cbar.set_ticklabels(cticklabels)
 
-    m.label(countries, fontdict = dict(size = 8,
-                                       color = 'black',
-                                       weight = 'bold'))
+    w, h = fig.get_size_inches()
+    extent = m.ax.get_extent()
+    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
+    fig.set_size_inches(w, w * aspect, forward = True)
+
+    y = 0.22
+    size = 5
+    kwds = dict(verticalalignment = 'center',
+                horizontalalignment = 'left')
+    fig.text(0.11, y, 'Cost Saving',
+             fontdict = dict(size = size,
+                             color = colors[0],
+                             weight = 'bold'),
+             **kwds)
+    fig.text(0.17, y, 'Very Cost Effective',
+             fontdict = dict(size = size,
+                             color = colors[3],
+                             weight = 'bold'),
+             **kwds)
+    fig.text(0.29, y, 'Cost Effective',
+             fontdict = dict(size = size,
+                             color = colors[5],
+                             weight = 'bold'),
+             **kwds)
+    fig.text(0.58, y, 'Not Cost Effective',
+             fontdict = dict(size = size,
+                             color = colors[7],
+                             weight = 'bold'),
+             **kwds)
+
+    m.label(countries,
+            replace = {'Democratic Republic of the Congo': 'DR Congo'},
+            fontdict = dict(size = 3,
+                            color = 'black',
+                            weight = 'bold'))
+
+    fig.savefig('909090ICER.pdf')
+
     return m
 
 
