@@ -6,6 +6,7 @@ import warnings
 
 import numpy
 from matplotlib import pyplot
+from matplotlib import ticker
 
 # Silence warnings from matplotlib trigged by seaborn
 warnings.filterwarnings(
@@ -67,6 +68,13 @@ def plot_solution(t, state, targs, parameters, show = True):
     ax2.plot(t, treated, label = 'treated')
     ax2.plot(t, suppressed, label = 'suppressed')
     ax2.legend(loc = 'upper right')
+
+    (fig3, ax3) = pyplot.subplots()
+
+    ax3.plot(t, 100 * PLHI / N, label = 'Prevalence')
+    ax3.set_xlabel('time (years)')
+    ax3.set_ylabel('Prevalence')
+    ax3.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))
 
     if show:
         pyplot.show()

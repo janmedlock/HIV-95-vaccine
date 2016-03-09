@@ -18,7 +18,7 @@ def _main():
 
     parameters = model.Parameters(country)
 
-    solution = model.solve('909090', parameters)
+    solution = model.solve('909090', parameters, t_end = 10)
 
     stats = model.get_CE_stats(*solution, '909090', parameters)
 

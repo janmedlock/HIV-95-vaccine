@@ -9,11 +9,6 @@ from . import control_rates
 from . import proportions
 
 
-'''
-End time.
-'''
-t_end = 10
-
 def _ODEs(state, t, targs, parameters):
     # S is susceptible.
     # A is acute infection.
@@ -146,7 +141,7 @@ def _ODEs_log(state_log, t, targs, parameters):
     return (dS_log, dA_log, dU_log, dD_log, dT_log, dV_log, dW_log, dZ_log)
 
 
-def solve(targs, parameters, use_log = True):
+def solve(targs, parameters, t_end = 10, use_log = True):
     t = numpy.linspace(0, t_end, 1001)
 
     if use_log:

@@ -9,8 +9,8 @@ import joblib
 import numpy
 from scipy import optimize
 
-from . import datasheet
-from . import CE_stats
+from .. import datasheet
+from .. import CE_stats
 
 
 def _objective_function(targs, CE_threshold, parameters, scale = 1):
@@ -42,9 +42,9 @@ def _do_minimize(*args, **kwds):
     return res
     
 
-def maximize_incremental_net_benefit(country, CE_threshold,
-                                     method = 'l-bfgs-b', nruns = 8,
-                                     debug = False):
+def maximize(country, CE_threshold,
+             method = 'l-bfgs-b', nruns = 8,
+             debug = False):
     '''
     Find the targets that maximize the net benefit in the country.
     
