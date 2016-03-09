@@ -5,10 +5,18 @@ Map the 90-90-90 results.
 '''
 
 import pickle
+import warnings
 
-import numpy
 from matplotlib import cm
 from matplotlib import pyplot
+import numpy
+# Silence warnings from matplotlib trigged by seaborn.
+warnings.filterwarnings(
+    'ignore',
+    module = 'matplotlib',
+    message = ('axes.color_cycle is deprecated '
+               'and replaced with axes.prop_cycle; '
+               'please use the latter.'))
 import seaborn
 
 import mapplot
@@ -29,6 +37,12 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
                            shrink = 0.8,
                            format = '%g%%')
     cbar.set_label('Effectiveness (DALYs averted), Relative to Baseline')
+
+    m.label(countries, fontdict = dict(size = 8,
+                                       color = 'black',
+                                       weight = 'bold'))
+
+    return m
 
 
 def plot_cost(countries, cost, cost_base):
@@ -53,6 +67,11 @@ def plot_cost(countries, cost, cost_base):
                            shrink = 0.8,
                            format = '%g%%')
     cbar.set_label('Increased Cost, Relative to Baseline')
+
+    m.label(countries, fontdict = dict(size = 8,
+                                       color = 'black',
+                                       weight = 'bold'))
+    return m
 
 
 def plot_ICER(countries, ICER):
@@ -96,6 +115,11 @@ def plot_ICER(countries, ICER):
     if cmax > 3:
         cticks.append(cmax)
     cbar.set_ticks(cticks)
+
+    m.label(countries, fontdict = dict(size = 8,
+                                       color = 'black',
+                                       weight = 'bold'))
+    return m
 
 
 def _main():
