@@ -76,7 +76,6 @@ def _main():
               'Proportion Diagnosed',
               'Proportion Treated',
               'Proportion with Viral Suppression')
-    size = 4
     X_ = X + 6.5
     Y_ = Y - 4.5
     dY_ = 3

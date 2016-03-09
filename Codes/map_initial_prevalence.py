@@ -41,6 +41,8 @@ def _main():
     aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
     m.fig.set_size_inches(w, w * aspect, forward = True)
 
+    m.fig.savefig('initial_prevalence.pdf')
+
     mapplot.pyplot.show()
 
     return m

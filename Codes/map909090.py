@@ -48,10 +48,10 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
                            panchor = False)
     cbar.set_label('Effectiveness (Proportion of DALYs Averted Below Baseline)')
 
-    w, h = fig.get_size_inches()
+    w, h = m.fig.get_size_inches()
     extent = m.ax.get_extent()
     aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    fig.set_size_inches(w, w * aspect, forward = True)
+    m.fig.set_size_inches(w, w * aspect, forward = True)
 
     m.label(countries,
             replace = {'Democratic Republic of the Congo': 'DR Congo'},
@@ -59,7 +59,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
                             color = 'black',
                             weight = 'bold'))
 
-    fig.savefig('909090effectiveness.pdf')
+    m.fig.savefig('909090effectiveness.pdf')
 
     return m
 
@@ -97,10 +97,10 @@ def plot_cost(countries, cost, cost_base):
                            panchor = False)
     cbar.set_label('Cost (Proportion Added Above Baseline)')
 
-    w, h = fig.get_size_inches()
+    w, h = m.fig.get_size_inches()
     extent = m.ax.get_extent()
     aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    fig.set_size_inches(w, w * aspect, forward = True)
+    m.fig.set_size_inches(w, w * aspect, forward = True)
 
     m.label(countries,
             replace = {'Democratic Republic of the Congo': 'DR Congo'},
@@ -108,7 +108,7 @@ def plot_cost(countries, cost, cost_base):
                             color = 'black',
                             weight = 'bold'))
 
-    fig.savefig('909090cost.pdf')
+    m.fig.savefig('909090cost.pdf')
 
     return m
 
@@ -170,35 +170,25 @@ def plot_ICER(countries, ICER):
     cbar.set_ticks(cticks)
     cbar.set_ticklabels(cticklabels)
 
-    w, h = fig.get_size_inches()
+    w, h = m.fig.get_size_inches()
     extent = m.ax.get_extent()
     aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    fig.set_size_inches(w, w * aspect, forward = True)
+    m.fig.set_size_inches(w, w * aspect, forward = True)
 
+    labels = ('Cost Saving',
+              'Very Cost Effective',
+              'Cost Effective',
+              'Not Cost Effective')
+    X = (0.11, 0.17, 0.29, 0.58)
     y = 0.22
-    size = 5
-    kwds = dict(verticalalignment = 'center',
-                horizontalalignment = 'left')
-    fig.text(0.11, y, 'Cost Saving',
-             fontdict = dict(size = size,
-                             color = colors[0],
-                             weight = 'bold'),
-             **kwds)
-    fig.text(0.17, y, 'Very Cost Effective',
-             fontdict = dict(size = size,
-                             color = colors[3],
-                             weight = 'bold'),
-             **kwds)
-    fig.text(0.29, y, 'Cost Effective',
-             fontdict = dict(size = size,
-                             color = colors[5],
-                             weight = 'bold'),
-             **kwds)
-    fig.text(0.58, y, 'Not Cost Effective',
-             fontdict = dict(size = size,
-                             color = colors[7],
-                             weight = 'bold'),
-             **kwds)
+    C = (colors[0], colors[3], colors[5], colors[7])
+    for (l, x, c) in zip(labels, X, C):
+        m.fig.text(x, y, l,
+                   fontdict = dict(size = 5,
+                                   color = c,
+                                   weight = 'bold'),
+                   verticalalignment = 'center',
+                   horizontalalignment = 'left')
 
     m.label(countries,
             replace = {'Democratic Republic of the Congo': 'DR Congo'},
@@ -206,7 +196,7 @@ def plot_ICER(countries, ICER):
                             color = 'black',
                             weight = 'bold'))
 
-    fig.savefig('909090ICER.pdf')
+    m.fig.savefig('909090ICER.pdf')
 
     return m
 
