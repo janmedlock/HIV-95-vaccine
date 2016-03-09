@@ -22,7 +22,6 @@ def analyze909090(country):
         DALYs, QALYs, cost_ \
             = cost_effectiveness.solve_and_get_effectiveness_and_cost(
                 '909090', parameters)
-
         DALYs_base, QALYs_base, cost_base \
             = cost_effectiveness.solve_and_get_effectiveness_and_cost(
                 'base', parameters)
