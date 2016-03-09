@@ -200,10 +200,10 @@ class Parameters:
 def get_country_list(sheet = 'Parameters'):
     with pandas.ExcelFile(datapath) as data:
         # Skip header column
-        if sheet == 'Costs':
-            data = data.parse('Costs').iloc[ : 6, 1 : ]
-        elif sheet == 'Parameters':
+        if sheet == 'Parameters':
             data = data.parse('Parameters').iloc[ : 12, 1 : ]
+        elif sheet == 'Costs':
+            data = data.parse('Costs').iloc[ : 6, 1 : ]
         elif sheet == 'Initial Conditions':
             data = data.parse('Initial Conditions').iloc[ : 6, 1 : ]
         elif sheet == 'GDP':
