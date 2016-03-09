@@ -24,6 +24,12 @@ import mapplot.cmap
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
+    # Drop nans
+    ix = numpy.isfinite(effectiveness)
+    countries = numpy.compress(ix, countries)
+    effectiveness = numpy.compress(ix, effectiveness)
+    effectiveness_base = numpy.compress(ix, effectiveness_base)
+
     relative_effectiveness = ((effectiveness_base - effectiveness)
                               / effectiveness_base)
 
@@ -46,6 +52,12 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
 
 
 def plot_cost(countries, cost, cost_base):
+    # Drop nans
+    ix = numpy.isfinite(cost)
+    countries = numpy.compress(ix, countries)
+    cost = numpy.compress(ix, cost)
+    cost_base = numpy.compress(ix, cost_base)
+
     relative_cost = (cost - cost_base) / cost_base
 
     a = min(min(relative_cost), 0)
@@ -75,6 +87,11 @@ def plot_cost(countries, cost, cost_base):
 
 
 def plot_ICER(countries, ICER):
+    # Drop nans
+    ix = numpy.isfinite(ICER)
+    countries = numpy.compress(ix, countries)
+    ICER = numpy.compress(ix, ICER)
+
     colors = seaborn.color_palette('Paired', 8)
     # Reorder: flip the last two and move to the front.
     colors = colors[7 : 5 : -1] + colors[ : 6]
