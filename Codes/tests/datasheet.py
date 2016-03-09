@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 '''
 Test the loading of data from the datasheet using :mod:`model.datasheet`.
 '''

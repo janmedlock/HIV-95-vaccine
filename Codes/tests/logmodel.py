@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 '''
 Test solving the log model :func:`model.simulation.ODEs_log`
 versus the non-log model :func:`model.simulation.ODEs`

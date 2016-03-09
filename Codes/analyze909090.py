@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 '''
 Analyze the 90-90-90 policies for all the countries.
 

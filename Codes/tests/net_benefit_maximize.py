@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 '''
 Test the :mod:`model.optimization`.
 '''

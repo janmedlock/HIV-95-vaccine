@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 '''
 Map the 90-90-90 results.
 '''
