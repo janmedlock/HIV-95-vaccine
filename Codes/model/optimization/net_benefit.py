@@ -1,5 +1,5 @@
 '''
-Find target values that maximize the incremental net benefit.
+Find target values that maximize the net benefit.
 '''
 
 import functools
@@ -10,13 +10,13 @@ import numpy
 from scipy import optimize
 
 from .. import datasheet
-from .. import CE_stats
+from .. import cost_effectiveness
 
 
 def _objective_function(targs, CE_threshold, parameters, scale = 1):
-    net_benefit = CE_stats.solve_and_get_net_benefit(targs,
-                                                     CE_threshold,
-                                                     parameters)
+    net_benefit = cost_effectiveness.solve_and_get_net_benefit(targs,
+                                                               CE_threshold,
+                                                               parameters)
     return - net_benefit / scale
 
 
@@ -128,10 +128,10 @@ def maximize(country, CE_threshold,
     net_benefit = - best.fun * scale
 
     incremental_effectiveness, incremental_cost, ICER \
-        = CE_stats.solve_and_get_incremental_CE_stats(targs,
-                                                      parameters)
+        = cost_effectiveness.solve_and_get_incremental_CE_stats(targs,
+                                                                parameters)
 
-    incremental_net_benefit = CE_stats.get_net_benefit(
+    incremental_net_benefit = cost_effectiveness.get_net_benefit(
         incremental_effectiveness,
         incremental_cost,
         CE_threshold,

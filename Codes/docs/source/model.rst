@@ -6,17 +6,25 @@ model.analyze909090
 -------------------
 .. automodule:: model.analyze909090
 
-model.CE_stats
---------------
-.. automodule:: model.CE_stats
-
 model.control_rates
 -------------------
 .. automodule:: model.control_rates
 
+model.cost
+----------
+.. automodule:: model.cost
+
+model.cost_effectiveness
+------------------------
+.. automodule:: model.cost_effectiveness
+
 model.datasheet
 ---------------
 .. automodule:: model.datasheet
+
+model.effectiveness
+-------------------
+.. automodule:: model.effectiveness
 
 model.optimization
 ------------------
@@ -26,9 +34,9 @@ model.optimization.effectiveness
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: model.optimization.effectiveness
 
-model.optimization.incremental_net_benefit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: model.optimization.incremental_net_benefit
+model.optimization.net_benefit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: model.optimization.net_benefit
 
 model.plot_solution
 -------------------

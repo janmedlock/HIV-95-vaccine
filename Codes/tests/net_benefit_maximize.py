@@ -21,7 +21,7 @@ def _main():
     (targs,
      incremental_effectiveness,
      incremental_cost,
-     incremental_net_benefit) = model.incremental_net_benefit.maximize(
+     incremental_net_benefit) = model.optimization.net_benefit.maximize(
          country,
          CE_threshold,
          method = 'cobyla',

@@ -1,58 +1,15 @@
 '''
-Compute cost and effectiveness statistics.
-
-For disability weights :math:`\mathbf{w}`, DALYs are
-
-.. math::
-
-   D = \int_0^{t_\mathrm{end}} \mathbf{w}^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t,
-
-and QALYs are
-
-.. math::
-
-   Q = \int_0^{t_\mathrm{end}} (\mathbf{1} - \mathbf{w})^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t,
-
-so DALYs and QALYs are related by
-
-.. math::
-
-   Q = \int_0^{t_\mathrm{end}} \mathbf{1}^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t - D.
-
+Compute cost.
 
 .. doctest::
 
    >>> from numpy import isclose
-   >>> from scipy.integrate import simps
    >>> from model.datasheet import Parameters
-   >>> from model.CE_stats import (get_CE_stats,
-   ...                             solve_and_get_CE_stats,
-   ...                             get_incremental_CE_stats)
-   >>> from model.simulation import solve
+   >>> from model.cost import solve_and_get_cost
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
-   >>> t, state = solve('909090', parameters)
-   >>> CE_stats = get_CE_stats(t, state, '909090', parameters)
-   >>> assert all(isclose(CE_stats, (10319780.049174752,
-   ...                               955467777.4644835,
-   ...                               12706118534.633265)))
-   >>> DALYs, QALYs, cost = CE_stats
-   >>> assert isclose(simps(state.sum(1), t) - DALYs, QALYs)
-   >>> CE_stats_base = solve_and_get_CE_stats('base', parameters)
-   >>> assert all(isclose(CE_stats_base, (12162172.669438632,
-   ...                                    953452147.986305,
-   ...                                    3652246123.4073505)))
-   >>> ICE_stats = get_incremental_CE_stats(*CE_stats,
-   ...                                      *CE_stats_base,
-   ...                                      parameters)
-   >>> assert all(isclose(ICE_stats, (1842406.9221042246,
-   ...                                2015565.2220605612,
-   ...                                9053824223.9566383,
-   ...                                1.5340845459263648,
-   ...                                1.4022905116502979)))
+   >>> cost_ = solve_and_get_cost('909090', parameters)
+   >>> assert isclose(cost_, 12706118534.633265)
 '''
 
 import numpy
@@ -107,7 +64,7 @@ class RelativeCostOfEffort:
 
        >>> from numpy import arange, isclose
        >>> from scipy.integrate import quad
-       >>> from model.CE_stats import RelativeCostOfEffort
+       >>> from model.cost import RelativeCostOfEffort
        >>> F = RelativeCostOfEffort.total_cost
        >>> def G(p, b):
        ...     return quad(RelativeCostOfEffort.marginal_cost,
@@ -152,17 +109,7 @@ That is, susceptibles should be less likely to be tested than Undiagnosed.
 '''
 susceptible_testing_discount = 0
 
-def get_CE_stats(t, state, targs, parameters):
-    # A component of Sphinx chokes on the '@'.
-    # QALYs_rate = state @ parameters.QALY_rates_per_person
-    QALYs_rate = numpy.dot(state, parameters.QALY_rates_per_person)
-    QALYs = integrate.simps(QALYs_rate, t)
-
-    # A component of Sphinx chokes on the '@'.
-    # DALYs_rate = state @ parameters.DALY_rates_per_person
-    DALYs_rate = numpy.dot(state, parameters.DALY_rates_per_person)
-    DALYs = integrate.simps(DALYs_rate, t)
-
+def get_cost(t, state, targs, parameters):
     target_values = targets.get_target_values(t, targs, parameters)
     controls = control_rates.get_control_rates(t, state, targs, parameters)
 
@@ -219,80 +166,9 @@ def get_CE_stats(t, state, targs, parameters):
 
     cost = integrate.simps(cost_rate, t)
 
-    return DALYs, QALYs, cost
+    return cost
 
 
-def solve_and_get_CE_stats(targs, parameters):
-    solution = simulation.solve(targs, parameters)
-
-    return get_CE_stats(*solution, targs, parameters)
-
-
-def get_incremental_CE_stats(DALYs, QALYs, cost,
-                             DALYs_base, QALYs_base, cost_base,
-                             parameters):
-    incremental_DALYs = DALYs_base - DALYs
-    incremental_QALYs = QALYs - QALYs_base
-    incremental_cost = cost - cost_base
-    ICER_DALYs = (incremental_cost
-                  / incremental_DALYs
-                  / parameters.GDP_per_capita)
-    ICER_QALYs = (incremental_cost
-                  / incremental_QALYs
-                  / parameters.GDP_per_capita)
-    return (incremental_DALYs,
-            incremental_QALYs,
-            incremental_cost,
-            ICER_DALYs,
-            ICER_QALYs)
-
-
-def solve_and_get_incremental_CE_stats(targs, parameters):
-    stats = solve_and_get_CE_stats(targs, parameters)
-
-    stats_base = solve_and_get_CE_stats('base', parameters)
-
-    return get_incremental_CE_stats(*stats, *stats_base, parameters)
-
-
-def print_incremental_CE_stats(incremental_DALYs,
-                               incremental_QALYs,
-                               incremental_cost, ICER_DALYs, ICER_QALYs,
-                               parameters):
-    print('incremental effectiveness = {:g} DALYs'.format(
-        incremental_DALYs))
-    print('incremental effectiveness = {:g} QALYs'.format(
-        incremental_QALYs))
-    print('incremental cost = {:g} USD'.format(incremental_cost))
-    print('incremental cost = {:g} GDP per capita'.format(
-        incremental_cost / parameters.GDP_per_capita))
-    print('ICER = {:g} USD per DALY'.format(
-        ICER_DALYs * parameters.GDP_per_capita))
-    print('ICER = {:g} GDP per capita per DALY'.format(
-        ICER_DALYs))
-    print('ICER = {:g} USD per QALY'.format(
-        ICER_QALYs * parameters.GDP_per_capita))
-    print('ICER = {:g} GDP per capita per QALY'.format(
-        ICER_QALYs))
-
-
-def get_net_benefit(DALYs, QALYs, cost, CE_threshold, parameters):
-    # effectiveness = QALYs
-    effectiveness = - DALYs
-
-    if CE_threshold == 0:
-        # Just cost.
-        net_benefit = - cost
-    elif CE_threshold == numpy.inf:
-        # Just Effectiveness.
-        net_benefit = effectiveness
-    else:
-        net_benefit = (
-            effectiveness - cost / parameters.GDP_per_capita / CE_threshold)
-
-    return net_benefit
-
-
-def solve_and_get_net_benefit(targs, CE_threshold, parameters):
-    stats = solve_and_get_CE_stats(targs, parameters)
-    return get_net_benefit(*stats, CE_threshold, parameters)
+def solve_and_get_cost(targs, parameters):
+    t, state = simulation.solve(targs, parameters)
+    return get_cost(t, state, targs, parameters)

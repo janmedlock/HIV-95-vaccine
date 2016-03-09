@@ -18,20 +18,22 @@ def _main():
 
     parameters = model.Parameters(country)
 
-    solution = model.solve('909090', parameters, t_end = 10)
+    t, state = model.solve('909090', parameters, t_end = 10)
 
-    stats = model.get_CE_stats(*solution, '909090', parameters)
+    DALYs, QALYs, cost = model.get_effectiveness_and_cost(t, state,
+                                                          '909090', parameters)
 
-    stats_base = model.solve_and_get_CE_stats('base', parameters)
+    DALYs_base, QALYs_base, cost_base \
+        = model.solve_and_get_effectiveness_and_cost('base', parameters)
 
-    incremental_stats = model.get_incremental_CE_stats(*stats,
-                                                       *stats_base,
-                                                       parameters)
+    CE_stats = model.get_cost_effectiveness_stats(
+        DALYs, QALYs, cost,
+        DALYs_base, QALYs_base, cost_base,
+        parameters)
 
-    model.print_incremental_CE_stats(*incremental_stats,
-                                     parameters)
+    model.print_cost_effectiveness_stats(*(CE_stats + (parameters, )))
 
-    model.plot_solution(*solution, '909090', parameters)
+    model.plot_solution(t, state, '909090', parameters)
 
 
 if __name__ == '__main__':

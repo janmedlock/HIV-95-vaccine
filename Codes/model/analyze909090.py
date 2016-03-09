@@ -2,21 +2,28 @@
 Analyze the 90-90-90 policy.
 '''
 
-from . import CE_stats
+from . import cost_effectiveness
 from . import datasheet
 
 
 def analyze909090(country):
     parameters = datasheet.Parameters(country)
 
-    stats = CE_stats.solve_and_get_CE_stats('909090', parameters)
+    DALYs, QALYs, cost_ \
+        = cost_effectiveness.solve_and_get_effectiveness_and_cost('909090',
+                                                                  parameters)
 
-    stats_base = CE_stats.solve_and_get_CE_stats('base', parameters)
+    DALYs_base, QALYs_base, cost_base \
+        = cost_effectiveness.solve_and_get_effectiveness_and_cost('base',
+                                                                  parameters)
 
-    stats_inc = CE_stats.get_incremental_CE_stats(*stats, *stats_base,
-                                                  parameters)
+    CE_stats = cost_effectiveness.get_cost_effectiveness(
+        DALYs, QALYs, cost_,
+        DALYs_base, QALYs_base, cost_base,
+        parameters)
 
     print('{}'.format(country))
-    CE_stats.print_incremental_CE_stats(*stats_inc, parameters)
+    cost_effectiveness.print_incremental_cost_effectiveness(
+        *(CE_stats + (parameters, )))
 
-    return (country, (stats, stats_base, stats_inc))
+    return (country, (stats, stats_base, CE_stats))
