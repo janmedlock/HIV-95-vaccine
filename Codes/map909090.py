@@ -34,32 +34,23 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
 
     fig = pyplot.figure()
     m = mapplot.Basemap()
+
     a = min(min(relative_effectiveness), 0)
     b = max(max(relative_effectiveness), 0.225)
     m.choropleth(countries, 100 * relative_effectiveness,
                  vmin = 100 * a,
                  vmax = 100 * b,
                  cmap = 'Oranges')
-    cbar = pyplot.colorbar(format = '%g%%',
-                           orientation = 'horizontal',
-                           fraction = 0.2,
-                           pad = 0,
-                           shrink = 0.8,
-                           panchor = False)
-    cbar.set_label('Effectiveness (Proportion of DALYs Averted Below Baseline)')
 
-    w, h = m.fig.get_size_inches()
-    extent = m.ax.get_extent()
-    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    m.fig.set_size_inches(w, w * aspect, forward = True)
+    cbar = m.colorbar(
+        label = 'Effectiveness (Proportion of DALYs Averted Below Baseline)',
+        format = '%g%%')
 
-    m.label(countries,
-            replace = {'Democratic Republic of the Congo': 'DR Congo'},
-            fontdict = dict(size = 3,
-                            color = 'black',
-                            weight = 'bold'))
+    m.tighten(aspect_adjustment = 1.35)
 
-    m.fig.savefig('909090effectiveness.pdf')
+    m.label(countries)
+
+    m.savefig('909090effectiveness.pdf')
 
     return m
 
@@ -85,30 +76,20 @@ def plot_cost(countries, cost, cost_base):
 
     fig = pyplot.figure()
     m = mapplot.Basemap()
+
     m.choropleth(countries, 100 * relative_cost,
                  vmin = 100 * a,
                  vmax = 100 * b,
                  cmap = cmap)
-    cbar = pyplot.colorbar(format = '%g%%',
-                           orientation = 'horizontal',
-                           fraction = 0.2,
-                           pad = 0,
-                           shrink = 0.8,
-                           panchor = False)
-    cbar.set_label('Cost (Proportion Added Above Baseline)')
 
-    w, h = m.fig.get_size_inches()
-    extent = m.ax.get_extent()
-    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    m.fig.set_size_inches(w, w * aspect, forward = True)
+    cbar = m.colorbar(label = 'Cost (Proportion Added Above Baseline)',
+                      format = '%g%%')
 
-    m.label(countries,
-            replace = {'Democratic Republic of the Congo': 'DR Congo'},
-            fontdict = dict(size = 3,
-                            color = 'black',
-                            weight = 'bold'))
+    m.tighten(aspect_adjustment = 1.35)
 
-    m.fig.savefig('909090cost.pdf')
+    m.label(countries)
+
+    m.savefig('909090cost.pdf')
 
     return m
 
@@ -146,15 +127,12 @@ def plot_ICER(countries, ICER):
 
     fig = pyplot.figure()
     m = mapplot.Basemap()
+
     m.choropleth(countries, ICER,
                  vmin = a, vmax = b,
                  cmap = cmap)
-    cbar = pyplot.colorbar(orientation = 'horizontal',
-                           fraction = 0.2,
-                           pad = 0,
-                           shrink = 0.8,
-                           panchor = False)
-    cbar.set_label('ICER (GDP per capita per DALY averted)')
+
+    cbar = m.colorbar(label = 'ICER (GDP per capita per DALY averted)')
 
     cticks = [0, 1, 3]
     cticklabels = list(map(str, cticks))
@@ -170,10 +148,7 @@ def plot_ICER(countries, ICER):
     cbar.set_ticks(cticks)
     cbar.set_ticklabels(cticklabels)
 
-    w, h = m.fig.get_size_inches()
-    extent = m.ax.get_extent()
-    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    m.fig.set_size_inches(w, w * aspect, forward = True)
+    m.tighten(aspect_adjustment = 1.35)
 
     labels = ('Cost Saving',
               'Very Cost Effective',
@@ -190,13 +165,9 @@ def plot_ICER(countries, ICER):
                    verticalalignment = 'center',
                    horizontalalignment = 'left')
 
-    m.label(countries,
-            replace = {'Democratic Republic of the Congo': 'DR Congo'},
-            fontdict = dict(size = 3,
-                            color = 'black',
-                            weight = 'bold'))
+    m.label(countries)
 
-    m.fig.savefig('909090ICER.pdf')
+    m.savefig('909090ICER.pdf')
 
     return m
 

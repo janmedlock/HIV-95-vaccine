@@ -4,7 +4,6 @@ Map the prevalence at different times.
 '''
 
 from matplotlib import colors as mcolors
-from matplotlib import pyplot
 import numpy
 import pandas
 
@@ -28,22 +27,14 @@ def _main():
                                         vmax = 100 * max(pHIV)),
                  cmap = 'Purples')
 
-    cbar = pyplot.colorbar(format = '%g%%',
-                           orientation = 'horizontal',
-                           fraction = 0.2,
-                           pad = 0,
-                           shrink = 0.8,
-                           panchor = False)
-    cbar.set_label('Initial Prevalence')
+    m.colorbar(label = 'Initial Prevalence',
+               format = '%g%%')
 
-    w, h = m.fig.get_size_inches()
-    extent = m.ax.get_extent()
-    aspect = (extent[3] - extent[2]) / (extent[1] - extent[0]) * (1 + 0.35)
-    m.fig.set_size_inches(w, w * aspect, forward = True)
+    m.tighten(aspect_adjustment = 1.35)
 
-    m.fig.savefig('initial_prevalence.pdf')
+    m.savefig('initial_prevalence.pdf')
 
-    mapplot.pyplot.show()
+    m.show()
 
     return m
 

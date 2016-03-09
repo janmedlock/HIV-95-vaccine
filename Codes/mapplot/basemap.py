@@ -106,7 +106,7 @@ class Basemap:
         else:
             return c
 
-    def tighten(self):
+    def tighten(self, aspect_adjustment = 1):
         '''
         Adjust aspect ratio of the figure to match the map.
         '''
@@ -115,7 +115,8 @@ class Basemap:
 
         w, h = self.fig.get_size_inches()
         extent = self.ax.get_extent()
-        aspect = (extent[3] - extent[2]) / (extent[1] - extent[0])
+        aspect = ((extent[3] - extent[2]) / (extent[1] - extent[0])
+                  * aspect_adjustment)
         self.fig.set_size_inches(w, w * aspect, forward = True)
 
     def choropleth(self, countries, values, *args, **kwargs):
@@ -418,7 +419,10 @@ class Basemap:
     def label(self, countries,
               horizontalalignment = 'center',
               verticalalignment = 'center',
-              replace = dict(),
+              replace = {'Democratic Republic of the Congo': 'DR Congo'},
+              fontdict = dict(size = 3,
+                              color = 'black',
+                              weight = 'bold'),
               *args, **kwargs):
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
@@ -432,6 +436,7 @@ class Basemap:
             self.ax.text(x, y, label,
                          horizontalalignment = horizontalalignment,
                          verticalalignment = verticalalignment,
+                         fontdict = fontdict,
                          *args,
                          **kwargs)
 
@@ -445,3 +450,21 @@ class Basemap:
         xy = self.ax.projection.transform_point(
             X, Y, self.border_crs)
         self.ax.add_patch(patches.Rectangle(xy, w, h, *args, **kwargs))
+
+    def colorbar(self, orientation = 'horizontal', fraction = 0.2,
+                 pad = 0, shrink = 0.8, panchor = False,
+                 *args, **kwargs):
+        cbar = self.fig.colorbar(self.ax._current_image,
+                                 orientation = orientation,
+                                 fraction = fraction,
+                                 pad = pad,
+                                 shrink = shrink,
+                                 panchor = panchor,
+                                 *args, **kwargs)
+        return cbar
+
+    def savefig(self, *args, **kwargs):
+        self.fig.savefig(*args, **kwargs)
+
+    def show(self, *args, **kwargs):
+        pyplot.show(*args, **kwargs)

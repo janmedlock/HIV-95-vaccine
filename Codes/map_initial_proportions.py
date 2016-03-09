@@ -3,8 +3,6 @@
 Map the initial proportions diagnosed, treated, and viral suppressed.
 '''
 
-from matplotlib import patches
-from matplotlib import pyplot
 import pandas
 
 import model
@@ -59,19 +57,13 @@ def _main():
     X, Y = (-155, -30)
     m.rectangle_coords(X - 5.5, Y - 7, 78, 17.5,
                        facecolor = 'white', linewidth = 0.1)
-    # xy = m.ax.projection.transform_point(X - 5.5, Y - 7, m.border_crs)
-    # m.ax.add_patch(patches.Rectangle(xy, 78, 17.5, facecolor = 'white',
-    #                                  linewidth = 0.1))
-
     m.barh_coords(X, Y, [1, 0.9, 0.9 ** 2, 0.9 ** 3],
                   widthscale = 2 * 4.5, heightscale = 2 * 1.5,
                   color = colors)
-
     m.text_coords(X - 4.5, Y + 8, 'Treatment Cascade',
                   fontdict = dict(size = 5, weight = 'bold'),
                   verticalalignment = 'center',
                   horizontalalignment = 'left')
-
     labels = ('Proportion Living with HIV (all countries scaled to length 1)',
               'Proportion Diagnosed',
               'Proportion Treated',
@@ -88,9 +80,9 @@ def _main():
 
     m.tighten()
 
-    m.fig.savefig('initial_proportions.pdf')
+    m.savefig('initial_proportions.pdf')
 
-    pyplot.show()
+    m.show()
 
 
 if __name__ == '__main__':
