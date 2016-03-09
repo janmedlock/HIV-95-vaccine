@@ -16,7 +16,7 @@ def analyze909090(country):
         DALYs, QALYs = effectiveness.solve_and_get_effectiveness(
                 '909090', parameters)
         DALYs_base, QALYs_base = effectiveness.solve_and_get_effectiveness(
-                '909090', parameters)
+                'base', parameters)
         cost_ = cost_base = numpy.nan
     else:
         DALYs, QALYs, cost_ \
