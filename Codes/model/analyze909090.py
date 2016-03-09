@@ -23,7 +23,7 @@ def analyze909090(country):
         parameters)
 
     print('{}'.format(country))
-    cost_effectiveness.print_incremental_cost_effectiveness(
+    cost_effectiveness.print_cost_effectiveness_stats(
         *(CE_stats + (parameters, )))
 
     return (country, (stats, stats_base, CE_stats))
