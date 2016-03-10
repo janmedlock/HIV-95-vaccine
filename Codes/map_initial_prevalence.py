@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 '''
-Map the prevalence at different times.
+Map the initial prevalence.
 '''
 
 from matplotlib import colors as mcolors
-import numpy
-import pandas
 
 import model
 import mapplot

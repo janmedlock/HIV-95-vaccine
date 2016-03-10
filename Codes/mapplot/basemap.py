@@ -4,6 +4,7 @@ import os.path
 import warnings
 
 import numpy
+from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 
@@ -123,10 +124,8 @@ class Basemap:
         '''
         Color whole countries depending on the values.
         '''
-
-        cmap_norm = pyplot.cm.ScalarMappable(
-            norm = kwargs.pop('norm', None),
-            cmap = kwargs.pop('cmap', None))
+        cmap_norm = cm.ScalarMappable(norm = kwargs.pop('norm', None),
+                                      cmap = kwargs.pop('cmap', None))
         cmap_norm.alpha = kwargs.get('alpha')
         vmin = kwargs.pop('vmin', min(values))
         vmax = kwargs.pop('vmax', max(values))
@@ -134,13 +133,12 @@ class Basemap:
         cmap_norm.set_array(values)
 
         for (c, v) in zip(countries, values):
-            color = cmap_norm.to_rgba(v)
             try:
                 border = self.borders[c]
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
             self.ax.add_feature(border,
-                                facecolor = color,
+                                facecolor = cmap_norm.to_rgba(v),
                                 *args,
                                 **kwargs)
 
@@ -148,6 +146,45 @@ class Basemap:
         self.ax._current_image = cmap_norm
 
         return cmap_norm
+
+    def choropleth_init(self, countries, values, *args, **kwargs):
+        '''
+        Set up animated choropleth.
+        '''
+        self.cmap_norm = cm.ScalarMappable(norm = kwargs.pop('norm', None),
+                                           cmap = kwargs.pop('cmap', None))
+        self.cmap_norm.alpha = kwargs.get('alpha')
+        self.cmap_norm.set_clim(vmin = kwargs.pop('vmin', None),
+                                vmax = kwargs.pop('vmax', None))
+        self.cmap_norm.set_array(values)
+
+        self._countries = countries
+        self._values = values
+        self._artists = []
+        self._artist_map = {}
+        for (i, c) in enumerate(self._countries):
+            try:
+                border = self.borders[c]
+            except KeyError:
+                print('Country "{}" borders not in records.'.format(c))
+            self._artists.append(self.ax.add_feature(
+                border,
+                *args,
+                **kwargs))
+            self._artist_map[c] = i
+
+        # Make pyplot.colorbar() work.
+        self.ax._current_image = self.cmap_norm
+
+    def choropleth_update(self, i):
+        '''
+        Update country colors.
+        '''
+        for (c, v) in zip(self._countries, self._values[i]):
+            ix = self._artist_map[c]
+            self._artists[ix].stale = True
+            self._artists[ix]._kwargs['facecolor'] = self.cmap_norm.to_rgba(v)
+        return self._artists
 
     def scatter(self, countries, *args, **kwargs):
         x, y = self.locator.get_locations(countries)
