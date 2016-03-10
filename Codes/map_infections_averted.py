@@ -27,14 +27,14 @@ def _main():
     m.tighten(aspect_adjustment = 1.35)
 
     a = 0
-    b = 1
+    b = max(infections_averted.max(), 0.50)
 
     m.choropleth_preinit(countries,
                          t + 2015, 100 * infections_averted,
                          vmin = 100 * a,
                          vmax = 100 * b,
                          label_coords = (-120, -20),
-                         cmap = 'Purples')
+                         cmap = 'viridis')
 
     cbar = m.colorbar(label = 'Infections (Proportion Averted Below Baseline)',
                       format = '%g%%')
