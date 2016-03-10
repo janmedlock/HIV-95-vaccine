@@ -15,15 +15,15 @@ def _main():
     countries = data.index
 
     # People with HIV.
-    nHIV = data.iloc[:, 1 : ].sum(1)
-    pHIV = nHIV / data.sum(1)
+    nHIV = data.iloc[:, 1 : -2].sum(1)
+    pHIV = nHIV / data.iloc[:, : -2].sum(1)
 
     m = mapplot.Basemap()
 
     m.choropleth(countries, 100 * pHIV,
                  norm = mcolors.LogNorm(vmin = 100 * min(pHIV),
                                         vmax = 100 * max(pHIV)),
-                 cmap = 'Purples')
+                 cmap = 'afmhot_r')
 
     m.colorbar(label = 'Initial Prevalence',
                format = '%g%%')

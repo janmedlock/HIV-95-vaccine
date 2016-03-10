@@ -163,7 +163,7 @@ def solve(targs, parameters, t_end = 10, use_log = True):
                          Y0,
                          t,
                          args = (targs, parameters),
-                         mxstep = 1000)
+                         mxstep = 2000)
 
     if use_log:
         state = numpy.exp(Y)
