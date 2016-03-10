@@ -14,7 +14,7 @@ map_initial_proportions
 -----------------------
 .. automodule:: map_initial_proportions
 
-map_initial_pervalence
+map_initial_prevalence
 ----------------------
 .. automodule:: map_initial_prevalence
 
