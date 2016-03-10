@@ -9,11 +9,11 @@ Compute cost-effectiveness.
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
    >>> stats = solve_and_get_cost_effectiveness_stats('909090', parameters)
-   >>> assert all(isclose(stats, (1842392.6202638801,
-   ...                            2015631.942163229,
-   ...                            9053869705.7548714,
-   ...                            1.5341041609991664,
-   ...                            1.4022511381257359)))
+   >>> assert all(isclose(stats, (1842399.2326345108,
+   ...                            2015606.5602570772,
+   ...                            9053860301.9621029,
+   ...                            1.5340970617094685,
+   ...                            1.4022673397728433)))
 '''
 
 import numpy
