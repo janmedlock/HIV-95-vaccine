@@ -13,3 +13,11 @@ map909090
 map_initial_proportions
 -----------------------
 .. automodule:: map_initial_proportions
+
+map_initial_pervalence
+----------------------
+.. automodule:: map_initial_prevalence
+
+map_prevalence
+--------------
+.. automodule:: map_prevalence
