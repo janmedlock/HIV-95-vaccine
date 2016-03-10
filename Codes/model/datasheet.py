@@ -102,6 +102,8 @@ class Parameters:
 
         # Add people dead from AIDS.
         initial_conditions['Z'] = 0
+        # Add new infections.
+        initial_conditions['R'] = 0
 
         # Now convert to numpy object for speed.
         self.initial_conditions = initial_conditions.as_matrix()
@@ -163,7 +165,8 @@ class Parameters:
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
-        # Entries are states S, A, U, D, T, V, W, Z
+        # Entries are states S, A, U, D, T, V, W, Z,
+        # but not R.
         disability = numpy.array((0,            # S
                                   0.16,         # A
                                   0.038,        # U

@@ -14,8 +14,8 @@ def analyze909090(country):
     parameters = datasheet.Parameters(country)
 
     t, state = simulation.solve('909090', parameters, t_end = 50)
-
-    prevalence = state[:, 1 : -1].sum(1) / state.sum(1)
+    new_infections = state[:, -1]
+    prevalence = state[:, 1 : -2].sum(1) / state[:, : -2].sum(1)
 
     if numpy.isfinite(parameters.cost_AIDS_recurring_constant):
         DALYs, QALYs, cost_ \
@@ -40,7 +40,7 @@ def analyze909090(country):
     cost_effectiveness.print_cost_effectiveness_stats(
         *(CE_stats + (parameters, )))
 
-    return (country, ((t, prevalence),
+    return (country, ((t, prevalence, new_infections),
                       (DALYs, QALYs, cost_),
                       (DALYs_base, QALYs_base, cost_base),
                       CE_stats))

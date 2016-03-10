@@ -44,7 +44,7 @@ def plot_solution(t, state, targs, parameters, show = True):
 
     (fig1, ax1) = pyplot.subplots()
 
-    S, A, U, D, T, V, W, Z = simulation.split_state(state)
+    S, A, U, D, T, V, W, Z, R = simulation.split_state(state)
 
     ax1.semilogy(t, S, label = 'S')
     ax1.semilogy(t, A, label = 'A')
@@ -54,6 +54,7 @@ def plot_solution(t, state, targs, parameters, show = True):
     ax1.semilogy(t, V, label = 'V')
     ax1.semilogy(t, W, label = 'W')
     ax1.semilogy(t, Z, label = 'Z')
+    ax1.semilogy(t, R, label = 'R')
     ax1.legend(loc = 'upper right')
 
     (fig2, ax2) = pyplot.subplots()

@@ -16,11 +16,11 @@ import mapplot
 def _main():
     results = pickle.load(open('analyze909090.pkl', 'rb'))
     countries, values = zip(*results.items())
-    prevalence, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
+    state, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
 
     every = 20
-    t = prevalence[0, 0, : : every]
-    prevalence = prevalence[:, 1, : : every].T
+    t = state[0, 0, : : every]
+    prevalence = state[:, 1, : : every].T
 
     m = mapplot.Basemap()
 

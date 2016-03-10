@@ -18,7 +18,8 @@ def _ODEs(state, t, targs, parameters):
     # V is viral suppressed.
     # W is AIDS.
     # Z is dead from AIDS.
-    S, A, U, D, T, V, W, Z = state
+    # R is new infectons.
+    S, A, U, D, T, V, W, Z, R = state
 
     # Total sexually active population.
     N = S + A + U + D + T + V
@@ -66,7 +67,9 @@ def _ODEs(state, t, targs, parameters):
 
     dZ = parameters.death_rate_AIDS * W
 
-    return (dS, dA, dU, dD, dT, dV, dW, dZ)
+    dR = force_of_infection * S
+
+    return (dS, dA, dU, dD, dT, dV, dW, dZ, dR)
 
 
 def _ODEs_log(state_log, t, targs, parameters):
@@ -79,8 +82,9 @@ def _ODEs_log(state_log, t, targs, parameters):
     # V is viral suppressed.
     # W is AIDS.
     # Z is dead from AIDS.
-    S, A, U, D, T, V, W, Z = numpy.exp(state_log)
-    S_log, A_log, U_log, D_log, T_log, V_log, W_log, Z_log = state_log
+    # R is new infectons.
+    S, A, U, D, T, V, W, Z, R = numpy.exp(state_log)
+    S_log, A_log, U_log, D_log, T_log, V_log, W_log, Z_log, R_log = state_log
 
     # Total sexually active population.
     N = S + A + U + D + T + V
@@ -138,7 +142,10 @@ def _ODEs_log(state_log, t, targs, parameters):
 
     dZ_log = parameters.death_rate_AIDS * numpy.exp(W_log - Z_log)
 
-    return (dS_log, dA_log, dU_log, dD_log, dT_log, dV_log, dW_log, dZ_log)
+    dR_log = force_of_infection * numpy.exp(S_log - R_log)
+
+    return (dS_log, dA_log, dU_log, dD_log, dT_log,
+            dV_log, dW_log, dZ_log, dR_log)
 
 
 def solve(targs, parameters, t_end = 10, use_log = True):

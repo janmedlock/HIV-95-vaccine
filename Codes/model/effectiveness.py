@@ -49,13 +49,13 @@ from . import simulation
 
 def get_effectiveness(t, state, targs, parameters):
     # A component of Sphinx chokes on the '@'.
-    # QALYs_rate = state @ parameters.QALY_rates_per_person
-    QALYs_rate = numpy.dot(state, parameters.QALY_rates_per_person)
+    # QALYs_rate = state[..., : -1] @ parameters.QALY_rates_per_person
+    QALYs_rate = numpy.dot(state[..., : -1], parameters.QALY_rates_per_person)
     QALYs = integrate.simps(QALYs_rate, t)
 
     # A component of Sphinx chokes on the '@'.
-    # DALYs_rate = state @ parameters.DALY_rates_per_person
-    DALYs_rate = numpy.dot(state, parameters.DALY_rates_per_person)
+    # DALYs_rate = state[..., : -1] @ parameters.DALY_rates_per_person
+    DALYs_rate = numpy.dot(state[..., : -1], parameters.DALY_rates_per_person)
     DALYs = integrate.simps(DALYs_rate, t)
 
     return DALYs, QALYs

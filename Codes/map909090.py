@@ -175,7 +175,7 @@ def plot_ICER(countries, ICER):
 def _main():
     results = pickle.load(open('analyze909090.pkl', 'rb'))
     countries, values = zip(*results.items())
-    prevalence, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
+    state, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
 
     plot_effectiveness(countries, stats[:, 0], stats_base[:, 0])
     plot_cost(countries, stats[:, -1], stats_base[:, -1])
