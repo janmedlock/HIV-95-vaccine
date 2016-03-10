@@ -7,6 +7,7 @@ import pickle
 
 from matplotlib import animation
 from matplotlib import colors as mcolors
+from matplotlib import pyplot
 import numpy
 
 import model
@@ -22,34 +23,62 @@ def _main():
     t = state[0, 0, : : every]
     prevalence = state[:, 1, : : every].T
 
+    fig = pyplot.figure()
     m = mapplot.Basemap()
 
-    m.tighten(aspect_adjustment = 1.35)
+    # Initial frame for linking.
+    fig0 = pyplot.figure()
+    m0 = mapplot.Basemap()
 
-    a = max(prevalence.min(), 1e-4)
-    b = prevalence.max()
+    for z in (m, m0):
+        z.tighten(aspect_adjustment = 1.35)
 
-    m.choropleth_preinit(countries,
-                         t + 2015, 100 * prevalence,
-                         norm = mcolors.LogNorm(vmin = 100 * a,
-                                                vmax = 100 * b),
-                         label_coords = (-120, -20),
-                         cmap = 'afmhot_r')
+    data = 100 * prevalence
+    T = t + 2015
+    cmap = 'afmhot_r'
+    vmin = max(data.min(), 0.1)
+    vmax = data.max()
+    norm = mcolors.LogNorm(vmin = vmin, vmax = vmax)
+    label_coords = (-120, -20)
 
-    cbar = m.colorbar(label = 'Prevalence',
-                      format = '%g%%')
+    m.choropleth_preinit(countries, T, data,
+                         cmap = cmap,
+                         norm = norm,
+                         vmin = vmin,
+                         vmax = vmax,
+                         label_coords = label_coords)
+
+    m0.choropleth(countries, data[0],
+                  cmap = cmap,
+                  norm = norm,
+                  vmin = vmin,
+                  vmax = vmax)
+
+    for z in (m, m0):
+        cbar = z.colorbar(label = 'Prevalence',
+                          format = '%g%%')
+        ticklabels = cbar.ax.get_xticklabels()
+        ticklabels[0] = '≤{}'.format(ticklabels[0].get_text())
+        cbar.ax.set_xticklabels(ticklabels)
+
+    X, Y = label_coords
+    m0.text_coords(X, Y, str(int(T[0])),
+                   fontdict = dict(size = 20,
+                                   weight = 'bold'),
+                   horizontalalignment = 'left')
+
+    m0.savefig('prevalence.pdf')
 
     ani = animation.FuncAnimation(m.fig, m.choropleth_update,
                                   frames = len(prevalence),
                                   init_func = m.choropleth_init,
                                   repeat = False,
                                   blit = True)
-
     # 10 years per second.
     ani.save('prevalence.mp4', fps = 10 / (t[1] - t[0]),
              dpi = 300, extra_args = ('-vcodec', 'libx264'))
 
-    # m.show()
+    m.show()
 
 
 if __name__ == '__main__':

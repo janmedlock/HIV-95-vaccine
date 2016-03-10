@@ -144,7 +144,7 @@ def plot_ICER(countries, ICER):
     if cmax > 3:
         cticks.append(cmax)
         # cticklabels.append(str(cmax))
-        cticklabels.append('{:g}+'.format(cmax))
+        cticklabels.append('≥{:g}'.format(cmax))
     cbar.set_ticks(cticks)
     cbar.set_ticklabels(cticklabels)
 

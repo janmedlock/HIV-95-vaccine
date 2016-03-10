@@ -49,23 +49,16 @@ class Basemap:
         '''
 
         self.fig = fig or pyplot.gcf()
-
         proj = cartopy.crs.PlateCarree(
             central_longitude = central_longitude)
-
         self.ax = self.fig.add_axes(rect, projection = proj,
                                     anchor = 'N',
                                     axis_bgcolor = 'none')
-
         self.ax.set_extent(extent, proj)
-
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
-
         self._do_basemap()
-
         self._load_borders()
-
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
 
@@ -92,7 +85,6 @@ class Basemap:
             name = 'admin_0_countries')
         # The Natural Earth coordinate system
         self.border_crs = cartopy.crs.PlateCarree()
-
         border_reader = cartopy.io.shapereader.Reader(border_feature)
         self.borders = {}
         for record in border_reader.records():
@@ -113,12 +105,21 @@ class Basemap:
         '''
         # self.fig.canvas.draw()
         self.ax.autoscale_view()
-
         w, h = self.fig.get_size_inches()
         extent = self.ax.get_extent()
         aspect = ((extent[3] - extent[2]) / (extent[1] - extent[0])
                   * aspect_adjustment)
         self.fig.set_size_inches(w, w * aspect, forward = True)
+
+    def draw_borders(self, countries, zorder = 0, facecolor = 'None',
+                     *args, **kwargs):
+        for c in countries:
+            try:
+                border = self.borders[c]
+            except KeyError:
+                print('Country "{}" borders not in records.'.format(c))
+            self.ax.add_feature(border, facecolor = 'None', zorder = zorder,
+                                *args, **kwargs)
 
     def choropleth(self, countries, values, *args, **kwargs):
         '''
@@ -131,7 +132,6 @@ class Basemap:
         vmax = kwargs.pop('vmax', max(values))
         cmap_norm.set_clim(vmin, vmax)
         cmap_norm.set_array(values)
-
         for (c, v) in zip(countries, values):
             try:
                 border = self.borders[c]
@@ -141,10 +141,8 @@ class Basemap:
                                 facecolor = cmap_norm.to_rgba(v),
                                 *args,
                                 **kwargs)
-
         # Make pyplot.colorbar() work.
         self.ax._current_image = cmap_norm
-
         return cmap_norm
 
     def choropleth_preinit(self, countries, t, values,
@@ -159,7 +157,6 @@ class Basemap:
         self.cmap_norm.set_clim(vmin = kwargs.pop('vmin', None),
                                 vmax = kwargs.pop('vmax', None))
         self.cmap_norm.set_array(values)
-
         self._countries = countries
         self._t = t
         self._values = values
@@ -172,10 +169,10 @@ class Basemap:
                 print('Country "{}" borders not in records.'.format(c))
             self._artists.append(self.ax.add_feature(
                 border,
+                facecolor = 'None',
                 *args,
                 **kwargs))
             self._artist_map[c] = i
-
         if label_coords is not None:
             X, Y = label_coords
             self._label = self.text_coords(X, Y, '',
@@ -184,7 +181,6 @@ class Basemap:
                                            horizontalalignment = 'left')
         else:
             self._label = None
-
         # Make pyplot.colorbar() work.
         self.ax._current_image = self.cmap_norm
 
@@ -218,6 +214,7 @@ class Basemap:
                         transform = self.border_crs,
                         *args,
                         **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def pies(self, countries, values, s = 20,
              wedgeprops = dict(linewidth = 0),
@@ -246,6 +243,7 @@ class Basemap:
                             colors = self._get_colors(colors),
                             *args,
                             **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def bars(self, countries, values,
              color = 'bright',
@@ -255,13 +253,11 @@ class Basemap:
              frame = False,
              *args, **kwargs):
         values = numpy.asarray(values)
-
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
-
             width = widthscale
             heights = v * heightscale
             # Center on y
@@ -269,13 +265,11 @@ class Basemap:
             # Center on x
             N = len(v)
             lefts = x + width * (numpy.arange(N) - N / 2)
-
             self.ax.bar(lefts, heights, width, bottom,
                         color = self._get_colors(color),
                         linewidth = linewidth,
                         *args,
                         **kwargs)
-
             if frame:
                 # draw a box around of height 1 around the bars for scale.
                 xmin = min(lefts)
@@ -288,6 +282,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def barhs(self, countries, values,
               color = 'bright',
@@ -297,13 +292,11 @@ class Basemap:
               frame = False,
               *args, **kwargs):
         values = numpy.asarray(values)
-
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
-
             height = heightscale
             widths = v * widthscale
             # Center on y
@@ -311,13 +304,11 @@ class Basemap:
             bottoms = y + height * (numpy.arange(N) - N / 2)
             # Center on x
             left = x - max(widths) / 2
-
             self.ax.barh(bottoms, widths, height, left,
                          color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)
-
             if frame:
                 # draw a box around of height 1 around the bars for scale.
                 xmin = left
@@ -330,6 +321,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def barh_coords(self, X, Y, values,
                     color = 'bright',
@@ -339,10 +331,8 @@ class Basemap:
                     frame = False,
                     *args, **kwargs):
         values = numpy.asarray(values)
-
         x, y = self.ax.projection.transform_point(
             X, Y, self.border_crs)
-
         height = heightscale
         widths = values * widthscale
         # Center on y
@@ -350,7 +340,6 @@ class Basemap:
         bottoms = y + height * (numpy.arange(N) - N / 2)
         # Center on x
         left = x - max(widths) / 2
-
         self.ax.barh(bottoms, widths, height, left,
                      color = self._get_colors(color),
                      linewidth = linewidth,
@@ -365,13 +354,11 @@ class Basemap:
                frame = False,
                *args, **kwargs):
         values = numpy.asarray(values)
-
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
-
             height = heightscale
             widths = v * widthscale
             # Center on y
@@ -379,13 +366,11 @@ class Basemap:
             bottoms = y + height * (numpy.arange(N) - N / 2)
             # Center on x
             lefts = x + max(widths) / 2 - widths
-
             self.ax.barh(bottoms, widths, height, lefts,
                          color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)
-
             if frame:
                 # draw a box around of height 1 around the bars for scale.
                 xmax = max(lefts + widths)
@@ -398,6 +383,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def pyramids(self, countries, values,
              color = 'bright',
@@ -406,13 +392,11 @@ class Basemap:
              linewidth = 0,
              *args, **kwargs):
         values = numpy.asarray(values)
-
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
-
             height = heightscale
             widths = v * widthscale
             # Center on y
@@ -420,12 +404,12 @@ class Basemap:
             bottoms = y + height * (numpy.arange(N) - N / 2)
             # Center on x
             lefts = x - widths / 2
-
             self.ax.barh(bottoms, widths, height, lefts,
                          color = self._get_colors(color),
                          linewidth = linewidth,
                          *args,
                          **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def _star(self, values,
               center = (0, 0),
@@ -434,25 +418,20 @@ class Basemap:
               # linestyle = (0, (1, 2)),
               *args, **kwargs):
         values = numpy.asarray(values)
-
         kwargs['linewidth'] = linewidth
         # kwargs['linestyle'] = linestyle
-
         angles = numpy.linspace(0, 2 * numpy.pi, len(values),
                                 endpoint = False)
         units = (scale
                  * numpy.array([(numpy.sin(a), numpy.cos(a)) for a in angles]))
-
         pts = center + values[:, numpy.newaxis] * units
         self.ax.fill(pts[:, 0], pts[:, 1],
                      *args, **kwargs)
-
         # # Plot envelope.
         # envelope = center + units
         # envelope = numpy.vstack((envelope, envelope[0]))  # Close the polygon.
         # self.ax.plot(envelope[:, 0], envelope[:, 1],
         #              *args, **kwargs)
-
         # Plot spines.
         color_ = kwargs.pop('color', None)
         # for p in units:
@@ -468,7 +447,6 @@ class Basemap:
               scale = 1,
               *args, **kwargs):
         values = numpy.asarray(values)
-
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
             self.border_crs, X, Y)
@@ -478,6 +456,7 @@ class Basemap:
                        center = (x, y),
                        scale = scale,
                        *args, **kwargs)
+        self.draw_borders(countries, *args, **kwargs)
 
     def label(self, countries,
               horizontalalignment = 'center',
@@ -502,6 +481,7 @@ class Basemap:
                          fontdict = fontdict,
                          *args,
                          **kwargs)
+        # self.draw_borders(countries, *args, **kwargs)
 
     def text_coords(self, X, Y, s,
                    *args, **kwargs):

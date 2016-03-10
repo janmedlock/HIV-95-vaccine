@@ -47,7 +47,6 @@ def _main():
     cp = mapplot.seaborn.color_palette('Set1')
     colors = (cp[0], cp[1], cp[4], cp[2])
 
-    pyplot.clf()
     m = mapplot.Basemap()
 
     m.barhs(countries, p_overlapping,
