@@ -75,17 +75,18 @@ def print_cost_effectiveness_stats(incremental_DALYs, incremental_QALYs,
         incremental_DALYs))
     print('incremental effectiveness = {:g} QALYs'.format(
         incremental_QALYs))
-    print('incremental cost = {:g} USD'.format(incremental_cost))
-    print('incremental cost = {:g} GDP per capita'.format(
-        incremental_cost / parameters.GDP_per_capita))
-    print('ICER = {:g} USD per DALY'.format(
-        ICER_DALYs * parameters.GDP_per_capita))
-    print('ICER = {:g} GDP per capita per DALY'.format(
-        ICER_DALYs))
-    print('ICER = {:g} USD per QALY'.format(
-        ICER_QALYs * parameters.GDP_per_capita))
-    print('ICER = {:g} GDP per capita per QALY'.format(
-        ICER_QALYs))
+    if numpy.isfinite(incremental_cost):
+        print('incremental cost = {:g} USD'.format(incremental_cost))
+        print('incremental cost = {:g} GDP per capita'.format(
+            incremental_cost / parameters.GDP_per_capita))
+        print('ICER = {:g} USD per DALY'.format(
+            ICER_DALYs * parameters.GDP_per_capita))
+        print('ICER = {:g} GDP per capita per DALY'.format(
+            ICER_DALYs))
+        print('ICER = {:g} USD per QALY'.format(
+            ICER_QALYs * parameters.GDP_per_capita))
+        print('ICER = {:g} GDP per capita per QALY'.format(
+            ICER_QALYs))
 
 
 def get_net_benefit(DALYs, QALYs, cost_, cost_effectiveness_threshold,

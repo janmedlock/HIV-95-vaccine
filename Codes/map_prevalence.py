@@ -3,6 +3,8 @@
 Make an animated map of the prevalence at different times.
 '''
 
+import pickle
+
 from matplotlib import animation
 from matplotlib import colors as mcolors
 import numpy
@@ -12,34 +14,40 @@ import mapplot
 
 
 def _main():
-    data = model.read_all_initial_conditions()
+    results = pickle.load(open('analyze909090.pkl', 'rb'))
+    countries, values = zip(*results.items())
+    prevalence, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
 
-    countries = data.index
-
-    # People with HIV.
-    nHIV = data.iloc[:, 1 : ].sum(1)
-    pHIV = nHIV / data.sum(1)
-
-    data = numpy.row_stack(0.7 ** i * pHIV for i in range(11))
+    every = 20
+    t = prevalence[0, 0, : : every]
+    prevalence = prevalence[:, 1, : : every].T
 
     m = mapplot.Basemap()
 
     m.tighten(aspect_adjustment = 1.35)
 
-    m.choropleth_init(countries,
-                      100 * data,
-                      norm = mcolors.LogNorm(vmin = 100 * data.min(),
-                                             vmax = 100 * data.max()),
-                      cmap = 'Purples')
+    a = max(prevalence.min(), 1e-4)
+    b = prevalence.max()
+
+    m.choropleth_preinit(countries,
+                         t + 2015, 100 * prevalence,
+                         norm = mcolors.LogNorm(vmin = 100 * a,
+                                                vmax = 100 * b),
+                         label_coords = (-120, -20),
+                         cmap = 'afmhot_r')
 
     cbar = m.colorbar(label = 'Prevalence',
                       format = '%g%%')
 
     ani = animation.FuncAnimation(m.fig, m.choropleth_update,
-                                  frames = len(data),
-                                  repeat = False)
+                                  frames = len(prevalence),
+                                  init_func = m.choropleth_init,
+                                  repeat = False,
+                                  blit = True)
 
-    ani.save('prevalence.mp4', fps = 1, extra_args = ('-vcodec', 'libx264'))
+    # 10 years per second.
+    ani.save('prevalence.mp4', fps = 10 / (t[1] - t[0]),
+             dpi = 300, extra_args = ('-vcodec', 'libx264'))
 
     # m.show()
 

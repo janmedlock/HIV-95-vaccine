@@ -147,7 +147,9 @@ class Basemap:
 
         return cmap_norm
 
-    def choropleth_init(self, countries, values, *args, **kwargs):
+    def choropleth_preinit(self, countries, t, values,
+                           label_coords = None,
+                           *args, **kwargs):
         '''
         Set up animated choropleth.
         '''
@@ -159,6 +161,7 @@ class Basemap:
         self.cmap_norm.set_array(values)
 
         self._countries = countries
+        self._t = t
         self._values = values
         self._artists = []
         self._artist_map = {}
@@ -173,18 +176,41 @@ class Basemap:
                 **kwargs))
             self._artist_map[c] = i
 
+        if label_coords is not None:
+            X, Y = label_coords
+            self._label = self.text_coords(X, Y, '',
+                                           fontdict = dict(size = 20,
+                                                           weight = 'bold'),
+                                           horizontalalignment = 'left')
+        else:
+            self._label = None
+
         # Make pyplot.colorbar() work.
         self.ax._current_image = self.cmap_norm
+
+    def choropleth_init(self):
+        retval = []
+        if self._label is not None:
+            retval.append(self._label)
+        retval.extend(self._artists)
+        return retval
 
     def choropleth_update(self, i):
         '''
         Update country colors.
         '''
+        retval = []
+        if self._label is not None:
+            print('Make frame for t = {:g}.'.format(self._t[i]))
+            self._label.set_text(int(self._t[i]))
+            self._label.stale = True
+            retval.append(self._label)
         for (c, v) in zip(self._countries, self._values[i]):
             ix = self._artist_map[c]
-            self._artists[ix].stale = True
             self._artists[ix]._kwargs['facecolor'] = self.cmap_norm.to_rgba(v)
-        return self._artists
+            self._artists[ix].stale = True
+        retval.extend(self._artists)
+        return retval
 
     def scatter(self, countries, *args, **kwargs):
         x, y = self.locator.get_locations(countries)
@@ -481,7 +507,7 @@ class Basemap:
                    *args, **kwargs):
         x, y = self.ax.projection.transform_point(
             X, Y, self.border_crs)
-        self.ax.text(x, y, s, *args, **kwargs)
+        return self.ax.text(x, y, s, *args, **kwargs)
 
     def rectangle_coords(self, X, Y, w, h, *args, **kwargs):
         xy = self.ax.projection.transform_point(
