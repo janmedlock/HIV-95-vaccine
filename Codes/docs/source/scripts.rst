@@ -10,13 +10,13 @@ map909090
 .. automodule:: map909090
 
 
+map_infections_averted
+-----------------------
+.. automodule:: map_infections_averted
+
 map_initial_proportions
 -----------------------
 .. automodule:: map_initial_proportions
-
-map_initial_prevalence
-----------------------
-.. automodule:: map_initial_prevalence
 
 map_prevalence
 --------------
