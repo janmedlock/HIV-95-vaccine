@@ -80,8 +80,8 @@ class Basemap:
         self.ax.add_feature(cartopy.feature.OCEAN,
                             facecolor = ocean_color,
                             zorder = zorder)
-        self.ax.add_feature(cartopy.feature.COASTLINE, zorder = zorder)
-        self.ax.add_feature(cartopy.feature.BORDERS, zorder = zorder)
+        # self.ax.add_feature(cartopy.feature.COASTLINE, zorder = zorder)
+        # self.ax.add_feature(cartopy.feature.BORDERS, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.LAKES, alpha=0.5, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.RIVERS, zorder = zorder)
 
