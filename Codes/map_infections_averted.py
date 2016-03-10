@@ -7,6 +7,7 @@ import pickle
 
 from matplotlib import animation
 from matplotlib import colors as mcolors
+from matplotlib import pyplot
 import numpy
 
 import model
@@ -22,22 +23,46 @@ def _main():
     t = state[0, 0, : : every]
     infections_averted = state[:, 2, : : every].T
 
+    fig = pyplot.figure()
     m = mapplot.Basemap()
 
-    m.tighten(aspect_adjustment = 1.35)
+    # Initial frame for linking.
+    fig0 = pyplot.figure()
+    m0 = mapplot.Basemap()
 
-    a = 0
-    b = max(infections_averted.max(), 0.50)
+    for z in (m, m0):
+        z.tighten(aspect_adjustment = 1.35)
 
-    m.choropleth_preinit(countries,
-                         t + 2015, 100 * infections_averted,
-                         vmin = 100 * a,
-                         vmax = 100 * b,
-                         label_coords = (-120, -20),
-                         cmap = 'viridis')
+    data = 100 * infections_averted
+    T = t + 2015
+    cmap = 'viridis'
+    vmin = 0
+    vmax = max(data.max(), 50)
+    label_coords = (-120, -20)
 
-    cbar = m.colorbar(label = 'Infections (Proportion Averted Below Baseline)',
-                      format = '%g%%')
+    m.choropleth_preinit(countries, T, data,
+                         cmap = cmap,
+                         vmin = vmin,
+                         vmax = vmax,
+                         label_coords = (-120, -20))
+
+    m0.choropleth(countries, data[0],
+                  cmap = cmap,
+                  vmin = vmin,
+                  vmax = vmax)
+
+    for z in (m, m0):
+        cbar = z.colorbar(
+            label = 'Infections (Proportion Averted Below Baseline)',
+            format = '%g%%')
+
+    X, Y = label_coords
+    m0.text_coords(X, Y, str(int(T[0])),
+                   fontdict = dict(size = 20,
+                                   weight = 'bold'),
+                   horizontalalignment = 'left')
+
+    m0.savefig('infections_averted.pdf')
 
     ani = animation.FuncAnimation(m.fig, m.choropleth_update,
                                   frames = len(infections_averted),
@@ -49,7 +74,7 @@ def _main():
     ani.save('infections_averted.mp4', fps = 10 / (t[1] - t[0]),
              dpi = 300, extra_args = ('-vcodec', 'libx264'))
 
-    # m.show()
+    m.show()
 
 
 if __name__ == '__main__':
