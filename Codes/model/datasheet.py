@@ -86,19 +86,26 @@ class Parameters:
 
         # Compute number of people with AIDS,
         # and move them from the non-AIDS states to the AIDS state.
-        initial_conditions['W'] = 0
-        for k in ('U', 'D', 'T', 'V'):
-            if k in ('U', 'D', 'T'):
-                progression_rate = self.progression_rate_unsuppressed
-            elif k == 'V':
-                progression_rate = self.progression_rate_suppressed
-            else:
-                raise ValueError
+        # initial_conditions['W'] = 0
+        # for k in ('U', 'D', 'T', 'V'):
+        #     if k in ('U', 'D', 'T'):
+        #         progression_rate = self.progression_rate_unsuppressed
+        #     elif k == 'V':
+        #         progression_rate = self.progression_rate_suppressed
+        #     else:
+        #         raise ValueError
                 
-            proportionAIDS = 1 / (1 + self.death_rate_AIDS / progression_rate)
-            newAIDS = proportionAIDS * initial_conditions[k]
-            initial_conditions['W'] += newAIDS
-            initial_conditions[k]   -= newAIDS
+        #     proportionAIDS = 1 / (1 + self.death_rate_AIDS / progression_rate)
+        #     newAIDS = proportionAIDS * initial_conditions[k]
+        #     initial_conditions['W'] += newAIDS
+        #     initial_conditions[k]   -= newAIDS
+        # Take AIDS people out of D only.
+        proportionAIDS = (1 / (1
+                               + self.death_rate_AIDS
+                               / self.progression_rate_unsuppressed))
+        newAIDS = proportionAIDS * initial_conditions['D']
+        initial_conditions['W'] = newAIDS
+        initial_conditions['D'] -= newAIDS
 
         # Add people dead from AIDS.
         initial_conditions['Z'] = 0
