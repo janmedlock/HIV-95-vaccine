@@ -9,7 +9,7 @@ Compute cost.
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
    >>> cost_ = solve_and_get_cost('909090', parameters)
-   >>> assert isclose(cost_, 12706118534.633265)
+   >>> assert isclose(cost_, 13937906237.992044)
 '''
 
 import numpy

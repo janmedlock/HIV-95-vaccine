@@ -36,8 +36,8 @@ so DALYs and QALYs are related by
    >>> parameters = Parameters(country)
    >>> t, state = solve('909090', parameters)
    >>> DALYs, QALYs = get_effectiveness(t, state, '909090', parameters)
-   >>> assert isclose(DALYs, 10319773.61140893)
-   >>> assert isclose(QALYs, 955467757.65350425)
+   >>> assert isclose(DALYs, 8281790.7229896532)
+   >>> assert isclose(QALYs, 957874221.35318017)
    >>> assert isclose(simps(state[:, : -1].sum(1), t) - DALYs, QALYs)
 '''
 
