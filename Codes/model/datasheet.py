@@ -2,8 +2,9 @@
 Load parameter data from the datafile.
 '''
 
-import os.path
 import inspect
+import itertools
+import os.path
 
 import numpy
 import pandas
@@ -117,7 +118,10 @@ class Parameters:
 
 
     def read_costs_sheet(self, data):
-        costs_raw = data.parse('Costs')[self.country]
+        try:
+            costs_raw = data.parse('Costs')[self.country]
+        except KeyError:
+            costs_raw = (numpy.nan, ) * 6
 
         (cost_test,
          cost_CD4,
@@ -189,7 +193,10 @@ class Parameters:
 
 
     def read_GDP_sheet(self, data):
-        GDP_raw = data.parse('GDP')[self.country]
+        try:
+            GDP_raw = data.parse('GDP')[self.country]
+        except KeyError:
+            GDP_raw = (numpy.nan, ) * 2
 
         GDP_per_capita, GDP_PPP_per_capita = GDP_raw[ : 2]
 
