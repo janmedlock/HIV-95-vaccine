@@ -53,7 +53,7 @@ def _main():
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'Infections (Proportion Averted Below Baseline)',
+            label = 'New Infections Averted (Proportion Below Baseline)',
             format = '%g%%')
 
     X, Y = label_coords
