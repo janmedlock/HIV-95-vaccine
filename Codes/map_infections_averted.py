@@ -37,11 +37,11 @@ def _main(every = 20):
     for z in (m, m0):
         z.tighten(aspect_adjustment = 1.35)
 
-    data = 100 * infections_averted
+    data = infections_averted / 1000
     T = t + 2015
     cmap = 'viridis'
-    vmin = 0
-    vmax = max(data.max(), 50)
+    vmin = min(data.min(), 0)
+    vmax = max(data.max(), 600)
     label_coords = (-120, -20)
 
     m.choropleth_preinit(countries, T, data,
@@ -57,8 +57,7 @@ def _main(every = 20):
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'Proportion of New Infections Averted (Compared to Status Quo)',
-            format = '%g%%')
+            label = 'Infections Averted (1000s, Compared to Status Quo)')
 
     X, Y = label_coords
     m0.text_coords(X, Y, str(int(T[0])),
@@ -74,8 +73,8 @@ def _main(every = 20):
                                   repeat = False,
                                   blit = True)
 
-    # 10 years per second.
-    ani.save('infections_averted.mp4', fps = 10 / (t[1] - t[0]),
+    # 2 years per second.
+    ani.save('infections_averted.mp4', fps = 2 / (t[1] - t[0]),
              dpi = 300, extra_args = ('-vcodec', 'libx264'))
 
     m.show()

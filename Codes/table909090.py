@@ -11,7 +11,7 @@ import pandas
 import model
 
 
-def _main(t_end = 10):
+def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
     df = pandas.DataFrame()
@@ -19,16 +19,10 @@ def _main(t_end = 10):
     for (c, r) in  results.items():
         s = pandas.Series()
 
-        # 10-year stats.
-        ix = (r.t <= t_end)
-        t = numpy.compress(ix, r.t)
-        state = numpy.compress(ix, r.state, axis = 0)
-        state_base = numpy.compress(ix, r.state_base, axis = 0)
-
-        stats = model.get_effectiveness_and_cost(t, state,
+        stats = model.get_effectiveness_and_cost(r.t, r.state,
                                                  r.target,
                                                  r.parameters)
-        stats_base = model.get_effectiveness_and_cost(t, state_base,
+        stats_base = model.get_effectiveness_and_cost(r.t, r.state_base,
                                                       r.target_base,
                                                       r.parameters)
         stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),
@@ -46,8 +40,8 @@ def _main(t_end = 10):
         s['ICER DALYs'] = stats_inc[3]
         # s['ICER QALYs'] = stats_inc[4]
 
-        # Every 10 years.
-        tau = numpy.hstack((numpy.arange(0, r.t[-1], 10), r.t[-1]))
+        # Every 5 years.
+        tau = numpy.hstack((numpy.arange(0, r.t[-1], 5), r.t[-1]))
 
         prevalence = r.state[:, 1 : -2].sum(1) / r.state[:, : -2].sum(1)
         infections_averted = ((r.state_base[:, -1] - r.state[:, -1])

@@ -173,7 +173,7 @@ def plot_ICER(countries, ICER):
     return m
 
 
-def _main(t_end = 10):
+def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
     countries = list(results.keys())
@@ -185,16 +185,12 @@ def _main(t_end = 10):
     for c in countries:
         r = results[c]
 
-        # 10-year stats.
-        ix = (r.t <= t_end)
-        t = numpy.compress(ix, r.t)
-        state = numpy.compress(ix, r.state, axis = 0)
-        state_base = numpy.compress(ix, r.state_base, axis = 0)
-
-        stats = model.get_effectiveness_and_cost(t, state,
+        stats = model.get_effectiveness_and_cost(r.t,
+                                                 r.state,
                                                  r.target,
                                                  r.parameters)
-        stats_base = model.get_effectiveness_and_cost(t, state_base,
+        stats_base = model.get_effectiveness_and_cost(r.t,
+                                                      r.state_base,
                                                       r.target_base,
                                                       r.parameters)
         stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),

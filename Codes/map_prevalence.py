@@ -77,8 +77,8 @@ def _main(every = 20):
                                   init_func = m.choropleth_init,
                                   repeat = False,
                                   blit = True)
-    # 10 years per second.
-    ani.save('prevalence.mp4', fps = 10 / (t[1] - t[0]),
+    # 2 years per second.
+    ani.save('prevalence.mp4', fps = 2 / (t[1] - t[0]),
              dpi = 300, extra_args = ('-vcodec', 'libx264'))
 
     m.show()
