@@ -19,9 +19,12 @@ def analyze909090(country):
 
     t_base, state_base = simulation.solve('base', parameters, t_end = 50)
     new_infections_base = state_base[:, -1]
+    prevalence_base = state_base[:, 1 : -2].sum(1) / state_base[:, : -2].sum(1)
 
     infections_averted = ((new_infections_base - new_infections)
                           / new_infections_base)
+
+    prevalence_reduction = (prevalence_base - prevalence) / prevalence_base
 
     if numpy.isfinite(parameters.cost_AIDS_recurring_constant):
         DALYs, QALYs, cost_ \
@@ -46,7 +49,8 @@ def analyze909090(country):
     cost_effectiveness.print_cost_effectiveness_stats(
         *(CE_stats + (parameters, )))
 
-    return (country, ((t, prevalence, infections_averted),
-                      (DALYs, QALYs, cost_),
-                      (DALYs_base, QALYs_base, cost_base),
-                      CE_stats))
+    return (country, (
+        (t, prevalence, prevalence_reduction, infections_averted),
+        (DALYs, QALYs, cost_),
+        (DALYs_base, QALYs_base, cost_base),
+        CE_stats))

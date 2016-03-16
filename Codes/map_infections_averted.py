@@ -21,7 +21,7 @@ def _main():
 
     every = 20
     t = state[0, 0, : : every]
-    infections_averted = state[:, 2, : : every].T
+    infections_averted = state[:, 3, : : every].T
 
     fig = pyplot.figure()
     m = mapplot.Basemap()
@@ -53,7 +53,7 @@ def _main():
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'New Infections Averted (Proportion Below Baseline)',
+            label = 'Proportion of New Infections Averted (Compared to Status Quo)',
             format = '%g%%')
 
     X, Y = label_coords

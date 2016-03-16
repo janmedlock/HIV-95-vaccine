@@ -43,7 +43,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
                  cmap = 'Oranges')
 
     cbar = m.colorbar(
-        label = 'Effectiveness (Proportion of DALYs Averted Below Baseline)',
+        label = 'Proportion of DALYs Averted (Compared to Status Quo)',
         format = '%g%%')
 
     m.tighten(aspect_adjustment = 1.35)
@@ -82,7 +82,7 @@ def plot_cost(countries, cost, cost_base):
                  vmax = 100 * b,
                  cmap = cmap)
 
-    cbar = m.colorbar(label = 'Cost (Proportion Added Above Baseline)',
+    cbar = m.colorbar(label = 'Proportion of Cost Added (Compared to Status Quo)',
                       format = '%g%%')
 
     m.tighten(aspect_adjustment = 1.35)
@@ -153,7 +153,7 @@ def plot_ICER(countries, ICER):
     labels = ('Cost Saving',
               'Very Cost Effective',
               'Cost Effective',
-              'Not Cost Effective')
+              'Above Threshold')
     X = (0.11, 0.17, 0.29, 0.58)
     y = 0.22
     C = (colors[0], colors[3], colors[5], colors[7])
