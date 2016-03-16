@@ -24,8 +24,7 @@ def _main(every = 20):
         t = r.t[: : every]
         state = r.state[: : every]
         state_base = r.state_base[: : every]
-        infections_averted.append(
-            (state_base[:, -1] - state[:, -1]) / state_base[:, -1])
+        infections_averted.append(state_base[:, -1] - state[:, -1])
     infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
