@@ -2,10 +2,6 @@ model
 =====
 .. automodule:: model
 
-model.analyze909090
--------------------
-.. automodule:: model.analyze909090
-
 model.control_rates
 -------------------
 .. automodule:: model.control_rates
@@ -45,6 +41,10 @@ model.plot_solution
 model.proportions
 -----------------
 .. automodule:: model.proportions
+
+model.run909090
+---------------
+.. automodule:: model.run909090
 
 model.simulation
 ----------------

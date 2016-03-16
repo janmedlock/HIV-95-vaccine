@@ -14,14 +14,19 @@ import model
 import mapplot
 
 
-def _main():
-    results = pickle.load(open('analyze909090.pkl', 'rb'))
-    countries, values = zip(*results.items())
-    state, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
+def _main(every = 20):
+    results = pickle.load(open('909090.pkl', 'rb'))
 
-    every = 20
-    t = state[0, 0, : : every]
-    infections_averted = state[:, 3, : : every].T
+    countries = list(results.keys())
+    infections_averted = []
+    for c in countries:
+        r = results[c]
+        t = r.t[: : every]
+        state = r.state[: : every]
+        state_base = r.state_base[: : every]
+        infections_averted.append(
+            (state_base[:, -1] - state[:, -1]) / state_base[:, -1])
+    infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
     m = mapplot.Basemap()

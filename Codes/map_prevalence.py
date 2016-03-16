@@ -14,14 +14,17 @@ import model
 import mapplot
 
 
-def _main():
-    results = pickle.load(open('analyze909090.pkl', 'rb'))
-    countries, values = zip(*results.items())
-    state, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
+def _main(every = 20):
+    results = pickle.load(open('909090.pkl', 'rb'))
 
-    every = 20
-    t = state[0, 0, : : every]
-    prevalence = state[:, 1, : : every].T
+    countries = list(results.keys())
+    prevalence = []
+    for c in countries:
+        r = results[c]
+        t = r.t[: : every]
+        state = r.state[: : every]
+        prevalence.append(state[:, 1 : -2].sum(1) / state[:, : -2].sum(1))
+    prevalence = numpy.asarray(prevalence).T
 
     fig = pyplot.figure()
     m = mapplot.Basemap()

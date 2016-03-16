@@ -20,6 +20,7 @@ import seaborn
 
 import mapplot
 import mapplot.cmap
+import model
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -172,14 +173,46 @@ def plot_ICER(countries, ICER):
     return m
 
 
-def _main():
-    results = pickle.load(open('analyze909090.pkl', 'rb'))
-    countries, values = zip(*results.items())
-    state, stats, stats_base, stats_inc = map(numpy.array, zip(*values))
+def _main(t_end = 10):
+    results = pickle.load(open('909090.pkl', 'rb'))
 
-    plot_effectiveness(countries, stats[:, 0], stats_base[:, 0])
-    plot_cost(countries, stats[:, -1], stats_base[:, -1])
-    plot_ICER(countries, stats_inc[:, 3])
+    countries = list(results.keys())
+    effectiveness = []
+    effectiveness_base = []
+    cost = []
+    cost_base = []
+    ICER = []
+    for c in countries:
+        r = results[c]
+
+        # 10-year stats.
+        ix = (r.t <= t_end)
+        t = numpy.compress(ix, r.t)
+        state = numpy.compress(ix, r.state, axis = 0)
+        state_base = numpy.compress(ix, r.state_base, axis = 0)
+
+        stats = model.get_effectiveness_and_cost(t, state,
+                                                 r.target,
+                                                 r.parameters)
+        stats_base = model.get_effectiveness_and_cost(t, state_base,
+                                                      r.target_base,
+                                                      r.parameters)
+        stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),
+                                                       r.parameters)
+
+        # DALYs
+        effectiveness.append(stats[0])
+        effectiveness_base.append(stats_base[0])
+
+        cost.append(stats[-1])
+        cost_base.append(stats_base[-1])
+
+        # In DALYs.
+        ICER.append(stats_inc[3])
+
+    plot_effectiveness(countries, effectiveness, effectiveness_base)
+    plot_cost(countries, cost, cost_base)
+    plot_ICER(countries, ICER)
 
     pyplot.show()
 

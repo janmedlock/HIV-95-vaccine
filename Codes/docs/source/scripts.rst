@@ -1,9 +1,9 @@
 main scripts
 ============
 
-analyze909090
--------------
-.. automodule:: analyze909090
+run909090
+---------
+.. automodule:: run909090
 
 map909090
 ---------
