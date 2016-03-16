@@ -17,7 +17,7 @@ class Results:
     pass
 
 
-def run909090(country, t_end = 50):
+def run909090(country, t_end = 15):
     results = Results()
 
     results.parameters = datasheet.Parameters(country)
