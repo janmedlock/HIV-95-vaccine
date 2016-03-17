@@ -93,9 +93,7 @@ def get_net_benefit(DALYs, QALYs, cost_, cost_effectiveness_threshold,
                     parameters, effectiveness_ = 'DALYs'):
     r'''Net benefit is
 
-    .. math::
-    
-       N = E - \frac{C}{T G},
+    .. math:: N = E - \frac{C}{T G},
 
     where :math:`E` is `effectiveness`, :math:`C` is `cost`, :math:`T`
     is `cost_effectiveness_threshold`, and :math:`G` is

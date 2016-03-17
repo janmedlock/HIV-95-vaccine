@@ -12,15 +12,14 @@ def ramp(x, tol = 0.0001):
     r'''
     Piecewise linear
 
-    .. math::
-       f(x) =
-       \begin{cases}
-       0 & \text{if $x \leq 0$},
-       \\
-       \frac{x}{\epsilon} & \text{if $0 \leq x \leq \epsilon$},
-       \\
-       1 & \text{if $x \geq \epsilon$},
-       \end{cases}
+    .. math:: f(x) =
+              \begin{cases}
+              0 & \text{if $x \leq 0$},
+              \\
+              \frac{x}{\epsilon} & \text{if $0 \leq x \leq \epsilon$},
+              \\
+              1 & \text{if $x \geq \epsilon$},
+              \end{cases}
 
     where :math:`\epsilon` is `tol`.
     '''
@@ -38,38 +37,35 @@ def get_control_rates(t, state, targs, parameters):
 
     The diagnosis rate is:
 
-    .. math::
-       r_{\text{diagnosis}} =
-       \begin{cases}
-       R_{\text{diagnosis}}
-       &
-       \text{if $p_{\text{diagnosed}} < T_{\text{diagnosed}}(t)$},
-       \\
-       0 & \text{otherwise}.
-       \end{cases}
+    .. math:: r_{\text{diagnosis}} =
+              \begin{cases}
+              R_{\text{diagnosis}}
+              &
+              \text{if $p_{\text{diagnosed}} < T_{\text{diagnosed}}(t)$},
+              \\
+              0 & \text{otherwise}.
+              \end{cases}
 
     The treatment rate is
 
-    .. math::
-       r_{\text{treatment}} =
-       \begin{cases}
-       R_{\text{treatment}}
-       &
-       \text{if $p_{\text{treated}} < T_{\text{treated}}(t)$},
-       \\
-       0 & \text{otherwise}.
-       \end{cases}
+    .. math:: r_{\text{treatment}} =
+              \begin{cases}
+              R_{\text{treatment}}
+              &
+              \text{if $p_{\text{treated}} < T_{\text{treated}}(t)$},
+              \\
+              0 & \text{otherwise}.
+              \end{cases}
 
     The nonadherance rate is
 
-    .. math::
-       r_{\text{nonadherance}} =
-       \begin{cases}
-       0 &
-       \text{if $p_{\text{suppressed}} < T_{\text{suppressed}}(t)$},
-       \\
-       R_{\text{nonadherance}} & \text{otherwise}.
-       \end{cases}
+    .. math:: r_{\text{nonadherance}} =
+              \begin{cases}
+              0 &
+              \text{if $p_{\text{suppressed}} < T_{\text{suppressed}}(t)$},
+              \\
+              R_{\text{nonadherance}} & \text{otherwise}.
+              \end{cases}
 
     The :math:`R`'s are :const:`control_rates_max`.
 

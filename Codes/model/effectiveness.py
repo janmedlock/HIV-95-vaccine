@@ -5,25 +5,19 @@ For disability weights :math:`\mathbf{w}`
 and state variables :math:`\mathbf{y}(t)`,
 DALYs are
 
-.. math::
-
-   D = \int_0^{t_\mathrm{end}} \mathbf{w}^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t,
+.. math:: D = \int_0^{t_\mathrm{end}} \mathbf{w}^{\mathrm{T}}
+          \mathbf{y}(t)\;\mathrm{d} t,
 
 and QALYs are
 
-.. math::
-
-   Q = \int_0^{t_\mathrm{end}} (\mathbf{1} - \mathbf{w})^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t,
+.. math:: Q = \int_0^{t_\mathrm{end}}
+          (\mathbf{1} - \mathbf{w})^{\mathrm{T}}
+          \mathbf{y}(t)\;\mathrm{d} t,
 
 so DALYs and QALYs are related by
 
-.. math::
-
-   Q = \int_0^{t_\mathrm{end}} \mathbf{1}^{\mathrm{T}}
-   \mathbf{y}(t)\;\mathrm{d} t - D.
-
+.. math:: Q = \int_0^{t_\mathrm{end}} \mathbf{1}^{\mathrm{T}}
+          \mathbf{y}(t)\;\mathrm{d} t - D.
 
 .. doctest::
 

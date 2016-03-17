@@ -27,24 +27,21 @@ class RelativeCostOfEffort:
 
     The marginal cost is
 
-    .. math::
-       f(p) =
-       \begin{cases}
-       1 & \text{if $p \leq b$},
-       \\
-       1 + m (p - b) & \text{if $p \geq b$},
-       \end{cases}
+    .. math:: f(p) =
+              \begin{cases}
+              1 & \text{if $p \leq b$},
+              \\
+              1 + m (p - b) & \text{if $p \geq b$},
+              \end{cases}
 
     where :math:`b` is `breakpoint`,
     and the total cost is
 
-    .. math::
-      F(p) = \int_0^p f(p') \mathrm{d}p'.
+    .. math:: F(p) = \int_0^p f(p') \mathrm{d}p'.
 
     This gives proportion :math:`b` of total cost in last :math:`(1 - b)`,
 
-    .. math::
-       \frac{F(1) - F(b)}{F(1)} = b,
+    .. math:: \frac{F(1) - F(b)}{F(1)} = b,
        :label: eightytwenty
 
     Particularly, with :math:`b = 0.8`, it gives the 80–20 rule,
