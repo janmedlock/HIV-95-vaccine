@@ -22,13 +22,13 @@ def _helper(country):
     return (country_, result)
 
 
-def _main():
-    # results = (_helper(country)
-    #            for country in model.get_country_list())
-    with joblib.Parallel(n_jobs = -1) as parallel:
-        results = parallel(
-            joblib.delayed(_helper)(country)
-            for country in model.get_country_list())
+def _main(parallel = True):
+    if parallel:
+        with joblib.Parallel(n_jobs = -1) as p:
+            results = p(joblib.delayed(_helper)(country)
+                        for country in model.get_country_list())
+    else:
+        results = (_helper(country) for country in model.get_country_list())
 
     pickle.dump(dict(results), open('909090.pkl', 'wb'))
 

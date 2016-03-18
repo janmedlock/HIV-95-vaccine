@@ -57,7 +57,8 @@ class Parameters:
               and `death_rate*`.
     '''
     def __init__(self, country):
-        self.country = convert_country(country)
+        self.country_name_in_datasheet = country
+        self.country = convert_country(self.country_name_in_datasheet)
 
         with pandas.ExcelFile(datapath) as data:
             self.read_parameters_sheet(data)
@@ -66,7 +67,8 @@ class Parameters:
             self.read_GDP_sheet(data)
 
     def read_parameters_sheet(self, data):
-        parameters_raw = data.parse('Parameters')[self.country]
+        parameters_raw \
+            = data.parse('Parameters')[self.country_name_in_datasheet]
 
         # Columns in the spreadsheet.
         (birth_rate, death_rate, progression_rate_acute,
@@ -117,7 +119,7 @@ class Parameters:
 
     def read_initial_conditions_sheet(self, data):
         initial_conditions \
-            = data.parse('Initial Conditions')[self.country][0 : 6]
+            = data.parse('Initial Conditions')[self.country_name_in_datasheet][0 : 6]
         initial_conditions.index = ('S', 'A', 'U', 'D', 'T', 'V')
 
         # Compute number of people with AIDS,
@@ -154,7 +156,7 @@ class Parameters:
 
     def read_costs_sheet(self, data):
         try:
-            costs_raw = data.parse('Costs')[self.country]
+            costs_raw = data.parse('Costs')[self.country_name_in_datasheet]
         except KeyError:
             costs_raw = (numpy.nan, ) * 6
 
@@ -229,7 +231,7 @@ class Parameters:
 
     def read_GDP_sheet(self, data):
         try:
-            GDP_raw = data.parse('GDP')[self.country]
+            GDP_raw = data.parse('GDP')[self.country_name_in_datasheet]
         except KeyError:
             GDP_raw = (numpy.nan, ) * 2
 
