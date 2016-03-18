@@ -17,10 +17,9 @@ def _main():
 
     parameters = model.Parameters(country)
 
-    t, state = model.solve('909090', parameters, t_end = 10)
+    solution = model.solve('909090', parameters, t_end = 10)
 
-    DALYs, QALYs, cost = model.get_effectiveness_and_cost(t, state,
-                                                          '909090', parameters)
+    DALYs, QALYs, cost = solution.effectiveness_and_cost
 
     DALYs_base, QALYs_base, cost_base \
         = model.solve_and_get_effectiveness_and_cost('base', parameters)
@@ -32,7 +31,7 @@ def _main():
 
     model.print_cost_effectiveness_stats(*(CE_stats + (parameters, )))
 
-    model.plot_solution(t, state, '909090', parameters)
+    model.plot_solution(solution)
 
 
 if __name__ == '__main__':

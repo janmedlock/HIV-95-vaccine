@@ -6,7 +6,11 @@ import numpy
 from scipy import integrate
 
 from . import control_rates
+from . import cost
+from . import cost_effectiveness
+from . import effectiveness
 from . import proportions
+from . import targets
 
 
 def _ODEs(state, t, targs, parameters):
@@ -148,6 +152,82 @@ def _ODEs_log(state_log, t, targs, parameters):
             dV_log, dW_log, dZ_log, dR_log)
 
 
+def split_state(state):
+    return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
+
+
+class Solution:
+    '''
+    A class to hold the simulation solution.
+    '''
+    
+    compartments = ('susceptible', 'acute', 'undiagnosed',
+                    'diagnosed', 'treated', 'viral_suppression',
+                    'AIDS', 'dead', 'new_infections')
+
+    _alive = ('susceptible', 'acute', 'undiagnosed',
+              'diagnosed', 'treated', 'viral_suppression', 'AIDS')
+
+    _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
+                 'viral_suppression', 'AIDS')
+
+    def __init__(self, t, state, targs, parameters):
+        self.t = t
+        self.state = state
+        self.targs = targs
+        self.parameters = parameters
+
+        for (k, v) in zip(self.compartments, split_state(self.state)):
+            setattr(self, k, v)
+
+    @property
+    def proportions(self):
+        return proportions.get_proportions(self.state)
+
+    @property
+    def cost(self):
+        return cost.get_cost(self)
+    
+    @property
+    def effectiveness_and_cost(self):
+        return cost_effectiveness.get_effectiveness_and_cost(self)
+
+    @property
+    def effectiveness(self):
+        return effectiveness.get_effectiveness(self)
+
+    @property
+    def DALYs(self):
+        DALYs, QALYs = self.effectiveness
+        return DALYs
+
+    @property
+    def QALYs(self):
+        DALYs, QALYs = self.effectiveness
+        return QALYs
+
+    @property
+    def target_values(self):
+        return targets.get_target_values(self.t, self.targs, self.parameters)
+
+    @property
+    def control_rates(self):
+        return control_rates.get_control_rates(self.t, self.state, self.targs,
+                                               self.parameters)
+
+    @property
+    def infected(self):
+        return sum(getattr(self, k) for k in self._infected)
+
+    @property
+    def N(self):
+        return sum(getattr(self, k) for k in self._alive)
+
+    @property
+    def prevalence(self):
+        return self.infected / self.N
+
+
 def solve(targs, parameters, t_end = 10, use_log = True):
     t = numpy.linspace(0, t_end, 1001)
 
@@ -170,8 +250,4 @@ def solve(targs, parameters, t_end = 10, use_log = True):
     else:
         state = Y
 
-    return (t, state)
-
-
-def split_state(state):
-    return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
+    return Solution(t, state, targs, parameters)

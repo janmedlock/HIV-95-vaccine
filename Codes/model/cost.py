@@ -15,9 +15,6 @@ Compute cost.
 import numpy
 from scipy import integrate
 
-from . import control_rates
-from . import targets
-
 
 class RelativeCostOfEffort:
     r'''
@@ -106,67 +103,62 @@ That is, susceptibles should be less likely to be tested than Undiagnosed.
 '''
 susceptible_testing_discount = 0
 
-def get_cost(t, state, targs, parameters):
-    target_values = targets.get_target_values(t, targs, parameters)
-    controls = control_rates.get_control_rates(t, state, targs, parameters)
-
+def get_cost(solution):
     cost_rate = (
         (
             # One-time cost of new diagnosis,
-            parameters.cost_of_testing_onetime_increasing
+            solution.parameters.cost_of_testing_onetime_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for diagnosis (target_values[0]),
-            * RelativeCostOfEffort.total_cost(target_values[..., 0])
-            # the level of diagnosis control (controls[0]),
-            * controls[..., 0]
-            # and the number of Susceptible, Acute, & Undiagnosed
-            # (state[[0, 1, 2]]).
-            * ((1 - susceptible_testing_discount) * state[..., 0]
-               + state[..., [1, 2]].sum(-1))
+            * RelativeCostOfEffort.total_cost(solution.target_values[:, 0])
+            # the level of diagnosis control (control_rates[0]),
+            * solution.control_rates[:, 0]
+            # and the number of Susceptible, Acute, & Undiagnosed.
+            * ((1 - susceptible_testing_discount) * solution.susceptible
+               + solution.acute
+               + solution.undiagnosed)
         ) + (
             # One-time cost of new treatment,
-            parameters.cost_of_treatment_onetime_constant
+            solution.parameters.cost_of_treatment_onetime_constant
             # multiplied by
-            # the treatment control (controls[1])
-            * controls[..., 1]
-            # and the number of people Diagnosed (state[3]).
-            * state[..., 3]
+            # the treatment control (control_rates[1])
+            * solution.control_rates[:, 1]
+            # and the number of people Diagnosed.
+            * solution.diagnosed
         ) + (
             # Recurring cost of treatment,
-            parameters.cost_treatment_recurring_increasing
+            solution.parameters.cost_treatment_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for treatment (target_values[1]),
-            * RelativeCostOfEffort.total_cost(target_values[..., 1])
-            # and the number of people Treated & Suppressed
-            # (state[[4, 5]]).
-            * state[..., [4, 5]].sum(-1)
+            * RelativeCostOfEffort.total_cost(solution.target_values[:, 1])
+            # and the number of people Treated & Suppressed.
+            * (solution.treated + solution.viral_suppression)
         ) + (
             # Recurring cost of nonadherance,
-            parameters.cost_nonadherance_recurring_increasing
+            solution.parameters.cost_nonadherance_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for nonadherance (target_values[2]),
-            * RelativeCostOfEffort.total_cost(target_values[..., 2])
-            # and the number of people Treated and Suppressed
-            # (state[[4, 5]]).
-            * state[..., [4, 5]].sum(-1)
+            * RelativeCostOfEffort.total_cost(solution.target_values[:, 2])
+            # and the number of people Treated and Suppressed.
+            * (solution.treated + solution.viral_suppression)
         ) + (
             # Recurring cost of AIDS,
-            parameters.cost_AIDS_recurring_constant
+            solution.parameters.cost_AIDS_recurring_constant
             # multiplied by
             # the number of people with AIDS (state[6])
-            * state[..., 6]
+            * solution.AIDS
         )
     )
 
-    cost = integrate.simps(cost_rate, t)
+    cost = integrate.simps(cost_rate, solution.t)
 
     return cost
 
 
 def solve_and_get_cost(targs, parameters):
     from . import simulation
-    t, state = simulation.solve(targs, parameters)
-    return get_cost(t, state, targs, parameters)
+    solution = simulation.solve(targs, parameters)
+    return get_cost(solution)

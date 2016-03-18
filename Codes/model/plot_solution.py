@@ -17,62 +17,51 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
-from . import control_rates
-from . import proportions
-from . import simulation
-from . import targets
 
+def plot_solution(solution, show = True):
+    (fig0, ax0) = pyplot.subplots(2, 1)
 
-def plot_solution(t, state, targs, parameters, show = True):
-    (fig, ax) = pyplot.subplots(2, 1)
+    props = solution.proportions
 
-    props = proportions.get_proportions(state)
-
-    target_values = targets.get_target_values(t, targs, parameters)
-    controls = control_rates.get_control_rates(t, state, targs, parameters)
+    controls = solution.control_rates
 
     for (i, k) in enumerate(('diagnosed', 'treated', 'suppressed')):
-        l = ax[0].plot(t, props[:, i], label = k.capitalize())
-        ax[0].plot(t, target_values[:, i],
-                   color = l[0].get_color(), linestyle = ':')
-    ax[0].legend(loc = 'lower right')
+        l = ax0[0].plot(solution.t, solution.proportions[:, i],
+                        label = k)
+        ax0[0].plot(solution.t, solution.target_values[:, i],
+                    color = l[0].get_color(), linestyle = ':')
+    ax0[0].legend(loc = 'lower right')
 
     for (i, k) in enumerate(('diagnosis', 'treatment', 'nonadherance')):
-        ax[1].plot(t, controls[:, i], label = '{} rate'.format(k))
-    ax[1].legend(loc = 'upper right')
-
+        ax0[1].plot(solution.t, solution.control_rates[:, i],
+                    label = '{} rate'.format(k))
+    ax0[1].legend(loc = 'upper right')
 
     (fig1, ax1) = pyplot.subplots()
 
-    S, A, U, D, T, V, W, Z, R = simulation.split_state(state)
-
-    ax1.semilogy(t, S, label = 'S')
-    ax1.semilogy(t, A, label = 'A')
-    ax1.semilogy(t, U, label = 'U')
-    ax1.semilogy(t, D, label = 'D')
-    ax1.semilogy(t, T, label = 'T')
-    ax1.semilogy(t, V, label = 'V')
-    ax1.semilogy(t, W, label = 'W')
-    ax1.semilogy(t, Z, label = 'Z')
-    ax1.semilogy(t, R, label = 'R')
-    ax1.legend(loc = 'upper right')
+    colors = seaborn.color_palette('husl', len(solution.compartments))
+    for (k, c) in zip(solution.compartments, colors):
+        y = getattr(solution, k)
+        ax1.semilogy(solution.t, y, color = c, label = k)
+    ax1.legend(loc = 'lower right')
 
     (fig2, ax2) = pyplot.subplots()
 
-    N = state.sum(1)
-    PLHI = N - S
-    diagnosed = PLHI - A - U
-    treated = diagnosed - D - W
-    suppressed = treated - T
-    ax2.plot(t, PLHI, label = 'PLHI')
-    ax2.plot(t, diagnosed, label = 'diagnosed')
-    ax2.plot(t, treated, label = 'treated')
-    ax2.plot(t, suppressed, label = 'suppressed')
+    diagnosed = (solution.diagnosed
+                 + solution.treated
+                 + solution.viral_suppression
+                 + solution.AIDS)
+    treated =  (solution.treated
+                + solution.viral_suppression)
+    ax2.plot(solution.t, solution.infected, label = 'PLHI')
+    ax2.plot(solution.t, diagnosed, label = 'diagnosed')
+    ax2.plot(solution.t, treated, label = 'treated')
+    ax2.plot(solution.t, solution.viral_suppression, label = 'suppressed')
     ax2.legend(loc = 'upper right')
 
     (fig3, ax3) = pyplot.subplots()
 
-    ax3.plot(t, 100 * PLHI / N, label = 'Prevalence')
+    ax3.plot(solution.t, 100 * solution.prevalence, label = 'prevalence')
     ax3.set_xlabel('time (years)')
     ax3.set_ylabel('Prevalence')
     ax3.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))

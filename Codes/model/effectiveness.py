@@ -39,21 +39,25 @@ import numpy
 from scipy import integrate
 
 
-def get_effectiveness(t, state, targs, parameters):
+def get_effectiveness(solution):
     # A component of Sphinx chokes on the '@'.
-    # QALYs_rate = state[..., : -1] @ parameters.QALY_rates_per_person
-    QALYs_rate = numpy.dot(state[..., : -1], parameters.QALY_rates_per_person)
-    QALYs = integrate.simps(QALYs_rate, t)
+    # QALYs_rate = (solution.state[:, : -1]
+    #               @ solution.parameters.QALY_rates_per_person)
+    QALYs_rate = numpy.dot(solution.state[:, : -1],
+                           solution.parameters.QALY_rates_per_person)
+    QALYs = integrate.simps(QALYs_rate, solution.t)
 
     # A component of Sphinx chokes on the '@'.
-    # DALYs_rate = state[..., : -1] @ parameters.DALY_rates_per_person
-    DALYs_rate = numpy.dot(state[..., : -1], parameters.DALY_rates_per_person)
-    DALYs = integrate.simps(DALYs_rate, t)
+    # DALYs_rate = (solution.state[:, : -1]
+    #               @ solution.parameters.DALY_rates_per_person)
+    DALYs_rate = numpy.dot(solution.state[:, : -1],
+                           solution.parameters.DALY_rates_per_person)
+    DALYs = integrate.simps(DALYs_rate, solution.t)
 
     return DALYs, QALYs
 
 
 def solve_and_get_effectiveness(targs, parameters):
     from . import simulation
-    t, state = simulation.solve(targs, parameters)
-    return get_effectiveness(t, state, targs, parameters)
+    solution = simulation.solve(targs, parameters)
+    return get_effectiveness(solution)

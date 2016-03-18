@@ -23,18 +23,16 @@ from . import cost
 from . import effectiveness
 
 
-def get_effectiveness_and_cost(t, state, targs, parameters):
-    DALYs, QALYs = effectiveness.get_effectiveness(t, state, targs, parameters)
-
-    cost_ = cost.get_cost(t, state, targs, parameters)
-
+def get_effectiveness_and_cost(solution):
+    DALYs, QALYs = effectiveness.get_effectiveness(solution)
+    cost_ = cost.get_cost(solution)
     return DALYs, QALYs, cost_
 
 
 def solve_and_get_effectiveness_and_cost(targs, parameters):
     from . import simulation
-    t, state = simulation.solve(targs, parameters)
-    return get_effectiveness_and_cost(t, state, targs, parameters)
+    solution = simulation.solve(targs, parameters)
+    return get_effectiveness_and_cost(solution)
 
 
 def get_cost_effectiveness_stats(DALYs, QALYs, cost_,
