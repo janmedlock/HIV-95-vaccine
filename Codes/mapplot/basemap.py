@@ -4,6 +4,7 @@ import os.path
 import warnings
 
 import numpy
+from matplotlib import animation
 from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
@@ -144,6 +145,19 @@ class Basemap:
         # Make pyplot.colorbar() work.
         self.ax._current_image = cmap_norm
         return cmap_norm
+
+    def choropleth_animate(self, countries, t, values,
+                           label_coords = None,
+                           *args, **kwargs):
+        self.choropleth_preinit(countries, t, values,
+                                label_coords = label_coords,
+                                *args, **kwargs)
+        return animation.FuncAnimation(self.fig,
+                                       self.choropleth_update,
+                                       frames = len(values),
+                                       init_func = self.choropleth_init,
+                                       repeat = False,
+                                       blit = True)
 
     def choropleth_preinit(self, countries, t, values,
                            label_coords = None,

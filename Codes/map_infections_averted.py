@@ -5,7 +5,6 @@ Make an animated map of the prevalence at different times.
 
 import pickle
 
-from matplotlib import animation
 from matplotlib import colors as mcolors
 from matplotlib import pyplot
 import numpy
@@ -21,10 +20,8 @@ def _main(every = 20):
     infections_averted = []
     for c in countries:
         r = results[c]
-        t = r.t[: : every]
-        state = r.state[: : every]
-        state_base = r.state_base[: : every]
-        infections_averted.append(state_base[:, -1] - state[:, -1])
+        infections_averted.append(r.solution_base.new_infections
+                                  - r.solution.new_infections)
     infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
@@ -37,18 +34,19 @@ def _main(every = 20):
     for z in (m, m0):
         z.tighten(aspect_adjustment = 1.35)
 
-    data = infections_averted / 1000
-    T = t + 2015
+    data = infections_averted[: : every] / 1000
+    T = results[countries[0]].solution.t[: : every] + 2015
+
     cmap = 'viridis'
     vmin = min(data.min(), 0)
     vmax = max(data.max(), 600)
     label_coords = (-120, -20)
 
-    m.choropleth_preinit(countries, T, data,
-                         cmap = cmap,
-                         vmin = vmin,
-                         vmax = vmax,
-                         label_coords = (-120, -20))
+    ani = m.choropleth_animate(countries, T, data,
+                               cmap = cmap,
+                               vmin = vmin,
+                               vmax = vmax,
+                               label_coords = (-120, -20))
 
     m0.choropleth(countries, data[0],
                   cmap = cmap,
@@ -65,17 +63,13 @@ def _main(every = 20):
                                    weight = 'bold'),
                    horizontalalignment = 'left')
 
-    m0.savefig('infections_averted.pdf')
+    m0.savefig('map_infections_averted.pdf')
 
-    ani = animation.FuncAnimation(m.fig, m.choropleth_update,
-                                  frames = len(infections_averted),
-                                  init_func = m.choropleth_init,
-                                  repeat = False,
-                                  blit = True)
-
-    # 2 years per second.
-    ani.save('infections_averted.mp4', fps = 2 / (t[1] - t[0]),
-             dpi = 300, extra_args = ('-vcodec', 'libx264'))
+    speed = 2  # years per second.
+    ani.save('map_infections_averted.mp4',
+             fps = speed / (T[1] - T[0]),
+             dpi = 300,
+             extra_args = ('-vcodec', 'libx264'))
 
     m.show()
 

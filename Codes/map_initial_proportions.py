@@ -75,7 +75,7 @@ def _main():
 
     m.tighten()
 
-    m.savefig('initial_proportions.pdf')
+    m.savefig('map_initial_proportions.pdf')
 
     # m.show()
 

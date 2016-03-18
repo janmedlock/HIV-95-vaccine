@@ -51,7 +51,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
 
     m.label(countries)
 
-    m.savefig('909090effectiveness.pdf')
+    m.savefig('map909090_effectiveness.pdf')
 
     return m
 
@@ -90,7 +90,7 @@ def plot_cost(countries, cost, cost_base):
 
     m.label(countries)
 
-    m.savefig('909090cost.pdf')
+    m.savefig('map909090_cost.pdf')
 
     return m
 
@@ -168,7 +168,7 @@ def plot_ICER(countries, ICER):
 
     m.label(countries)
 
-    m.savefig('909090ICER.pdf')
+    m.savefig('map909090_ICER.pdf')
 
     return m
 
@@ -185,16 +185,10 @@ def _main():
     for c in countries:
         r = results[c]
 
-        stats = model.get_effectiveness_and_cost(r.t,
-                                                 r.state,
-                                                 r.target,
-                                                 r.parameters)
-        stats_base = model.get_effectiveness_and_cost(r.t,
-                                                      r.state_base,
-                                                      r.target_base,
-                                                      r.parameters)
+        stats = r.solution.effectiveness_and_cost
+        stats_base = r.solution_base.effectiveness_and_cost
         stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),
-                                                       r.parameters)
+                                                       r.solution.parameters)
 
         # DALYs
         effectiveness.append(stats[0])
