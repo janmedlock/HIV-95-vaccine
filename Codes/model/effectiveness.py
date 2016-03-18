@@ -31,7 +31,9 @@ so DALYs and QALYs are related by
    >>> solution = solve('909090', parameters)
    >>> assert isclose(solution.DALYs, 8281790.7229896532)
    >>> assert isclose(solution.QALYs, 957874221.35318017)
-   >>> assert isclose(simps(solution.alive + solution.dead, t) - DALYs, QALYs)
+   >>> assert isclose(simps(solution.alive + solution.dead, solution.t)
+   ...                - solution.DALYs,
+   ...                solution.QALYs)
 '''
 
 import numpy
