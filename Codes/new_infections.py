@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Make an animated map of the prevalence at different times.
+Plot new infections.
 '''
 
 import pickle
