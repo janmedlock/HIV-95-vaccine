@@ -4,9 +4,7 @@ Run the 90-90-90 policy.
 
 import numpy
 
-from . import cost_effectiveness
 from . import datasheet
-from . import effectiveness
 from . import simulation
 
 
@@ -19,6 +17,8 @@ class Results:
 
 def run909090(country, target = '909090', target_base = 'base', t_end = 15):
     results = Results()
+
+    parameters = datasheet.Parameters(country)
 
     results.solution = simulation.solve(target,
                                         parameters,

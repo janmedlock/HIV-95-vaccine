@@ -19,14 +19,10 @@ def _main():
     for (c, r) in  results.items():
         s = pandas.Series()
 
-        stats = model.get_effectiveness_and_cost(r.t, r.state,
-                                                 r.target,
-                                                 r.parameters)
-        stats_base = model.get_effectiveness_and_cost(r.t, r.state_base,
-                                                      r.target_base,
-                                                      r.parameters)
+        stats = r.solution.effectiveness_and_cost
+        stats_base = r.solution_base.effectiveness_and_cost
         stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),
-                                                       r.parameters)
+                                                       r.solution.parameters)
 
         s['DALYs 90-90-90'] = stats[0]
         # s['QALYs 90-90-90'] = stats[1]
@@ -41,20 +37,20 @@ def _main():
         # s['ICER QALYs'] = stats_inc[4]
 
         # Every 5 years.
-        tau = numpy.hstack((numpy.arange(0, r.t[-1], 5), r.t[-1]))
+        t = numpy.hstack((numpy.arange(0, r.solution.t[-1], 5),
+                          r.solution.t[-1]))
 
-        prevalence = r.state[:, 1 : -2].sum(1) / r.state[:, : -2].sum(1)
-        infections_averted = ((r.state_base[:, -1] - r.state[:, -1])
-                              / r.state_base[:, -1])
-    
-        for tau_ in tau:
-            s['prevalence at {:g} years'.format(tau_)] \
-                = numpy.interp(tau_, r.t, prevalence)
+        for t_ in t:
+            s['prevalence at {:g} years'.format(t_)] \
+                = numpy.interp(t_, r.solution.t, r.solution.prevalence)
 
+        infections_averted = (
+            (r.solution_base.new_infections - r.solution.new_infections)
+            / r.solution_base.new_infections)
         # Skip t = 0
-        for tau_ in tau[1 : ]:
-            s['infections averted at {:g} years'.format(tau_)] \
-                = numpy.interp(tau_, r.t, infections_averted)
+        for t_ in t[1 : ]:
+            s['infections averted at {:g} years'.format(t_)] \
+                = numpy.interp(t_, r.solution.t, infections_averted)
 
         df[c] = s
 
