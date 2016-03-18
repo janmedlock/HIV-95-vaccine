@@ -39,6 +39,9 @@ def _main():
                     100 * r.solution.prevalence,
                     color = x, linestyle = 'solid',
                     label = '{}, 90–90–90'.format(c))
+
+    for (c, x) in zip(countries, colors):
+        r = results[c]
         ax.semilogy(r.solution_base.t + 2015,
                     100 * r.solution_base.prevalence,
                     color = x, linestyle = 'dotted',
@@ -51,7 +54,7 @@ def _main():
     ax.set_xlabel('Year')
     ax.set_ylabel('Prevalence')
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))
-    ax.legend(loc = 'upper right')
+    ax.legend(ncol = 2, loc = 'upper center')
 
     fig.savefig('prevalence.pdf')
 

@@ -53,7 +53,7 @@ def plot_solution(solution, show = True):
                  + solution.AIDS)
     treated =  (solution.treated
                 + solution.viral_suppression)
-    ax2.plot(solution.t, solution.infected, label = 'PLHI')
+    ax2.plot(solution.t, solution.infected, label = 'PLHIV')
     ax2.plot(solution.t, diagnosed, label = 'diagnosed')
     ax2.plot(solution.t, treated, label = 'treated')
     ax2.plot(solution.t, solution.viral_suppression, label = 'suppressed')
