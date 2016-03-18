@@ -16,10 +16,15 @@ def _helper(country):
     '''
     Helper to build dictionary of results.
     '''
-    return (country, model.run909090(country))
+    result = model.run909090(country)
+    country_ = result.solution.parameters.country
+    print('{}'.format(country_))
+    return (country_, result)
 
 
 def _main():
+    # results = (_helper(country)
+    #            for country in model.get_country_list())
     with joblib.Parallel(n_jobs = -1) as parallel:
         results = parallel(
             joblib.delayed(_helper)(country)

@@ -29,12 +29,19 @@ country_replacements = {
 }
 
 
+def convert_country(country):
+    '''
+    Convert country names used in the datasheet to those used in the maps.
+    '''
+    return country_replacements.get(country, country)
+    
+
 def convert_countries(countries):
-    countries = list(countries)
-    for (i, c) in enumerate(countries):
-        if c in country_replacements:
-            countries[i] = country_replacements[c]
-    return countries
+    '''
+    Convert multiple country names used in the datasheet
+    to those used in the maps.
+    '''
+    return map(convert_country, countries)
 
 
 class Parameters:
@@ -50,7 +57,7 @@ class Parameters:
               and `death_rate*`.
     '''
     def __init__(self, country):
-        self.country = country
+        self.country = convert_country(country)
 
         with pandas.ExcelFile(datapath) as data:
             self.read_parameters_sheet(data)
@@ -255,8 +262,7 @@ def get_country_list(sheet = 'Parameters'):
             data = data.parse('GDP').iloc[ : 2, 1 : ]
 
     ix = data.notnull().all(0)
-    countries = list(data.columns[ix])
-    return convert_countries(countries)
+    return data.columns[ix]
 
 
 def read_all_initial_conditions():
