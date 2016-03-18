@@ -15,7 +15,8 @@ class Results:
     pass
 
 
-def run909090(country, target = '909090', target_base = 'base', t_end = 15):
+def run909090(country, target = '909090', target_base = 'base', t_end = 15,
+              debug = True):
     results = Results()
 
     parameters = datasheet.Parameters(country)
@@ -28,6 +29,7 @@ def run909090(country, target = '909090', target_base = 'base', t_end = 15):
                                              parameters,
                                              t_end = t_end)
 
-    print('{}'.format(country))
+    if debug:
+        print('{}'.format(country))
 
-    return (country, results)
+    return results

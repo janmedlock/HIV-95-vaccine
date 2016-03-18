@@ -12,16 +12,19 @@ import joblib
 import model
 
 
+def _helper(country):
+    '''
+    Helper to build dictionary of results.
+    '''
+    return (country, model.run909090(country))
+
+
 def _main():
-    results = {}
     with joblib.Parallel(n_jobs = -1) as parallel:
         results = parallel(
-            joblib.delayed(model.run909090)(country)
+            joblib.delayed(_helper)(country)
             for country in model.get_country_list())
-
-    results = {country: v for (country, v) in results}
-
-    pickle.dump(results, open('909090.pkl', 'wb'))
+    pickle.dump(dict(results), open('909090.pkl', 'wb'))
 
 
 if __name__ == '__main__':
