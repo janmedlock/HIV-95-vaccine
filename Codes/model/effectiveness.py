@@ -38,8 +38,6 @@ so DALYs and QALYs are related by
 import numpy
 from scipy import integrate
 
-from . import simulation
-
 
 def get_effectiveness(t, state, targs, parameters):
     # A component of Sphinx chokes on the '@'.
@@ -56,5 +54,6 @@ def get_effectiveness(t, state, targs, parameters):
 
 
 def solve_and_get_effectiveness(targs, parameters):
+    from . import simulation
     t, state = simulation.solve(targs, parameters)
     return get_effectiveness(t, state, targs, parameters)

@@ -16,7 +16,6 @@ import numpy
 from scipy import integrate
 
 from . import control_rates
-from . import simulation
 from . import targets
 
 
@@ -168,5 +167,6 @@ def get_cost(t, state, targs, parameters):
 
 
 def solve_and_get_cost(targs, parameters):
+    from . import simulation
     t, state = simulation.solve(targs, parameters)
     return get_cost(t, state, targs, parameters)

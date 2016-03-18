@@ -21,7 +21,6 @@ from scipy import integrate
 
 from . import cost
 from . import effectiveness
-from . import simulation
 
 
 def get_effectiveness_and_cost(t, state, targs, parameters):
@@ -33,6 +32,7 @@ def get_effectiveness_and_cost(t, state, targs, parameters):
 
 
 def solve_and_get_effectiveness_and_cost(targs, parameters):
+    from . import simulation
     t, state = simulation.solve(targs, parameters)
     return get_effectiveness_and_cost(t, state, targs, parameters)
 
