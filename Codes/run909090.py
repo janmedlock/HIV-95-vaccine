@@ -24,6 +24,7 @@ def _main():
         results = parallel(
             joblib.delayed(_helper)(country)
             for country in model.get_country_list())
+
     pickle.dump(dict(results), open('909090.pkl', 'wb'))
 
 
