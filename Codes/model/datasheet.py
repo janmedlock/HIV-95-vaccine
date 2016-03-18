@@ -16,6 +16,27 @@ datafile = '../DataSheet.xlsx'
 datapath = os.path.join(os.path.dirname(__file__), datafile)
 
 
+country_replacements = {
+    'Bahamas': 'The Bahamas',
+    'Congo': 'Republic of Congo',
+    "Côte d'Ivoire": 'Ivory Coast',
+    'Iran (Islamic Republic of)': 'Iran',
+    "Lao People's Democratic Republic": 'Laos',
+    'Republic of Moldova': 'Moldova',
+    'Timor-Leste': 'East Timor',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'United States': 'United States of America'
+}
+
+
+def convert_countries(countries):
+    countries = list(countries)
+    for (i, c) in enumerate(countries):
+        if c in country_replacements:
+            countries[i] = country_replacements[c]
+    return countries
+
+
 class Parameters:
     '''
     Convert parameter data in datafile into object for use in simulations.
@@ -28,7 +49,6 @@ class Parameters:
               In particular, check `progression_rate_suppressed`
               and `death_rate*`.
     '''
-
     def __init__(self, country):
         self.country = country
 
@@ -236,9 +256,12 @@ def get_country_list(sheet = 'Parameters'):
 
     ix = data.notnull().all(0)
     countries = list(data.columns[ix])
-    return countries
+    return convert_countries(countries)
 
 
 def read_all_initial_conditions():
     with pandas.ExcelFile(datapath) as data:
-        return data.parse('Initial Conditions', index_col = 0).T
+        df = data.parse('Initial Conditions', index_col = 0).T
+    index = convert_countries(df.index)
+    df.index = index
+    return df

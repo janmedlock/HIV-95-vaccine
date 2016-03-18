@@ -27,7 +27,7 @@ def _main():
     p['undiagnosed'] = data['Undiagnosed'] / nHIV
     p['diagnosed'] = data['Diagnosed but not on treatment'] / nHIV
     p['treated'] = data['Treated but not virally suppressed'] / nHIV
-    p['suppressed'] = data['Virally suppressed'] / nHIV
+    p['suppressed'] = data['Virally Suppressed'] / nHIV
 
 
     ##############################################################
