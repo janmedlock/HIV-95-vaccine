@@ -6,14 +6,8 @@ __pycache__/
 /Codes/docs/
 !/Codes/docs/source/
 !/Codes/docs/Makefile
-/Codes/map909090_ICER.pdf
-/Codes/map909090_cost.pdf
-/Codes/map909090_effectiveness.pdf
-/Codes/map_infections_averted.pdf
-/Codes/map_infections_averted.mp4
-/Codes/map_initial_proportions.pdf
-/Codes/map_prevalence.pdf
-/Codes/map_prevalence.mp4
+/Codes/*.pdf
+/Codes/*.mp4
 /Codes/table909090.csv
 /Documents/Latex/*.aux
 /Documents/Latex/*.log
