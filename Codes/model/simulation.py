@@ -220,12 +220,12 @@ class Solution:
         return sum(getattr(self, k) for k in self._infected)
 
     @property
-    def N(self):
+    def alive(self):
         return sum(getattr(self, k) for k in self._alive)
 
     @property
     def prevalence(self):
-        return self.infected / self.N
+        return self.infected / self.alive
 
 
 def solve(targs, parameters, t_end = 10, use_log = True):
