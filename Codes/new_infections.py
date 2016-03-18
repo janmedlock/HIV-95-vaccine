@@ -34,19 +34,15 @@ def _main():
 
     fig, ax = pyplot.subplots()
     for (c, x) in zip(countries, colors):
-        try:
-            r = results[c]
-        except KeyError:
-            pass
-        else:
-            ax.plot(r.solution.t + 2015,
-                    r.solution.new_infections / 1000,
-                    color = x, linestyle = 'solid',
-                    label = '{}, 90–90–90'.format(c))
-            ax.plot(r.solution_base.t + 2015,
-                    r.solution_base.new_infections / 1000,
-                    color = x, linestyle = 'dotted',
-                    label = '{}, status quo'.format(c))
+        r = results[c]
+        ax.plot(r.solution.t + 2015,
+                r.solution.new_infections / 1000,
+                color = x, linestyle = 'solid',
+                label = '{}, 90–90–90'.format(c))
+        ax.plot(r.solution_base.t + 2015,
+                r.solution_base.new_infections / 1000,
+                color = x, linestyle = 'dotted',
+                label = '{}, status quo'.format(c))
 
     ax.set_xlim(r.solution.t[0] + 2015,
                 r.solution.t[-1] + 2015)
