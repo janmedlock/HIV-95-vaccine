@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Make an animated map of the infections averted at different times.
+Make an animated map of the infections averted (proportion) at different times.
 '''
 
 import pickle
@@ -20,8 +20,9 @@ def _main(every = 20):
     infections_averted = []
     for c in countries:
         r = results[c]
-        infections_averted.append(r.solution_base.new_infections
-                                  - r.solution.new_infections)
+        infections_averted.append((r.solution_base.new_infections
+                                   - r.solution.new_infections)
+                                  / r.solution_base.new_infections)
     infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
@@ -34,12 +35,12 @@ def _main(every = 20):
     for z in (m, m0):
         z.tighten(aspect_adjustment = 1.35)
 
-    data = infections_averted[: : every] / 1000
+    data = 100 * infections_averted[: : every]
     T = results[countries[0]].solution.t[: : every] + 2015
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)
-    vmax = max(data.max(), 600)
+    vmax = data.max()
     label_coords = (-120, -20)
 
     ani = m.choropleth_animate(countries, T, data,
@@ -55,7 +56,8 @@ def _main(every = 20):
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'Infections Averted (1000s, Compared to Status Quo)')
+            label = 'Infections Averted (Compared to Status Quo)',
+            format = '%g%%')
 
     X, Y = label_coords
     m0.text_coords(X, Y, str(int(T[0])),
@@ -63,10 +65,10 @@ def _main(every = 20):
                                    weight = 'bold'),
                    horizontalalignment = 'left')
 
-    m0.savefig('map_infections_averted.pdf')
+    m0.savefig('map_infections_averted_proportion.pdf')
 
     speed = 2  # years per second.
-    ani.save('map_infections_averted.mp4',
+    ani.save('map_infections_averted_proportion.mp4',
              fps = speed / (T[1] - T[0]),
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
