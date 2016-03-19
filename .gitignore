@@ -9,8 +9,13 @@ __pycache__/
 /Codes/*.pdf
 /Codes/*.mp4
 /Codes/table909090.csv
+/Documents/Latex/*.pdf
+/Documents/Latex/.auto
 /Documents/Latex/*.aux
 /Documents/Latex/*.log
-/Documents/Latex/*.pdf
+/Documents/Latex/*.out
+/Documents/Latex/*.nav
+/Documents/Latex/*.snm
+/Documents/Latex/*.toc
 /Documents/Latex/*.synctex.gz
 /Documents/Office/
