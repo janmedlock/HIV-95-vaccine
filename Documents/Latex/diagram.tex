@@ -7,6 +7,9 @@
   \node at (0, 5)
   [compartment, name = Susceptible] {Susceptible ($S$)};
 
+  \node at (-4, 5)
+  [compartment, name = Vaccinated] {Vaccinated ($R$)};
+
   \node at (0, 4)
   [compartment, name = Acute] {Acute ($A$)};
 
@@ -26,6 +29,10 @@
   [compartment, name = AIDS] {AIDS ($W$)};
 
   \draw [->] (Susceptible) to node [left] {$\lambda$} (Acute);
+
+  \draw [->] (Susceptible) to node [above] {$\zeta$} (Vaccinated);
+
+  \draw [->] (Vaccinated) to node [below] {$\rho \lambda$} (Acute);
 
   \draw [->] (Acute) to node [left] {$\delta$} (Undiagnosed);
 
@@ -50,6 +57,8 @@
   \draw [<-] (Susceptible) to node [left] {$B$} +(90: 0.8);
 
   \draw [->] (Susceptible) to node [above] {$\mu$} +(0: 1.7);
+
+  \draw [->] (Vaccinated) to node [above] {$\mu$} +(0: -1.7);
 
   \draw [->] (Acute) to node [above] {$\mu$} +(0: 1.7);
 

@@ -1,0 +1,255 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  This Beamer template was created by Cameron Bracken.
+%%  Anyone can freely use or modify it for any purpose
+%%  without attribution. with  modify it for any purpose
+%%  without attribution without who freely modify
+%%  Last Modified: January 9, 2009
+%%
+
+\documentclass[xcolor=x11names,compress]{beamer}
+
+%% General document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage[round]{natbib}
+\usepackage{hypernat}
+\usetikzlibrary{decorations.fractals}
+\usepackage{comment}
+
+%\usepackage{movie15}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Beamer Layout %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\useoutertheme[subsection=false,shadow]{miniframes}
+\setbeamertemplate{footline}{%
+\begin{beamercolorbox}{subsection in head/foot}
+    \color{DodgerBlue4}\vskip2pt~ \insertsubsection % footnote color
+    \hfill \insertpagenumber{} %
+    of \insertpresentationendpage{} ~\vskip2pt
+\end{beamercolorbox}
+}
+
+
+\setbeamertemplate{blocks}[rounded, shadow=true]
+\setbeamertemplate{navigation symbols}{}
+\usepackage{amsmath}
+\useinnertheme{default}
+\usefonttheme{serif}
+\usepackage{palatino}
+\usepackage{fancybox}
+% \setbeamerfont{title like}{shape=\scshape}
+% \setbeamerfont{frametitle}{shape=\scshape}
+
+% \setbeamercolor*{lower separation line head}{bg=DodgerBlue4} % header color
+% \setbeamercolor*{normal text}{fg=black}
+% \setbeamercolor*{alerted text}{fg=red}
+% \setbeamercolor*{example text}{fg=black}
+% \setbeamercolor*{structure}{fg=black}
+% \setbeamercolor*{palette tertiary}{fg=black,bg=black!10}
+% \setbeamercolor*{palette quaternary}{fg=black,bg=black!10}
+% \setbeamercolor*{block title}{fg=white,bg=orange} % block color
+% \setbeamercolor*{block body}{bg = white,fg=black}
+% \setbeamercolor{bibliography item}{fg=⟨red⟩}
+% \setbeamercolor*{bibliography entry title}{fg = red}
+% \setbeamercolor*{bibliography entry journal}{fg=red}
+% \setbeamercolor*{bibliography entry author}{fg = red}
+
+%\usetheme{PaloAlto}
+\setbeamertemplate{headline}{}
+
+
+\newcommand{\md}{\mathrm{d}}
+\newcommand{\mD}{\mathrm{D}}
+\renewcommand{\(}{\begin{columns}}
+\renewcommand{\)}{\end{columns}}
+\newcommand{\<}[1]{\begin{column}{#1}}
+\renewcommand{\>}{\end{column}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usebackgroundtemplate{
+ \tikz[overlay,remember picture]
+   \node[at=(current page.south west),anchor=south west,inner  sep=13pt]{
+     \includegraphics[scale=0.10]{CIDMA}};}
+
+
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{\scshape Introduction}
+% \begin{frame}
+
+% \title{Cost-effectiveness of WHO's 90-90-90 goal for HIV}
+% %\author{Abhishek Pandey, Dan Yamin, Jeffrey Townsend \& Alison Galvani}
+% \date{\textit{Center for Infectious Disease Modeling and Analysis} \\
+% \today}
+%  \institute[CIDMA]
+%  {
+%    \includegraphics[scale=0.15]{CIDMA}
+%  }
+
+
+% % \date{
+% % 	\begin{tikzpicture}[decoration=Koch curve type 2]
+% % 		\draw[DeepSkyBlue4] decorate{ decorate{ decorate{ (0,0) -- (3,0) }}};
+% % 	\end{tikzpicture} \\
+% % 	\vspace{1cm}
+% % 	\today
+% % }
+% \titlepage
+% \end{frame}
+
+% \begin{frame}{Research Problem:}
+
+% {{\small\begin{minipage}{1 \textwidth}
+% \textcolor{red}{90-90-90 goal by 2020:}
+% \begin{itemize}
+% \item 90\% of all people living with HIV will know their HIV status (diagnosed)
+%  \vskip 0.05in
+% \item 90\% of all people with diagnosed HIV infection will receive sustained antiretroviral therapy  \vskip 0.05in
+% \item 90\% of all people receiving antiretroviral therapy will have viral suppression.
+% \end{itemize}
+% \end{minipage}}}
+% \vskip 0.1in
+% {{\small\begin{minipage}{1 \textwidth}
+% \textcolor{red}{Research Questions:}
+% \begin{itemize}
+% \item What is the effectiveness of reaching WHO goal for each country?
+% \item For what countries, achieving the WHO goal in
+%   the next 5 years is cost effective.  \vskip 0.05in
+% \item For countries for which the goal is not cost effective,
+%   what combined strategy is cost-effective?  \vskip 0.05in
+% \end{itemize}
+% \end{minipage}}}
+
+% \end{frame}
+
+% \begin{frame}{Disability-Adjusted Life Year (DALY)}
+
+
+% {{\small\begin{minipage}{1 \textwidth}
+% \textcolor{red}{Definition:} \\
+% The disability-adjusted life year (DALY) is a measure of overall
+% disease burden, expressed as the number of years lost due to
+% ill-health, disability or early death. \vskip 0.2in
+% \textcolor{red}{Calculation:} \\
+% DALY = Year of life lost due to disability + Year of life lost due to
+% premature mortality.  \vskip 0.2in
+% \textcolor{red}{Effectiveness:} \\
+% We measured effectiveness of achieving WHO goal of 90-90-90 in terms
+% of number of DALYS saved.
+% \end{minipage}}}
+
+% \end{frame}
+
+
+% \begin{frame}{Cost-Effectiveness}
+
+% {{\small\begin{minipage}{1 \textwidth}
+% \textcolor{red}{Program cost:} \\
+% Program cost is the incremental cost required to meet the 90-90-90 goal.
+%  \vskip 0.2in
+% \textcolor{red}{Cost effectiveness} \\
+% An intervention that per DALY avoided, costs:
+% \begin{itemize}
+% \item  less than 3 times the annual GDP per capita is Cost-effective,
+% \item  less than the annual GDP per capita is very cost-effective,
+% \item less than it costs to continue status quo is cost-saving
+%   (Not sure about this def).
+% \item  more than 3 times the annual GDP per capita is not
+%   cost-effective
+% \end{itemize}
+% \vskip 0.2in
+% \textcolor{red}{Incremental cost effectiveness ratio (ICER):}\\
+% is the difference in cost between achieving 90-90-90 and continuing status
+% quo , divided by the difference in DALYS averted.
+
+% \end{minipage}}}
+
+
+% \end{frame}
+
+\begin{frame}{Status Quo}
+\vspace{-0.4in}
+\hspace{-0.4cm}
+\begin{centering}
+%\includefullwidthgx{../../initial_proportions}
+ \includegraphics[width= \textwidth, height=0.62\textheight]{../../initial_proportions}
+\end{centering}
+\end{frame}
+
+
+
+\begin{frame}{Effectiveness: Prevalence}
+\href{https://drive.google.com/open?id=0B_53qFSHU3XKUDVfUWVtd1BPc1E}{
+\begin{centering}
+\includegraphics[width=\textwidth]{../../prevalence}
+\end{centering}
+}
+
+\end{frame}
+
+\begin{frame}{Effectiveness: New infections averted}
+
+
+\href{https://drive.google.com/open?id=0B_53qFSHU3XKYzhlQjNzRUdRVXc}{
+\begin{centering}
+\includegraphics[width=\textwidth]{../../infections_averted}
+\end{centering}}
+\end{frame}
+
+
+\begin{frame}{Effectiveness: DALYs}
+\begin{centering}
+\includegraphics[width=\textwidth]{../../909090effectiveness}
+\end{centering}
+
+
+\end{frame}
+
+\begin{frame}{Cost-Effectiveness}
+\begin{centering}
+\includegraphics[width=\textwidth]{../../909090ICER}
+\end{centering}
+\end{frame}
+
+% \begin{frame}{Summary}
+% \begin{table}
+% \begin{center}
+% \begin{tabular}{l|r|r|r|r|r}
+% \hline
+% Country  & USA & Nigeria & Rwanda & India & Burundi  \\
+% \hline
+% DALYs averted &  &  & & & \\
+% Incremental cost &  &  & & & \\
+% ICER &  &  & & & \\
+% Per capita GDP &  &  & & & \\
+% \hline
+% \end{tabular}
+% \end{center}
+% \end{table}
+% \end{frame}
+
+% \begin{frame}{Future Work}
+
+
+% {{\small\begin{minipage}{1 \textwidth}
+% \begin{itemize}
+% \item What other combined strategy may be cost-effective if not
+%   90-90-90 for a country.
+% \item And in general, is there any optimal three part target for each
+%   country other than 90-90-90?
+% \item Expanding the results to more countries.
+% \end{itemize}
+% \end{minipage}}}
+
+
+% \end{frame}
+
+
+
+
+\end{document}

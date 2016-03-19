@@ -41,9 +41,11 @@
 \begin{equation}
   \label{model_eqns}
   \begin{split}
-    \frac{\md S}{\md t} &= B N - \lambda S - \mu S,
+    \frac{\md S}{\md t} &= B N - \lambda S - \zeta S- \mu S,
     \\
-    \frac{\md A}{\md t} &= \lambda S - \delta A - \mu A,
+     \frac{\md R}{\md t} & = \zeta S - \rho \lambda R - \mu R,
+    \\
+    \frac{\md A}{\md t} &= \lambda S +\rho \lambda R - \delta A - \mu A,
     \\
     \frac{\md U}{\md t} &= \delta A - \alpha U - \mu U - \sigma U,
     \\
@@ -65,7 +67,7 @@ with
   \begin{split}
     \lambda &= \frac{\beta_A A + \beta_U (U + D + T) + \beta_T V}{N},
     \\
-    N &= S + A + U + D + T + V,
+    N &= S + R +  A + U + D + T + V,
     \\
     \beta_x &= c \left[1 - (1 - \tau_x)^n\right]
     \text{ for $x \in \{A, U, T\}$},
@@ -102,6 +104,25 @@ will stay constant for the whole time:
 for $x \in \{D, T, V\}$.
 
 
+Similarly, the proportion of people vaccinated is
+\begin{equation}
+P_{V} = \frac{R}{S+R},
+\end{equation}
+
+We can implement it in the same way as the other controls. When we begin
+vaccination in 2020/2025 the initial vaccination level is 0\%, the it
+will increase linearly in the first year and then stay at 50\% for the
+remaining time.
+\begin{equation}
+P^{*}_{V}(t) =
+  \begin{cases}
+    0 & \text{if $t < 5$ or $10$},
+    \\
+    0.5  & \text{if $t \geq 5$ or $10$},
+  \end{cases}
+\end{equation}
+
+
 \section{Rates that are on when $p_x < p^*_x$}
 
 The rates turn on when the proportions are below the target levels:
@@ -112,6 +133,8 @@ The rates turn on when the proportions are below the target levels:
     \phi(t) &= \phi_{\max} H\left(p_T^*(t) - p_T(t)\right),
     \\
     \psi(t) &= \psi_{\max} H\left(p_V(t) - p_V^*(t)\right),
+    \\
+    \zeta(t) &= \zeta_{max} H\left(P^{*}_{V}(t)-P_{V}(t)\right),
   \end{split}
 \end{equation}
 where $H(x)$ is the Heaviside function
@@ -290,7 +313,7 @@ Thus,
 %   \frac{\lambda S \left(D + T + V + A_D\right)
 %     + \sigma A_D \left(U + A\right)
 %     - \rho U \left(D + T + V + A_D + U + A\right)
-%     + \left(D + T + V + A_D + U + A\right)^2 \frac{\md p_D}{\md t}} 
+%     + \left(D + T + V + A_D + U + A\right)^2 \frac{\md p_D}{\md t}}
 %   {\delta A \left(D + T + V + A_D + U + A\right)}.
 % \end{equation}
 
@@ -375,13 +398,13 @@ Thus,
 %       + \rho (U + T)  + \psi \left(T + V\right) + \theta V - \sigma A_D
 %     \right]
 %     \\
-%     &= 
+%     &=
 %     \left[\phi D - \theta V - \rho T - \psi \left(T + V\right)\right]
 %     (D + T + V + A_D)
 %     - \left(\alpha \delta A + \rho U - \sigma A_D \right)
 %     \left(T + V\right),
 %     \\
-%     &= 
+%     &=
 %     - \alpha \delta A \left(T + V\right)
 %     - \psi \left(T + V\right) (D + T + V + A_D)
 %     \\ & \quad {}
@@ -395,7 +418,7 @@ Thus,
 % \begin{equation}
 %   \label{psi}
 %   \psi
-%   = 
+%   =
 %   \frac{\left(\phi D - \theta V - \rho T\right)
 %     (D + T + V + A_D)
 %     - \left(\alpha \delta A + \rho U - \sigma A_D \right)
@@ -422,7 +445,7 @@ Thus,
 %   \frac{1}{2}
 %   \int_0^T (p_D^*(t) - p_D(t))^2
 %   + (p_T^*(t) - p_T(t))^2
-%   + (p_V^*(t) - p_V(t))^2 
+%   + (p_V^*(t) - p_V(t))^2
 %   + \xi (\alpha^2 + \phi^2 + \psi^2) \md t.
 % \end{equation}
 
@@ -435,11 +458,11 @@ Thus,
 
 % The Lagrangian is
 % \begin{equation}
-%   \mathcal{L} = 
+%   \mathcal{L} =
 %   \int_0^T \frac{1}{2} (p_D^*(t) - p_D(t))^2
 %   + \frac{1}{2} (p_T^*(t) - p_T(t))^2
 %   + \frac{1}{2} (p_V^*(t) - p_V(t))^2
-%   + \xi (\alpha^2 + \phi^2 + \psi^2) 
+%   + \xi (\alpha^2 + \phi^2 + \psi^2)
 %   + \vec{q}^{\mT} \left[\frac{\md \vec{x}}{\md t} -
 %     \vec{f}(\vec{x}, t)\right]
 %   \md t.
@@ -447,8 +470,8 @@ Thus,
 
 % Taking the derivative with respect to $\vec{x}$ gives
 % \begin{equation}
-%   \frac{\partial \mathcal{L}}{\partial \vec{x}} = 
-%   \int_0^T 
+%   \frac{\partial \mathcal{L}}{\partial \vec{x}} =
+%   \int_0^T
 %   - \left(p_D^*(t) - p_D(t)\right) \frac{\partial p_D}{\partial \vec{x}}
 %   - \left(p_T^*(t) - p_T(t)\right) \frac{\partial p_T}{\partial \vec{x}}
 %   - \left(p_V^*(t) - p_V(t)\right)
@@ -476,7 +499,7 @@ Thus,
 %     + q_S \mu,
 %     \\
 %     \frac{\md q_A}{\md t}
-%     &= 
+%     &=
 %     \left(p_D^* - p_D\right) \frac{p_D}{D + T + V + A_D + U + A}
 %     \\ & \quad\quad {}
 %     + \left(q_S - q_A\right) \left(\beta_A - \lambda\right) \frac{S}{N}
@@ -540,8 +563,8 @@ Thus,
 
 % Taking the derivative with respect to $\vec{u}$ gives
 % \begin{equation}
-%   \frac{\partial \mathcal{L}}{\partial \vec{u}} = 
-%   \int_0^T 
+%   \frac{\partial \mathcal{L}}{\partial \vec{u}} =
+%   \int_0^T
 %   - \vec{q}^{\mT} \frac{\partial \vec{f}}{\partial \vec{u}}
 %   + \xi \vec{u}
 %   \; \md t = 0,
@@ -564,7 +587,7 @@ Thus,
 % Then the optimality condition is
 % \begin{equation}
 %   \begin{aligned}
-%     \alpha^* &= 
+%     \alpha^* &=
 %     \begin{cases}
 %       0 & \text{if $\alpha < 0$},
 %       \\
@@ -580,7 +603,7 @@ Thus,
 %       \phi & \text{otherwise},
 %     \end{cases}
 %     \\
-%     \psi^* &= 
+%     \psi^* &=
 %     \begin{cases}
 %       0 & \text{if $\psi < 0$},
 %       \\
