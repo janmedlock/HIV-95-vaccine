@@ -13,7 +13,7 @@ def _main():
     country = 'Nigeria'
 
     # 0 is just cost.
-    # inf is just QALYs.
+    # inf is just DALYs.
     # Other values are multiples of per-capita GDP.
     cost_effectiveness_threshold = 1
 
