@@ -6,14 +6,14 @@ Test the loading of data from the datasheet using :mod:`model.datasheet`.
 import sys
 
 sys.path.append('..')
-import model
+import model.datasheet
 
 
 def test_one(country):
     '''
     Test loading one country's data from the datasheet.
     '''
-    parameters = model.Parameters(country)
+    parameters = model.datasheet.Parameters(country)
 
     print(parameters)
 
@@ -22,9 +22,9 @@ def test_all():
     '''
     Test loading all data from the datasheet.
     '''
-    for country in model.get_country_list():
+    for country in model.datasheet.get_country_list():
         print(country)
-        model.Parameters(country)
+        model.datasheet.Parameters(country)
 
 
 def _main():

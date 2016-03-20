@@ -17,8 +17,6 @@ class ControlRatesMax:
     treatment = 10
     nonadherance = 1 
 
-control_rates_max = ControlRatesMax()
-
 
 def ramp(x, tol = 0.0001):
     r'''
@@ -74,7 +72,7 @@ class ControlRates(container.Container):
               R_{\text{nonadherance}} & \text{otherwise}.
               \end{cases}
 
-    The :math:`R`'s are :const:`control_rates_max`.
+    The :math:`R`'s are :class:`ControlRatesMax`.
 
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
@@ -87,14 +85,14 @@ class ControlRates(container.Container):
 
         target_values = targets.TargetValues(t, targets_, parameters)
 
-        self.diagnosis = (control_rates_max.diagnosis
+        self.diagnosis = (ControlRatesMax.diagnosis
                           * ramp(target_values.diagnosed
                                  - proportions_.diagnosed))
 
-        self.treatment = (control_rates_max.treatment
+        self.treatment = (ControlRatesMax.treatment
                           * ramp(target_values.treated
                                  - proportions_.treated))
 
-        self.nonadherance = (control_rates_max.nonadherance
+        self.nonadherance = (ControlRatesMax.nonadherance
                              * ramp(proportions_.suppressed
                                     - target_values.suppressed))

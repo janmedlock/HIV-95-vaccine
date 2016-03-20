@@ -23,42 +23,31 @@ so DALYs and QALYs are related by
 
    >>> from numpy import isclose
    >>> from scipy.integrate import simps
-   >>> from model.datasheet import Parameters
-   >>> from model.effectiveness import get_effectiveness
-   >>> from model.simulation import solve
+   >>> from model.simulation import Simulation
    >>> country = 'Nigeria'
-   >>> parameters = Parameters(country)
-   >>> solution = solve('909090', parameters)
-   >>> assert isclose(solution.DALYs, 7469422.8645030726)
-   >>> assert isclose(solution.QALYs, 960203759.34879041)
-   >>> assert isclose(simps(solution.alive + solution.dead, solution.t)
-   ...                - solution.DALYs,
-   ...                solution.QALYs)
+   >>> simulation = Simulation(country, '909090')
+   >>> assert isclose(simps(simulation.alive + simulation.dead, simulation.t)
+   ...                - simulation.DALYs,
+   ...                simulation.QALYs)
 '''
 
 import numpy
 from scipy import integrate
 
 
-def get_effectiveness(solution):
+def QALYs(simulation):
     # A component of Sphinx chokes on the '@'.
-    # QALYs_rate = (solution.state[:, : -1]
-    #               @ solution.parameters.QALY_rates_per_person)
-    QALYs_rate = numpy.dot(solution.state[:, : -1],
-                           solution.parameters.QALY_rates_per_person)
-    QALYs = integrate.simps(QALYs_rate, solution.t)
+    # QALYs_rate = (simulation.state[:, : -1]
+    #               @ simulation.parameters.QALY_rates_per_person)
+    QALYs_rate = numpy.dot(simulation.state[:, : -1],
+                           simulation.parameters.QALY_rates_per_person)
+    return integrate.simps(QALYs_rate, simulation.t)
 
+
+def DALYs(simulation):
     # A component of Sphinx chokes on the '@'.
-    # DALYs_rate = (solution.state[:, : -1]
-    #               @ solution.parameters.DALY_rates_per_person)
-    DALYs_rate = numpy.dot(solution.state[:, : -1],
-                           solution.parameters.DALY_rates_per_person)
-    DALYs = integrate.simps(DALYs_rate, solution.t)
-
-    return DALYs, QALYs
-
-
-def solve_and_get_effectiveness(targs, parameters):
-    from . import simulation
-    solution = simulation.solve(targs, parameters)
-    return get_effectiveness(solution)
+    # DALYs_rate = (simulation.state[:, : -1]
+    #               @ simulation.parameters.DALY_rates_per_person)
+    DALYs_rate = numpy.dot(simulation.state[:, : -1],
+                           simulation.parameters.DALY_rates_per_person)
+    return integrate.simps(DALYs_rate, simulation.t)

@@ -10,10 +10,6 @@ model.cost
 ----------
 .. automodule:: model.cost
 
-model.cost_effectiveness
-------------------------
-.. automodule:: model.cost_effectiveness
-
 model.datasheet
 ---------------
 .. automodule:: model.datasheet
@@ -42,10 +38,6 @@ model.proportions
 -----------------
 .. automodule:: model.proportions
 
-model.run909090
----------------
-.. automodule:: model.run909090
-
 model.simulation
 ----------------
 .. automodule:: model.simulation
@@ -53,3 +45,7 @@ model.simulation
 model.targets
 -------------
 .. automodule:: model.targets
+
+model.test
+----------
+.. automodule:: model.test

@@ -1,15 +1,5 @@
 '''
 Compute cost.
-
-.. doctest::
-
-   >>> from numpy import isclose
-   >>> from model.datasheet import Parameters
-   >>> from model.cost import solve_and_get_cost
-   >>> country = 'Nigeria'
-   >>> parameters = Parameters(country)
-   >>> cost_ = solve_and_get_cost('909090', parameters)
-   >>> assert isclose(cost_, 12632984122.149424)
 '''
 
 import numpy
@@ -103,62 +93,58 @@ That is, susceptibles should be less likely to be tested than Undiagnosed.
 '''
 susceptible_testing_discount = 0
 
-def get_cost(solution):
+def cost(simulation):
     cost_rate = (
         (
             # One-time cost of new diagnosis,
-            solution.parameters.cost_of_testing_onetime_increasing
+            simulation.parameters.cost_of_testing_onetime_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for diagnosed,
-            * RelativeCostOfEffort.total_cost(solution.target_values.diagnosed)
+            * RelativeCostOfEffort.total_cost(
+                simulation.target_values.diagnosed)
             # the level of diagnosis control,
-            * solution.control_rates.diagnosis
+            * simulation.control_rates.diagnosis
             # and the number of Susceptible, Acute, & Undiagnosed.
-            * ((1 - susceptible_testing_discount) * solution.susceptible
-               + solution.acute
-               + solution.undiagnosed)
+            * ((1 - susceptible_testing_discount) * simulation.susceptible
+               + simulation.acute
+               + simulation.undiagnosed)
         ) + (
             # One-time cost of new treatment,
-            solution.parameters.cost_of_treatment_onetime_constant
+            simulation.parameters.cost_of_treatment_onetime_constant
             # multiplied by
             # the treatment control
-            * solution.control_rates.treatment
+            * simulation.control_rates.treatment
             # and the number of people Diagnosed.
-            * solution.diagnosed
+            * simulation.diagnosed
         ) + (
             # Recurring cost of treatment,
-            solution.parameters.cost_treatment_recurring_increasing
+            simulation.parameters.cost_treatment_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for treatment,
-            * RelativeCostOfEffort.total_cost(solution.target_values.treated)
+            * RelativeCostOfEffort.total_cost(simulation.target_values.treated)
             # and the number of people Treated & Suppressed.
-            * (solution.treated + solution.viral_suppression)
+            * (simulation.treated + simulation.viral_suppression)
         ) + (
             # Recurring cost of nonadherance,
-            solution.parameters.cost_nonadherance_recurring_increasing
+            simulation.parameters.cost_nonadherance_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
             # for nonadherance,
-            * RelativeCostOfEffort.total_cost(solution.target_values.suppressed)
+            * RelativeCostOfEffort.total_cost(
+                simulation.target_values.suppressed)
             # and the number of people Treated and Suppressed.
-            * (solution.treated + solution.viral_suppression)
+            * (simulation.treated + simulation.viral_suppression)
         ) + (
             # Recurring cost of AIDS,
-            solution.parameters.cost_AIDS_recurring_constant
+            simulation.parameters.cost_AIDS_recurring_constant
             # multiplied by
             # the number of people with AIDS.
-            * solution.AIDS
+            * simulation.AIDS
         )
     )
 
-    cost = integrate.simps(cost_rate, solution.t)
+    cost = integrate.simps(cost_rate, simulation.t)
 
     return cost
-
-
-def solve_and_get_cost(targs, parameters):
-    from . import simulation
-    solution = simulation.solve(targs, parameters)
-    return get_cost(solution)

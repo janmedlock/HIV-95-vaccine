@@ -1,5 +1,7 @@
 '''
 Find target values that maximize the net benefit.
+
+.. todo:: Needs to be updated.
 '''
 
 import functools
@@ -9,8 +11,8 @@ import joblib
 import numpy
 from scipy import optimize
 
+from .. import simulation
 from .. import datasheet
-from .. import cost_effectiveness
 
 
 def _objective_function(targs, CE_threshold, parameters, scale = 1):

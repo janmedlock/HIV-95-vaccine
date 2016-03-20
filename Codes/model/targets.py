@@ -36,7 +36,7 @@ class TargetValues(container.Container):
                 # Max of 90% and current the current level.
                 targets = [numpy.clip(v, 0.9, None)
                            for v in initial_proportions.values()]
-            elif targets == 'base':
+            elif targets == 'baseline':
                 # Fixed at initial values.
                 targets = initial_proportions.values()
             elif targets == 'nothing':

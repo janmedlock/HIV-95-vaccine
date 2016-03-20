@@ -17,23 +17,21 @@ import model
 def _main():
     country = 'Nigeria'
 
-    parameters = model.Parameters(country)
-
     time0 = time.time()
-    solution = model.solve('909090', parameters, use_log = False)
+    simulation = model.Simulation(country, '909090', _use_log = False)
     time1 = time.time()
     print('Non-log model took {} sec.'.format(time1 - time0))
 
     time0 = time.time()
-    solution_log = model.solve('909090', parameters, use_log = True)
+    simulation_log = model.Simulation(country, '909090', _use_log = True)
     time1 = time.time()
     print('Log model took {} sec.'.format(time1 - time0))
 
 
     # Ignore differences in the initial conditions.
-    maxabserr = numpy.abs(solution.state - solution_log.state)[1 : ].max()
-    maxrelerr = (numpy.abs(solution.state - solution_log.state)
-                 / solution.state)[1 : ].max()
+    maxabserr = numpy.abs(simulation.state - simulation_log.state)[1 : ].max()
+    maxrelerr = (numpy.abs(simulation.state - simulation_log.state)
+                 / simulation.state)[1 : ].max()
 
     print('Max absolute error = {}'.format(maxabserr))
     print('Max relative error = {}'.format(maxrelerr))

@@ -8,8 +8,9 @@ from scipy import integrate
 from . import container
 from . import control_rates
 from . import cost
-from . import cost_effectiveness
+from . import datasheet
 from . import effectiveness
+from . import plot
 from . import proportions
 from . import targets
 
@@ -157,9 +158,9 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-class Solution(container.Container):
+class Simulation(container.Container):
     '''
-    A class to hold the simulation solution.
+    A class to hold the simulation information.
     '''
 
     _keys = ('susceptible', 'acute', 'undiagnosed',
@@ -172,11 +173,40 @@ class Solution(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, t, state, targets_, parameters):
-        self.t = t
-        self.state = state
+    def __init__(self, country, targets_, t_end = 15,
+                 baseline = 'baseline', _use_log = True):
+        self.country = country
+
         self.targets = targets_
-        self.parameters = parameters
+
+        self.t = numpy.linspace(0, t_end, 1001)
+
+        self.baseline = baseline
+
+        self._baseline = None
+
+        self._use_log = _use_log
+
+        self.parameters = datasheet.Parameters(self.country)
+
+        if self._use_log:
+            # Take log, but map 0 to e^-20.
+            Y0 = numpy.ma.log(self.parameters.initial_conditions).filled(-20)
+            fcn = _ODEs_log
+        else:
+            Y0 = self.parameters.initial_conditions.copy()
+            fcn = _ODEs
+
+        Y = integrate.odeint(fcn,
+                             Y0,
+                             self.t,
+                             args = (self.targets, self.parameters),
+                             mxstep = 2000)
+
+        if self._use_log:
+            self.state = numpy.exp(Y)
+        else:
+            self.state = Y
 
         for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
@@ -187,25 +217,69 @@ class Solution(container.Container):
 
     @property
     def cost(self):
-        return cost.get_cost(self)
+        return cost.cost(self)
     
     @property
-    def effectiveness_and_cost(self):
-        return cost_effectiveness.get_effectiveness_and_cost(self)
-
-    @property
-    def effectiveness(self):
-        return effectiveness.get_effectiveness(self)
-
-    @property
     def DALYs(self):
-        DALYs, QALYs = self.effectiveness
-        return DALYs
+        return effectiveness.DALYs(self)
 
     @property
     def QALYs(self):
-        DALYs, QALYs = self.effectiveness
-        return QALYs
+        return effectiveness.QALYs(self)
+
+    @property
+    def incremental_cost(self):
+        self._run_baseline()
+        return self.cost - self._baseline.cost
+
+    @property
+    def incremental_DALYs(self):
+        self._run_baseline()
+        return self._baseline.DALYs - self.DALYs
+
+    @property
+    def incremental_QALYs(self):
+        self._run_baseline()
+        return self._baseline.QALYs - self.QALYs
+
+    @property
+    def ICER_DALYs(self):
+        return (self.incremental_cost
+                / self.incremental_DALYs
+                / self.parameters.GDP_per_capita)
+
+    @property
+    def ICER_QALYs(self):
+        return (self.incremental_cost
+                / self.incremental_QALYs
+                / self.parameters.GDP_per_capita)
+
+    @property
+    def net_benefit(self, cost_effectiveness_threshold,
+                    effectiveness = 'DALYs'):
+        r'''Net benefit is
+
+        .. math:: N = E - \frac{C}{T G},
+
+        where :math:`E` is `effectiveness`, :math:`C` is `cost`, :math:`T`
+        is `cost_effectiveness_threshold`, and :math:`G` is
+        :attr:`model.datasheet.Parameters.GDP_per_capita`.
+        '''
+        if effectiveness_ == 'DALYs':
+            effectiveness = - self.DALYs
+        elif effectiveness_ == 'QALYs':
+            effectiveness = self.QALYs
+
+        if cost_effectiveness_threshold == 0:
+            # Just cost.
+            return - self.cost
+        elif cost_effectiveness_threshold == numpy.inf:
+            # Just effectiveness.
+            return effectiveness
+        else:
+            return (effectiveness - (self.cost
+                                     / self.parameters.GDP_per_capita
+                                     / cost_effectiveness_threshold))
 
     @property
     def target_values(self):
@@ -228,27 +302,5 @@ class Solution(container.Container):
     def prevalence(self):
         return self.infected / self.alive
 
-
-def solve(targets_, parameters, t_end = 10, use_log = True):
-    t = numpy.linspace(0, t_end, 1001)
-
-    if use_log:
-        # Take log, but map 0 to e^-20.
-        Y0 = numpy.ma.log(parameters.initial_conditions).filled(-20)
-        fcn = _ODEs_log
-    else:
-        Y0 = parameters.initial_conditions.copy()
-        fcn = _ODEs
-        
-    Y = integrate.odeint(fcn,
-                         Y0,
-                         t,
-                         args = (targets_, parameters),
-                         mxstep = 2000)
-
-    if use_log:
-        state = numpy.exp(Y)
-    else:
-        state = Y
-
-    return Solution(t, state, targets_, parameters)
+    def plot(self):
+        plot.simulation(self)

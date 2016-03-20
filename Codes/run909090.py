@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Run the 90-90-90 policies for all the countries.
-
-See :func:`model.run909090.run909090`.
 '''
 
 import pickle
