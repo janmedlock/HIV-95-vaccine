@@ -34,9 +34,9 @@ model.optimization.net_benefit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: model.optimization.net_benefit
 
-model.plot_solution
--------------------
-.. automodule:: model.plot_solution
+model.plot
+----------
+.. automodule:: model.plot
 
 model.proportions
 -----------------
