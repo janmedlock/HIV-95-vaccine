@@ -50,6 +50,6 @@ model.targets
 -------------
 .. automodule:: model.targets
 
-model.tests
------------
-.. automodule:: model.tests
+model.test
+----------
+.. automodule:: model.test
