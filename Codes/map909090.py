@@ -185,20 +185,13 @@ def _main():
     for c in countries:
         r = results[c]
 
-        stats = r.solution.effectiveness_and_cost
-        stats_base = r.solution_base.effectiveness_and_cost
-        stats_inc = model.get_cost_effectiveness_stats(*(stats + stats_base),
-                                                       r.solution.parameters)
+        effectiveness.append(r.DALYs)
+        effectiveness_base.append(r.baseline.DALYs)
 
-        # DALYs
-        effectiveness.append(stats[0])
-        effectiveness_base.append(stats_base[0])
+        cost.append(r.cost)
+        cost_base.append(r.baseline.cost)
 
-        cost.append(stats[-1])
-        cost_base.append(stats_base[-1])
-
-        # In DALYs.
-        ICER.append(stats_inc[3])
+        ICER.append(r.ICER_DALYs)
 
     plot_effectiveness(countries, effectiveness, effectiveness_base)
     plot_cost(countries, cost, cost_base)

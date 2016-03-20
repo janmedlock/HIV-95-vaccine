@@ -35,20 +35,19 @@ def _main():
     fig, ax = pyplot.subplots()
     for (c, x) in zip(countries, colors):
         r = results[c]
-        ax.semilogy(r.solution.t + 2015,
-                    100 * r.solution.prevalence,
+        ax.semilogy(r.t + 2015,
+                    100 * r.prevalence,
                     color = x, linestyle = 'solid',
                     label = '{}, 90–90–90'.format(c))
 
     for (c, x) in zip(countries, colors):
         r = results[c]
-        ax.semilogy(r.solution_base.t + 2015,
-                    100 * r.solution_base.prevalence,
+        ax.semilogy(r.baseline.t + 2015,
+                    100 * r.baseline.prevalence,
                     color = x, linestyle = 'dotted',
                     label = '{}, status quo'.format(c))
 
-    ax.set_xlim(r.solution.t[0] + 2015,
-                r.solution.t[-1] + 2015)
+    ax.set_xlim(r.t[0] + 2015, r.t[-1] + 2015)
     ax.set_ylim(0.1, 100)
 
     ax.set_xlabel('Year')

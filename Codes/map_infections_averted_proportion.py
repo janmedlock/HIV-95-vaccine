@@ -20,9 +20,8 @@ def _main(every = 20):
     infections_averted = []
     for c in countries:
         r = results[c]
-        infections_averted.append((r.solution_base.new_infections
-                                   - r.solution.new_infections)
-                                  / r.solution_base.new_infections)
+        infections_averted.append((r.baseline.new_infections - r.new_infections)
+                                  / r.baseline.new_infections)
     infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
@@ -36,7 +35,7 @@ def _main(every = 20):
         z.tighten(aspect_adjustment = 1.35)
 
     data = 100 * infections_averted[: : every]
-    T = results[countries[0]].solution.t[: : every] + 2015
+    T = results[countries[0]].t[: : every] + 2015
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)

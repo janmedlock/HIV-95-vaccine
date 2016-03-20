@@ -175,7 +175,8 @@ class Simulation(container.Container):
                  'viral_suppression', 'AIDS')
 
     def __init__(self, country, targets_, t_end = 15,
-                 baseline = 'baseline', _use_log = True):
+                 baseline = 'baseline', _use_log = True,
+                 _parameters = None):
         self.country = country
 
         self.targets = targets_
@@ -184,13 +185,12 @@ class Simulation(container.Container):
 
         self.t = numpy.linspace(0, t_end, 1001)
 
-        self.baseline = baseline
-
-        self._baseline = None
-
         self._use_log = _use_log
 
-        self.parameters = datasheet.Parameters(self.country)
+        if _parameters is None:
+            self.parameters = datasheet.Parameters(self.country)
+        else:
+            self.parameters = _parameters
 
         if self._use_log:
             # Take log, but map 0 to e^-20.
@@ -214,12 +214,12 @@ class Simulation(container.Container):
         for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
 
-    def _run_baseline(self):
-        if self._baseline is None:
-            self._baseline = Simulation(self.country,
-                                        self.baseline,
-                                        t_end = self.t_end,
-                                        _use_log = self._use_log)
+        if baseline != self.targets:
+            self.baseline = Simulation(self.country,
+                                       baseline,
+                                       t_end = self.t_end,
+                                       _use_log = self._use_log,
+                                       _parameters = self.parameters)
 
     @property
     def proportions(self):
@@ -239,18 +239,15 @@ class Simulation(container.Container):
 
     @property
     def incremental_cost(self):
-        self._run_baseline()
-        return self.cost - self._baseline.cost
+        return self.cost - self.baseline.cost
 
     @property
     def incremental_DALYs(self):
-        self._run_baseline()
-        return self._baseline.DALYs - self.DALYs
+        return self.baseline.DALYs - self.DALYs
 
     @property
     def incremental_QALYs(self):
-        self._run_baseline()
-        return self.QALYs - self._baseline.QALYs
+        return self.QALYs - self.baseline.QALYs
 
     @property
     def ICER_DALYs(self):

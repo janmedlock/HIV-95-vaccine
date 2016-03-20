@@ -20,7 +20,7 @@ def _main(every = 20):
     prevalence = []
     for c in countries:
         r = results[c]
-        prevalence.append(results[c].solution.prevalence)
+        prevalence.append(r.prevalence)
     prevalence = numpy.asarray(prevalence).T
 
     fig = pyplot.figure()
@@ -34,7 +34,7 @@ def _main(every = 20):
         z.tighten(aspect_adjustment = 1.35)
 
     data = 100 * prevalence[: : every]
-    T = results[countries[0]].solution.t[: : every] + 2015
+    T = results[countries[0]].t[: : every] + 2015
 
     cmap = 'afmhot_r'
     vmin = max(data.min(), 0.1)

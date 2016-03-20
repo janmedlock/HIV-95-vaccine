@@ -15,8 +15,6 @@ def _helper(country):
     Helper to build dictionary of results.
     '''
     simulation = model.Simulation(country, '909090')
-    # Also run baseline.
-    simulation._run_baseline()
     # Need converted country name.
     country_ = simulation.parameters.country
     print('{}'.format(country_))
