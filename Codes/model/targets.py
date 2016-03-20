@@ -33,6 +33,10 @@ class TargetValues(container.Container):
     * ``'909090+50-10'``: 90-90-90 with vaccination starting at 10 years
       and increasing to 50% at 15 years.
     * ``'baseline'``: Keep the current levels constant going forward.
+    * ``'baseline+50-5'``: baseline with vaccination starting at 5 years
+      and increasing to 50% at 10 years.
+    * ``'baseline+50-10'``: baseline with vaccination starting at 10 years
+      and increasing to 50% at 15 years.
     * ``'nothing'``: Set all levels to 0.
     '''
 
@@ -75,9 +79,23 @@ class TargetValues(container.Container):
                     targets[-1] = 0.5
                     # 10 years
                     times_to_start[-1] = 10
-            elif targets == 'baseline':
+            elif targets.startswith('baseline'):
+                targets_ = targets
                 # Fixed at initial values.
                 targets = initial_proportions.values()
+                if targets_ == 'baseline':
+                    # vaccination is 0.
+                    targets[-1] = 0
+                elif targets_ == 'baseline+50-5':
+                    # vaccination is 50%.
+                    targets[-1] = 0.5
+                    # 5 years
+                    times_to_start[-1] = 5
+                elif targets_ == 'baseline+50-10':
+                    # vaccination is 50%.
+                    targets[-1] = 0.5
+                    # 10 years
+                    times_to_start[-1] = 10
             elif targets == 'nothing':
                 targets = numpy.zeros(len(self._keys))
 

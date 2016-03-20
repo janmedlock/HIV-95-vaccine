@@ -19,7 +19,8 @@ def _helper(country):
     country_ = parameters.country
 
     results = {}
-    for k in ('baseline', '909090', '909090+50-5', '909090+50-10'):
+    for k in ('baseline', 'baseline+50-5', 'baseline+50-10',
+              '909090', '909090+50-5', '909090+50-10'):
         results[k] = model.Simulation(country, k,
                                       run_baseline = False,
                                       parameters = parameters)

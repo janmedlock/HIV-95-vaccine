@@ -36,6 +36,10 @@ def _main():
         r = results[c]
         for (k, l) in (
                 ('baseline', 'Status quo'),
+                ('baseline+50-10',
+                 'Status quo + 50% vaccination starting in 2025'),
+                ('baseline+50-5',
+                 'Status quo + 50% vaccination starting in 2020'),
                 ('909090', '90–90–90'),
                 ('909090+50-10', '90–90–90 + 50% vaccination starting in 2025'),
                 ('909090+50-5', '90–90–90 + 50% vaccination starting in 2020')):
