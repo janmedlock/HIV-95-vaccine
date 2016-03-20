@@ -29,8 +29,8 @@ so DALYs and QALYs are related by
    >>> country = 'Nigeria'
    >>> parameters = Parameters(country)
    >>> solution = solve('909090', parameters)
-   >>> assert isclose(solution.DALYs, 8281790.7229896532)
-   >>> assert isclose(solution.QALYs, 957874221.35318017)
+   >>> assert isclose(solution.DALYs, 7469422.8645030726)
+   >>> assert isclose(solution.QALYs, 960203759.34879041)
    >>> assert isclose(simps(solution.alive + solution.dead, solution.t)
    ...                - solution.DALYs,
    ...                solution.QALYs)
