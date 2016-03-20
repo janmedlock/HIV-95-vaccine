@@ -15,7 +15,7 @@ def _main():
 
     print(country)
 
-    simulation = model.Simulation(country, '909090', t_end = 10)
+    simulation = model.Simulation(country, '909090')
 
     simulation.plot()
 
