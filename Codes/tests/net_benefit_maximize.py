@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Test the :mod:`model.optimization`.
+
+.. todo:: Update.
 '''
 
 import sys

@@ -14,10 +14,13 @@ def _helper(country):
     '''
     Helper to build dictionary of results.
     '''
-    result = model.run909090(country)
-    country_ = result.solution.parameters.country
+    simulation = model.Simulation(country, '909090')
+    # Also run baseline.
+    simulation._run_baseline()
+    # Need converted country name.
+    country_ = simulation.parameters.country
     print('{}'.format(country_))
-    return (country_, result)
+    return (country_, simulation)
 
 
 def _main(parallel = True):
