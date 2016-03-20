@@ -39,18 +39,17 @@ def _main():
                 ('909090', '90–90–90'),
                 ('909090+50-10', '90–90–90 + 50% vaccination starting in 2025'),
                 ('909090+50-5', '90–90–90 + 50% vaccination starting in 2020')):
-        s = r[k]
-        ax.plot(s.t + 2015,
-                s.dead / 1000,
-                label = l)
+            s = r[k]
+            ax.plot(s.t + 2015,
+                    s.dead / 1000,
+                    label = l)
 
         ax.set_xlim(s.t[0] + 2015, s.t[-1] + 2015)
-
-        ax.set_xlabel('Year')
-        ax.set_ylabel('AIDS Deaths (1000s)')
         ax.legend(ncol = 2, loc = 'upper left')
-
         ax.set_title(c)
+
+    axes[len(axes) // 2].set_ylabel('AIDS Deaths (1000s)')
+    axes[-1].set_xlabel('Year')
 
     fig.savefig('deaths.pdf')
 

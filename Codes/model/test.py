@@ -4,6 +4,8 @@ import numpy
 
 from . import datasheet
 from . import simulation
+from .cost import TestRelativeCostOfEffort
+from .effectiveness import TestDALYsQALYs
 
 
 class TestCE(unittest.TestCase):

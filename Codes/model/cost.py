@@ -2,6 +2,8 @@
 Compute cost.
 '''
 
+import unittest
+
 import numpy
 from scipy import integrate
 
@@ -39,23 +41,6 @@ class RelativeCostOfEffort:
     :math:`0.5 \leq b < 1`.
     (The slope is negative for :math:`b < 0.5`
     and the slope is infinite for :math:`b = 1`.)
-
-    :Testing:
-
-    Check that these functions satisfy :eq:`eightytwenty`:
-
-    .. doctest::
-
-       >>> from numpy import arange, isclose
-       >>> from scipy.integrate import quad
-       >>> from model.cost import RelativeCostOfEffort
-       >>> F = RelativeCostOfEffort.total_cost
-       >>> def G(p, b):
-       ...     return quad(RelativeCostOfEffort.marginal_cost,
-       ...                 0, p, args = (b, ), points = (b, ))[0]
-       >>> for b in arange(0.5, 1, 0.1):
-       ...    assert isclose((F(1, b) - F(b, b)) / F(1, b), b)
-       ...    assert isclose((G(1, b) - G(b, b)) / G(1, b), b)
     '''
     @staticmethod
     def marginal_cost(p, breakpoint = 0.8):
@@ -84,6 +69,25 @@ class RelativeCostOfEffort:
         return numpy.where(
             p < breakpoint, p,
             p + slope / 2 * (p - breakpoint) ** 2)
+
+
+class TestRelativeCostOfEffort(unittest.TestCase):
+    '''
+    Check that :eq:`eightytwenty` is satisfied.
+    '''
+    def test_relative_cost_of_effort(self):
+        F = RelativeCostOfEffort.total_cost
+
+        def G(p, b):
+            I, e = integrate.quad(RelativeCostOfEffort.marginal_cost,
+                                  0, p, args = (b, ), points = (b, ))
+            return I
+
+        for b in numpy.arange(0.5, 1, 0.1):
+            with self.subTest(b = b):
+                self.assertTrue(numpy.isclose((F(1, b) - F(b, b)) / F(1, b), b))
+                self.assertTrue(numpy.isclose((G(1, b) - G(b, b)) / G(1, b), b))
+
 
 
 '''

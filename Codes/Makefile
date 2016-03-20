@@ -4,5 +4,4 @@ html:
 	cd docs && $(MAKE) html
 
 test:
-	python3 -m unittest model.tests
-	cd docs && $(MAKE) doctest
+	python3 -m unittest model.test

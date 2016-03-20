@@ -18,18 +18,9 @@ so DALYs and QALYs are related by
 
 .. math:: Q = \int_0^{t_\mathrm{end}} \mathbf{1}^{\mathrm{T}}
           \mathbf{y}(t)\;\mathrm{d} t - D.
-
-.. doctest::
-
-   >>> from numpy import isclose
-   >>> from scipy.integrate import simps
-   >>> from model.simulation import Simulation
-   >>> country = 'Nigeria'
-   >>> simulation = Simulation(country, '909090')
-   >>> assert isclose(simps(simulation.alive + simulation.dead, simulation.t)
-   ...                - simulation.DALYs,
-   ...                simulation.QALYs)
 '''
+
+import unittest
 
 import numpy
 from scipy import integrate
@@ -51,3 +42,14 @@ def DALYs(simulation):
     DALYs_rate = numpy.dot(simulation.state[:, : -1],
                            simulation.parameters.DALY_rates_per_person)
     return integrate.simps(DALYs_rate, simulation.t)
+
+
+class TestDALYsQALYs(unittest.TestCase):
+    def test_DALYs_QALYs(self):
+        from . import simulation
+        country = 'Nigeria'
+        simulation = simulation.Simulation(country, '909090')
+        self.assertTrue(numpy.isclose(
+            integrate.simps(simulation.alive + simulation.dead, simulation.t)
+            - simulation.DALYs,
+            simulation.QALYs))
