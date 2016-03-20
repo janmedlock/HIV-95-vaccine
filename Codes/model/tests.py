@@ -7,9 +7,10 @@ from . import simulation
 
 
 class TestCE(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         country = 'Nigeria'
-        self.simulation = simulation.Simulation(country, '909090')
+        cls.simulation = simulation.Simulation(country, '909090')
 
     def test_cost(self):
         self.assertTrue(numpy.isclose(self.simulation.cost,
