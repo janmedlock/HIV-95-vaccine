@@ -116,27 +116,13 @@ class Parameters:
                 * transmission_per_coital_act_unsuppressed)
                ** coital_acts_per_partner))
 
+        self.vaccine_efficacy = 0.5
 
     def read_initial_conditions_sheet(self, data):
         initial_conditions \
             = data.parse('Initial Conditions')[self.country_name_in_datasheet][0 : 6]
         initial_conditions.index = ('S', 'A', 'U', 'D', 'T', 'V')
 
-        # Compute number of people with AIDS,
-        # and move them from the non-AIDS states to the AIDS state.
-        # initial_conditions['W'] = 0
-        # for k in ('U', 'D', 'T', 'V'):
-        #     if k in ('U', 'D', 'T'):
-        #         progression_rate = self.progression_rate_unsuppressed
-        #     elif k == 'V':
-        #         progression_rate = self.progression_rate_suppressed
-        #     else:
-        #         raise ValueError
-                
-        #     proportionAIDS = 1 / (1 + self.death_rate_AIDS / progression_rate)
-        #     newAIDS = proportionAIDS * initial_conditions[k]
-        #     initial_conditions['W'] += newAIDS
-        #     initial_conditions[k]   -= newAIDS
         # Take AIDS people out of D only.
         proportionAIDS = (1 / (1
                                + self.death_rate_AIDS
@@ -145,14 +131,21 @@ class Parameters:
         initial_conditions['W'] = newAIDS
         initial_conditions['D'] -= newAIDS
 
+        # Vaccinated.
+        initial_conditions['Q'] = 0
+
         # Add people dead from AIDS.
         initial_conditions['Z'] = 0
         # Add new infections.
         initial_conditions['R'] = 0
 
+        # Order correctly.
+        initial_conditions = initial_conditions.reindex(
+            ('S', 'Q', 'A', 'U', 'D',
+             'T', 'V', 'W', 'Z', 'R'))
+
         # Now convert to numpy object for speed.
         self.initial_conditions = initial_conditions.as_matrix()
-
 
     def read_costs_sheet(self, data):
         try:
@@ -213,9 +206,10 @@ class Parameters:
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
-        # Entries are states S, A, U, D, T, V, W, Z,
+        # Entries are states S, Q, A, U, D, T, V, W, Z,
         # but not R.
         disability = numpy.array((0,            # S
+                                  0,            # Q
                                   0.16,         # A
                                   0.038,        # U
                                   disability_D, # D
@@ -228,7 +222,6 @@ class Parameters:
 
         self.DALY_rates_per_person = disability
 
-
     def read_GDP_sheet(self, data):
         try:
             GDP_raw = data.parse('GDP')[self.country_name_in_datasheet]
@@ -239,7 +232,6 @@ class Parameters:
 
         self.GDP_per_capita = GDP_per_capita
         self.GDP_PPP_per_capita = GDP_PPP_per_capita
-
 
     def __repr__(self):
         retval = 'country = {}\n'.format(self.country)

@@ -18,6 +18,7 @@ from . import targets
 
 def _ODEs(state, t, targets_, parameters):
     # S is susceptible.
+    # Q is vaccinated.
     # A is acute infection.
     # U is undiagnosed.
     # D is diagnosed but not treated.
@@ -26,10 +27,10 @@ def _ODEs(state, t, targets_, parameters):
     # W is AIDS.
     # Z is dead from AIDS.
     # R is new infectons.
-    S, A, U, D, T, V, W, Z, R = state
+    S, Q, A, U, D, T, V, W, Z, R = state
 
     # Total sexually active population.
-    N = S + A + U + D + T + V
+    N = S + Q + A + U + D + T + V
 
     controls = control_rates.ControlRates(t, state, targets_, parameters)
 
@@ -39,10 +40,16 @@ def _ODEs(state, t, targets_, parameters):
         + parameters.transmission_rate_suppressed * V) / N
 
     dS = (parameters.birth_rate * N
+          - controls.vaccination * S
           - force_of_infection * S
           - parameters.death_rate * S)
 
+    dQ = (controls.vaccination * S
+          - (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          - parameters.death_rate * Q)
+    
     dA = (force_of_infection * S
+          + (1 - parameters.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
           - parameters.death_rate * A)
 
@@ -76,12 +83,13 @@ def _ODEs(state, t, targets_, parameters):
 
     dR = force_of_infection * S
 
-    return (dS, dA, dU, dD, dT, dV, dW, dZ, dR)
+    return (dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR)
 
 
 def _ODEs_log(state_log, t, targets_, parameters):
     state = numpy.exp(state_log)
     # S is susceptible.
+    # Q is vaccinated.
     # A is acute infection.
     # U is undiagnosed.
     # D is diagnosed but not treated.
@@ -90,11 +98,12 @@ def _ODEs_log(state_log, t, targets_, parameters):
     # W is AIDS.
     # Z is dead from AIDS.
     # R is new infectons.
-    S, A, U, D, T, V, W, Z, R = numpy.exp(state_log)
-    S_log, A_log, U_log, D_log, T_log, V_log, W_log, Z_log, R_log = state_log
+    S, Q, A, U, D, T, V, W, Z, R = numpy.exp(state_log)
+    (S_log, Q_log, A_log, U_log, D_log,
+     T_log, V_log, W_log, Z_log, R_log) = state_log
 
     # Total sexually active population.
-    N = S + A + U + D + T + V
+    N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
     controls = control_rates.ControlRates(t, state, targets_, parameters)
@@ -110,10 +119,17 @@ def _ODEs_log(state_log, t, targets_, parameters):
            * numpy.exp(V_log - N_log)))
 
     dS_log = (parameters.birth_rate * N * numpy.exp(- S_log)
+              - controls.vaccination
               - force_of_infection
               - parameters.death_rate)
 
+    dQ_log = (controls.vaccination * numpy.exp(S_log - Q_log)
+              - (1 - parameters.vaccine_efficacy) * force_of_infection
+              - parameters.death_rate)
+
     dA_log = (force_of_infection * numpy.exp(S_log - A_log)
+              + ((1 - parameters.vaccine_efficacy) * force_of_infection
+                 * numpy.exp(Q_log - A_log))
               - parameters.progression_rate_acute
               - parameters.death_rate)
 
@@ -151,8 +167,8 @@ def _ODEs_log(state_log, t, targets_, parameters):
 
     dR_log = force_of_infection * numpy.exp(S_log - R_log)
 
-    return (dS_log, dA_log, dU_log, dD_log, dT_log,
-            dV_log, dW_log, dZ_log, dR_log)
+    return (dS_log, dQ_log, dA_log, dU_log, dD_log,
+            dT_log, dV_log, dW_log, dZ_log, dR_log)
 
 
 def split_state(state):
@@ -164,19 +180,19 @@ class Simulation(container.Container):
     A class to hold the simulation information.
     '''
 
-    _keys = ('susceptible', 'acute', 'undiagnosed',
+    _keys = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
              'diagnosed', 'treated', 'viral_suppression',
              'AIDS', 'dead', 'new_infections')
 
-    _alive = ('susceptible', 'acute', 'undiagnosed',
+    _alive = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
               'diagnosed', 'treated', 'viral_suppression', 'AIDS')
 
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
     def __init__(self, country, targets_, t_end = 15,
-                 baseline = 'baseline', _use_log = True,
-                 _parameters = None, _run_baseline = True):
+                 baseline = 'baseline', parameters = None,
+                 run_baseline = True, _use_log = False):
         self.country = country
 
         self.targets = targets_
@@ -185,12 +201,12 @@ class Simulation(container.Container):
 
         self.t = numpy.linspace(0, t_end, 1001)
 
-        self._use_log = _use_log
-
-        if _parameters is None:
+        if parameters is None:
             self.parameters = datasheet.Parameters(self.country)
         else:
-            self.parameters = _parameters
+            self.parameters = parameters
+
+        self._use_log = _use_log
 
         if self._use_log:
             # Take log, but map 0 to e^-20.
@@ -214,13 +230,13 @@ class Simulation(container.Container):
         for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
 
-        if _run_baseline:
+        if run_baseline:
             self.baseline = Simulation(self.country,
                                        baseline,
                                        t_end = self.t_end,
-                                       _use_log = self._use_log,
-                                       _parameters = self.parameters,
-                                       _run_baseline = False)
+                                       parameters = self.parameters,
+                                       run_baseline = False,
+                                       _use_log = self._use_log)
 
     @property
     def proportions(self):

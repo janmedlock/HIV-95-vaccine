@@ -15,8 +15,8 @@ from .. import datasheet
 
 def _objective_function(targets, country, CE_threshold, parameters, scale = 1):
     sim = simulation.Simulation(country, targets,
-                                _parameters = parameters,
-                                _run_baseline = False)
+                                parameters = parameters,
+                                run_baseline = False)
     return - sim.net_benefit(CE_threshold) / scale
 
 
@@ -133,6 +133,6 @@ def maximize(country, CE_threshold,
     net_benefit = - best.fun * scale
 
     sim = simulation.Simulation(country, targets,
-                                _parameters = parameters)
+                                parameters = parameters)
 
     return (targets, sim.incremental_net_benefit(CE_threshold))

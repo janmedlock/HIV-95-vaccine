@@ -13,10 +13,10 @@ class Proportions(container.Container):
     the current number of people in the model compartments.
     '''
 
-    _keys = ('diagnosed', 'treated', 'suppressed')
+    _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
     def __init__(self, state):
-        S, A, U, D, T, V, W, Z, R = simulation.split_state(state)
+        S, Q, A, U, D, T, V, W, Z, R = simulation.split_state(state)
 
         # (D + T + V + W) / (A + U + D + T + V + W)
         self.diagnosed = _safe_divide(D + T + V + W,
@@ -29,3 +29,7 @@ class Proportions(container.Container):
         # V / (T + V)
         self.suppressed = _safe_divide(V,
                                        T + V)
+
+        # Q / (S + Q)
+        self.vaccinated = _safe_divide(Q,
+                                       S + Q)

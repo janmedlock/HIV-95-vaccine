@@ -15,7 +15,8 @@ class ControlRatesMax:
     '''
     diagnosis = 1
     treatment = 10
-    nonadherance = 1 
+    nonadherance = 1
+    vaccination = 1
 
 
 def ramp(x, tol = 0.0001):
@@ -38,7 +39,8 @@ def ramp(x, tol = 0.0001):
 
 class ControlRates(container.Container):
     r'''
-    Rates for diagnosis, treatment, & nonadherance are piecewise constant.
+    Rates for diagnosis, treatment, nonadherance, & vaccination
+    are piecewise constant.
 
     The diagnosis rate is:
 
@@ -72,13 +74,23 @@ class ControlRates(container.Container):
               R_{\text{nonadherance}} & \text{otherwise}.
               \end{cases}
 
+    The vaccination rate is
+
+    .. math:: r_{\text{vaccination}} =
+              \begin{cases}
+              R_{\text{vaccination}} &
+              \text{if $p_{\text{vaccinated}} < T_{\text{vaccinated}}(t)$},
+              \\
+              R_{\text{vaccination}} & \text{otherwise}.
+              \end{cases}
+
     The :math:`R`'s are :class:`ControlRatesMax`.
 
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
 
-    _keys = ('diagnosis', 'treatment', 'nonadherance')
+    _keys = ('diagnosis', 'treatment', 'nonadherance', 'vaccination')
 
     def __init__(self, t, state, targets_, parameters):
         proportions_ = proportions.Proportions(state)
@@ -96,3 +108,8 @@ class ControlRates(container.Container):
         self.nonadherance = (ControlRatesMax.nonadherance
                              * ramp(proportions_.suppressed
                                     - target_values.suppressed))
+
+        self.vaccination = (ControlRatesMax.vaccination
+                            * ramp(target_values.vaccinated
+                                   - proportions_.vaccinated))
+
