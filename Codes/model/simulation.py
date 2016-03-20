@@ -10,6 +10,7 @@ from . import control_rates
 from . import cost
 from . import datasheet
 from . import effectiveness
+from . import net_benefit
 from . import plot
 from . import proportions
 from . import targets
@@ -179,6 +180,8 @@ class Simulation(container.Container):
 
         self.targets = targets_
 
+        self.t_end = t_end
+
         self.t = numpy.linspace(0, t_end, 1001)
 
         self.baseline = baseline
@@ -211,6 +214,13 @@ class Simulation(container.Container):
         for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
 
+    def _run_baseline(self):
+        if self._baseline is None:
+            self._baseline = Simulation(self.country,
+                                        self.baseline,
+                                        t_end = self.t_end,
+                                        _use_log = self._use_log)
+
     @property
     def proportions(self):
         return proportions.Proportions(self.state)
@@ -240,7 +250,7 @@ class Simulation(container.Container):
     @property
     def incremental_QALYs(self):
         self._run_baseline()
-        return self._baseline.QALYs - self.QALYs
+        return self.QALYs - self._baseline.QALYs
 
     @property
     def ICER_DALYs(self):
@@ -254,32 +264,10 @@ class Simulation(container.Container):
                 / self.incremental_QALYs
                 / self.parameters.GDP_per_capita)
 
-    @property
     def net_benefit(self, cost_effectiveness_threshold,
                     effectiveness = 'DALYs'):
-        r'''Net benefit is
-
-        .. math:: N = E - \frac{C}{T G},
-
-        where :math:`E` is `effectiveness`, :math:`C` is `cost`, :math:`T`
-        is `cost_effectiveness_threshold`, and :math:`G` is
-        :attr:`model.datasheet.Parameters.GDP_per_capita`.
-        '''
-        if effectiveness_ == 'DALYs':
-            effectiveness = - self.DALYs
-        elif effectiveness_ == 'QALYs':
-            effectiveness = self.QALYs
-
-        if cost_effectiveness_threshold == 0:
-            # Just cost.
-            return - self.cost
-        elif cost_effectiveness_threshold == numpy.inf:
-            # Just effectiveness.
-            return effectiveness
-        else:
-            return (effectiveness - (self.cost
-                                     / self.parameters.GDP_per_capita
-                                     / cost_effectiveness_threshold))
+        return net_benefit.net_benefit(self, cost_effectiveness_threshold,
+                                       effectiveness = effectiveness)
 
     @property
     def target_values(self):

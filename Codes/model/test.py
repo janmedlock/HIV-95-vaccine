@@ -8,12 +8,12 @@ Tests.
    >>> from model.simulation import Simulation
    >>> country = 'Nigeria'
    >>> simulation = Simulation(country, '909090')
-   >>> assert isclose(simulation.cost, 12632984122.149424)
-   >>> assert isclose(simulation.DALYs, 7469422.8645030726)
-   >>> assert isclose(simulation.QALYs, 960203759.34879041)
-   >>> assert all(isclose(simulation.incremental_DALYs, 1672955.8058778439))
-   >>> assert all(isclose(simulation.incremental_QALYs, 1828846.4245402813))
-   >>> assert all(isclose(simulation.incremental_cost, 8811460057.6051826))
-   >>> assert all(isclose(simulation.ICER_DALYs, 1.6442437565747554))
-   >>> assert all(isclose(simulation.ICER_QALYs, 1.5040886440377796))
+   >>> assert isclose(simulation.cost, 19579571706.41235)
+   >>> assert isclose(simulation.DALYs, 13807040.061347544)
+   >>> assert isclose(simulation.QALYs, 1542178864.3872309)
+   >>> assert isclose(simulation.incremental_cost, 14362126332.038065)
+   >>> assert isclose(simulation.incremental_DALYs, 4564739.0117855407)
+   >>> assert isclose(simulation.incremental_QALYs, 5248944.484855175)
+   >>> assert isclose(simulation.ICER_DALYs, 0.98221278690875868)
+   >>> assert isclose(simulation.ICER_QALYs, 0.85418030981532012)
 '''

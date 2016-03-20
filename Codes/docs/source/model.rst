@@ -18,6 +18,10 @@ model.effectiveness
 -------------------
 .. automodule:: model.effectiveness
 
+model.net_benefit
+-----------------
+.. automodule:: model.net_benefit
+
 model.optimization
 ------------------
 .. automodule:: model.optimization
