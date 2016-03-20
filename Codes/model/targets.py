@@ -82,7 +82,7 @@ class TargetValues(container.Container):
             elif targets.startswith('baseline'):
                 targets_ = targets
                 # Fixed at initial values.
-                targets = initial_proportions.values()
+                targets = list(initial_proportions.values())
                 if targets_ == 'baseline':
                     # vaccination is 0.
                     targets[-1] = 0
