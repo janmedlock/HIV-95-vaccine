@@ -30,28 +30,27 @@ countries = ('United States of America',
 def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
-    colors = seaborn.color_palette('husl', len(countries))
-
-    fig, ax = pyplot.subplots()
-    for (c, x) in zip(countries, colors):
+    fig, axes = pyplot.subplots(len(countries),
+                                sharex = True)
+    for (c, ax) in zip(countries, axes):
         r = results[c]
-        ax.plot(r.t + 2015,
-                r.dead / 1000,
-                color = x, linestyle = 'solid',
-                label = '{}, 90–90–90'.format(c))
+        for (k, l) in (
+                ('baseline', 'Status quo'),
+                ('909090', '90–90–90'),
+                ('909090+50-10', '90–90–90 + 50% vaccination starting in 2025'),
+                ('909090+50-5', '90–90–90 + 50% vaccination starting in 2020')):
+        s = r[k]
+        ax.plot(s.t + 2015,
+                s.dead / 1000,
+                label = l)
 
-    for (c, x) in zip(countries, colors):
-        r = results[c]
-        ax.plot(r.baseline.t + 2015,
-                r.baseline.dead / 1000,
-                color = x, linestyle = 'dotted',
-                label = '{}, status quo'.format(c))
+        ax.set_xlim(s.t[0] + 2015, s.t[-1] + 2015)
 
-    ax.set_xlim(r.t[0] + 2015, r.t[-1] + 2015)
+        ax.set_xlabel('Year')
+        ax.set_ylabel('AIDS Deaths (1000s)')
+        ax.legend(ncol = 2, loc = 'upper left')
 
-    ax.set_xlabel('Year')
-    ax.set_ylabel('AIDS Deaths (1000s)')
-    ax.legend(ncol = 2, loc = 'upper left')
+        ax.set_title(c)
 
     fig.savefig('deaths.pdf')
 
