@@ -22,7 +22,7 @@ def _main():
          country,
          cost_effectiveness_threshold,
          method = 'cobyla',
-         parallel = False,
+         parallel = True,
          debug = True)
 
     print('target values = {}'.format(targets))
