@@ -1,5 +1,5 @@
 '''
-Make plots of the :mod:`model.simulation` solutions.
+Make plots.
 '''
 
 import warnings
@@ -18,31 +18,32 @@ warnings.filterwarnings(
 import seaborn
 
 
-def plot_solution(solution, show = True):
+def solution(solution, show = True):
+    '''
+    Plot a :class:`model.simulation.Solution`.
+    '''
+
     (fig0, ax0) = pyplot.subplots(2, 1)
 
-    props = solution.proportions
-
-    controls = solution.control_rates
-
-    for (i, k) in enumerate(('diagnosed', 'treated', 'suppressed')):
-        l = ax0[0].plot(solution.t, solution.proportions[:, i],
-                        label = k)
-        ax0[0].plot(solution.t, solution.target_values[:, i],
-                    color = l[0].get_color(), linestyle = ':')
+    for (p, t) in zip(solution.proportions.items(),
+                      solution.target_values.items()):
+        pk, pv = p
+        tk, tv = t
+        l = ax0[0].plot(solution.t, pv, label = pk)
+        ax0[0].plot(solution.t, tv, color = l[0].get_color(),
+                    linestyle = ':')
     ax0[0].legend(loc = 'lower right')
 
-    for (i, k) in enumerate(('diagnosis', 'treatment', 'nonadherance')):
-        ax0[1].plot(solution.t, solution.control_rates[:, i],
-                    label = '{} rate'.format(k))
+    for (k, v) in solution.control_rates.items():
+        ax0[1].plot(solution.t, v, label = '{} rate'.format(k))
     ax0[1].legend(loc = 'upper right')
 
     (fig1, ax1) = pyplot.subplots()
 
-    colors = seaborn.color_palette('husl', len(solution.compartments))
-    for (k, c) in zip(solution.compartments, colors):
-        y = getattr(solution, k)
-        ax1.semilogy(solution.t, y, color = c, label = k)
+    colors = seaborn.color_palette('husl', len(solution))
+    for (i, c) in zip(solution.items(), colors):
+        k, v = i
+        ax1.semilogy(solution.t, v, color = c, label = k)
     ax1.legend(loc = 'lower right')
 
     (fig2, ax2) = pyplot.subplots()

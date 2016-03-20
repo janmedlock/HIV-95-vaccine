@@ -1,28 +1,28 @@
-'''
-Get the proportions diagnosed, treated, and viral suppressed from
-the current number of people in the model compartments.
-'''
-
 import numpy
 
+from . import container
 from . import simulation
 
 
-def get_proportions(state):
-    S, A, U, D, T, V, W, Z, R = simulation.split_state(state)
+class Proportions(container.Container):
+    '''
+    Get the proportions diagnosed, treated, and viral suppressed from
+    the current number of people in the model compartments.
+    '''
 
-    proportions = numpy.ma.empty(state.shape[ : -1] + (3, ))
+    _keys = ('diagnosed', 'treated', 'suppressed')
 
-    # diagnosed
-    # (D + T + V + W) / (A + U + D + T + V + W)
-    proportions[..., 0] = numpy.ma.divide(D + T + V + W, A + U + D + T + V + W)
+    def __init__(self, state):
+        S, A, U, D, T, V, W, Z, R = simulation.split_state(state)
 
-    # treated
-    # (T + V) / (D + T + V + W)
-    proportions[..., 1] = numpy.ma.divide(T + V, D + T + V + W)
+        # (D + T + V + W) / (A + U + D + T + V + W)
+        self.diagnosed = numpy.ma.divide(D + T + V + W,
+                                         A + U + D + T + V + W)
 
-    # suppressed
-    # V / (T + V)
-    proportions[..., 2] = numpy.ma.divide(V, T + V)
+        # (T + V) / (D + T + V + W)
+        self.treated = numpy.ma.divide(T + V,
+                                       D + T + V + W)
 
-    return proportions.filled(0)
+        # V / (T + V)
+        self.suppressed = numpy.ma.divide(V,
+                                          T + V)

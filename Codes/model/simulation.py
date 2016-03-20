@@ -5,6 +5,7 @@ Solve the HIV model.
 import numpy
 from scipy import integrate
 
+from . import container
 from . import control_rates
 from . import cost
 from . import cost_effectiveness
@@ -13,7 +14,7 @@ from . import proportions
 from . import targets
 
 
-def _ODEs(state, t, targs, parameters):
+def _ODEs(state, t, targets_, parameters):
     # S is susceptible.
     # A is acute infection.
     # U is undiagnosed.
@@ -28,7 +29,7 @@ def _ODEs(state, t, targs, parameters):
     # Total sexually active population.
     N = S + A + U + D + T + V
 
-    controls = control_rates.get_control_rates(t, state, targs, parameters)
+    controls = control_rates.ControlRates(t, state, targets_, parameters)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -44,24 +45,24 @@ def _ODEs(state, t, targs, parameters):
           - parameters.death_rate * A)
 
     dU = (parameters.progression_rate_acute * A
-          - controls[0] * U
+          - controls.diagnosis * U
           - parameters.death_rate * U
           - parameters.progression_rate_unsuppressed * U)
 
-    dD = (controls[0] * U
-          + controls[2] * (T + V)
-          - controls[1] * D
+    dD = (controls.diagnosis * U
+          + controls.nonadherance * (T + V)
+          - controls.treatment * D
           - parameters.death_rate * D
           - parameters.progression_rate_unsuppressed * D)
 
-    dT = (controls[1] * D
-          - controls[2] * T
+    dT = (controls.treatment * D
+          - controls.nonadherance * T
           - parameters.suppression_rate * T
           - parameters.death_rate * T
           - parameters.progression_rate_unsuppressed * T)
 
     dV = (parameters.suppression_rate * T
-          - controls[2] * V
+          - controls.nonadherance * V
           - parameters.death_rate * V
           - parameters.progression_rate_suppressed * V)
 
@@ -76,7 +77,7 @@ def _ODEs(state, t, targs, parameters):
     return (dS, dA, dU, dD, dT, dV, dW, dZ, dR)
 
 
-def _ODEs_log(state_log, t, targs, parameters):
+def _ODEs_log(state_log, t, targets_, parameters):
     state = numpy.exp(state_log)
     # S is susceptible.
     # A is acute infection.
@@ -94,7 +95,7 @@ def _ODEs_log(state_log, t, targs, parameters):
     N = S + A + U + D + T + V
     N_log = numpy.log(N)
 
-    controls = control_rates.get_control_rates(t, state, targs, parameters)
+    controls = control_rates.ControlRates(t, state, targets_, parameters)
 
     force_of_infection = (
         (parameters.transmission_rate_acute
@@ -115,25 +116,25 @@ def _ODEs_log(state_log, t, targs, parameters):
               - parameters.death_rate)
 
     dU_log = (parameters.progression_rate_acute * numpy.exp(A_log - U_log)
-              - controls[0]
+              - controls.diagnosis
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dD_log = (controls[0] * numpy.exp(U_log - D_log)
-              + controls[2] * (numpy.exp(T_log - D_log)
-                               + numpy.exp(V_log - D_log))
-              - controls[1]
+    dD_log = (controls.diagnosis * numpy.exp(U_log - D_log)
+              + controls.nonadherance * (numpy.exp(T_log - D_log)
+                                         + numpy.exp(V_log - D_log))
+              - controls.treatment
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dT_log = (controls[1] * numpy.exp(D_log - T_log)
-              - controls[2]
+    dT_log = (controls.treatment * numpy.exp(D_log - T_log)
+              - controls.nonadherance
               - parameters.suppression_rate
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
     dV_log = (parameters.suppression_rate * numpy.exp(T_log - V_log)
-              - controls[2]
+              - controls.nonadherance
               - parameters.death_rate
               - parameters.progression_rate_suppressed)
 
@@ -156,14 +157,14 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-class Solution:
+class Solution(container.Container):
     '''
     A class to hold the simulation solution.
     '''
-    
-    compartments = ('susceptible', 'acute', 'undiagnosed',
-                    'diagnosed', 'treated', 'viral_suppression',
-                    'AIDS', 'dead', 'new_infections')
+
+    _keys = ('susceptible', 'acute', 'undiagnosed',
+             'diagnosed', 'treated', 'viral_suppression',
+             'AIDS', 'dead', 'new_infections')
 
     _alive = ('susceptible', 'acute', 'undiagnosed',
               'diagnosed', 'treated', 'viral_suppression', 'AIDS')
@@ -171,18 +172,18 @@ class Solution:
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, t, state, targs, parameters):
+    def __init__(self, t, state, targets_, parameters):
         self.t = t
         self.state = state
-        self.targs = targs
+        self.targets = targets_
         self.parameters = parameters
 
-        for (k, v) in zip(self.compartments, split_state(self.state)):
+        for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
 
     @property
     def proportions(self):
-        return proportions.get_proportions(self.state)
+        return proportions.Proportions(self.state)
 
     @property
     def cost(self):
@@ -208,12 +209,12 @@ class Solution:
 
     @property
     def target_values(self):
-        return targets.get_target_values(self.t, self.targs, self.parameters)
+        return targets.TargetValues(self.t, self.targets, self.parameters)
 
     @property
     def control_rates(self):
-        return control_rates.get_control_rates(self.t, self.state, self.targs,
-                                               self.parameters)
+        return control_rates.ControlRates(self.t, self.state, self.targets,
+                                          self.parameters)
 
     @property
     def infected(self):
@@ -228,7 +229,7 @@ class Solution:
         return self.infected / self.alive
 
 
-def solve(targs, parameters, t_end = 10, use_log = True):
+def solve(targets_, parameters, t_end = 10, use_log = True):
     t = numpy.linspace(0, t_end, 1001)
 
     if use_log:
@@ -242,7 +243,7 @@ def solve(targs, parameters, t_end = 10, use_log = True):
     Y = integrate.odeint(fcn,
                          Y0,
                          t,
-                         args = (targs, parameters),
+                         args = (targets_, parameters),
                          mxstep = 2000)
 
     if use_log:
@@ -250,4 +251,4 @@ def solve(targs, parameters, t_end = 10, use_log = True):
     else:
         state = Y
 
-    return Solution(t, state, targs, parameters)
+    return Solution(t, state, targets_, parameters)

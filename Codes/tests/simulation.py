@@ -31,7 +31,7 @@ def _main():
 
     model.print_cost_effectiveness_stats(*(CE_stats + (parameters, )))
 
-    model.plot_solution(solution)
+    model.plot.solution(solution)
 
 
 if __name__ == '__main__':

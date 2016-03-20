@@ -4,8 +4,20 @@ Compute the value of the control rates.
 
 import numpy
 
+from . import container
 from . import proportions
 from . import targets
+
+
+class ControlRatesMax:
+    '''
+    Maximum control rates.
+    '''
+    diagnosis = 1
+    treatment = 10
+    nonadherance = 1 
+
+control_rates_max = ControlRatesMax()
 
 
 def ramp(x, tol = 0.0001):
@@ -26,12 +38,7 @@ def ramp(x, tol = 0.0001):
     return numpy.clip(x / tol, 0, 1)
 
 
-'''
-Maximum rates for diagnosis, treatment, & nonadherance.
-'''
-control_rates_max = numpy.array([1, 10, 1])
-
-def get_control_rates(t, state, targs, parameters):
+class ControlRates(container.Container):
     r'''
     Rates for diagnosis, treatment, & nonadherance are piecewise constant.
 
@@ -72,25 +79,22 @@ def get_control_rates(t, state, targs, parameters):
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
-    current_proportions = proportions.get_proportions(state)
 
-    target_values = targets.get_target_values(t, targs, parameters)
+    _keys = ('diagnosis', 'treatment', 'nonadherance')
 
-    control_rates = numpy.empty(state.shape[ : -1] + (3, ), numpy.float64)
+    def __init__(self, t, state, targets_, parameters):
+        proportions_ = proportions.Proportions(state)
 
-    # diagnosis
-    control_rates[..., 0] = (control_rates_max[0]
-                             * ramp(target_values[..., 0]
-                                    - current_proportions[..., 0]))
+        target_values = targets.TargetValues(t, targets_, parameters)
 
-    # treatment
-    control_rates[..., 1] = (control_rates_max[1]
-                             * ramp(target_values[..., 1]
-                                    - current_proportions[..., 1]))
+        self.diagnosis = (control_rates_max.diagnosis
+                          * ramp(target_values.diagnosed
+                                 - proportions_.diagnosed))
 
-    # nonadherance
-    control_rates[..., 2] = (control_rates_max[2]
-                             * ramp(current_proportions[..., 2]
-                                    - target_values[..., 2]))
+        self.treatment = (control_rates_max.treatment
+                          * ramp(target_values.treated
+                                 - proportions_.treated))
 
-    return control_rates
+        self.nonadherance = (control_rates_max.nonadherance
+                             * ramp(proportions_.suppressed
+                                    - target_values.suppressed))

@@ -110,10 +110,10 @@ def get_cost(solution):
             solution.parameters.cost_of_testing_onetime_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for diagnosis (target_values[0]),
-            * RelativeCostOfEffort.total_cost(solution.target_values[:, 0])
-            # the level of diagnosis control (control_rates[0]),
-            * solution.control_rates[:, 0]
+            # for diagnosed,
+            * RelativeCostOfEffort.total_cost(solution.target_values.diagnosed)
+            # the level of diagnosis control,
+            * solution.control_rates.diagnosis
             # and the number of Susceptible, Acute, & Undiagnosed.
             * ((1 - susceptible_testing_discount) * solution.susceptible
                + solution.acute
@@ -122,8 +122,8 @@ def get_cost(solution):
             # One-time cost of new treatment,
             solution.parameters.cost_of_treatment_onetime_constant
             # multiplied by
-            # the treatment control (control_rates[1])
-            * solution.control_rates[:, 1]
+            # the treatment control
+            * solution.control_rates.treatment
             # and the number of people Diagnosed.
             * solution.diagnosed
         ) + (
@@ -131,8 +131,8 @@ def get_cost(solution):
             solution.parameters.cost_treatment_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for treatment (target_values[1]),
-            * RelativeCostOfEffort.total_cost(solution.target_values[:, 1])
+            # for treatment,
+            * RelativeCostOfEffort.total_cost(solution.target_values.treated)
             # and the number of people Treated & Suppressed.
             * (solution.treated + solution.viral_suppression)
         ) + (
@@ -140,15 +140,15 @@ def get_cost(solution):
             solution.parameters.cost_nonadherance_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for nonadherance (target_values[2]),
-            * RelativeCostOfEffort.total_cost(solution.target_values[:, 2])
+            # for nonadherance,
+            * RelativeCostOfEffort.total_cost(solution.target_values.suppressed)
             # and the number of people Treated and Suppressed.
             * (solution.treated + solution.viral_suppression)
         ) + (
             # Recurring cost of AIDS,
             solution.parameters.cost_AIDS_recurring_constant
             # multiplied by
-            # the number of people with AIDS (state[6])
+            # the number of people with AIDS.
             * solution.AIDS
         )
     )
