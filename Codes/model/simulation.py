@@ -176,7 +176,7 @@ class Simulation(container.Container):
 
     def __init__(self, country, targets_, t_end = 15,
                  baseline = 'baseline', _use_log = True,
-                 _parameters = None):
+                 _parameters = None, _run_baseline = True):
         self.country = country
 
         self.targets = targets_
@@ -214,12 +214,13 @@ class Simulation(container.Container):
         for (k, v) in zip(self.keys(), split_state(self.state)):
             setattr(self, k, v)
 
-        if baseline != self.targets:
+        if _run_baseline:
             self.baseline = Simulation(self.country,
                                        baseline,
                                        t_end = self.t_end,
                                        _use_log = self._use_log,
-                                       _parameters = self.parameters)
+                                       _parameters = self.parameters,
+                                       _run_baseline = False)
 
     @property
     def proportions(self):
@@ -265,6 +266,13 @@ class Simulation(container.Container):
                     effectiveness = 'DALYs'):
         return net_benefit.net_benefit(self, cost_effectiveness_threshold,
                                        effectiveness = effectiveness)
+
+    def incremental_net_benefit(self, cost_effectiveness_threshold,
+                                effectiveness = 'DALYs'):
+        return (self.net_benefit(cost_effectiveness_threshold,
+                                 effectiveness = effectiveness)
+                - self.baseline.net_benefit(cost_effectiveness_threshold,
+                                            effectiveness = effectiveness))
 
     @property
     def target_values(self):

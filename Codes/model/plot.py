@@ -4,7 +4,6 @@ Make plots.
 
 import warnings
 
-import numpy
 from matplotlib import pyplot
 from matplotlib import ticker
 

@@ -1,3 +1,6 @@
+import numpy
+
+
 def net_benefit(simulation, cost_effectiveness_threshold,
                 effectiveness = 'DALYs'):
     r'''Net benefit is
@@ -8,9 +11,9 @@ def net_benefit(simulation, cost_effectiveness_threshold,
     is `cost_effectiveness_threshold`, and :math:`G` is
     :attr:`model.datasheet.Parameters.GDP_per_capita`.
     '''
-    if effectiveness_ == 'DALYs':
+    if effectiveness == 'DALYs':
         effectiveness = - simulation.DALYs
-    elif effectiveness_ == 'QALYs':
+    elif effectiveness == 'QALYs':
         effectiveness = simulation.QALYs
 
     if cost_effectiveness_threshold == 0:

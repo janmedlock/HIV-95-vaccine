@@ -1,7 +1,5 @@
 '''
 Find target values that maximize the net benefit.
-
-.. todo:: Needs to be updated.
 '''
 
 import functools
@@ -15,11 +13,11 @@ from .. import simulation
 from .. import datasheet
 
 
-def _objective_function(targs, CE_threshold, parameters, scale = 1):
-    net_benefit = cost_effectiveness.solve_and_get_net_benefit(targs,
-                                                               CE_threshold,
-                                                               parameters)
-    return - net_benefit / scale
+def _objective_function(targets, country, CE_threshold, parameters, scale = 1):
+    sim = simulation.Simulation(country, targets,
+                                _parameters = parameters,
+                                _run_baseline = False)
+    return - sim.net_benefit(CE_threshold) / scale
 
 
 def _lower_bound(b, i, x):
@@ -31,7 +29,7 @@ def _upper_bound(b, i, x):
 
 def _do_minimize(*args, **kwds):
     '''
-    multiprocessing is having trouble with the hess_inv attribute
+    :mod:`multiprocessing` is having trouble with the hess_inv attribute
     of the result.  This function converts that to a dense matrix.
     '''
     res = optimize.minimize(*args, **kwds)
@@ -46,7 +44,7 @@ def _do_minimize(*args, **kwds):
 
 def maximize(country, CE_threshold,
              method = 'l-bfgs-b', nruns = 8,
-             debug = False):
+             debug = False, parallel = True):
     '''
     Find the targets that maximize the net benefit in the country.
     
@@ -62,12 +60,13 @@ def maximize(country, CE_threshold,
 
     # Get an approximate scale to normalize the objective values
     # by running at the lower bounds (0, 0, 0).
-    targs0 = [b[0] for b in bounds]
-    scale = numpy.abs(_objective_function(targs0,
+    targets0 = [b[0] for b in bounds]
+    scale = numpy.abs(_objective_function(targets0,
+                                          country,
                                           CE_threshold,
                                           parameters))
 
-    args = (CE_threshold, parameters, scale)
+    args = (country, CE_threshold, parameters, scale)
 
     options = dict(disp = debug)
 
@@ -99,21 +98,25 @@ def maximize(country, CE_threshold,
     initial_guesses = numpy.random.uniform(*zip(*bounds),
                                            size = (nruns, len(bounds)))
 
-    # verbose = 100 if debug else 0
-    verbose = 0
-    # Parallel, using all available processors.
-    with joblib.Parallel(n_jobs = -1, verbose = verbose) as parallel:
-        # res = parallel(
-        #     joblib.delayed(optimize.minimize)(_objective_function,
-        #                                       x0,
-        #                                       **kwds)
-        #     for x0 in initial_guesses)
-        #
-        # multiprocessing is having trouble with the sparse hess_inv
-        # attribute of the optimization result.
-        res = parallel(
-            joblib.delayed(_do_minimize)(_objective_function, x0, **kwds)
-            for x0 in initial_guesses)
+    if parallel:
+        # verbose = 100 if debug else 0
+        verbose = 0
+        # Parallel, using all available processors.
+        with joblib.Parallel(n_jobs = -1, verbose = verbose) as parallel:
+            # res = parallel(
+            #     joblib.delayed(optimize.minimize)(_objective_function,
+            #                                       x0,
+            #                                       **kwds)
+            #     for x0 in initial_guesses)
+            #
+            # multiprocessing is having trouble with the sparse hess_inv
+            # attribute of the optimization result.
+            res = parallel(
+                joblib.delayed(_do_minimize)(_objective_function, x0, **kwds)
+                for x0 in initial_guesses)
+    else:
+        res = [optimize.minimize(_objective_function, x0, **kwds)
+               for x0 in initial_guesses]
 
     if debug:
         print('\n\n'.join(map(str, res)))
@@ -125,13 +128,11 @@ def maximize(country, CE_threshold,
     assert best.success, ('The lowest function value is from '
                           + 'a run with res.success = False.')
 
-    targs = best.x
+    targets = best.x
 
     net_benefit = - best.fun * scale
 
-    net_benefit_base = cost_effectiveness.solve_and_get_net_benefit(
-        'base', CE_threshold, parameters)
+    sim = simulation.Simulation(country, targets,
+                                _parameters = parameters)
 
-    incremental_net_benefit = net_benefit - net_benefit_base
-
-    return (targs, incremental_net_benefit)
+    return (targets, sim.incremental_net_benefit(CE_threshold))
