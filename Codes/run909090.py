@@ -26,7 +26,7 @@ targets = ('baseline', '909090')
 vaccine_targets = (0, 0.5, 0.75)
 # vaccine_efficacies = (0.5, 0.75)
 vaccine_efficacies = (0.5, )
-vaccine_times_to_start = (10, 5)
+vaccine_times_to_start = (5, )
 # vaccine_times_to_full_implementation = (5, 2)
 vaccine_times_to_full_implementation = (5, )
 
@@ -38,9 +38,7 @@ params = (vaccine_times_to_start,
           vaccine_targets,
           vaccine_efficacies,
           vaccine_times_to_full_implementation)
-# for (ts, v, e, tfi) in itertools.product(*params):
-for (ts, v, e, tfi) in (map(lambda x: x[0], params),
-                        map(lambda x: x[-1], params)):
+for (ts, v, e, tfi) in itertools.product(*params):
     vaccine_info.append((v, e, ts, tfi))
 
 
