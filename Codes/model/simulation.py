@@ -6,7 +6,6 @@ import numpy
 from scipy import integrate
 
 from . import container
-from . import control_rates
 from . import cost
 from . import datasheet
 from . import effectiveness
@@ -32,7 +31,7 @@ def _ODEs(state, t, targets_, parameters):
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
 
-    controls = control_rates.ControlRates(t, state, targets_, parameters)
+    control_rates = targets_.control_rates(t, state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -40,11 +39,11 @@ def _ODEs(state, t, targets_, parameters):
         + parameters.transmission_rate_suppressed * V) / N
 
     dS = (parameters.birth_rate * N
-          - controls.vaccination * S
+          - control_rates.vaccination * S
           - force_of_infection * S
           - parameters.death_rate * S)
 
-    dQ = (controls.vaccination * S
+    dQ = (control_rates.vaccination * S
           - (1 - parameters.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
     
@@ -54,24 +53,24 @@ def _ODEs(state, t, targets_, parameters):
           - parameters.death_rate * A)
 
     dU = (parameters.progression_rate_acute * A
-          - controls.diagnosis * U
+          - control_rates.diagnosis * U
           - parameters.death_rate * U
           - parameters.progression_rate_unsuppressed * U)
 
-    dD = (controls.diagnosis * U
-          + controls.nonadherance * (T + V)
-          - controls.treatment * D
+    dD = (control_rates.diagnosis * U
+          + control_rates.nonadherance * (T + V)
+          - control_rates.treatment * D
           - parameters.death_rate * D
           - parameters.progression_rate_unsuppressed * D)
 
-    dT = (controls.treatment * D
-          - controls.nonadherance * T
+    dT = (control_rates.treatment * D
+          - control_rates.nonadherance * T
           - parameters.suppression_rate * T
           - parameters.death_rate * T
           - parameters.progression_rate_unsuppressed * T)
 
     dV = (parameters.suppression_rate * T
-          - controls.nonadherance * V
+          - control_rates.nonadherance * V
           - parameters.death_rate * V
           - parameters.progression_rate_suppressed * V)
 
@@ -106,7 +105,7 @@ def _ODEs_log(state_log, t, targets_, parameters):
     N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
-    controls = control_rates.ControlRates(t, state, targets_, parameters)
+    control_rates = targets_.control_rates(t, state)
 
     force_of_infection = (
         (parameters.transmission_rate_acute
@@ -119,11 +118,11 @@ def _ODEs_log(state_log, t, targets_, parameters):
            * numpy.exp(V_log - N_log)))
 
     dS_log = (parameters.birth_rate * N * numpy.exp(- S_log)
-              - controls.vaccination
+              - control_rates.vaccination
               - force_of_infection
               - parameters.death_rate)
 
-    dQ_log = (controls.vaccination * numpy.exp(S_log - Q_log)
+    dQ_log = (control_rates.vaccination * numpy.exp(S_log - Q_log)
               - (1 - parameters.vaccine_efficacy) * force_of_infection
               - parameters.death_rate)
 
@@ -134,25 +133,25 @@ def _ODEs_log(state_log, t, targets_, parameters):
               - parameters.death_rate)
 
     dU_log = (parameters.progression_rate_acute * numpy.exp(A_log - U_log)
-              - controls.diagnosis
+              - control_rates.diagnosis
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dD_log = (controls.diagnosis * numpy.exp(U_log - D_log)
-              + controls.nonadherance * (numpy.exp(T_log - D_log)
-                                         + numpy.exp(V_log - D_log))
-              - controls.treatment
+    dD_log = (control_rates.diagnosis * numpy.exp(U_log - D_log)
+              + control_rates.nonadherance * (numpy.exp(T_log - D_log)
+                                              + numpy.exp(V_log - D_log))
+              - control_rates.treatment
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dT_log = (controls.treatment * numpy.exp(D_log - T_log)
-              - controls.nonadherance
+    dT_log = (control_rates.treatment * numpy.exp(D_log - T_log)
+              - control_rates.nonadherance
               - parameters.suppression_rate
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
     dV_log = (parameters.suppression_rate * numpy.exp(T_log - V_log)
-              - controls.nonadherance
+              - control_rates.nonadherance
               - parameters.death_rate
               - parameters.progression_rate_suppressed)
 
@@ -190,12 +189,11 @@ class Simulation(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, country, targets_, t_end = 15,
+    def __init__(self, country, targets_, target_kwds = {},
+                 t_end = 15,
                  baseline = 'baseline', parameters = None,
                  run_baseline = True, _use_log = False):
         self.country = country
-
-        self.targets = targets_
 
         self.t_end = t_end
 
@@ -205,6 +203,9 @@ class Simulation(container.Container):
             self.parameters = datasheet.Parameters(self.country)
         else:
             self.parameters = parameters
+
+        self.targets = targets.Targets(targets_, self.parameters,
+                                       **target_kwds)
 
         self._use_log = _use_log
 
@@ -219,7 +220,8 @@ class Simulation(container.Container):
         Y = integrate.odeint(fcn,
                              Y0,
                              self.t,
-                             args = (self.targets, self.parameters),
+                             args = (self.targets,
+                                     self.parameters),
                              mxstep = 2000)
 
         if self._use_log:
@@ -292,12 +294,11 @@ class Simulation(container.Container):
 
     @property
     def target_values(self):
-        return targets.TargetValues(self.t, self.targets, self.parameters)
+        return self.targets(self.t)
 
     @property
     def control_rates(self):
-        return control_rates.ControlRates(self.t, self.state, self.targets,
-                                          self.parameters)
+        return self.targets.control_rates(self.t, self.state)
 
     @property
     def infected(self):

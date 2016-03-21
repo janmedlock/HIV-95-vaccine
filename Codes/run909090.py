@@ -10,16 +10,17 @@ import joblib
 import model
 
 
-targets = ('baseline', '909090')
-
-vaccine_levels = ('', '+100-0', '+50-0', '+50-5', '+50-10')
-
 countries = ('United States of America',
              'South Africa',
              'Rwanda',
              'Uganda',
              'India',
              'Haiti')
+
+targets = ('baseline', '909090')
+
+vaccine_levels = (0, 0.5)
+vaccine_start_times = (5, 10)
 
 
 def _helper(country):
@@ -33,10 +34,22 @@ def _helper(country):
     results = {}
     for t in targets:
         for v in vaccine_levels:
-            k = t + v
-            results[k] = model.Simulation(country, k,
-                                          run_baseline = False,
-                                          parameters = parameters)
+            if v > 0:
+                for vt in vaccine_start_times:
+                    k = (t, v, vt)
+                    results[k] = model.Simulation(country, t,
+                                                  vaccine_target = v,
+                                                  vaccine_start_time = vt,
+                                                  run_baseline = False,
+                                                  parameters = parameters)
+            else:
+                # Don't need to run multiple vaccine_start_times
+                # when vaccine_target == 0.
+                k = (t, v)
+                results[k] = model.Simulation(country, t,
+                                              vaccine_target = v,
+                                              run_baseline = False,
+                                              parameters = parameters)
 
     print('{}'.format(country_))
     return (country_, results)
