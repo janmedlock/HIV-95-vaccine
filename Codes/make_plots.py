@@ -104,10 +104,17 @@ def prevalence(ax, t, data, **kwargs):
     baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
 
 
+countries = ('United States of America',
+             'South Africa',
+             'Rwanda',
+             'Uganda',
+             'India',
+             'Haiti')
+
 def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
-    countries = list(results.keys())
+    # countries = list(results.keys())
     levels = list(results[countries[0]].keys())
 
     t = results[countries[0]][levels[0]].t
