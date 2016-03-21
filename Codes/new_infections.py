@@ -3,6 +3,8 @@
 Plot new infections.
 '''
 
+import collections.abc
+import itertools
 import pickle
 import warnings
 
@@ -19,43 +21,59 @@ warnings.filterwarnings(
 import seaborn
 
 
-countries = ('United States of America',
-             'South Africa',
-             'Rwanda',
-             'Uganda',
-             'India',
-             'Haiti')
+def sortlevels(s):
+    s_ = s.split('+')
+    if s_[0] == 'baseline':
+        retval = 1 * 1000
+    elif s_[0] == '909090':
+        retval = 2 * 1000
+    else:
+        raise ValueError
+    if len(s_) > 1:
+        s__ = s_[1].split('-')
+        retval += (float(s__[0]) / 100 + 1) * 100
+        retval += 10 - float(s__[1])
+    return retval
+
+
+def getlabel(s):
+    s_ = s.split('+')
+    if s_[0] == 'baseline':
+        label = 'Status quo'
+    elif s_[0] == '909090':
+        label = '90–90–90'
+    else:
+        raise ValueError
+    if len(s_) > 1:
+        s__ = s_[1].split('-')
+        label += ' with {}% vac starting {:g}'.format(
+            s__[0], float(s__[1]) + 2015)
+    return label
 
 
 def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
-    fig, axes = pyplot.subplots(len(countries),
-                                sharex = True)
-    for (c, ax) in zip(countries, axes):
-        r = results[c]
-        for (k, l) in (
-                ('baseline', 'Status quo'),
-                ('baseline+50-10',
-                 'Status quo + 50% vaccination starting in 2025'),
-                ('baseline+50-5',
-                 'Status quo + 50% vaccination starting in 2020'),
-                ('909090', '90–90–90'),
-                ('909090+50-10', '90–90–90 + 50% vaccination starting in 2025'),
-                ('909090+50-5', '90–90–90 + 50% vaccination starting in 2020')):
-            s = r[k]
-            ax.plot(s.t + 2015,
-                    s.new_infections / 1000,
-                    label = l)
+    countries = sorted(results.keys())
+    levels = sorted(results[countries[0]], key = sortlevels)
+    colors = seaborn.color_palette('husl', len(levels))
+    for country in countries:
+        r = results[country]
+        fig, ax = pyplot.subplots()
+        for (level, color) in zip(levels, colors):
+            v = r[level]
+            ax.plot(v.t + 2015, v.new_infections / 1000,
+                    color = color,
+                    label = getlabel(level))
 
-        ax.set_xlim(s.t[0] + 2015, s.t[-1] + 2015)
-        ax.legend(ncol = 2, loc = 'upper left')
-        ax.set_title(c)
+        ax.set_xlim(v.t[0] + 2015, v.t[-1] + 2015)
+        ax.set_xlabel('Year')
+        ax.set_ylabel('New Infections (1000s)')
+        ax.legend(loc = 'upper left')
+        ax.set_title(country)
+        break
 
-    axes[len(axes) // 2].set_ylabel('New Infections (1000s)')
-    axes[-1].set_xlabel('Year')
-
-    fig.savefig('new_infections.pdf')
+    # fig.savefig('new_infections.pdf')
 
     pyplot.show()
 

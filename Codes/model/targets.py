@@ -61,43 +61,28 @@ class TargetValues(container.Container):
 
         # Convert special strings to numerical values.
         if isinstance(targets, str):
-            if targets.startswith('909090'):
-                targets_ = targets
+            targets_ = targets.split('+')
+
+            if targets_[0] == '909090':
                 # Max of 90% and current the current level.
                 targets = [numpy.clip(v, 0.9, None)
                            for v in initial_proportions.values()]
-                if targets_ == '909090':
-                    # vaccination is 0.
-                    targets[-1] = 0
-                elif targets_ == '909090+50-5':
-                    # vaccination is 50%.
-                    targets[-1] = 0.5
-                    # 5 years
-                    times_to_start[-1] = 5
-                elif targets_ == '909090+50-10':
-                    # vaccination is 50%.
-                    targets[-1] = 0.5
-                    # 10 years
-                    times_to_start[-1] = 10
-            elif targets.startswith('baseline'):
-                targets_ = targets
+            elif targets_[0] == 'baseline':
                 # Fixed at initial values.
                 targets = list(initial_proportions.values())
-                if targets_ == 'baseline':
-                    # vaccination is 0.
-                    targets[-1] = 0
-                elif targets_ == 'baseline+50-5':
-                    # vaccination is 50%.
-                    targets[-1] = 0.5
-                    # 5 years
-                    times_to_start[-1] = 5
-                elif targets_ == 'baseline+50-10':
-                    # vaccination is 50%.
-                    targets[-1] = 0.5
-                    # 10 years
-                    times_to_start[-1] = 10
-            elif targets == 'nothing':
+            elif targets_[0] == 'nothing':
                 targets = numpy.zeros(len(self._keys))
+            else:
+                raise ValueError("Unknown targets '{}'!".format(targets))
+
+            if len(targets_) > 1:
+                targets__ = targets_[1].split('-')
+                targets[-1] = float(targets__[0]) / 100
+                times_to_start[-1] = float(targets__[1])
+            else:
+                # No vaccine
+                targets[-1] = 0
+                times_to_start[-1] = 0
 
         # Use names for entries.
         targets = numpy.rec.fromarrays(targets,

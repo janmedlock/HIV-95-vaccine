@@ -10,6 +10,18 @@ import joblib
 import model
 
 
+targets = ('baseline', '909090')
+
+vaccine_levels = ('', '+100-0', '+50-0', '+50-5', '+50-10')
+
+countries = ('United States of America',
+             'South Africa',
+             'Rwanda',
+             'Uganda',
+             'India',
+             'Haiti')
+
+
 def _helper(country):
     '''
     Helper to build dictionary of results.
@@ -19,11 +31,12 @@ def _helper(country):
     country_ = parameters.country
 
     results = {}
-    for k in ('baseline', 'baseline+50-5', 'baseline+50-10',
-              '909090', '909090+50-5', '909090+50-10'):
-        results[k] = model.Simulation(country, k,
-                                      run_baseline = False,
-                                      parameters = parameters)
+    for t in targets:
+        for v in vaccine_levels:
+            k = t + v
+            results[k] = model.Simulation(country, k,
+                                          run_baseline = False,
+                                          parameters = parameters)
 
     print('{}'.format(country_))
     return (country_, results)
@@ -33,7 +46,7 @@ def _main(parallel = True):
     if parallel:
         with joblib.Parallel(n_jobs = -1) as p:
             results = p(joblib.delayed(_helper)(country)
-                        for country in model.get_country_list())
+                        for country in countries)
     else:
         results = (_helper(country) for country in model.get_country_list())
 
