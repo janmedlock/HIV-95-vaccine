@@ -2,6 +2,7 @@
 Solve the HIV model.
 '''
 
+import copy
 import numpy
 from scipy import integrate
 
@@ -192,6 +193,7 @@ class Simulation(container.Container):
     def __init__(self, country, targets_, target_kwds = {},
                  t_end = 15,
                  baseline = 'baseline', parameters = None,
+                 parameter_kwds = {},
                  run_baseline = True, _use_log = False):
         self.country = country
 
@@ -203,6 +205,11 @@ class Simulation(container.Container):
             self.parameters = datasheet.Parameters(self.country)
         else:
             self.parameters = parameters
+
+        if parameter_kwds:
+            self.parameters = copy.copy(self.parameters)
+            for (k, v) in parameter_kwds.items():
+                setattr(self.parameters, k, v)
 
         self.targets = targets.Targets(targets_, self.parameters,
                                        **target_kwds)

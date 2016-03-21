@@ -21,54 +21,46 @@ warnings.filterwarnings(
 import seaborn
 
 
-def sortlevels(s):
-    s_ = s.split('+')
-    if s_[0] == 'baseline':
-        retval = 1 * 1000
-    elif s_[0] == '909090':
-        retval = 2 * 1000
-    else:
-        raise ValueError
-    if len(s_) > 1:
-        s__ = s_[1].split('-')
-        retval += (float(s__[0]) / 100 + 1) * 100
-        retval += 10 - float(s__[1])
-    return retval
-
-
-def getlabel(s):
-    s_ = s.split('+')
-    if s_[0] == 'baseline':
+def getlabel(k):
+    if k[0] == 'baseline':
         label = 'Status quo'
-    elif s_[0] == '909090':
+    elif k[0] == '909090':
         label = '90–90–90'
     else:
         raise ValueError
-    if len(s_) > 1:
-        s__ = s_[1].split('-')
-        label += ' with {}% vac starting {:g}'.format(
-            s__[0], float(s__[1]) + 2015)
+
+    if k[1] > 0:
+        fmtstr = ' with {:g}% eff vac at {:g}% cov rolled out {:g}–{:g}'
+        label += fmtstr.format(100 * k[1],
+                               100 * k[2],
+                               2015 + k[3],
+                               2015 + k[3] + k[4])
+
     return label
 
 
 def _main():
     results = pickle.load(open('909090.pkl', 'rb'))
 
-    countries = sorted(results.keys())
-    levels = sorted(results[countries[0]], key = sortlevels)
-    colors = seaborn.color_palette('husl', len(levels))
+    countries = list(results.keys())
+    levels = list(results[countries[0]].keys())
+    linestyles = ('dotted', 'solid')
+    colors = seaborn.color_palette('husl', len(levels) // len(linestyles))
+    styles = list(itertools.product(linestyles, colors))
     for country in countries:
         r = results[country]
         fig, ax = pyplot.subplots()
-        for (level, color) in zip(levels, colors):
+        for (level, style) in zip(levels, styles):
             v = r[level]
+            ls, c = style
             ax.plot(v.t + 2015,
                     v.new_infections / 1000,
                     # v.dead / 1000,
                     # 100 * v.prevalence,
                     # v.infected / 1000,
                     # v.baseline.AIDS / 1000,
-                    color = color,
+                    linestyle = ls,
+                    color = c,
                     label = getlabel(level))
 
         ax.set_xlim(v.t[0] + 2015, v.t[-1] + 2015)
