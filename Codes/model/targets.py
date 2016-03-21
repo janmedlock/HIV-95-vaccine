@@ -21,68 +21,57 @@ class TargetValues(container.Container):
     in `time_to_full_implementation` years, then stay constant at
     `targets` after that.
 
-    `targets` can be a 4-tuple of levels for diagnosis, treatment,
-    viral suppression, and vaccination, or it can be one of the following
+    `targets` can be a 3-tuple of levels for diagnosis, treatment,
+    and viral suppression, or it can be one of the following
     strings:
 
     * ``'909090'``: 90–90–90 with no vaccine.
-      Set (non-vaccination) levels to 90% in 5 years.  If a current level
+      Set levels to 90% in 5 years.  If a current level
       is above 90%, keep it there instead.
-    * ``'909090+50-5'``: 90-90-90 with vaccination starting at 5 years
-      and increasing to 50% at 10 years.
-    * ``'909090+50-10'``: 90-90-90 with vaccination starting at 10 years
-      and increasing to 50% at 15 years.
     * ``'baseline'``: Keep the current levels constant going forward.
-    * ``'baseline+50-5'``: baseline with vaccination starting at 5 years
-      and increasing to 50% at 10 years.
-    * ``'baseline+50-10'``: baseline with vaccination starting at 10 years
-      and increasing to 50% at 15 years.
-    * ``'nothing'``: Set all levels to 0.
     '''
 
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
     def __init__(self, t, targets, parameters,
                  times_to_start = 0,
-                 times_to_full_implementation = 5):
+                 times_to_full_implementation = 5,
+                 vaccine_target = 0,
+                 vaccine_time_to_start = 5,
+                 vaccine_time_to_full_implementation = 5):
         initial_proportions = proportions.Proportions(
             parameters.initial_conditions)
 
-        if numpy.isscalar(times_to_start):
-            times_to_start *= numpy.ones(len(self._keys))
-        else:
-            times_to_start = numpy.asarray(times_to_start)
-
-        if numpy.isscalar(times_to_full_implementation):
-            times_to_full_implementation *= numpy.ones(len(self._keys))
-        else:
-            times_to_full_implementation = numpy.asarray(
-                times_to_full_implementation)
-
         # Convert special strings to numerical values.
         if isinstance(targets, str):
-            targets_ = targets.split('+')
-
-            if targets_[0] == '909090':
+            if targets == '909090':
                 # Max of 90% and current the current level.
                 targets = [numpy.clip(v, 0.9, None)
                            for v in initial_proportions.values()]
+                targets = targets[: len(self._keys) - 1]
             elif targets_[0] == 'baseline':
                 # Fixed at initial values.
                 targets = list(initial_proportions.values())
-            elif targets_[0] == 'nothing':
-                targets = numpy.zeros(len(self._keys))
+                targets = targets[: len(self._keys) - 1]
             else:
                 raise ValueError("Unknown targets '{}'!".format(targets))
+        targets = numpy.hstack((targets, vaccine_target))
 
-            if len(targets_) > 1:
-                targets__ = targets_[1].split('-')
-                targets[-1] = float(targets__[0]) / 100
-                times_to_start[-1] = float(targets__[1])
-            else:
-                # No vaccine
-                targets[-1] = 0
-                times_to_start[-1] = 0
+        if numpy.isscalar(times_to_start):
+            times_to_start *= numpy.ones(len(self._keys) - 1)
+        else:
+            times_to_start = numpy.asarray(times_to_start)
+        times_to_start = numpy.hstack((times_to_start,
+                                       vaccine_time_to_start))
+
+        if numpy.isscalar(times_to_full_implementation):
+            times_to_full_implementation *= numpy.ones(len(self._keys - 1))
+        else:
+            times_to_full_implementation = numpy.asarray(
+                times_to_full_implementation)
+        times_to_full_implementation = numpy.hstack((
+            times_to_full_implementation,
+            vaccine_time_to_full_implementation))
 
         # Use names for entries.
         targets = numpy.rec.fromarrays(targets,
@@ -99,7 +88,6 @@ class TargetValues(container.Container):
             time_to_start = getattr(times_to_start, k)
             time_to_full_implementation = getattr(times_to_full_implementation,
                                                   k)
-
             amount_implemented = numpy.where(
                 t < time_to_start, 0,
                 numpy.where(t - time_to_start < time_to_full_implementation,

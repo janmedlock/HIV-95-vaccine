@@ -9,13 +9,9 @@ table909090
 -----------
 .. automodule:: table909090
 
-new_infections
---------------
-.. automodule:: new_infections   
-
-prevalence
+make_plots
 ----------
-.. automodule:: prevalence
+.. automodule:: make_plots
 
 map_initial_proportions
 -----------------------
