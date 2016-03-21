@@ -20,25 +20,28 @@ countries = ('United States of America',
              'Uganda',
              'India',
              'Haiti')
-countries = ('United States of America', )
 
 targets = ('baseline', '909090')
 
-vaccine_targets = (0, 0.5, 0.75, 0.5)
-vaccine_efficacies = (0.5, 0.75)
+vaccine_targets = (0, 0.5, 0.75)
+# vaccine_efficacies = (0.5, 0.75)
+vaccine_efficacies = (0.5, )
 vaccine_times_to_start = (10, 5)
-vaccine_times_to_full_implementation = (5, 2)
+# vaccine_times_to_full_implementation = (5, 2)
+vaccine_times_to_full_implementation = (5, )
 
 vaccine_info = []
-for v in vaccine_targets:
-    if v == 0:
-        vaccine_info.append((v, ))
-    else:
-        for (e, ts, tfi) in itertools.product(
-                vaccine_efficacies,
-                vaccine_times_to_start,
-                vaccine_times_to_full_implementation):
-            vaccine_info.append((v, e, ts, tfi))
+if 0 in vaccine_targets:
+    vaccine_info.append((0, ))
+    vaccine_targets = [v for v in vaccine_targets if v!= 0]
+params = (vaccine_times_to_start,
+          vaccine_targets,
+          vaccine_efficacies,
+          vaccine_times_to_full_implementation)
+# for (ts, v, e, tfi) in itertools.product(*params):
+for (ts, v, e, tfi) in (map(lambda x: x[0], params),
+                        map(lambda x: x[-1], params)):
+    vaccine_info.append((v, e, ts, tfi))
 
 
 def _get_key(targets, vaccine_target, *args):
