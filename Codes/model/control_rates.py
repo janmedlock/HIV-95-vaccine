@@ -92,10 +92,8 @@ class ControlRates(container.Container):
 
     _keys = ('diagnosis', 'treatment', 'nonadherance', 'vaccination')
 
-    def __init__(self, t, state, targets_, parameters):
+    def __init__(self, t, state, target_values, parameters):
         proportions_ = proportions.Proportions(state)
-
-        target_values = targets_(t)
 
         self.diagnosis = (ControlRatesMax.diagnosis
                           * ramp(target_values.diagnosed

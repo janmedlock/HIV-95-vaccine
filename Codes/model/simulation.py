@@ -32,7 +32,7 @@ def _ODEs(state, t, targets_, parameters):
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
 
-    control_rates = targets_.control_rates(t, state)
+    control_rates = targets_(parameters, t).control_rates(state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -106,7 +106,7 @@ def _ODEs_log(state_log, t, targets_, parameters):
     N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
-    control_rates = targets_.control_rates(t, state)
+    control_rates = targets_(parameters, t).control_rates(state)
 
     force_of_infection = (
         (parameters.transmission_rate_acute
@@ -190,11 +190,11 @@ class Simulation(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, country, targets_, target_kwds = {},
+    def __init__(self, country, targets_, targets_kwds = {},
                  t_end = 15,
                  baseline = 'baseline', parameters = None,
-                 parameter_kwds = {},
-                 run_baseline = True, _use_log = False):
+                 run_baseline = True, _use_log = False,
+                 **kwargs):
         self.country = country
 
         self.t_end = t_end
@@ -206,13 +206,12 @@ class Simulation(container.Container):
         else:
             self.parameters = parameters
 
-        if parameter_kwds:
+        if kwargs:
             self.parameters = copy.copy(self.parameters)
-            for (k, v) in parameter_kwds.items():
+            for (k, v) in kwargs.items():
                 setattr(self.parameters, k, v)
 
-        self.targets = targets.Targets(targets_, self.parameters,
-                                       **target_kwds)
+        self.targets = targets.Targets(targets_, **targets_kwds)
 
         self._use_log = _use_log
 
@@ -301,11 +300,11 @@ class Simulation(container.Container):
 
     @property
     def target_values(self):
-        return self.targets(self.t)
+        return self.targets(self.parameters, self.t)
 
     @property
     def control_rates(self):
-        return self.targets.control_rates(self.t, self.state)
+        return self.target_values.control_rates(self.state)
 
     @property
     def infected(self):
