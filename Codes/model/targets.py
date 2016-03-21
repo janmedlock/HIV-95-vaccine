@@ -49,7 +49,7 @@ class TargetValues(container.Container):
                 targets = [numpy.clip(v, 0.9, None)
                            for v in initial_proportions.values()]
                 targets = targets[: len(self._keys) - 1]
-            elif targets_[0] == 'baseline':
+            elif targets == 'baseline':
                 # Fixed at initial values.
                 targets = list(initial_proportions.values())
                 targets = targets[: len(self._keys) - 1]
