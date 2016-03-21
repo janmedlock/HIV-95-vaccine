@@ -62,18 +62,25 @@ def _main():
         fig, ax = pyplot.subplots()
         for (level, color) in zip(levels, colors):
             v = r[level]
-            ax.plot(v.t + 2015, v.new_infections / 1000,
+            ax.plot(v.t + 2015,
+                    v.new_infections / 1000,
+                    # v.dead / 1000,
+                    # 100 * v.prevalence,
+                    # v.infected / 1000,
+                    # v.baseline.AIDS / 1000,
                     color = color,
                     label = getlabel(level))
 
         ax.set_xlim(v.t[0] + 2015, v.t[-1] + 2015)
         ax.set_xlabel('Year')
         ax.set_ylabel('New Infections (1000s)')
+        # ax.set_ylabel('AIDS Deaths (1000s)')
+        # ax.set_ylabel('Prevalence')
+        # ax.set_ylabel('People Living with HIV (1000s)')
+        # ax.set_ylabel('People with AIDS (1000s)')
+        # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))
         ax.legend(loc = 'upper left')
         ax.set_title(country)
-        break
-
-    # fig.savefig('new_infections.pdf')
 
     pyplot.show()
 
