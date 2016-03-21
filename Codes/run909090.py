@@ -37,17 +37,19 @@ def _helper(country):
             if v > 0:
                 for vt in vaccine_start_times:
                     k = (t, v, vt)
+                    target_kwds = dict(vaccine_target = v,
+                                       vaccine_time_to_start = vt)
                     results[k] = model.Simulation(country, t,
-                                                  vaccine_target = v,
-                                                  vaccine_start_time = vt,
+                                                  target_kwds = target_kwds,
                                                   run_baseline = False,
                                                   parameters = parameters)
             else:
                 # Don't need to run multiple vaccine_start_times
                 # when vaccine_target == 0.
                 k = (t, v)
+                target_kwds = dict(vaccine_target = v)
                 results[k] = model.Simulation(country, t,
-                                              vaccine_target = v,
+                                              target_kwds = target_kwds,
                                               run_baseline = False,
                                               parameters = parameters)
 
