@@ -42,7 +42,8 @@ def baseplot(ax, t, data, ylabel,
              legend = True, xlabel = True, title = None,
              percent = False):
     linestyles = ('dotted', 'solid')
-    colors = seaborn.color_palette('husl', len(data) // len(linestyles))
+    # colors = seaborn.color_palette('husl', len(data) // len(linestyles))
+    colors = seaborn.color_palette('Set2', len(data) // len(linestyles))
     styles = list(itertools.product(linestyles, colors))
     for (x, style) in zip(data.items(), styles):
         k, v = x
