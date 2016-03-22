@@ -14,13 +14,13 @@ import model
 
 t_end = 20
 
+countries = model.get_country_list()
 # countries = ('United States of America',
 #              'South Africa',
 #              'Rwanda',
 #              'Uganda',
 #              'India',
 #              'Haiti')
-countries = model.get_country_list()
 
 targets = ('baseline', '909090')
 

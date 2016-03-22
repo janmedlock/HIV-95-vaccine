@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Make an animated map of the infections averted at different times.
+
+.. todo:: Needs updating.
 '''
 
 import pickle
