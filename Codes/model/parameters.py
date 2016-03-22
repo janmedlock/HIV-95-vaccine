@@ -6,17 +6,17 @@ import numpy
 import pandas
 
 from . import datasheet
+from . import R0
 
 
 class Parameters:
     '''
     Convert parameter data in datafile into object for use in simulations.
 
-    .. todo:: Check my notes.
+    .. todo:: Transmission is too low!
+              :math:`R_0 = 0.4` for Nigeria.
 
-    .. todo:: Check that transmission is high enough.
-              Perhaps compute :math:`R_0`
-              or maybe just run with no treatment.
+    .. todo:: Check my notes.
     '''
     def __init__(self, country):
         self.country = country
@@ -152,6 +152,10 @@ class Parameters:
 
         # Now convert to numpy object for speed.
         self.initial_conditions = self.initial_conditions.values
+
+    @property
+    def R0(self):
+        return R0.R0(self)
 
     def __repr__(self):
         cls = self.__class__

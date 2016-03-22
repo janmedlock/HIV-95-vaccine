@@ -50,6 +50,10 @@ model.proportions
 -----------------
 .. automodule:: model.proportions
 
+model.R0
+--------
+.. automodule:: model.R0
+
 model.simulation
 ----------------
 .. automodule:: model.simulation

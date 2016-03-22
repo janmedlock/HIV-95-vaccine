@@ -160,5 +160,9 @@ class Simulation(container.Container):
     def prevalence(self):
         return self.infected / self.alive
 
+    @property
+    def R0(self):
+        return self.parameters.R0
+
     def plot(self):
         plot.simulation(self)
