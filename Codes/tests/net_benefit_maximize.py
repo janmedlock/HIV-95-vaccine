@@ -9,7 +9,7 @@ sys.path.append('..')
 import model
 
 
-def _main():
+def _main(parallel = True, debug = True, **kwargs):
     country = 'Nigeria'
 
     # 0 is just cost.
@@ -17,19 +17,19 @@ def _main():
     # Other values are multiples of per-capita GDP.
     cost_effectiveness_threshold = 1
 
-    (targets,
-     incremental_net_benefit) = model.optimization.net_benefit.maximize(
-         country,
-         cost_effectiveness_threshold,
-         method = 'cobyla',
-         parallel = True,
-         debug = True)
+    result = model.optimization.net_benefit.maximize(
+        country,
+        cost_effectiveness_threshold,
+        parallel = parallel,
+        debug = debug,
+        **kwargs)
+
+    targets, incremental_net_benefit = result
 
     print('target values = {}'.format(targets))
-
     print('incremental net benefit = {:g} DALYs'.format(
         incremental_net_benefit))
 
 
 if __name__ == '__main__':
-    _main()
+    _main(nruns = 1)

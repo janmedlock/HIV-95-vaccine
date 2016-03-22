@@ -73,13 +73,13 @@ def maximize(country, CE_threshold,
 
     kwds = dict(args = args,
                 method = method,
-                bounds = bounds,
                 options = options)
 
-    # 'cobyla' uses constraint functions instead of box-constraint bounds.
-    # 'slsqp' can also use constraints functions
-    # instead of box-constraint bounds.
     if method == 'cobyla':
+        # 'cobyla' uses constraint functions instead of box-constraint bounds.
+        # 'slsqp' can also use constraints functions
+        # instead of box-constraint bounds.
+
         # Convert bounds into contraint functions.
         constraints = ([dict(type = 'ineq',
                              fun = functools.partial(_lower_bound, b, i))
@@ -87,13 +87,14 @@ def maximize(country, CE_threshold,
                        + [dict(type = 'ineq',
                                fun = functools.partial(_upper_bound, b, i))
                           for (i, b) in enumerate(bounds)])
-
         kwds.update(constraints = constraints)
-        del kwds['bounds']
 
         # rhobeg is the first change to the optimization variables.
         # I guess setting this makes the optimization a little faster.
         kwds['options'].update(rhobeg = 0.1)
+    else:
+        # Other optimization methods use bounds.
+        kwds.update(bounds = bounds)
 
     # Uniform random starting guesses inside the bounds.
     initial_guesses = numpy.random.uniform(*zip(*bounds),
@@ -103,8 +104,8 @@ def maximize(country, CE_threshold,
         # verbose = 100 if debug else 0
         verbose = 0
         # Parallel, using all available processors.
-        with joblib.Parallel(n_jobs = -1, verbose = verbose) as parallel:
-            # res = parallel(
+        with joblib.Parallel(n_jobs = -1, verbose = verbose) as manager:
+            # res = manager(
             #     joblib.delayed(optimize.minimize)(_objective_function,
             #                                       x0,
             #                                       **kwds)
@@ -112,7 +113,9 @@ def maximize(country, CE_threshold,
             #
             # multiprocessing is having trouble with the sparse hess_inv
             # attribute of the optimization result.
-            res = parallel(
+            for (k, v) in kwds.items():
+                print('{} = {}'.format(k, v))
+            res = manager(
                 joblib.delayed(_do_minimize)(_objective_function, x0, **kwds)
                 for x0 in initial_guesses)
     else:

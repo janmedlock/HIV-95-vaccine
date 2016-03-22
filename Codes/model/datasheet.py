@@ -45,8 +45,7 @@ def convert_countries(countries, inverse = False):
     Convert multiple country names used in the datasheet
     to those used in the maps or vice versa.
     '''
-    return [convert_country(c, inverse = inverse)
-            for c in countries]
+    return [convert_country(c, inverse = inverse) for c in countries]
 
 
 class CountryData:
@@ -63,12 +62,20 @@ class CountryData:
             self.read_costs_sheet()
             self.read_GDP_sheet()
 
-    def get_country_data(self, sheet):
-        return sheet[self.country_on_datasheet]
+    def _get_sheet_data(self, sheetname, nparams, allow_missing = False):
+        sheet = self._data.parse(sheetname)
+        try:
+            data = sheet[self.country_on_datasheet]
+        except KeyError:
+            if allow_missing:
+                data = (numpy.nan, ) * nparams
+            else:
+                raise
+        return data[: nparams]
 
     def read_parameters_sheet(self):
-        sheet = self._data.parse('Parameters')
-        parameters_raw = self.get_country_data(sheet)
+        nparams = 12
+        parameters_ = self._get_sheet_data('Parameters', nparams)
         (self.birth_rate,
          self.death_rate,
          self.progression_rate_acute,
@@ -80,37 +87,30 @@ class CountryData:
          self.transmission_per_coital_act_unsuppressed,
          self.transmission_per_coital_act_reduction_by_suppression,
          self.partners_per_year,
-         self.coital_acts_per_year) = parameters_raw[: 12]
+         self.coital_acts_per_year) = parameters_
 
     def read_initial_conditions_sheet(self):
-        sheet = self._data.parse('Initial Conditions')
-        initial_conditions_raw = self.get_country_data(sheet)
-        self.initial_conditions = initial_conditions_raw[: 6]
+        nparams = 6
+        initial_conditions = self._get_sheet_data('Initial Conditions',
+                                                  nparams)
+        self.initial_conditions = initial_conditions
         self.initial_conditions.index = ('S', 'A', 'U', 'D', 'T', 'V')
 
     def read_costs_sheet(self):
         nparams = 6
-        sheet = self._data.parse('Costs')
-        try:
-            costs_raw = self.get_country_data(sheet)
-        except KeyError:
-            costs_raw = (numpy.nan, ) * nparams
+        costs = self._get_sheet_data('Costs', nparams, allow_missing = True)
         (self.cost_test,
          self.cost_CD4,
          self.cost_viral_load,
          self.cost_ART_annual,
          self.cost_AIDS_annual,
-         self.cost_AIDS_death) = costs_raw[: nparams]
+         self.cost_AIDS_death) = costs
 
     def read_GDP_sheet(self):
         nparams = 2
-        sheet = self._data.parse('GDP')
-        try:
-            GDP_raw = self.get_country_data(sheet)
-        except KeyError:
-            GDP_raw = (numpy.nan, ) * nparams
+        GDP = self._get_sheet_data('GDP', nparams, allow_missing = True)
         (self.GDP_per_capita,
-         self.GDP_PPP_per_capita) = GDP_raw[: nparams]
+         self.GDP_PPP_per_capita) = GDP
 
     def __repr__(self):
         retval = 'country = {}\n'.format(self.country)
