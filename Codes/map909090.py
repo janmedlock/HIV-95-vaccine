@@ -195,7 +195,9 @@ def _main():
 
         incremental_cost = r[k909090].cost - r[kbaseline].cost
         incremental_effectiveness = - (r[k909090].DALYs - r[kbaseline].DALYs)
-        ICER_ = incremental_cost / incremental_effectiveness
+        ICER_ = (incremental_cost
+                 / incremental_effectiveness
+                 / r[k909090].parameters.GDP_per_capita)
 
         ICER.append(ICER_)
 
