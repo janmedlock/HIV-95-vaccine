@@ -22,8 +22,8 @@ country_replacements = {
     "Lao People's Democratic Republic": 'Laos',
     'Republic of Moldova': 'Moldova',
     'Timor-Leste': 'East Timor',
-    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    'United States': 'United States of America'
+    # 'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    # 'United States': 'United States of America'
 }
 
 country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
