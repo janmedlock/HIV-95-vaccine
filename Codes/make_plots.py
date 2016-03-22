@@ -128,6 +128,19 @@ def prevalence(ax, t, data, **kwargs):
     baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
 
 
+def build_global(results, countries, levels, t):
+    data = collections.OrderedDict()
+    for l in levels:
+        data[l] = Global(t)
+    for c in countries:
+        for l in levels:
+            for k in data[l].keys():
+                setattr(data[l], k,
+                        getattr(data[l], k)
+                        + getattr(results[c][l], k))
+    return data
+
+
 def _main():
     countries_to_plot = ('United States of America',
                          'South Africa',
@@ -145,15 +158,7 @@ def _main():
     for country in countries_to_plot:
         fig, axes = pyplot.subplots(3, figsize = (11, 8.5), sharex = True)
         if country == 'Global':
-            data = collections.OrderedDict()
-            for l in levels:
-                data[l] = Global(t)
-            for c in countries:
-                for l in levels:
-                    for k in data[l].keys():
-                        setattr(data[l], k,
-                                getattr(data[l], k)
-                                + getattr(results[c][l], k))
+            data = build_global(results, countries, levels, t)
             scale = 1e6
         else:
             data = results[country]
