@@ -131,11 +131,11 @@ def cost(simulation):
             # and the number of people Treated & Suppressed.
             * (simulation.treated + simulation.viral_suppression)
         ) + (
-            # Recurring cost of nonadherance,
-            simulation.parameters.cost_nonadherance_recurring_increasing
+            # Recurring cost of nonadherence,
+            simulation.parameters.cost_nonadherence_recurring_increasing
             # multiplied by
             # the relative cost of effort (increasing marginal costs)
-            # for nonadherance,
+            # for nonadherence,
             * RelativeCostOfEffort.total_cost(
                 simulation.target_values.suppressed)
             # and the number of people Treated and Suppressed.

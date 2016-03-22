@@ -52,19 +52,19 @@ def ODEs(state, t, targets_, parameters):
           - parameters.progression_rate_unsuppressed * U)
 
     dD = (control_rates.diagnosis * U
-          + control_rates.nonadherance * (T + V)
+          + control_rates.nonadherence * (T + V)
           - control_rates.treatment * D
           - parameters.death_rate * D
           - parameters.progression_rate_unsuppressed * D)
 
     dT = (control_rates.treatment * D
-          - control_rates.nonadherance * T
+          - control_rates.nonadherence * T
           - parameters.suppression_rate * T
           - parameters.death_rate * T
           - parameters.progression_rate_unsuppressed * T)
 
     dV = (parameters.suppression_rate * T
-          - control_rates.nonadherance * V
+          - control_rates.nonadherence * V
           - parameters.death_rate * V
           - parameters.progression_rate_suppressed * V)
 
@@ -132,20 +132,20 @@ def ODEs_log(state_log, t, targets_, parameters):
               - parameters.progression_rate_unsuppressed)
 
     dD_log = (control_rates.diagnosis * numpy.exp(U_log - D_log)
-              + control_rates.nonadherance * (numpy.exp(T_log - D_log)
+              + control_rates.nonadherence * (numpy.exp(T_log - D_log)
                                               + numpy.exp(V_log - D_log))
               - control_rates.treatment
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
     dT_log = (control_rates.treatment * numpy.exp(D_log - T_log)
-              - control_rates.nonadherance
+              - control_rates.nonadherence
               - parameters.suppression_rate
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
     dV_log = (parameters.suppression_rate * numpy.exp(T_log - V_log)
-              - control_rates.nonadherance
+              - control_rates.nonadherence
               - parameters.death_rate
               - parameters.progression_rate_suppressed)
 

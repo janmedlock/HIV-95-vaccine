@@ -75,8 +75,8 @@ class Parameters:
         ###############################################
         # Note: No cost for the nonadherence control! #
         ###############################################
-        # Recurring cost of nonadherance.
-        self.cost_nonadherance_recurring_increasing = 0
+        # Recurring cost of nonadherence.
+        self.cost_nonadherence_recurring_increasing = 0
 
         # Recurring cost of treatment.
         # Treatment is ART + 1 viral load test per year

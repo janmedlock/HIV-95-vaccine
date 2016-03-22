@@ -15,7 +15,7 @@ class ControlRatesMax:
     '''
     diagnosis = 1
     treatment = 10
-    nonadherance = 1
+    nonadherence = 1
     vaccination = 1
 
 
@@ -39,7 +39,7 @@ def ramp(x, tol = 0.0001):
 
 class ControlRates(container.Container):
     r'''
-    Rates for diagnosis, treatment, nonadherance, & vaccination
+    Rates for diagnosis, treatment, nonadherence, & vaccination
     are piecewise constant.
 
     The diagnosis rate is:
@@ -64,14 +64,14 @@ class ControlRates(container.Container):
               0 & \text{otherwise}.
               \end{cases}
 
-    The nonadherance rate is
+    The nonadherence rate is
 
-    .. math:: r_{\text{nonadherance}} =
+    .. math:: r_{\text{nonadherence}} =
               \begin{cases}
               0 &
               \text{if $p_{\text{suppressed}} < T_{\text{suppressed}}(t)$},
               \\
-              R_{\text{nonadherance}} & \text{otherwise}.
+              R_{\text{nonadherence}} & \text{otherwise}.
               \end{cases}
 
     The vaccination rate is
@@ -90,7 +90,7 @@ class ControlRates(container.Container):
     that smooths the transition in a tiny region.
     '''
 
-    _keys = ('diagnosis', 'treatment', 'nonadherance', 'vaccination')
+    _keys = ('diagnosis', 'treatment', 'nonadherence', 'vaccination')
 
     def __init__(self, t, state, target_values, parameters):
         proportions_ = proportions.Proportions(state)
@@ -103,7 +103,7 @@ class ControlRates(container.Container):
                           * ramp(target_values.treated
                                  - proportions_.treated))
 
-        self.nonadherance = (ControlRatesMax.nonadherance
+        self.nonadherence = (ControlRatesMax.nonadherence
                              * ramp(proportions_.suppressed
                                     - target_values.suppressed))
 
