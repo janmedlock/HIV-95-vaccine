@@ -1,3 +1,7 @@
+'''
+Make nice graphs on maps.
+'''
+
 from collections import abc
 import itertools
 import os.path

@@ -1,3 +1,7 @@
+'''
+Compute net benefit.
+'''
+
 import numpy
 
 

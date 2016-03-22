@@ -1,3 +1,7 @@
+'''
+Compute proportions diagnosed, treated, viral suppressed, and vaccinated.
+'''
+
 import numpy
 
 from . import container
@@ -9,8 +13,8 @@ def _safe_divide(a, b, fill_value = 0):
 
 class Proportions(container.Container):
     '''
-    Get the proportions diagnosed, treated, and viral suppressed from
-    the current number of people in the model compartments.
+    Get the proportions diagnosed, treated, viral suppressed, and vaccinated
+    from the current number of people in the model compartments.
     '''
 
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')

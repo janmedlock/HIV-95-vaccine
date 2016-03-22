@@ -1,5 +1,5 @@
 '''
-Solve the HIV model.
+Simulation of the HIV model.
 '''
 
 import copy

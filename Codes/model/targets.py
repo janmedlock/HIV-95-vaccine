@@ -1,6 +1,6 @@
 '''
-Get the current target values for diagnosis, treatment, and viral suppression
-from the overall target goals.
+Get the current target values for diagnosis, treatment, viral suppression,
+and vaccination from the overall target goals.
 '''
 
 import functools
@@ -33,8 +33,8 @@ class Target:
 
 
 class Targets(container.Container):
-    '''n
-    Target values over time.
+    '''
+    Targets.
 
     From the initial proportions read from
     :attr:`model.datasheet.Parameters.initial_conditions`,
