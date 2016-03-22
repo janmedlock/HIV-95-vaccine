@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Make an animated map of the prevalence at different times.
-
-.. todo:: Needs updating.
 '''
 
 import pickle
@@ -11,18 +9,20 @@ from matplotlib import colors as mcolors
 from matplotlib import pyplot
 import numpy
 
-import model
 import mapplot
 
 
 def _main(every = 20):
+    k909090 = ('909090', 0)
+    kbaseline = ('baseline', 0)
+
     results = pickle.load(open('909090.pkl', 'rb'))
 
     countries = list(results.keys())
     prevalence = []
     for c in countries:
         r = results[c]
-        prevalence.append(r.prevalence)
+        prevalence.append(r[k909090].prevalence)
     prevalence = numpy.asarray(prevalence).T
 
     fig = pyplot.figure()
@@ -36,7 +36,7 @@ def _main(every = 20):
         z.tighten(aspect_adjustment = 1.35)
 
     data = 100 * prevalence[: : every]
-    T = results[countries[0]].t[: : every] + 2015
+    T = results[countries[0]][k909090].t[: : every] + 2015
 
     cmap = 'afmhot_r'
     vmin = max(data.min(), 0.1)
@@ -61,8 +61,9 @@ def _main(every = 20):
         cbar = z.colorbar(label = 'Prevalence',
                           format = '%g%%')
         ticklabels = cbar.ax.get_xticklabels()
-        ticklabels[0] = '≤{}'.format(ticklabels[0].get_text())
-        cbar.ax.set_xticklabels(ticklabels)
+        if len(ticklabels) > 0:
+            ticklabels[0] = '≤{}'.format(ticklabels[0].get_text())
+            cbar.ax.set_xticklabels(ticklabels)
 
     X, Y = label_coords
     m0.text_coords(X, Y, str(int(T[0])),

@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Make a table from the 90-90-90 runs.
-
-.. todo:: Needs updating.
 '''
 
 import pickle
@@ -10,10 +8,11 @@ import pickle
 import numpy
 import pandas
 
-import model
-
 
 def _main():
+    k909090 = ('909090', 0)
+    kbaseline = ('baseline', 0)
+
     results = pickle.load(open('909090.pkl', 'rb'))
 
     df = pandas.DataFrame()
@@ -21,28 +20,27 @@ def _main():
     for (c, r) in results.items():
         s = pandas.Series()
 
-        s['DALYs 90-90-90'] = r.DALYs
-        s['cost 90-90-90'] = r.cost
-        s['DALYs baseline'] = r.baseline.DALYs
-        s['cost baseline'] = r.baseline.cost
-        s['incremental DALYs averted'] = r.incremental_DALYs
-        s['incremental cost added'] = r.incremental_cost
-        s['ICER DALYs'] = r.ICER_DALYs
+        s['DALYs 90-90-90'] = r[k909090].DALYs
+        s['cost 90-90-90'] = r[k909090].cost
+        s['DALYs baseline'] = r[kbaseline].DALYs
+        s['cost baseline'] = r[kbaseline].cost
+
+        t = r[k909090].t
 
         # Every 5 years.
-        t = numpy.hstack((numpy.arange(0, r.t[-1], 5), r.t[-1]))
+        T = numpy.hstack((numpy.arange(0, t[-1], 5), t[-1]))
 
-        for t_ in t:
-            s['prevalence at {:g} years'.format(t_)] \
-                = numpy.interp(t_, r.t, r.prevalence)
+        for T_ in T:
+            s['prevalence at {:g} years'.format(T_)] \
+                = numpy.interp(T_, t, r[k909090].prevalence)
 
         infections_averted = (
-            (r.baseline.new_infections - r.new_infections)
-            / r.baseline.new_infections)
+            (r[kbaseline].new_infections - r[k909090].new_infections)
+            / r[kbaseline].new_infections)
         # Skip t = 0
-        for t_ in t[1 : ]:
-            s['infections averted at {:g} years'.format(t_)] \
-                = numpy.interp(t_, r.t, infections_averted)
+        for T_ in T[1 : ]:
+            s['infections averted at {:g} years'.format(T_)] \
+                = numpy.interp(T_, t, infections_averted)
 
         df[c] = s
 

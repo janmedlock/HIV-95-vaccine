@@ -77,7 +77,7 @@ def _main():
 
     m.savefig('map_initial_proportions.pdf')
 
-    # m.show()
+    m.show()
 
 
 if __name__ == '__main__':

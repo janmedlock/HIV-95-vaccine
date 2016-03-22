@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Map the 90-90-90 results.
-
-.. todo:: Needs updating.
 '''
 
 import pickle
@@ -22,7 +20,6 @@ import seaborn
 
 import mapplot
 import mapplot.cmap
-import model
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -176,6 +173,9 @@ def plot_ICER(countries, ICER):
 
 
 def _main():
+    k909090 = ('909090', 0)
+    kbaseline = ('baseline', 0)
+
     results = pickle.load(open('909090.pkl', 'rb'))
 
     countries = list(results.keys())
@@ -187,13 +187,17 @@ def _main():
     for c in countries:
         r = results[c]
 
-        effectiveness.append(r.DALYs)
-        effectiveness_base.append(r.baseline.DALYs)
+        effectiveness.append(r[k909090].DALYs)
+        effectiveness_base.append(r[kbaseline].DALYs)
 
-        cost.append(r.cost)
-        cost_base.append(r.baseline.cost)
+        cost.append(r[k909090].cost)
+        cost_base.append(r[kbaseline].cost)
 
-        ICER.append(r.ICER_DALYs)
+        incremental_cost = r[k909090].cost - r[kbaseline].cost
+        incremental_effectiveness = - (r[k909090].DALYs - r[kbaseline].DALYs)
+        ICER_ = incremental_cost / incremental_effectiveness
+
+        ICER.append(ICER_)
 
     plot_effectiveness(countries, effectiveness, effectiveness_base)
     plot_cost(countries, cost, cost_base)

@@ -175,7 +175,7 @@ def _main():
         fig.tight_layout()
         fig.savefig('{}.pdf'.format(country.replace(' ', '_')))
 
-    # pyplot.show()
+    pyplot.show()
 
 
 if __name__ == '__main__':

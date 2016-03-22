@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Make an animated map of the infections averted (proportion) at different times.
-
-.. todo:: Needs updating.
 '''
 
 import pickle
@@ -11,19 +9,23 @@ from matplotlib import colors as mcolors
 from matplotlib import pyplot
 import numpy
 
-import model
 import mapplot
 
 
 def _main(every = 20):
+    k909090 = ('909090', 0)
+    kbaseline = ('baseline', 0)
+
     results = pickle.load(open('909090.pkl', 'rb'))
 
     countries = list(results.keys())
     infections_averted = []
     for c in countries:
         r = results[c]
-        infections_averted.append((r.baseline.new_infections - r.new_infections)
-                                  / r.baseline.new_infections)
+        infections_averted.append(
+            numpy.ma.divide((r[kbaseline].new_infections
+                             - r[k909090].new_infections),
+                            r[kbaseline].new_infections).filled(0))
     infections_averted = numpy.asarray(infections_averted).T
 
     fig = pyplot.figure()
@@ -37,7 +39,7 @@ def _main(every = 20):
         z.tighten(aspect_adjustment = 1.35)
 
     data = 100 * infections_averted[: : every]
-    T = results[countries[0]].t[: : every] + 2015
+    T = results[countries[0]][k909090].t[: : every] + 2015
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)
