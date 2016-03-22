@@ -38,6 +38,10 @@ model.optimization.net_benefit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. automodule:: model.optimization.net_benefit
 
+model.parameters
+----------------
+.. automodule:: model.parameters
+
 model.plot
 ----------
 .. automodule:: model.plot

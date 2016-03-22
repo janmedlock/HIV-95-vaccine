@@ -9,13 +9,14 @@ import joblib
 import numpy
 from scipy import optimize
 
+from .. import parameters
 from .. import simulation
-from .. import datasheet
 
 
-def _objective_function(targets, country, CE_threshold, parameters, scale = 1):
+def _objective_function(targets, country, CE_threshold, parameters_,
+                        scale = 1):
     sim = simulation.Simulation(country, targets,
-                                parameters = parameters,
+                                parameters_ = parameters_,
                                 run_baseline = False)
     return - sim.net_benefit(CE_threshold) / scale
 
@@ -53,7 +54,7 @@ def maximize(country, CE_threshold,
 
     Uses `nruns` random uniform restarts.
     '''
-    parameters = datasheet.Parameters(country)
+    parameters_ = parameters.Parameters(country)
 
     # All variables are between 0 and 1.
     bounds = ((0, 1), ) * 3
@@ -64,9 +65,9 @@ def maximize(country, CE_threshold,
     scale = numpy.abs(_objective_function(targets0,
                                           country,
                                           CE_threshold,
-                                          parameters))
+                                          parameters_))
 
-    args = (country, CE_threshold, parameters, scale)
+    args = (country, CE_threshold, parameters_, scale)
 
     options = dict(disp = debug)
 
@@ -133,6 +134,6 @@ def maximize(country, CE_threshold,
     net_benefit = - best.fun * scale
 
     sim = simulation.Simulation(country, targets,
-                                parameters = parameters)
+                                parameters_ = parameters_)
 
     return (targets, sim.incremental_net_benefit(CE_threshold))

@@ -14,10 +14,10 @@ def _main(parallel = True):
     parameters = model.Parameters(country)
 
     results = {}
-    for k in ('baseline', '909090', '909090+50-5', '909090+50-10'):
+    for k in ('baseline', '909090'):
         results[k] = model.Simulation(country, k,
                                       run_baseline = False,
-                                      parameters = parameters)
+                                      parameters_ = parameters)
         print('{}: {:g} DALYs'.format(k, results[k].DALYs))
 
 
