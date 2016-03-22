@@ -22,6 +22,10 @@ model.net_benefit
 -----------------
 .. automodule:: model.net_benefit
 
+model.ODEs
+----------
+.. automodule:: model.ODEs
+
 model.optimization
 ------------------
 .. automodule:: model.optimization

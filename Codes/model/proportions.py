@@ -1,7 +1,7 @@
 import numpy
 
 from . import container
-from . import simulation
+from . import ODEs
 
 
 def _safe_divide(a, b, fill_value = 0):
@@ -16,7 +16,7 @@ class Proportions(container.Container):
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
     def __init__(self, state):
-        S, Q, A, U, D, T, V, W, Z, R = simulation.split_state(state)
+        S, Q, A, U, D, T, V, W, Z, R = ODEs.split_state(state)
 
         # (D + T + V + W) / (A + U + D + T + V + W)
         self.diagnosed = _safe_divide(D + T + V + W,
