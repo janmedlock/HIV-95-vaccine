@@ -39,7 +39,8 @@ class Parameters:
         time_in_suppression = (life_span
                                - self.death_years_lost_by_supression
                                - time_with_AIDS)
-        self.progression_rate_suppressed = 1 / time_in_suppression
+        self.progression_rate_suppressed = (1 / time_in_suppression
+                                            - self.death_rate)
 
         coital_acts_per_partner = (self.coital_acts_per_year
                                    / self.partners_per_year)
