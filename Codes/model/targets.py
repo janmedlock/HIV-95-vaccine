@@ -23,7 +23,10 @@ class Target:
         self.time_to_full_implementation = time_to_full_implementation
 
     def __repr__(self):
-        retval = '<target = {:g}'.format(self.target)
+        cls = self.__class__
+        retval = '<{}.{}:\ntarget = {:g}'.format(cls.__module__,
+                                                 cls.__name__,
+                                                 self.target)
         if self.target > 0:
             retval += (', time_to_start = {:g}'.format(self.time_to_start)
                        + ', time_to_full_implementation = {:g}'.format(

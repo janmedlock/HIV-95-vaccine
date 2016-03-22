@@ -113,12 +113,16 @@ class CountryData:
          self.GDP_PPP_per_capita) = GDP
 
     def __repr__(self):
-        retval = 'country = {}\n'.format(self.country)
+        cls = self.__class__
+        retval = '<{}.{}:\ncountry = {}\n'.format(cls.__module,
+                                                  cls.__name__,
+                                                  self.country)
         retval += '\n'.join('{} = {}'.format(k, getattr(self, k))
                             for k in dir(self)
                             if ((k != 'country')
                                 and (not k.startswith('_'))
                                 and (not callable(getattr(self, k)))))
+        retval += '>'
         return retval
 
 

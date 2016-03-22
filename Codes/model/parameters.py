@@ -155,10 +155,14 @@ class Parameters:
         self.initial_conditions = self.initial_conditions.values
 
     def __repr__(self):
-        retval = 'country = {}\n'.format(self.country)
+        cls = self.__class__
+        retval = '<{}.{}:\ncountry = {}\n'.format(cls.__module__,
+                                                  cls.__name__,
+                                                  self.country)
         retval += '\n'.join('{} = {}'.format(k, getattr(self, k))
                             for k in dir(self)
                             if ((k != 'country')
                                 and (not k.startswith('_'))
                                 and (not callable(getattr(self, k)))))
+        retval += '>'
         return retval
