@@ -9,7 +9,7 @@ sys.path.append('..')
 import model
 
 
-def _main():
+def _main(parallel = True, debug = True, **kwargs):
     country = 'Nigeria'
 
     # 0 is just cost.
@@ -22,8 +22,9 @@ def _main():
          country,
          cost_effectiveness_threshold,
          method = 'cobyla',
-         parallel = True,
-         debug = True)
+         parallel = parallel,
+         debug = debug,
+         **kwargs)
 
     print('target values = {}'.format(targets))
 
@@ -32,4 +33,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    _main()
+    _main(nruns = 1)
