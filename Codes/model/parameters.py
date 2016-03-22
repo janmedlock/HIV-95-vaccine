@@ -26,7 +26,8 @@ class Parameters:
         data = datasheet.CountryData(country)
         # Import attributes from cd into self.
         for k in dir(data):
-            if ((not k.startswith('_')) and (not callable(k))):
+            a = getattr(data, k)
+            if ((not k.startswith('_')) and (not callable(a))):
                 setattr(self, k, getattr(data, k))
 
         self.calculate_secondary_parameters()
@@ -151,7 +152,7 @@ class Parameters:
              'T', 'V', 'W', 'Z', 'R'))
 
         # Now convert to numpy object for speed.
-        self.initial_conditions = self.initial_conditions.values()
+        self.initial_conditions = self.initial_conditions.values
 
     def __repr__(self):
         retval = 'country = {}\n'.format(self.country)
