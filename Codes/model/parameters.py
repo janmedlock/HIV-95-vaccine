@@ -12,13 +12,11 @@ class Parameters:
     '''
     Convert parameter data in datafile into object for use in simulations.
 
+    .. todo:: Check my notes.
+
     .. todo:: Check that transmission is high enough.
               Perhaps compute :math:`R_0`
               or maybe just run with no treatment.
-
-    .. todo:: Check all parameters.
-              In particular, check `progression_rate_suppressed`
-              and `death_rate*`.
     '''
     def __init__(self, country):
         self.country = country
