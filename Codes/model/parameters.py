@@ -151,7 +151,7 @@ class Parameters:
              'T', 'V', 'W', 'Z', 'R'))
 
         # Now convert to numpy object for speed.
-        self.initial_conditions = self.initial_conditions.as_matrix()
+        self.initial_conditions = self.initial_conditions.values()
 
     def __repr__(self):
         retval = 'country = {}\n'.format(self.country)
