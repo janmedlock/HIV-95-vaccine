@@ -66,7 +66,7 @@ def _get_kwds(vaccine_target, *args):
 def _run_one(key, country, targets_, parameters, **kwargs):
     print(country, targets_, kwargs)
     return (key, model.Simulation(country, targets_,
-                                  parameters = parameters,
+                                  parameters_ = parameters,
                                   t_end = t_end,
                                   run_baseline = False,
                                   **kwargs))

@@ -1,9 +1,7 @@
 '''
-Load parameter data from the datafile.
+Load data from the datafile.
 '''
 
-import inspect
-import itertools
 import os.path
 
 import numpy
@@ -24,214 +22,95 @@ country_replacements = {
     "Lao People's Democratic Republic": 'Laos',
     'Republic of Moldova': 'Moldova',
     'Timor-Leste': 'East Timor',
-    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    'United States': 'United States of America'
+    # 'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    # 'United States': 'United States of America'
 }
 
+country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
 
-def convert_country(country):
-    '''
-    Convert country names used in the datasheet to those used in the maps.
-    '''
-    return country_replacements.get(country, country)
-    
 
-def convert_countries(countries):
+def convert_country(country, inverse = False):
+    '''
+    Convert country names used in the datasheet to those used in the maps
+    or vice versa.
+    '''
+    if inverse:
+        return country_replacements_inv.get(country, country)
+    else:
+        return country_replacements.get(country, country)
+
+
+def convert_countries(countries, inverse = False):
     '''
     Convert multiple country names used in the datasheet
-    to those used in the maps.
+    to those used in the maps or vice versa.
     '''
-    return map(convert_country, countries)
+    return [convert_country(c, inverse = inverse) for c in countries]
 
 
-class Parameters:
+class CountryData:
     '''
-    Convert parameter data in datafile into object for use in simulations.
-
-    .. todo:: Check that transmission is high enough.
-              Perhaps compute :math:`R_0`
-              or maybe just run with no treatment.
-
-    .. todo:: Check all parameters.
-              In particular, check `progression_rate_suppressed`
-              and `death_rate*`.
+    Data from the datasheet for a country.
     '''
     def __init__(self, country):
-        self.country_name_in_datasheet = country
-        self.country = convert_country(self.country_name_in_datasheet)
+        self.country = country
+        self.country_on_datasheet = convert_country(self.country,
+                                                    inverse = True)
+        with pandas.ExcelFile(datapath) as self._data:
+            self.read_parameters_sheet()
+            self.read_initial_conditions_sheet()
+            self.read_costs_sheet()
+            self.read_GDP_sheet()
 
-        with pandas.ExcelFile(datapath) as data:
-            self.read_parameters_sheet(data)
-            self.read_initial_conditions_sheet(data)
-            self.read_costs_sheet(data)
-            self.read_GDP_sheet(data)
-
-    def read_parameters_sheet(self, data):
-        parameters_raw \
-            = data.parse('Parameters')[self.country_name_in_datasheet]
-
-        # Columns in the spreadsheet.
-        (birth_rate, death_rate, progression_rate_acute,
-         progression_rate_unsuppressed, suppression_rate,
-         death_rate_AIDS, death_years_lost_by_supression,
-         transmission_per_coital_act_acute,
-         transmission_per_coital_act_unsuppressed,
-         transmission_per_coital_act_reduction_by_suppression,
-         partners_per_year, coital_acts_per_year) = parameters_raw[ : 12]
-
-        self.birth_rate = birth_rate
-        self.death_rate = death_rate
-        self.progression_rate_acute = progression_rate_acute
-        self.progression_rate_unsuppressed = progression_rate_unsuppressed
-        self.suppression_rate = suppression_rate
-
-        self.death_rate_AIDS = death_rate_AIDS
-
-        life_span = 1 / self.death_rate
-        time_with_AIDS = 1 / self.death_rate_AIDS
-        time_in_suppression = (life_span
-                               - death_years_lost_by_supression
-                               - time_with_AIDS)
-        self.progression_rate_suppressed = 1 / time_in_suppression
-
-        coital_acts_per_partner = coital_acts_per_year / partners_per_year
-
-        self.transmission_rate_acute = (
-            partners_per_year
-            * (1 -
-               (1 - transmission_per_coital_act_acute)
-               ** coital_acts_per_partner))
-
-        self.transmission_rate_unsuppressed = (
-            partners_per_year
-            * (1 -
-               (1 - transmission_per_coital_act_unsuppressed)
-               ** coital_acts_per_partner))
-
-        self.transmission_rate_suppressed = (
-            partners_per_year
-            * (1 -
-               (1 -
-                transmission_per_coital_act_reduction_by_suppression
-                * transmission_per_coital_act_unsuppressed)
-               ** coital_acts_per_partner))
-
-        self.vaccine_efficacy = 0.5
-
-    def read_initial_conditions_sheet(self, data):
-        initial_conditions \
-            = data.parse('Initial Conditions')[self.country_name_in_datasheet][0 : 6]
-        initial_conditions.index = ('S', 'A', 'U', 'D', 'T', 'V')
-
-        # Take AIDS people out of D only.
-        proportionAIDS = (1 / (1
-                               + self.death_rate_AIDS
-                               / self.progression_rate_unsuppressed))
-        newAIDS = proportionAIDS * initial_conditions['D']
-        initial_conditions['W'] = newAIDS
-        initial_conditions['D'] -= newAIDS
-
-        # Vaccinated.
-        initial_conditions['Q'] = 0
-
-        # Add people dead from AIDS.
-        initial_conditions['Z'] = 0
-        # Add new infections.
-        initial_conditions['R'] = 0
-
-        # Order correctly.
-        initial_conditions = initial_conditions.reindex(
-            ('S', 'Q', 'A', 'U', 'D',
-             'T', 'V', 'W', 'Z', 'R'))
-
-        # Now convert to numpy object for speed.
-        self.initial_conditions = initial_conditions.as_matrix()
-
-    def read_costs_sheet(self, data):
+    def _get_sheet_data(self, sheetname, nparams, allow_missing = False):
+        sheet = self._data.parse(sheetname)
         try:
-            costs_raw = data.parse('Costs')[self.country_name_in_datasheet]
+            data = sheet[self.country_on_datasheet]
         except KeyError:
-            costs_raw = (numpy.nan, ) * 6
+            if allow_missing:
+                data = (numpy.nan, ) * nparams
+            else:
+                raise
+        return data[: nparams]
 
-        (cost_test,
-         cost_CD4,
-         cost_viral_load,
-         cost_ART_annual,
-         cost_AIDS_annual,
-         cost_AIDS_death) = costs_raw[ : 6]
+    def read_parameters_sheet(self):
+        nparams = 12
+        parameters_ = self._get_sheet_data('Parameters', nparams)
+        (self.birth_rate,
+         self.death_rate,
+         self.progression_rate_acute,
+         self.progression_rate_unsuppressed,
+         self.suppression_rate,
+         self.death_rate_AIDS,
+         self.death_years_lost_by_supression,
+         self.transmission_per_coital_act_acute,
+         self.transmission_per_coital_act_unsuppressed,
+         self.transmission_per_coital_act_reduction_by_suppression,
+         self.partners_per_year,
+         self.coital_acts_per_year) = parameters_
 
-        # One-time cost of new diagnosis.
-        self.cost_of_testing_onetime_increasing = cost_test
+    def read_initial_conditions_sheet(self):
+        nparams = 6
+        initial_conditions = self._get_sheet_data('Initial Conditions',
+                                                  nparams)
+        self.initial_conditions = initial_conditions
+        self.initial_conditions.index = ('S', 'A', 'U', 'D', 'T', 'V')
 
-        # One-time cost of new treatment.
-        self.cost_of_treatment_onetime_constant = cost_CD4 + cost_viral_load
+    def read_costs_sheet(self):
+        nparams = 6
+        costs = self._get_sheet_data('Costs', nparams, allow_missing = True)
+        (self.cost_test,
+         self.cost_CD4,
+         self.cost_viral_load,
+         self.cost_ART_annual,
+         self.cost_AIDS_annual,
+         self.cost_AIDS_death) = costs
 
-        ###############################################
-        # Note: No cost for the nonadherence control! #
-        ###############################################
-        # Recurring cost of nonadherance.
-        self.cost_nonadherance_recurring_increasing = 0
-
-        # Recurring cost of treatment.
-        # Treatment is ART + 1 viral load test per year
-        # + 2 CD4 tests per year.
-        self.cost_treatment_recurring_increasing = (cost_ART_annual
-                                                    + cost_viral_load
-                                                    + 2 * cost_CD4)
-
-        # Recurring cost of AIDS.
-        #
-        # This is calculated as the annual cost of living with AIDS
-        # (cost_AIDS_annual) plus the cost of AIDS death
-        # (cost_AIDS_death * death_rate_AIDS).
-        self.cost_AIDS_recurring_constant = (cost_AIDS_annual
-                                             + (self.death_rate_AIDS
-                                                * cost_AIDS_death))
-
-        # Disability weights, assuming 1 year in symptomatic phase.
-        years_in_symptomatic = 1
-        disability_D = (
-            ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
-             * 0.038)
-            + (years_in_symptomatic * self.progression_rate_unsuppressed
-               * 0.274))
-        disability_T = (
-            ((1 - years_in_symptomatic * self.progression_rate_unsuppressed)
-             * 0.078)
-            + (years_in_symptomatic * self.progression_rate_unsuppressed
-               * 0.314))
-        disability_V = (
-            ((1 - years_in_symptomatic * self.progression_rate_suppressed)
-             * 0.039)
-            + (years_in_symptomatic * self.progression_rate_suppressed
-               * 0.157))
-
-        # Entries are states S, Q, A, U, D, T, V, W, Z,
-        # but not R.
-        disability = numpy.array((0,            # S
-                                  0,            # Q
-                                  0.16,         # A
-                                  0.038,        # U
-                                  disability_D, # D
-                                  disability_T, # T
-                                  disability_V, # V
-                                  0.582,        # W
-                                  1))           # Z
-
-        self.QALY_rates_per_person = 1 - disability
-
-        self.DALY_rates_per_person = disability
-
-    def read_GDP_sheet(self, data):
-        try:
-            GDP_raw = data.parse('GDP')[self.country_name_in_datasheet]
-        except KeyError:
-            GDP_raw = (numpy.nan, ) * 2
-
-        GDP_per_capita, GDP_PPP_per_capita = GDP_raw[ : 2]
-
-        self.GDP_per_capita = GDP_per_capita
-        self.GDP_PPP_per_capita = GDP_PPP_per_capita
+    def read_GDP_sheet(self):
+        nparams = 2
+        GDP = self._get_sheet_data('GDP', nparams, allow_missing = True)
+        (self.GDP_per_capita,
+         self.GDP_PPP_per_capita) = GDP
 
     def __repr__(self):
         retval = 'country = {}\n'.format(self.country)
@@ -247,16 +126,15 @@ def get_country_list(sheet = 'Parameters'):
     with pandas.ExcelFile(datapath) as data:
         # Skip header column
         if sheet == 'Parameters':
-            data = data.parse('Parameters').iloc[ : 12, 1 : ]
+            data_ = data.parse('Parameters').iloc[ : 12, 1 : ]
         elif sheet == 'Costs':
-            data = data.parse('Costs').iloc[ : 6, 1 : ]
+            data_ = data.parse('Costs').iloc[ : 6, 1 : ]
         elif sheet == 'Initial Conditions':
-            data = data.parse('Initial Conditions').iloc[ : 6, 1 : ]
+            data_ = data.parse('Initial Conditions').iloc[ : 6, 1 : ]
         elif sheet == 'GDP':
-            data = data.parse('GDP').iloc[ : 2, 1 : ]
-
-    ix = data.notnull().all(0)
-    return data.columns[ix]
+            data_ = data.parse('GDP').iloc[ : 2, 1 : ]
+    ix = data_.notnull().all(0)
+    return convert_countries(data_.columns[ix])
 
 
 def read_all_initial_conditions():

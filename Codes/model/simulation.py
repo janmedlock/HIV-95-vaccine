@@ -8,10 +8,10 @@ from scipy import integrate
 
 from . import container
 from . import cost
-from . import datasheet
 from . import effectiveness
 from . import net_benefit
 from . import ODEs
+from . import parameters
 from . import plot
 from . import proportions
 from . import targets
@@ -34,7 +34,7 @@ class Simulation(container.Container):
 
     def __init__(self, country, targets_, targets_kwds = {},
                  t_end = 15,
-                 baseline = 'baseline', parameters = None,
+                 baseline = 'baseline', parameters_ = None,
                  run_baseline = True, _use_log = False,
                  **kwargs):
         self.country = country
@@ -43,10 +43,10 @@ class Simulation(container.Container):
 
         self.t = numpy.linspace(0, t_end, 1001)
 
-        if parameters is None:
-            self.parameters = datasheet.Parameters(self.country)
+        if parameters_ is None:
+            self.parameters = parameters.Parameters(self.country)
         else:
-            self.parameters = parameters
+            self.parameters = parameters_
 
         if kwargs:
             self.parameters = copy.copy(self.parameters)
@@ -84,7 +84,7 @@ class Simulation(container.Container):
             self.baseline = Simulation(self.country,
                                        baseline,
                                        t_end = self.t_end,
-                                       parameters = self.parameters,
+                                       parameters_ = self.parameters,
                                        run_baseline = False,
                                        _use_log = self._use_log)
 
