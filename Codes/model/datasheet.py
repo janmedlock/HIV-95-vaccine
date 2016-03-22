@@ -45,7 +45,8 @@ def convert_countries(countries, inverse = False):
     Convert multiple country names used in the datasheet
     to those used in the maps or vice versa.
     '''
-    return map(convert_country, countries, inverse = inverse)
+    return [convert_country(c, inverse = inverse)
+            for c in countries]
 
 
 class CountryData:
