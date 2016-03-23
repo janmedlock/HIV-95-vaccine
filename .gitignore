@@ -6,6 +6,8 @@ __pycache__/
 /Codes/docs/
 !/Codes/docs/source/
 !/Codes/docs/Makefile
+/Codes/client_secret.json
+/Codes/credentials.json
 /Codes/*.pdf
 /Codes/*.mp4
 /Codes/table909090.csv
