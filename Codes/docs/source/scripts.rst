@@ -28,3 +28,11 @@ map_infections_averted
 map_prevalence
 --------------
 .. automodule:: map_prevalence
+
+drive_download
+--------------
+.. automodule:: drive_download
+
+drive_upload
+------------
+.. automodule:: drive_upload

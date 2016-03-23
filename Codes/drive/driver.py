@@ -8,17 +8,24 @@ import oauth2client.client
 
 
 class Driver:
-    client_secrets = 'client_secret.json'
-    credentials_file = 'credentials.json'
-    oauth2_scope = 'https://www.googleapis.com/auth/drive'
+    # Files are relative to this module file,
+    # not files that might import it.
+    _path = os.path.dirname(__file__)
+    _client_secrets = 'client_secret.json'
+    _credentials_file = 'credentials.json'
+    _oauth2_scope = 'https://www.googleapis.com/auth/drive'
 
     def __init__(self, parent = None):
         self.parent = parent
 
-        flow = oauth2client.client.flow_from_clientsecrets(self.client_secrets,
-                                                           self.oauth2_scope)
-        if os.path.exists(self.credentials_file):
-            with open(self.credentials_file, 'r') as fd:
+        client_secrets_path = os.path.join(self._path,
+                                           self._client_secrets)
+        flow = oauth2client.client.flow_from_clientsecrets(
+            client_secrets_path, self._oauth2_scope)
+        credentials_path = os.path.join(self._path,
+                                        self._credentials_file) 
+        if os.path.exists(credentials_path):
+            with open(credentials_path, 'r') as fd:
                 json = fd.read()
             credentials = oauth2client.client.Credentials.new_from_json(json)
         else:
@@ -27,7 +34,7 @@ class Driver:
             print('Go to the following link in your browser: ' + authorize_url)
             code = input('Enter verification code: ').strip()
             credentials = flow.step2_exchange(code)
-            with open(self.credentials_file, 'w') as fd:
+            with open(credentials_path, 'w') as fd:
                 fd.write(credentials.to_json())
 
         http = httplib2.Http()

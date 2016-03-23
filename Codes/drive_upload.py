@@ -31,6 +31,7 @@ files = ('Global.pdf',
 folderId = '0B_53qFSHU3XKUXVSMld5VjdqRk0'
 
 
-with drive.Driver(parent = folderId) as d:
-    for f in files:
-        d.upload(f)
+if __name__ == '__main__':
+    with drive.Driver(parent = folderId) as d:
+        for f in files:
+            d.upload(f)
