@@ -90,14 +90,44 @@ class TestRelativeCostOfEffort(unittest.TestCase):
 
 
 
-'''
-If we assume that susceptible people have less risk of contracting HIV
-than people who have HIV, then this number should be > 0 (and < 1).
-That is, susceptibles should be less likely to be tested than Undiagnosed.
-'''
-susceptible_testing_discount = 0
-
 def cost(simulation):
+    r'''
+    If :math:`q` is the proportion of the total population who have been
+    tested ("ever tested"), :math:`p_{\mathrm{HIV}}` is the prevalence,
+    :math:`p_{\mathrm{diagnosed}}` is the proportion of HIV-positive people who
+    are diagnosed (i.e. tested), and :math:`\rho` is the proportion of
+    HIV-negative people who have been tested, then
+
+    .. math:: q = \rho (1 - p_{\mathrm{HIV}})
+              + p_{\mathrm{diagnosed}} \cdot p_{\mathrm{HIV}}
+
+    so the relative likelihood of testing of HIV-negative
+    vs. HIV-positive people is
+
+    .. math:: z = \frac{\rho}{p_{\mathrm{diagnosed}}}
+              = \frac{1}{1 - p_{\mathrm{HIV}}}
+              \left(\frac{q}{p_{\mathrm{diagnosed}}}
+              - p_{\mathrm{HIV}}\right).
+
+    If we assume that this relative risk of testing :math:`z`
+    stays constant from the initial time, then
+    cost rate of diagnosis (i.e. testing) is
+
+    .. math:: f(p_{\mathrm{diagnosed}}) r_{\mathrm{diagnosis}}
+              \left[U + z (S + Q + A)\right],
+
+    where :math:`f` is :meth:`RelativeCostOfEffort.total_cost`.
+
+    .. todo:: Collect data on proportion of people ever tested
+              and implement the relative risk of testing HIV-negative
+              vs HIV-postive people.
+    '''
+    # Relative risk of testing negatives, relative to positives.
+    # Should be < 1.
+    # See docstring for an alternative if proportion of the population
+    # who have been tested is collected.
+    relative_risk_of_testing_negatives = 1
+
     cost_rate = (
         (
             # One-time cost of new diagnosis,
@@ -109,9 +139,10 @@ def cost(simulation):
                 simulation.target_values.diagnosed)
             # the level of diagnosis control,
             * simulation.control_rates.diagnosis
-            # and the number of Susceptible, Acute, & Undiagnosed.
-            * ((1 - susceptible_testing_discount) * simulation.susceptible
-               + simulation.acute
+            # and the number of Susceptible, Vaccinated, Acute, & Undiagnosed.
+            * (relative_risk_of_testing_negatives
+               * (simulation.susceptible + simulation.vaccinated
+                  + simulation.acute)
                + simulation.undiagnosed)
         ) + (
             # One-time cost of new treatment,

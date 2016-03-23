@@ -10,13 +10,11 @@ from . import R0
 
 
 class Parameters:
-    '''
+    r'''
     Convert parameter data in datafile into object for use in simulations.
 
     .. todo:: Transmission is too low!
-              :math:`R_0 = 0.4` for Nigeria.
-
-    .. todo:: Check my notes.
+              :math:`R_0 \approx 0.4` for all countries!
     '''
     def __init__(self, country):
         self.country = country
@@ -42,6 +40,12 @@ class Parameters:
 
         coital_acts_per_partner = (self.coital_acts_per_year
                                    / self.partners_per_year)
+
+        ########################################################
+        # Corrected values.                                    #
+        self.transmission_per_coital_act_acute = 0.0082        #
+        self.transmission_per_coital_act_unsuppressed = 0.001  #
+        ########################################################
 
         self.transmission_rate_acute = (
             self.partners_per_year
