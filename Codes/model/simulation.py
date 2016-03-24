@@ -41,7 +41,8 @@ class Simulation(container.Container):
 
         self.t_end = t_end
 
-        self.t = numpy.linspace(0, t_end, 1001)
+        pts_per_year = 120  # = 10 per month
+        self.t = numpy.linspace(0, t_end, t_end * pts_per_year + 1)
 
         if parameters_ is None:
             self.parameters = parameters.Parameters(self.country)
