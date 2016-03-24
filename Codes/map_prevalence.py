@@ -12,7 +12,7 @@ import numpy
 import mapplot
 
 
-def _main(every = 20):
+def _main(frames_per_year = 12, years_per_second = 2):
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
@@ -35,8 +35,11 @@ def _main(every = 20):
     for z in (m, m0):
         z.tighten(aspect_adjustment = 1.35)
 
-    data = 100 * prevalence[: : every]
-    T = results[countries[0]][k909090].t[: : every] + 2015
+    t = results[countries[0]][k909090].t
+    freq_ = (len(t) - 1) / (t[-1] - t[0])
+    skip = max(int(freq_ / frames_per_year), 1)
+    data = 100 * prevalence[: : skip]
+    T = results[countries[0]][k909090].t[: : skip] + 2015
 
     cmap = 'afmhot_r'
     vmin = max(data.min(), 0.1)
@@ -73,9 +76,8 @@ def _main(every = 20):
 
     m0.savefig('map_prevalence.pdf')
 
-    speed = 2  # years per second.
     ani.save('map_prevalence.mp4',
-             fps = speed / (T[1] - T[0]),
+             fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
 
