@@ -163,9 +163,9 @@ class Parameters:
 
     def __repr__(self):
         cls = self.__class__
-        retval = '<{}.{}:\ncountry = {}\n'.format(cls.__module__,
-                                                  cls.__name__,
-                                                  self.country)
+        retval = '<{}.{}: country = {}\n'.format(cls.__module__,
+                                                 cls.__name__,
+                                                 self.country)
         retval += '\n'.join('{} = {}'.format(k, getattr(self, k))
                             for k in dir(self)
                             if ((k != 'country')
