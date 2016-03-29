@@ -44,7 +44,7 @@ class Parameters:
         ########################################################
         # Corrected values.                                    #
         self.transmission_per_coital_act_acute = 0.0082        #
-        self.transmission_per_coital_act_unsuppressed = 0.001  #
+        self.transmission_per_coital_act_unsuppressed = 0.0014 #
         ########################################################
 
         self.transmission_rate_acute = (
