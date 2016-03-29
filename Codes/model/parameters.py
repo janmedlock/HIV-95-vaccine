@@ -38,9 +38,6 @@ class Parameters:
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
 
-        coital_acts_per_partner = (self.coital_acts_per_year
-                                   / self.partners_per_year)
-
         ########################################################
         # Corrected values.                                    #
         self.transmission_per_coital_act_acute = 0.0082        #
@@ -48,24 +45,21 @@ class Parameters:
         ########################################################
 
         self.transmission_rate_acute = (
-            self.partners_per_year
-            * (1 -
-               (1 - self.transmission_per_coital_act_acute)
-               ** coital_acts_per_partner))
+            1 -
+            (1 - self.transmission_per_coital_act_acute)
+            ** self.coital_acts_per_year)
 
         self.transmission_rate_unsuppressed = (
-            self.partners_per_year
-            * (1 -
-               (1 - self.transmission_per_coital_act_unsuppressed)
-               ** coital_acts_per_partner))
+            1 -
+            (1 - self.transmission_per_coital_act_unsuppressed)
+            ** self.coital_acts_per_year)
 
         self.transmission_rate_suppressed = (
-            self.partners_per_year
-            * (1 -
-               (1 -
-                self.transmission_per_coital_act_reduction_by_suppression
-                * self.transmission_per_coital_act_unsuppressed)
-               ** coital_acts_per_partner))
+            1 -
+            (1 -
+             self.transmission_per_coital_act_reduction_by_suppression
+             * self.transmission_per_coital_act_unsuppressed)
+            ** self.coital_acts_per_year)
 
         self.vaccine_efficacy = 0.5
 
