@@ -4,6 +4,7 @@ Parameter data.
 
 import numpy
 import pandas
+from scipy import stats
 
 from . import datasheet
 from . import R0
@@ -12,10 +13,38 @@ from . import R0
 class Parameters:
     r'''
     Convert parameter data in datafile into object for use in simulations.
-
-    .. todo:: Transmission is too low!
-              :math:`R_0 \approx 0.4` for all countries!
     '''
+    # Hollingsworth et al, 2008.
+    # 2.9 month duration of acute stage.
+    progression_rate_acute = 12 / 2.9
+    
+    # From Morgan et al, 2002.
+    # 9.4 years until AIDS untreated.
+    progression_rate_unsuppressed = 1 / 9.4
+
+    # From Cirroe et al, 2009.
+    suppression_rate = 1
+    
+    # From Morgan et al, 2002.
+    # 2 years until death.
+    death_rate_AIDS = 1 / 2
+
+    # From Samji et al, 2013 & UNAIDS, 2014.
+    death_years_lost_by_supression = 5
+
+    # From Wawer et al, 2005.
+    transmission_per_coital_act_acute = 0.0082
+
+    # From Hughes et al, 2012.
+    transmission_per_coital_act_unsuppressed = stats.gmean((0.0019, 0.0010))
+
+    # From Donnell et al, 2010.
+    transmission_per_coital_act_reduction_by_suppression = 0.08
+
+    # From Wawer et al, 2005.
+    # 9ish per month.
+    coital_acts_per_year = 9 * 12
+
     def __init__(self, country):
         self.country = country
 
@@ -37,12 +66,6 @@ class Parameters:
                                - time_with_AIDS)
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
-
-        ########################################################
-        # Corrected values.                                    #
-        self.transmission_per_coital_act_acute = 0.0082        #
-        self.transmission_per_coital_act_unsuppressed = 0.0014 #
-        ########################################################
 
         self.transmission_rate_acute = (
             1 -

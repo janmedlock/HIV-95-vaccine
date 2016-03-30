@@ -74,21 +74,9 @@ class CountryData:
         return data[: nparams]
 
     def read_parameters_sheet(self):
-        nparams = 12
+        nparams = 2
         parameters_ = self._get_sheet_data('Parameters', nparams)
-        (self.birth_rate,
-         self.death_rate,
-         self.progression_rate_acute,
-         self.progression_rate_unsuppressed,
-         self.suppression_rate,
-         self.death_rate_AIDS,
-         self.death_years_lost_by_supression,
-         self.transmission_per_coital_act_acute,
-         self.transmission_per_coital_act_unsuppressed,
-         self.transmission_per_coital_act_reduction_by_suppression,
-         self.partners_per_year,
-         self.coital_acts_per_year) = parameters_
-        self.progression_rate_acute = float(self.progression_rate_acute)
+        self.birth_rate, self.death_rate = parameters_
 
     def read_initial_conditions_sheet(self):
         nparams = 6
@@ -131,7 +119,7 @@ def get_country_list(sheet = 'Parameters'):
     with pandas.ExcelFile(datapath) as data:
         # Skip header column
         if sheet == 'Parameters':
-            data_ = data.parse('Parameters').iloc[ : 12, 1 : ]
+            data_ = data.parse('Parameters').iloc[ : 2, 1 : ]
         elif sheet == 'Costs':
             data_ = data.parse('Costs').iloc[ : 6, 1 : ]
         elif sheet == 'Initial Conditions':
