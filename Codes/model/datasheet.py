@@ -88,6 +88,7 @@ class CountryData:
          self.transmission_per_coital_act_reduction_by_suppression,
          self.partners_per_year,
          self.coital_acts_per_year) = parameters_
+        self.progression_rate_acute = float(self.progression_rate_acute)
 
     def read_initial_conditions_sheet(self):
         nparams = 6
