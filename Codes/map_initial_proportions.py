@@ -10,7 +10,7 @@ import mapplot
 
 
 def _main():
-    data = model.read_all_initial_conditions()
+    data = model.InitialConditionSheet.read_all()
 
     countries = data.index
 
