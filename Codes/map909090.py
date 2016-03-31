@@ -36,7 +36,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
     m = mapplot.Basemap()
 
     a = min(min(relative_effectiveness), 0)
-    b = max(max(relative_effectiveness), 0.225)
+    b = max(max(relative_effectiveness), 0.6)
     m.choropleth(countries, 100 * relative_effectiveness,
                  vmin = 100 * a,
                  vmax = 100 * b,
@@ -64,8 +64,8 @@ def plot_cost(countries, cost, cost_base):
 
     relative_cost = (cost - cost_base) / cost_base
 
-    a = min(min(relative_cost), -0.5)
-    b = max(max(relative_cost), 4)
+    a = min(min(relative_cost), 0)
+    b = max(max(relative_cost), 5)
 
     clist = []
     if a < 0:
@@ -111,7 +111,7 @@ def plot_ICER(countries, ICER):
     # Make sure the max is at least 3.
     a = min(numpy.floor(min(ICER)), 0)
     # b = max(max(ICER), 3)
-    b = min(max(max(ICER), 3), 10)
+    b = max(max(max(ICER), 3), 8)
     # Map [a, b] to [0, 1]
     def f(x):
         return (x - a) / (b - a)
@@ -143,20 +143,19 @@ def plot_ICER(countries, ICER):
         cticklabels.insert(0, '{:g}'.format(cmin))
     if cmax > 3:
         cticks.append(cmax)
-        # cticklabels.append(str(cmax))
-        cticklabels.append('≥{:g}'.format(cmax))
+        cticklabels.append('{:g}'.format(cmax))
+        # cticklabels.append('≥{:g}'.format(cmax))
     cbar.set_ticks(cticks)
     cbar.set_ticklabels(cticklabels)
 
     m.tighten(aspect_adjustment = 1.35)
 
-    labels = ('Cost Saving',
-              'Very Cost Effective',
+    labels = ('Very Cost Effective',
               'Cost Effective',
               'Above Threshold')
-    X = (0.11, 0.17, 0.29, 0.58)
+    X = (0.11, 0.27, 0.6)
     y = 0.22
-    C = (colors[0], colors[3], colors[5], colors[7])
+    C = (colors[3], colors[5], colors[7])
     for (l, x, c) in zip(labels, X, C):
         m.fig.text(x, y, l,
                    fontdict = dict(size = 5,
@@ -205,7 +204,7 @@ def _main():
     plot_cost(countries, cost, cost_base)
     plot_ICER(countries, ICER)
 
-    pyplot.show()
+    # pyplot.show()
 
 
 if __name__ == '__main__':

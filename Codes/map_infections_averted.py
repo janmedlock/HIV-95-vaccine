@@ -39,12 +39,12 @@ def _main(frames_per_year = 12, years_per_second = 2):
     t = results[countries[0]][k909090].t
     freq_ = (len(t) - 1) / (t[-1] - t[0])
     skip = max(int(freq_ / frames_per_year), 1)
-    data = infections_averted[: : skip] / 1000
+    data = infections_averted[: : skip] / 1e6
     T = results[countries[0]][k909090].t[: : skip] + 2015
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)
-    vmax = max(data.max(), 600)
+    vmax = max(data.max(), 5)
     label_coords = (-120, -20)
 
     ani = m.choropleth_animate(countries, T, data,
@@ -60,7 +60,7 @@ def _main(frames_per_year = 12, years_per_second = 2):
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'Infections Averted (1000s, Compared to Status Quo)')
+            label = 'Infections Averted (M, Compared to Status Quo)')
 
     X, Y = label_coords
     m0.text_coords(X, Y, str(int(T[0])),

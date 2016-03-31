@@ -46,7 +46,7 @@ def _main(frames_per_year = 12, years_per_second = 2):
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)
-    vmax = data.max()
+    vmax = max(data.max(), 0.7)
     label_coords = (-120, -20)
 
     ani = m.choropleth_animate(countries, T, data,
