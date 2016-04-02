@@ -25,7 +25,10 @@ class Global(container.Container):
     global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
     global_annual_AIDS_deaths = 1.2e6  # CI (0.98e6, 1.6e6), UNAIDS 2014
 
-    def __init__(self, data, t):
+    def __init__(self, data):
+        levels = list(data.keys())
+        self.t = data[levels[0]].t
+
         for k in self.keys():
             setattr(self, k, 0)
         for (l, v) in data.items():
@@ -42,7 +45,8 @@ class Global(container.Container):
         self.alive *= self.global_alive / self.alive[0]
 
         # Compute death rate from slope.
-        annual_AIDS_deaths = (self.dead[1] - self.dead[0]) / (t[1] - t[0])
+        annual_AIDS_deaths = ((self.dead[1] - self.dead[0])
+                              / (self.t[1] - self.t[0]))
         self.dead *= self.global_annual_AIDS_deaths / annual_AIDS_deaths
 
         self.infected *= self.global_infected / self.infected[0]
@@ -50,7 +54,7 @@ class Global(container.Container):
         # Compute incidence from slope.
         annual_new_infections = ((self.new_infections[1]
                                   - self.new_infections[0])
-                                 / (t[1] - t[0]))
+                                 / (self.t[1] - self.t[0]))
         self.new_infections *= (self.global_annual_new_infections
                                 / annual_new_infections)
 
@@ -61,9 +65,11 @@ class Global(container.Container):
         return prev
 
 
-def build_global(results, countries, levels, t):
+def build_global(results):
+    countries = list(results.keys())
+    levels = list(results[countries[0]].keys())
     data = collections.OrderedDict()
     for l in levels:
         results_ = {c: results[c][l] for c in countries}
-        data[l] = Global(results_, t)
+        data[l] = Global(results_)
     return data

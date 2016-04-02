@@ -129,7 +129,7 @@ def _main():
     for country in countries_to_plot:
         fig, axes = pyplot.subplots(3, figsize = (11, 8.5), sharex = True)
         if country == 'Global':
-            data = model.build_global(results, countries, levels, t)
+            data = model.build_global(results)
             scale = 1e6
         else:
             data = results[country]
