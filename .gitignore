@@ -10,7 +10,8 @@ __pycache__/
 /Codes/drive/credentials.json
 /Codes/*.pdf
 /Codes/*.mp4
-/Codes/table.csv
+/Codes/effectiveness/*.pdf
+/Codes/effectiveness/table.csv
 /Codes/table909090.csv
 /Documents/Latex/*.pdf
 /Documents/Latex/.auto
