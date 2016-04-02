@@ -161,15 +161,19 @@ def _main():
 
     fig, axes = pyplot.subplots(3, figsize = (11, 8.5), sharex = True)
     new_infections(axes[0], t, results,
-                   xlabel = False, legend = True)
+                   xlabel = False, legend = False)
     infected(axes[1], t, results,
-             xlabel = False, legend = False)
+             xlabel = False, legend = True)
     AIDS(axes[2], t, results,
          xlabel = True, legend = False)
+    for ax in axes:
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(10))
+        
     fig.tight_layout()
     fig.savefig('effectiveness.pdf')
+    fig.savefig('effectiveness.png')
 
-    pyplot.show()
+    # pyplot.show()
 
 
 if __name__ == '__main__':

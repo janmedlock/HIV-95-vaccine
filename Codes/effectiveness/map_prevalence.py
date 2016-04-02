@@ -8,7 +8,9 @@ import pickle
 from matplotlib import colors as mcolors
 from matplotlib import pyplot
 import numpy
+import sys
 
+sys.path.append('..')
 import mapplot
 
 
@@ -16,7 +18,7 @@ def _main(frames_per_year = 12, years_per_second = 2):
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
-    results = pickle.load(open('909090.pkl', 'rb'))
+    results = pickle.load(open('../909090.pkl', 'rb'))
 
     countries = list(results.keys())
     prevalence = []
@@ -74,14 +76,14 @@ def _main(frames_per_year = 12, years_per_second = 2):
                                    weight = 'bold'),
                    horizontalalignment = 'left')
 
-    m0.savefig('map_prevalence.pdf')
+    # m0.savefig('map_prevalence.pdf')
 
     ani.save('map_prevalence.mp4',
              fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
 
-    m.show()
+    # m.show()
 
 
 if __name__ == '__main__':

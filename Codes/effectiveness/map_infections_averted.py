@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 '''
-Make an animated map of the infections averted (proportion) at different times.
+Make an animated map of the infections averted at different times.
 '''
 
 import pickle
 
 from matplotlib import colors as mcolors
 from matplotlib import pyplot
+from matplotlib import ticker
 import numpy
+import sys
 
+sys.path.append('..')
 import mapplot
 
 
@@ -16,7 +19,7 @@ def _main(frames_per_year = 12, years_per_second = 2):
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
-    results = pickle.load(open('909090.pkl', 'rb'))
+    results = pickle.load(open('../909090.pkl', 'rb'))
 
     countries = list(results.keys())
     infections_averted = []
@@ -46,7 +49,7 @@ def _main(frames_per_year = 12, years_per_second = 2):
 
     cmap = 'viridis'
     vmin = min(data.min(), 0)
-    vmax = max(data.max(), 0.7)
+    vmax = max(data.max(), 70)
     label_coords = (-120, -20)
 
     ani = m.choropleth_animate(countries, T, data,
@@ -62,8 +65,9 @@ def _main(frames_per_year = 12, years_per_second = 2):
 
     for z in (m, m0):
         cbar = z.colorbar(
-            label = 'Infections Averted (Compared to Status Quo)',
-            format = '%g%%')
+            label = 'Reduction in New Infections (Compared to Status Quo)',
+            format = '%g%%',
+            ticks = ticker.MultipleLocator(10))
 
     X, Y = label_coords
     m0.text_coords(X, Y, str(int(T[0])),
@@ -71,14 +75,14 @@ def _main(frames_per_year = 12, years_per_second = 2):
                                    weight = 'bold'),
                    horizontalalignment = 'left')
 
-    m0.savefig('map_infections_averted_proportion.pdf')
+    # m0.savefig('map_infections_averted.pdf')
 
     ani.save('map_infections_averted_proportion.mp4',
              fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
 
-    m.show()
+    # m.show()
 
 
 if __name__ == '__main__':

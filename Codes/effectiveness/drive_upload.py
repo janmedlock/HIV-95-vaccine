@@ -11,6 +11,12 @@ import drive
 
 files = (
     'effectiveness.pdf',
+    'effectiveness.png',
+    'map_effectiveness.pdf',
+    'map_effectiveness.png',
+    'map_infections_averted.mp4',
+    'map_prevalence.mp4',
+    'table.csv'
 )
        
 
