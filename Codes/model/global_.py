@@ -19,6 +19,7 @@ class Global(container.Container):
     '''
 
     _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
+    global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
     global_infected = 36.9e6  # CI (34.3e6, 41.4e6), UNAIDS 2014
     global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
