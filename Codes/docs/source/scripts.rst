@@ -9,6 +9,10 @@ table909090
 -----------
 .. automodule:: table909090
 
+table
+-----
+.. automodule:: table
+
 make_plots
 ----------
 .. automodule:: make_plots

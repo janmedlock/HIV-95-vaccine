@@ -2,6 +2,8 @@
 Aggregate global results.
 '''
 
+import collections
+
 import numpy
 
 from . import container
@@ -17,7 +19,7 @@ class Global(container.Container):
     '''
 
     _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
-    global_alive = 7.2e9
+    global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
     global_infected = 36.9e6  # CI (34.3e6, 41.4e6), UNAIDS 2014
     global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
     global_annual_AIDS_deaths = 1.2e6  # CI (0.98e6, 1.6e6), UNAIDS 2014
@@ -53,4 +55,14 @@ class Global(container.Container):
 
     @property
     def prevalence(self):
-        return self.infected / self.alive
+        prev = self.infected / self.alive
+        prev *= self.global_prevalence / prev[0]
+        return prev
+
+
+def build_global(results, countries, levels, t):
+    data = collections.OrderedDict()
+    for l in levels:
+        results_ = {c: results[c][l] for c in countries}
+        data[l] = Global(results_, t)
+    return data
