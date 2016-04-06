@@ -27,33 +27,38 @@ sys.path.append('..')
 import model
 
 
-countries_to_plot = ('United States of America',
-                     'South Africa',
-                     'Rwanda',
-                     'Uganda',
-                     'India',
+countries_to_plot = ('Global',
                      'Haiti',
-                     'Global')
+                     'India',
+                     'Rwanda',
+                     'South Africa',
+                     'Uganda',
+                     'United States of America')
 
 # No-vaccine runs.
 kbaseline = ('baseline', 0)
 k909090 = ('909090', 0)
 
 
-def getlabel(country, k):
-    label = '{}, '.format(country)
-    if k[0] == 'baseline':
-        label += 'Status quo'
-    elif k[0] == '909090':
-        label += '90–90–90'
+def getlabel(country, k = None):
+    if country == 'United States of America':
+        c = 'United States'
     else:
-        raise ValueError
-    if k[1] > 0:
-        fmtstr = ' with {:g}% eff vac at {:g}% cov rolled out {:g}–{:g}'
-        label += fmtstr.format(100 * k[1],
-                               100 * k[2],
-                               2015 + k[3],
-                               2015 + k[3] + k[4])
+        c = country
+    label = '{}'.format(c)
+    if k is not None:
+        if k[0] == 'baseline':
+            label += ', Status quo'
+        elif k[0] == '909090':
+            label += ', 90–90–90'
+        else:
+            raise ValueError
+        if k[1] > 0:
+            fmtstr = ' with {:g}% eff vac at {:g}% cov rolled out {:g}–{:g}'
+            label += fmtstr.format(100 * k[1],
+                                   100 * k[2],
+                                   2015 + k[3],
+                                   2015 + k[3] + k[4])
     return label
 
 
@@ -73,14 +78,14 @@ def baseplot(ax, t, data, ylabel, scale = 1,
             colors[c] = 'black'
         else:
             colors[c] = next(colors_)
-    for country in reversed(countries_to_plot):
+    for country in countries_to_plot:
         if country == 'Global':
             zorder = 2
         else:
             zorder = 1
         ax.plot(t + 2015, data[country] / scale,
                 color = colors[country],
-                label = country,
+                label = getlabel(country),
                 zorder = zorder)
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     if xlabel:
@@ -96,7 +101,7 @@ def baseplot(ax, t, data, ylabel, scale = 1,
     if percent:
         ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))
     if legend:
-        ax.legend(loc = 'upper left')
+        ax.legend(loc = 'center left')
     if title is not None:
         ax.set_title(title)
 
@@ -170,6 +175,14 @@ def _main():
         ax.yaxis.set_major_locator(ticker.MultipleLocator(10))
         
     fig.tight_layout()
+
+    kwds = dict(fontsize = 'large', fontweight = 'bold',
+                ha = 'left', va = 'top')
+    x = 0.08
+    fig.text(x, 0.97, '(A)', **kwds)
+    fig.text(x, 0.65, '(B)', **kwds)
+    fig.text(x, 0.335, '(C)', **kwds)
+
     fig.savefig('effectiveness.pdf')
     fig.savefig('effectiveness.png')
 

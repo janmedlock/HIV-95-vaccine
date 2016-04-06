@@ -14,10 +14,6 @@ import model
 
 
 def _main():
-    countries_to_show = ['Global', 'Haiti', 'India', 'Rwanda',
-                         'South Africa', 'Uganda',
-                         'United States of America']
-
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
@@ -31,7 +27,7 @@ def _main():
     t = results[countries[0]][levels[0]].t
 
     tuples = []
-    for c in countries_to_show:
+    for c in ['Global'] + countries:
         for l in ('Status Quo', '90–90–90'):
             tuples.append((c, l))
     ix = pandas.MultiIndex.from_tuples(tuples)
