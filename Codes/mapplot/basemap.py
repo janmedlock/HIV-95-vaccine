@@ -142,6 +142,7 @@ class Basemap:
                 border = self.borders[c]
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
+                continue
             self.ax.add_feature(border,
                                 facecolor = cmap_norm.to_rgba(v),
                                 *args,

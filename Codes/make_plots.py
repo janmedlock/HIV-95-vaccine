@@ -21,23 +21,7 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
-import model.container
-
-
-class Global(model.container.Container):
-    '''
-    Dummy class to hold global results.
-    '''
-
-    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
-
-    def __init__(self, t):
-        for k in self.keys():
-            setattr(self, k, numpy.zeros_like(t))
-
-    @property
-    def prevalence(self):
-        return self.infected / self.alive
+import model
 
 
 def getlabel(k):
@@ -128,19 +112,6 @@ def prevalence(ax, t, data, **kwargs):
     baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
 
 
-def build_global(results, countries, levels, t):
-    data = collections.OrderedDict()
-    for l in levels:
-        data[l] = Global(t)
-    for c in countries:
-        for l in levels:
-            for k in data[l].keys():
-                setattr(data[l], k,
-                        getattr(data[l], k)
-                        + getattr(results[c][l], k))
-    return data
-
-
 def _main():
     countries_to_plot = ('United States of America',
                          'South Africa',
@@ -158,14 +129,12 @@ def _main():
     for country in countries_to_plot:
         fig, axes = pyplot.subplots(3, figsize = (11, 8.5), sharex = True)
         if country == 'Global':
-            data = build_global(results, countries, levels, t)
+            data = model.build_global(results)
             scale = 1e6
         else:
             data = results[country]
             scale = 1e3
         title = country
-        if country == 'Global':
-            title += ' ({:d} countries)'.format(len(countries))
         new_infections(axes[0], t, data, scale = scale,
                        title = title, xlabel = False)
         infected(axes[1], t, data, scale = scale,

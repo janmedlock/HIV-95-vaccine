@@ -18,6 +18,10 @@ model.effectiveness
 -------------------
 .. automodule:: model.effectiveness
 
+model.global_
+-------------
+.. automodule:: model.global_
+
 model.net_benefit
 -----------------
 .. automodule:: model.net_benefit
