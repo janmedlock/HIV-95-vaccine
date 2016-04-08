@@ -28,11 +28,21 @@ import model
 
 
 countries_to_plot = ('Global',
+                     'Australia',
+                     'Brazil',
+                     'Cambodia',
+                     'China',
+                     'France',
                      'Haiti',
                      'India',
+                     'Malaysia',
+                     'Netherlands',
+                     'Nigeria',
                      'Rwanda',
                      'South Africa',
+                     'Thailand',
                      'Uganda',
+                     'United Kingdom',
                      'United States of America')
 
 # No-vaccine runs.

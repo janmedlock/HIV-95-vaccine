@@ -15,7 +15,13 @@ files = (
     'map_effectiveness.pdf',
     'map_effectiveness.png',
     'map_infections_averted.mp4',
+    'map_infections_averted.pdf',
+    'map_infections_averted.png',
     'map_prevalence.mp4',
+    'map_prevalence.pdf',
+    'map_prevalence.png',
+    'prevalence.pdf',
+    'prevalence.png',
     'table.csv'
 )
        
