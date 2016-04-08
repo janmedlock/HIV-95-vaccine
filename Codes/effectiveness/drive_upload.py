@@ -10,8 +10,20 @@ import drive
 
 
 files = (
-    'effectiveness.pdf',
-    'effectiveness.png',
+    'effectiveness_Global.pdf',
+    'effectiveness_Global.png',
+    'effectiveness_Haiti.pdf',
+    'effectiveness_Haiti.png',
+    'effectiveness_India.pdf',
+    'effectiveness_India.png',
+    'effectiveness_Rwanda.pdf',
+    'effectiveness_Rwanda.png',
+    'effectiveness_South_Africa.pdf',
+    'effectiveness_South_Africa.png',
+    'effectiveness_Uganda.pdf',
+    'effectiveness_Uganda.png',
+    'effectiveness_United_States.pdf',
+    'effectiveness_United_States.png',
     'map_effectiveness.pdf',
     'map_effectiveness.png',
     'map_infections_averted.mp4',

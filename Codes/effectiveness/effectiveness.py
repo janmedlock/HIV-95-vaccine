@@ -50,25 +50,13 @@ kbaseline = ('baseline', 0)
 k909090 = ('909090', 0)
 
 
-def getlabel(country, k = None):
-    if country == 'United States of America':
-        c = 'United States'
+def getlabel(k):
+    if k[0] == 'baseline':
+        label = 'Status quo'
+    elif k[0] == '909090':
+        label = '90–90–90'
     else:
-        c = country
-    label = '{}'.format(c)
-    if k is not None:
-        if k[0] == 'baseline':
-            label += ', Status quo'
-        elif k[0] == '909090':
-            label += ', 90–90–90'
-        else:
-            raise ValueError
-        if k[1] > 0:
-            fmtstr = ' with {:g}% eff vac at {:g}% cov rolled out {:g}–{:g}'
-            label += fmtstr.format(100 * k[1],
-                                   100 * k[2],
-                                   2015 + k[3],
-                                   2015 + k[3] + k[4])
+        raise ValueError
     return label
 
 
@@ -77,90 +65,107 @@ def baseplot(ax, t, data, ylabel, scale = 1,
              percent = False):
     if percent:
         scale = 1 / 100
-    if 'Global' in countries_to_plot:
-        ncolors = len(countries_to_plot) - 1
-    else:
-        ncolors = len(countries_to_plot)
-    colors_ = iter(seaborn.color_palette('Set2', ncolors))
-    colors = {}
-    for c in countries_to_plot:
-        if c == 'Global':
-            colors[c] = 'black'
-        else:
-            colors[c] = next(colors_)
-    for country in countries_to_plot:
-        if country == 'Global':
-            zorder = 2
-        else:
-            zorder = 1
-        ax.plot(t + 2015, data[country] / scale,
-                color = colors[country],
-                label = getlabel(country),
-                zorder = zorder)
+    for k in (kbaseline, k909090):
+        ax.plot(t + 2015, data[k] / scale,
+                label = getlabel(k))
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     if xlabel:
         ax.set_xlabel('Year')
-    if scale > 1 and not percent:
+    if scale != 1 and not percent:
         if scale == 1e3:
             ylabel += ' (1000s)'
         elif scale == 1e6:
             ylabel += ' (M)'
+        elif scale == 1e-3:
+            ylabel += ' per 1000'
+        elif scale == 1e-6:
+            ylabel += ' per M'
         else:
             ylabel += ' ({:g})'.format(scale)
     ax.set_ylabel(ylabel)
     if percent:
         ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%g%%'))
     if legend:
-        ax.legend(loc = 'center left')
+        ax.legend(loc = 'upper left')
     if title is not None:
         ax.set_title(title)
 
 
+def getattr_(data, attrname, t = None):
+    if attrname == 'incidence':
+        retval = {}
+        for k in (kbaseline, k909090):
+            ni = getattr(data[k], 'new_infections')
+            retval[k] = numpy.diff(ni) / numpy.diff(t)
+        return retval
+    elif attrname == 'incidence_per_capita':
+        retval = {}
+        for k in (kbaseline, k909090):
+            ni = getattr(data[k], 'new_infections')
+            n = getattr(data[k], 'alive')
+            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[1 :]
+        return retval
+    elif attrname.endswith('_per_capita'):
+        attrname_ = attrname.replace('_per_capita', '')
+        return {k: getattr(data[k], attrname_) / getattr(data[k], 'alive')
+                for k in (kbaseline, k909090)}
+    else:
+        return {k: getattr(data[k], attrname) for k in (kbaseline, k909090)}
+
+
+def counts(data, attrname, t = None):
+    return getattr_(data, attrname, t)
+
+
 def difference(data, attrname):
-    a, b = (getattr(data[k], attrname) for k in (kbaseline, k909090))
+    a, b = getattr_(data, attrname)
     return a - b
 
+
 def relative_difference(data, attrname):
-    a, b = (getattr(data[k], attrname) for k in (kbaseline, k909090))
+    a, b = getattr_(data, attrname)
     return (a - b) / a
 
+
 def new_infections(ax, t, data, **kwargs):
-    data_ = collections.OrderedDict()
-    for (c, v) in data.items():
-        data_[c] = relative_difference(v, 'new_infections')
-    ylabel = 'Reduction in New Infections'
-    baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
+    data_ = counts(data, 'new_infections')
+    ylabel = 'New Infections'
+    baseplot(ax, t, data_, ylabel, scale = 1e6, **kwargs)
+
+
+def incidence(ax, t, data, **kwargs):
+    data_ = counts(data, 'incidence_per_capita', t)
+    ylabel = 'Annual Incidence'
+    baseplot(ax, t[1 : ], data_, ylabel, scale = 1 / 1e6, **kwargs)
 
 
 def dead(ax, t, data, **kwargs):
-    data_ = collections.OrderedDict()
-    for (c, v) in data.items():
-        data_[c] = relative_difference(v, 'dead')
-    ylabel = 'Reduction in AIDS Deaths'
-    baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
+    data_ = counts(data, 'dead')
+    ylabel = 'AIDS Deaths'
+    baseplot(ax, t, data_, ylabel, **kwargs)
 
 
 def infected(ax, t, data, **kwargs):
-    data_ = collections.OrderedDict()
-    for (c, v) in data.items():
-        data_[c] = relative_difference(v, 'infected')
-    ylabel = 'Reduction in People Living with HIV'
-    baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
+    data_ = counts(data, 'infected')
+    ylabel = 'People Living with HIV'
+    baseplot(ax, t, data_, ylabel, scale = 1e6, **kwargs)
 
 
 def AIDS(ax, t, data, **kwargs):
-    data_ = collections.OrderedDict()
-    for (c, v) in data.items():
-        data_[c] = relative_difference(v, 'AIDS')
-    ylabel = 'Reduction in People with AIDS'
+    data_ = counts(data, 'AIDS')
+    ylabel = 'People with AIDS'
+    baseplot(ax, t, data_, ylabel, scale = 1e6, **kwargs)
+
+
+def AIDS_per_capita(ax, t, data, **kwargs):
+    data_ = counts(data, 'AIDS_per_capita')
+    ylabel = 'AIDS per capita'
     baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
 
 
 def prevalence(ax, t, data, **kwargs):
-    data_ = collections.OrderedDict()
-    for (c, v) in data.items():
-        data_[c] = relative_difference(v, 'prevalence')
-    ylabel = 'Reduction in Prevalence'
+    data_ = counts(data, 'prevalence')
+    ylabel = 'Prevalence'
     baseplot(ax, t, data_, ylabel, percent = True, **kwargs)
 
 
@@ -174,29 +179,32 @@ def _main():
         r = model.build_global(results)
         results['Global'] = r
 
-    fig, axes = pyplot.subplots(3, figsize = (11, 8.5), sharex = True)
-    new_infections(axes[0], t, results,
+    for (i, country) in enumerate(countries_to_plot):
+        fig, axes = pyplot.subplots(3, 2,
+                                    figsize = (11, 8.5), sharex = True)
+        data = results[country]
+        new_infections(axes[0, 0], t, data,
+                       xlabel = False, legend = True)
+        incidence(axes[0, 1], t, data,
+                  xlabel = False, legend = False)
+        infected(axes[1, 0], t, data,
+                 xlabel = False, legend = False)
+        prevalence(axes[1, 1], t, data,
                    xlabel = False, legend = False)
-    infected(axes[1], t, results,
-             xlabel = False, legend = True)
-    AIDS(axes[2], t, results,
-         xlabel = True, legend = False)
-    for ax in axes:
-        ax.yaxis.set_major_locator(ticker.MultipleLocator(10))
-        
-    fig.tight_layout()
+        AIDS(axes[2, 0], t, data,
+             xlabel = True, legend = False)
+        AIDS_per_capita(axes[2, 1], t, data,
+                        xlabel = True, legend = False)
 
-    kwds = dict(fontsize = 'large', fontweight = 'bold',
-                ha = 'left', va = 'top')
-    x = 0.08
-    fig.text(x, 0.97, '(A)', **kwds)
-    fig.text(x, 0.65, '(B)', **kwds)
-    fig.text(x, 0.335, '(C)', **kwds)
+        fig.tight_layout()
 
-    fig.savefig('effectiveness.pdf')
-    fig.savefig('effectiveness.png')
+        if country == 'United States of America':
+            country = 'United States'
+        country_ = country.replace(' ', '_')
+        fig.savefig('effectiveness_{}.pdf'.format(country_))
+        fig.savefig('effectiveness_{}.png'.format(country_))
 
-    # pyplot.show()
+    pyplot.show()
 
 
 if __name__ == '__main__':
