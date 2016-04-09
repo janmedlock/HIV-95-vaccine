@@ -1,9 +1,1 @@
-* More countries to analyze: China, UK or France or Netherlands,
-   Nigeria, Brazil, Thailand or Cambodia or Malaysia, Australia
-
-* Figures
-  ** 1: Add (A), (B), (C) to subplots.
-  ** 2: Maps of infections averted at 2025 and 2035, with (A) and (B) labels.
-  ** 3: Maps of prevalence at 2015, 2025, and 2035, with (A), (B), and
-        (C) labels.
-  ** 4: Maps of DALYs averted at 2025 and 2035, with (A) and (B) labels.
+* Uncertainty
