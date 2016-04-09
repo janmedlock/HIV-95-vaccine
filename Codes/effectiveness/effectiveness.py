@@ -239,37 +239,33 @@ def plot_all(results):
         r = model.build_global(results)
         results['Global'] = r
 
-    pdf = backend_pdf.PdfPages('effectiveness_all.pdf')
-    for (i, country) in enumerate(['Global'] + countries):
-        fig, axes = pyplot.subplots(4,
-                                    figsize = (11, 8.5), sharex = True)
-        data = results[country]
-        if country == 'United States of America':
-            country = 'United States'
-        infected(axes[0], t, data,
-                 xlabel = False, legend = True,
-                 title = country)
-        AIDS(axes[1], t, data,
-             xlabel = False, legend = False)
-        incidence(axes[2], t, data,
-                  xlabel = False, legend = False)
-        prevalence(axes[3], t, data,
-                   xlabel = True, legend = False)
+    with backend_pdf.PdfPages('effectiveness_all.pdf') as pdf:
+        for (i, country) in enumerate(['Global'] + countries):
+            fig, axes = pyplot.subplots(4,
+                                        figsize = (11, 8.5), sharex = True)
+            data = results[country]
+            if country == 'United States of America':
+                country = 'United States'
+            infected(axes[0], t, data,
+                     xlabel = False, legend = True,
+                     title = country)
+            AIDS(axes[1], t, data,
+                 xlabel = False, legend = False)
+            incidence(axes[2], t, data,
+                      xlabel = False, legend = False)
+            prevalence(axes[3], t, data,
+                       xlabel = True, legend = False)
 
-        fig.tight_layout()
+            fig.tight_layout()
 
-        pdf.savefig(fig)
-        pyplot.close(fig)
-        # country_ = country.replace(' ', '_')
-        # fig.savefig('effectiveness.pdf')
-        # fig.savefig('effectiveness.png')
-    pdf.close()
+            pdf.savefig(fig)
+            pyplot.close(fig)
 
 
 if __name__ == '__main__':
     results = pickle.load(open('../909090.pkl', 'rb'))
 
     plot_selected(results)
-    # plot_all(results)
+    plot_all(results)
 
     # pyplot.show()
