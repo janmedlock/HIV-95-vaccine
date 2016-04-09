@@ -137,7 +137,7 @@ if __name__ == '__main__':
     vmin = max(prevalence.min().min(), 0.005)
     vmax = min(prevalence.max().max(), 0.2)
 
-    plot(prevalence, vmin, vmax, norm)
+    # plot(prevalence, vmin, vmax, norm)
     animation(prevalence, vmin, vmax, norm)
 
     pyplot.show()
