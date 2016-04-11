@@ -78,23 +78,18 @@ def baseplot(ax, t, data, ylabel = None, scale = 1,
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     if xlabel:
         ax.set_xlabel('Year')
-    if (ylabel is not None) and (scale > 1) and (not percent):
-        if scale == 1e3:
-            ylabel += '\n(1000s)'
-        elif scale == 1e6:
-            ylabel += '\n(M)'
-        else:
-            ylabel += '\n({:g})'.format(scale)
     if ylabel is not None:
-        ax.set_ylabel(ylabel)
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 7))
+        ax.set_ylabel(ylabel, size = 'medium')
+    ax.grid(True, which = 'both', axis = 'both')
+    ax.set_xticks([2015, 2025, 2035])
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
     if legend:
         # ax.legend(loc = 'upper left')
         ax.legend(loc = 'best')
     if title is not None:
-        ax.set_title(title)
+        ax.set_title(title, size = 'medium')
 
 
 def getattr_(data, attrname, t = None):
@@ -133,67 +128,39 @@ def relative_difference(data, attrname):
     return (a - b) / a
 
 
-def new_infections(ax, t, data, ylabel = True, scale = 1e6, **kwargs):
+def new_infections(ax, t, data, scale = 1e6, **kwargs):
     data_ = counts(data, 'new_infections')
-    if ylabel:
-        ylabel = 'New Infections'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, scale = scale, **kwargs)
+    baseplot(ax, t, data_, scale = scale, **kwargs)
 
 
-def incidence(ax, t, data, ylabel = True, scale = 1 / 1e6, **kwargs):
+def incidence(ax, t, data, scale = 1 / 1e6, **kwargs):
     data_ = counts(data, 'incidence_per_capita', t)
-    if ylabel:
-        ylabel = 'HIV Incidence\n(per M people per y)'
-    else:
-        ylabel = None
-    baseplot(ax, t[1 : ], data_, ylabel = ylabel, scale = scale, **kwargs)
+    baseplot(ax, t[1 : ], data_, scale = scale, **kwargs)
 
 
-def dead(ax, t, data, ylabel = True, **kwargs):
+def dead(ax, t, data, scale = 'auto', **kwargs):
     data_ = counts(data, 'dead')
-    if ylabel:
-        ylabel = 'AIDS Deaths'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, **kwargs)
+    baseplot(ax, t, data_, **kwargs)
 
 
-def infected(ax, t, data, ylabel = True, scale = 'auto', **kwargs):
+def infected(ax, t, data, scale = 'auto', **kwargs):
     data_ = counts(data, 'infected')
-    if ylabel:
-        ylabel = 'People Living with HIV'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, scale = scale, **kwargs)
+    baseplot(ax, t, data_, scale = scale, **kwargs)
 
 
-def AIDS(ax, t, data, ylabel = True, scale = 'auto', **kwargs):
+def AIDS(ax, t, data, scale = 'auto', **kwargs):
     data_ = counts(data, 'AIDS')
-    if ylabel:
-        ylabel = 'People with AIDS'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, scale = scale, **kwargs)
+    baseplot(ax, t, data_, scale = scale, **kwargs)
 
 
-def AIDS_per_capita(ax, t, data, ylabel = True, **kwargs):
+def AIDS_per_capita(ax, t, data, **kwargs):
     data_ = counts(data, 'AIDS_per_capita')
-    if ylabel:
-        ylabel = 'AIDS per capita'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, percent = True, **kwargs)
+    baseplot(ax, t, data_, percent = True, **kwargs)
 
 
-def prevalence(ax, t, data, ylabel = True, **kwargs):
+def prevalence(ax, t, data, **kwargs):
     data_ = counts(data, 'prevalence')
-    if ylabel:
-        ylabel = 'HIV Prevalence'
-    else:
-        ylabel = None
-    baseplot(ax, t, data_, ylabel = ylabel, percent = True, **kwargs)
+    baseplot(ax, t, data_, percent = True, **kwargs)
 
 
 def plot_selected(results):
@@ -204,26 +171,36 @@ def plot_selected(results):
         r = model.build_global(results)
         results['Global'] = r
 
-    fig, axes = pyplot.subplots(4, len(countries_to_plot),
-                                figsize = (20, 8.5), sharex = True)
+    fig, axes = pyplot.subplots(len(countries_to_plot), 4,
+                                figsize = (8.5, 11),
+                                sharex = True)
     for (i, country) in enumerate(countries_to_plot):
         data = results[country]
         if country == 'United States of America':
             country = 'United States'
-        ylabel = (i == 0)
-        infected(axes[0, i], t, data,
+        xlabel = False # (i == len(countries_to_plot) - 1)
+        if i == 0:
+            titles = ['People Living with HIV\n(M)',
+                      'People with AIDS\n(1000s)',
+                      'HIV Incidence\n(per M people per y)',
+                      'HIV Prevelance\n']
+        else:
+            titles = [None, None, None, None]
+        infected(axes[i, 0], t, data,
                  scale = 1e6,
-                 xlabel = False, ylabel = ylabel,
+                 xlabel = xlabel, ylabel = country,
                  legend = (i == 0),
-                 title = country)
-        AIDS(axes[1, i], t, data,
+                 title = titles[0])
+        AIDS(axes[i, 1], t, data,
              scale = 1e3,
-             xlabel = False, ylabel = ylabel, legend = False)
-        incidence(axes[2, i], t, data,
-                  xlabel = False, ylabel = ylabel, legend = False)
-        prevalence(axes[3, i], t, data,
-                   xlabel = (i == len(countries_to_plot) // 2),
-                   ylabel = ylabel, legend = False)
+             xlabel = xlabel, legend = False,
+             title = titles[1])
+        incidence(axes[i, 2], t, data,
+                  xlabel = xlabel, legend = False,
+                  title = titles[2])
+        prevalence(axes[i, 3], t, data,
+                   xlabel = xlabel, legend = False,
+                   title = titles[3])
 
         fig.tight_layout()
 
@@ -266,6 +243,6 @@ if __name__ == '__main__':
     results = pickle.load(open('../909090.pkl', 'rb'))
 
     plot_selected(results)
-    plot_all(results)
+    # plot_all(results)
 
     # pyplot.show()
