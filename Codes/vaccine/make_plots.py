@@ -6,6 +6,7 @@ Plot new infections.
 import collections
 import itertools
 import pickle
+import sys
 import warnings
 
 from matplotlib import pyplot
@@ -21,6 +22,7 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
+sys.path.append('..')
 import model
 
 
@@ -121,7 +123,7 @@ def _main():
                          'Haiti',
                          'Global')
 
-    results = pickle.load(open('909090.pkl', 'rb'))
+    results = pickle.load(open('../909090.pkl', 'rb'))
 
     countries = list(results.keys())
     levels = list(results[countries[0]].keys())
