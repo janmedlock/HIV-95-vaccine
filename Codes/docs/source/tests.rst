@@ -1,5 +1,5 @@
-test scripts
-============
+tests
+=====
 
 datasheet
 ---------
