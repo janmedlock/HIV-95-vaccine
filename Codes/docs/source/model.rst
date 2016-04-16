@@ -22,6 +22,10 @@ model.global_
 -------------
 .. automodule:: model.global_
 
+model.latin_hypercube_sampling
+------------------------------
+.. automodule:: model.latin_hypercube_sampling
+
 model.net_benefit
 -----------------
 .. automodule:: model.net_benefit
