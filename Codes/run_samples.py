@@ -23,6 +23,8 @@ t_end = 20
 target = '909090'
 
 def _run_country(country, samples):
+    print('Running {}.'.format(country))
+
     parameters = model.Parameters(country)
 
     parametersamples = model.ParameterSample.from_samples(country, samples)
@@ -35,6 +37,8 @@ def _run_country(country, samples):
 def _main():
     with open(samplesfile, 'rb') as fd:
         samples = pickle.load(fd)
+
+    print('Loaded {} samples.'.format(len(samples)))
 
     results = {}
     for country in countries:
