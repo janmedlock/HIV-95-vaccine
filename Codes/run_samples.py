@@ -10,13 +10,13 @@ import model
 samplesfile = 'samples.pkl'
 resultsfile = 'results.pkl'
 
-# countries = model.get_country_list()
-countries = ('United States of America',
-             'South Africa',
-             'Rwanda',
-             'Uganda',
-             'India',
-             'Haiti')
+countries = model.get_country_list()
+# countries = ('United States of America',
+#              'South Africa',
+#              'Rwanda',
+#              'Uganda',
+#              'India',
+#              'Haiti')
 
 t_end = 20
 
@@ -44,8 +44,8 @@ def _main():
     for country in countries:
         results[country] = _run_country(country, samples)
 
-    with open(resultsfile, 'wb') as fd:
-        pickle.dump(results, fd)
+        with open(resultsfile, 'wb') as fd:
+            pickle.dump(results, fd)
 
 
 if __name__ == '__main__':
