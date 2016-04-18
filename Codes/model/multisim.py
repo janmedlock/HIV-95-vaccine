@@ -23,7 +23,8 @@ class _MultiSimSuper:
             pass
 
     def __getattr__(self, k):
-        return [getattr(s, k) for s in self.simulations]
+        return [getattr(s, k)
+                for s in self.__getattribute__('simulations')]
 
 
 class _MultiSimBaseline(_MultiSimSuper):
