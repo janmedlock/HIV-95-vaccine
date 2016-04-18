@@ -9,6 +9,18 @@ from . import simulation
 
 
 class _MultiSimSuper:
+    def keys(self):
+        try:
+            return self.simulations[0].keys()
+        except IndexError:
+            pass
+
+    def t(self):
+        try:
+            return self.simulations[0].t
+        except IndexError:
+            pass
+
     def __getattr__(self, k):
         return [getattr(s, k) for s in self.simulations]
 

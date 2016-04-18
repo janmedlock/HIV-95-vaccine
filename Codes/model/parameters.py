@@ -84,6 +84,22 @@ class Parameters:
             if ((not k.startswith('_')) and (not callable(a))):
                 setattr(self, k, getattr(data, k))
 
+        # AIDS.  Will be updated later.
+        self.initial_conditions['W'] = 0
+
+        # Vaccinated.
+        self.initial_conditions['Q'] = 0
+
+        # Add people dead from AIDS.
+        self.initial_conditions['Z'] = 0
+        # Add new infections.
+        self.initial_conditions['R'] = 0
+
+        # Order correctly.
+        self.initial_conditions = self.initial_conditions.reindex(
+            ('S', 'Q', 'A', 'U', 'D',
+             'T', 'V', 'W', 'Z', 'R'))
+
     def sample(self, nsamples = 1):
         if nsamples == 1:
             return ParameterSample(self)
@@ -244,19 +260,6 @@ class ParameterSample:
         newAIDS = proportionAIDS * self.initial_conditions['D']
         self.initial_conditions['W'] = newAIDS
         self.initial_conditions['D'] -= newAIDS
-
-        # Vaccinated.
-        self.initial_conditions['Q'] = 0
-
-        # Add people dead from AIDS.
-        self.initial_conditions['Z'] = 0
-        # Add new infections.
-        self.initial_conditions['R'] = 0
-
-        # Order correctly.
-        self.initial_conditions = self.initial_conditions.reindex(
-            ('S', 'Q', 'A', 'U', 'D',
-             'T', 'V', 'W', 'Z', 'R'))
 
         # Now convert to numpy object for speed.
         self.initial_conditions = self.initial_conditions.values
