@@ -26,6 +26,10 @@ model.latin_hypercube_sampling
 ------------------------------
 .. automodule:: model.latin_hypercube_sampling
 
+model.multisim
+--------------
+.. automodule:: model.multisim
+
 model.net_benefit
 -----------------
 .. automodule:: model.net_benefit

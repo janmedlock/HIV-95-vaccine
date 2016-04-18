@@ -1,9 +1,13 @@
 main scripts
 ============
 
-run909090
----------
-.. automodule:: run909090
+generate_samples
+----------------
+.. automodule:: generate_samples
+
+run_samples
+-----------
+.. automodule:: run_samples
 
 map_initial_proportions
 -----------------------

@@ -32,22 +32,19 @@ class Simulation(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, country, targets_, targets_kwds = {},
-                 t_end = 15,
-                 baseline = 'baseline', parameters_ = None,
+    def __init__(self, parameters_, targets_, targets_kwds = {},
+                 t_end = 20,
+                 baseline = 'baseline',
                  run_baseline = True, _use_log = False,
                  **kwargs):
-        self.country = country
+        self.parameters = parameters_
+
+        self.country = self.parameters.country
 
         self.t_end = t_end
 
         pts_per_year = 120  # = 10 per month
         self.t = numpy.linspace(0, t_end, t_end * pts_per_year + 1)
-
-        if parameters_ is None:
-            self.parameters = parameters.Parameters(self.country)
-        else:
-            self.parameters = parameters_
 
         if kwargs:
             self.parameters = copy.copy(self.parameters)
@@ -82,10 +79,9 @@ class Simulation(container.Container):
             setattr(self, k, v)
 
         if run_baseline:
-            self.baseline = Simulation(self.country,
+            self.baseline = Simulation(self.parameters,
                                        baseline,
                                        t_end = self.t_end,
-                                       parameters_ = self.parameters,
                                        run_baseline = False,
                                        _use_log = self._use_log)
 

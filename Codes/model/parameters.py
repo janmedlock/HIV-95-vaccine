@@ -2,48 +2,77 @@
 Parameter data.
 '''
 
+import copy
+import pickle
+
 import numpy
 import pandas
 from scipy import stats
 
 from . import datasheet
+from . import latin_hypercube_sampling
 from . import R0
+
+
+samplesfile = 'samples.pkl'
+
+
+def triangular(mode, minimum, maximum):
+    shape = (mode - minimum) / (maximum - minimum)
+    loc = minimum
+    scale = maximum - minimum
+    return stats.triang(shape, loc, scale)
+
+
+def uniform(minimum, maximum):
+    loc = minimum
+    scale = maximum - minimum
+    return stats.uniform(loc, scale)
 
 
 class Parameters:
     r'''
     Convert parameter data in datafile into object for use in simulations.
     '''
+
     # Hollingsworth et al, 2008.
     # 2.9 month duration of acute stage.
-    progression_rate_acute = 12 / 2.9
+    progression_rate_acute = triangular(12 / 2.9, 2, 9.6)
     
     # From Morgan et al, 2002.
     # 9.4 years until AIDS untreated.
     progression_rate_unsuppressed = 1 / 9.4
 
     # From Cirroe et al, 2009.
-    suppression_rate = 1
+    suppression_rate = uniform(0.5, 1.5)
     
     # From Morgan et al, 2002.
     # 2 years until death.
     death_rate_AIDS = 1 / 2
 
     # From Samji et al, 2013 & UNAIDS, 2014.
-    death_years_lost_by_supression = 5
+    death_years_lost_by_supression = uniform(5, 8)
 
     # From Wawer et al, 2005.
-    transmission_per_coital_act_acute = 0.0082
+    transmission_per_coital_act_acute = triangular(0.0082, 0.0039, 0.0150)
 
     # From Hughes et al, 2012.
-    transmission_per_coital_act_unsuppressed = stats.gmean((0.0019, 0.0010))
+    # Geometric mean of male_to_female and female_to_male rates.
+    _mode = stats.gmean((0.0019, 0.0010))
+    _minimum = stats.gmean((0.0010, 0.00060))
+    _maximum = stats.gmean((0.0037, 0.0017))
+    transmission_per_coital_act_unsuppressed = triangular(_mode,
+                                                          _minimum,
+                                                          _maximum)
 
     # From Donnell et al, 2010.
-    transmission_per_coital_act_reduction_by_suppression = 0.08
+    transmission_per_coital_act_reduction_by_suppression = triangular(0.08,
+                                                                      0.002,
+                                                                      0.57)
 
     # From Wawer et al, 2005.
     # 9ish per month.
-    coital_acts_per_year = 9 * 12
+    coital_acts_per_year = uniform(8 * 12, 9 * 12)
 
     def __init__(self, country):
         self.country = country
@@ -55,8 +84,66 @@ class Parameters:
             if ((not k.startswith('_')) and (not callable(a))):
                 setattr(self, k, getattr(data, k))
 
+    def sample(self, nsamples = 1):
+        if nsamples == 1:
+            return ParameterSample(self)
+        else:
+            return [ParameterSample(self) for i in range(nsamples)]
+
+    @classmethod
+    def generate_samples(cls, nsamples):
+        rvs = []
+        for k in dir(cls):
+            if not k.startswith('_'):
+                a = getattr(cls, k)
+                if hasattr(a, 'rvs'):
+                    rvs.append(a)
+        return latin_hypercube_sampling.lhs(rvs, nsamples)
+
+    def __repr__(self):
+        cls = self.__class__
+        retval = '<{}.{}: country = {}\n'.format(cls.__module__,
+                                                 cls.__name__,
+                                                 self.country)
+        retval += '\n'.join('{} = {}'.format(k, getattr(self, k))
+                            for k in dir(self)
+                            if ((k != 'country')
+                                and (not k.startswith('_'))
+                                and (not callable(getattr(self, k)))))
+        retval += '>'
+        return retval
+
+
+class ParameterSample:
+    def __init__(self, parameters, values = None):
+        self.country = parameters.country
+
+        if values is not None:
+            values = list(values)
+
+        # Import attributes from parameters into self,
+        # but sample rvs.
+        for k in dir(parameters):
+            if not k.startswith('_'):
+                a = getattr(parameters, k)
+                if not callable(a):
+                    if hasattr(a, 'rvs'):
+                        if values is None:
+                            setattr(self, k, a.rvs())
+                        else:
+                            setattr(self, k, values.pop(0))
+                    else:
+                        setattr(self, k, a)
+
         self.calculate_secondary_parameters()
         self.update_initial_conditions()
+
+    @classmethod
+    def from_samples(cls, country, samples):
+        parameters = Parameters(country)
+        for s in samples:
+            yield cls(parameters, s)
+
 
     def calculate_secondary_parameters(self):
         life_span = 1 / self.death_rate
@@ -176,7 +263,10 @@ class Parameters:
 
     @property
     def R0(self):
-        return R0.R0(self)
+        try:
+            return R0.R0(self)
+        except AttributeError:
+            return None
 
     def __repr__(self):
         cls = self.__class__
