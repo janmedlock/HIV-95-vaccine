@@ -217,7 +217,8 @@ def plot_all(results):
         results['Global'] = r
 
     with backend_pdf.PdfPages('effectiveness_all.pdf') as pdf:
-        for (i, country) in enumerate(['Global'] + countries):
+        country_list = ['Global'] + sorted(countries)
+        for (i, country) in enumerate(country_list):
             fig, axes = pyplot.subplots(4,
                                         figsize = (11, 8.5), sharex = True)
             data = results[country]
@@ -243,6 +244,6 @@ if __name__ == '__main__':
     results = pickle.load(open('../909090.pkl', 'rb'))
 
     plot_selected(results)
-    # plot_all(results)
+    plot_all(results)
 
     # pyplot.show()

@@ -15,6 +15,7 @@ class _MultiSimSuper:
         except IndexError:
             pass
 
+    @property
     def t(self):
         try:
             return self.simulations[0].t

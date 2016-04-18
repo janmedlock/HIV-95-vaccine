@@ -7,7 +7,7 @@ import model
 
 samplesfile = 'samples.pkl'
 
-nsamples = 10
+nsamples = 2
 
 if __name__ == '__main__':
     samples = model.Parameters.generate_samples(nsamples)
