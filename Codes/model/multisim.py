@@ -38,7 +38,7 @@ class MultiSim(_MultiSimSuper):
     '''
 
     def __init__(self, samples, targets, **kwargs):
-        with joblib.Parallel(n_jobs = -1) as p:
+        with joblib.Parallel(n_jobs = -1, verbose = 5) as p:
             self.simulations = p(
                 joblib.delayed(simulation.Simulation)(s, targets, **kwargs)
                 for s in samples)
