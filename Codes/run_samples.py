@@ -11,12 +11,16 @@ samplesfile = 'samples.pkl'
 resultsfile = 'results.pkl'
 
 countries = model.get_country_list()
-# countries = ('United States of America',
-#              'South Africa',
-#              'Rwanda',
-#              'Uganda',
-#              'India',
-#              'Haiti')
+# Move these to the front.
+countries_to_plot = ['United States of America',
+                     'South Africa',
+                     'Uganda',
+                     'Nigeria',
+                     'India',
+                     'Rwanda']
+for c in countries_to_plot:
+    countries.remove(c)
+countries = countries_to_plot + countries
 
 t_end = 20
 
