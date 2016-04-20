@@ -20,14 +20,24 @@ import seaborn
 
 countries_to_plot = (
     # 'Global',
-    # 'India',
+    'India',
     'Nigeria',
     # 'Rwanda',
     'South Africa',
     'Uganda',
     'United States of America')
 
-resultsfile = 'results.pkl'
+
+resultsdir = 'results'
+
+def load_results():
+    results = {}
+    for f in os.listdir(resultsdir):
+        country, ext = os.path.splitext(f)
+        if ext == '.pkl':
+            with open(os.path.join(resultsdir, f), 'rb') as fd:
+                results[country] = pickle.load(fd)
+    return results
 
 
 def getstats(x):
@@ -194,8 +204,7 @@ def plot_selected(results):
 
 
 if __name__ == '__main__':
-    with open(resultsfile, 'rb') as fd:
-        results = pickle.load(fd)
+    results = load_results()
 
     plot_selected(results)
 
