@@ -45,11 +45,10 @@ def _main():
 
     print('Loaded {} samples.'.format(len(samples)))
 
-    results = {}
     for country in countries:
         resultsfile = resultsfiletemplate.format(country)
         if not os.path.exists(resultsfile):
-            results[country] = _run_country(country, samples)
+            results = _run_country(country, samples)
             with open(resultsfile, 'wb') as fd:
                 pickle.dump(results, fd)
 

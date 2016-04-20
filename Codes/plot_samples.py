@@ -37,7 +37,7 @@ def load_results():
         country, ext = os.path.splitext(f)
         if ext == '.pkl':
             with open(os.path.join(resultsdir, f), 'rb') as fd:
-                results.update(pickle.load(fd))
+                results[country] = pickle.load(fd)
     return results
 
 
