@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os.path
 import pickle
 
 import numpy
@@ -8,7 +9,7 @@ import model
 
 
 samplesfile = 'samples.pkl'
-resultsfile = 'results.pkl'
+resultsfiletemplate = 'results/{}.pkl'
 
 countries = model.get_country_list()
 # Move these to the front.
@@ -46,12 +47,12 @@ def _main():
 
     results = {}
     for country in countries:
-        results[country] = _run_country(country, samples)
-
-        with open(resultsfile, 'wb') as fd:
-            pickle.dump(results, fd)
+        resultsfile = resultsfiletemplate.format(country)
+        if not os.path.exists(resultsfile):
+            results[country] = _run_country(country, samples)
+            with open(resultsfile, 'wb') as fd:
+                pickle.dump(results, fd)
 
 
 if __name__ == '__main__':
     _main()
-

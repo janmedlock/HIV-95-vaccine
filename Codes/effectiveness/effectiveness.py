@@ -202,7 +202,7 @@ def plot_selected(results):
                    xlabel = xlabel, legend = False,
                    title = titles[3])
 
-        fig.tight_layout()
+    fig.tight_layout()
 
     fig.savefig('effectiveness.pdf')
     fig.savefig('effectiveness.png')
