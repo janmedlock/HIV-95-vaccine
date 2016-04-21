@@ -38,6 +38,30 @@ def load_results(country):
     return results
 
 
+def getfield(data, field):
+    t = data.t
+    retval = {}
+    for (obj, k) in ((data.baseline, 'Status Quo'),
+                     (data, '90–90–90')):
+        if field == 'incidence':
+            ni = numpy.vstack(obj.new_infections)
+            retval[k] = numpy.diff(ni) / numpy.diff(t)
+        elif field == 'incidence_per_capita':
+            ni = numpy.vstack(obj.new_infections)
+            n = numpy.vstack(obj.alive)
+            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
+        elif field.endswith('_per_capita'):
+            field_ = field.replace('_per_capita', '')
+            x = numpy.vstack(getattr(obj, field_))
+            n = numpy.vstack(obj.alive)
+            retval[k] = x / n
+        else:
+            retval[k] = getattr(obj, field)
+        if field.startswith('incidence'):
+            t = t[1 : ]
+    return (t, retval)
+
+
 def getstats(x):
     avg = numpy.median(x, axis = 0)
     CIlevel = 0.5
@@ -72,9 +96,12 @@ cp = seaborn.color_palette('colorblind')
 colors = {'Status Quo': cp[2],
           '90–90–90': cp[0]}
 
-def baseplot(ax, t, data, ylabel = None, scale = 1,
+def plotcell(ax, tx,
+             ylabel = None, scale = 1,
              legend = True, xlabel = True, title = None,
              percent = False):
+    t, x = tx
+
     if percent:
         scale = 1 / 100
     elif scale == 'auto':
@@ -82,8 +109,9 @@ def baseplot(ax, t, data, ylabel = None, scale = 1,
             scale = 1e6
         else:
             scale = 1e3
+
     for k in ('Status Quo', '90–90–90'):
-        v = data[k]
+        v = x[k]
         avg, CI = getstats(v)
         ax.plot(t + 2015, avg / scale, color = colors[k], label = k,
                 zorder = 2)
@@ -110,72 +138,12 @@ def baseplot(ax, t, data, ylabel = None, scale = 1,
         ax.set_title(title, size = 'medium')
 
 
-def getattr_(data, attrname):
-    t = data.t
-    retval = {}
-    for (obj, k) in ((data.baseline, 'Status Quo'),
-                     (data, '90–90–90')):
-        if attrname == 'incidence':
-            ni = numpy.vstack(obj.new_infections)
-            retval[k] = numpy.diff(ni) / numpy.diff(t)
-        elif attrname == 'incidence_per_capita':
-            ni = numpy.vstack(obj.new_infections)
-            n = numpy.vstack(obj.alive)
-            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
-        elif attrname.endswith('_per_capita'):
-            attrname_ = attrname.replace('_per_capita', '')
-            x = numpy.vstack(getattr(obj, attrname_))
-            n = numpy.vstack(obj.alive)
-            retval[k] = x / n
-        else:
-            retval[k] = getattr(obj, attrname)
-            if attrname.startswith('incidence'):
-                t = t[1 : ]
-    return (t, retval)
-
-
-def counts(data, attrname):
-    t, x = getattr_(data, attrname)
-    return (t, x)
-
-
-def difference(data, attrname):
-    t, x = getattr_(data, attrname)
-    diff = x['Status Quo'] - x['90–90–90']
-    return (t, diff)
-
-
-def relative_difference(data, attrname):
-    t, x = getattr_(data, attrname)
-    reldiff = (x['Status Quo'] - x['90–90–90']) / x['Status Quo']
-    return (t, reldiff)
-
-
-def infected(ax, data, scale = 'auto', **kwargs):
-    t, x = counts(data, 'infected')
-    baseplot(ax, t, x, scale = scale, **kwargs)
-
-
-def AIDS(ax, data, scale = 'auto', **kwargs):
-    t, x = counts(data, 'AIDS')
-    baseplot(ax, t, x, scale = scale, **kwargs)
-
-
-def incidence(ax, data, scale = 1 / 1e6, **kwargs):
-    t, x = counts(data, 'incidence_per_capita')
-    baseplot(ax, t[1 : ], x, scale = scale, **kwargs)
-
-
-def prevalence(ax, data, **kwargs):
-    t, x = counts(data, 'prevalence')
-    baseplot(ax, t, x, percent = True, **kwargs)
-
-
 def plot_selected():
     fig, axes = pyplot.subplots(len(countries_to_plot), 4,
                                 figsize = (8.5, 11),
                                 sharex = True,
                                 squeeze = False)
+
     for (i, country) in enumerate(countries_to_plot):
         if country == 'Global':
             data = model.build_global()
@@ -183,29 +151,27 @@ def plot_selected():
             data = load_results(country)
 
         if country == 'United States of America':
-            country = 'United States'
-        if i == 0:
-            titles = ['People Living with HIV\n(M)',
-                      'People with AIDS\n(1000s)',
-                      'HIV Incidence\n(per M people per y)',
-                      'HIV Prevelance\n']
+            ylabel = 'United States'
         else:
-            titles = [None, None, None, None]
-        infected(axes[i, 0], data,
+            ylabel = country
+
+        plotcell(axes[i, 0], getfield(data, 'infected'),
                  scale = 1e6,
-                 xlabel = False, ylabel = country,
-                 legend = (i == 0),
-                 title = titles[0])
-        AIDS(axes[i, 1], data,
-             scale = 1e3,
-             xlabel = False, legend = False,
-             title = titles[1])
-        incidence(axes[i, 2], data,
-                  xlabel = False, legend = False,
-                  title = titles[2])
-        prevalence(axes[i, 3], data,
-                   xlabel = False, legend = False,
-                   title = titles[3])
+                 xlabel = False, ylabel = ylabel, legend = (i == 0),
+                 title = 'People Living with HIV\n(M)' if (i == 0) else None)
+        plotcell(axes[i, 1], getfield(data, 'AIDS'),
+                 scale = 1e3,
+                 xlabel = False, ylabel = False, legend = False,
+                 title = 'People with AIDS\n(1000s)' if (i == 0) else None)
+        plotcell(axes[i, 2], getfield(data, 'incidence_per_capita'),
+                 scale = 1e-6,
+                 xlabel = False, ylabel = False, legend = False,
+                 title = ('HIV Incidence\n(per M people per y)'
+                          if (i == 0) else None))
+        plotcell(axes[i, 3], getfield(data, 'prevalence'),
+                 percent = True,
+                 xlabel = False, ylabel = False, legend = False,
+                 title = 'HIV Prevelance\n' if (i == 0) else None)
 
     fig.tight_layout()
 
