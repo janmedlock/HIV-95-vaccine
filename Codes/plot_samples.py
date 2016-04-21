@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import collections
-import contextlib
 import joblib
 import os
 import pickle
@@ -33,9 +32,14 @@ countries_to_plot = (
 )
 
 
-@contextlib.contextmanager
 class Results(collections.UserDict):
     resultsdir = 'results'
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
+        pass
 
     @staticmethod
     def load_results(country):
