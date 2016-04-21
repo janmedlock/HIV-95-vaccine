@@ -45,7 +45,7 @@ class Results:
         pass
 
     def _load_data(self):
-        print('Loading data...')
+        print('Loading data for {}...'.format(self._country)
         if self._country == 'Global':
             self._data = model.build_global()
         else:
@@ -60,8 +60,7 @@ class Results:
         return getattr(self._data, key)
 
 
-mem = joblib.Memory(cachedir = '_joblib')
-@mem.cache(ignore = ['results'])
+@joblib.Memory(cachedir = '_joblib').cache(ignore = ['results'])
 def getfield(country, field, results):
     t = results.t
     retval = {}
