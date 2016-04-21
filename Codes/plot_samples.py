@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+import collections
+import contextlib
+import joblib
 import os
 import pickle
 import warnings
@@ -30,15 +33,35 @@ countries_to_plot = (
 )
 
 
-resultsdir = 'results'
+@contextlib.contextmanager
+class Results(collections.UserDict):
+    resultsdir = 'results'
 
-def load_results(country):
-    with open(os.path.join(resultsdir, '{}.pkl'.format(country)), 'rb') as fd:
-        results = pickle.load(fd)
-    return results
+    @staticmethod
+    def load_results(country):
+        path = os.path.join(self.resultsdir, '{}.pkl'.format(country))
+        with open(path, 'rb') as fd:
+            data = pickle.load(fd)
+        return data
+
+    @staticmethod
+    def build_global():
+        data = model.build_global()
+        return data
+
+    def __missing__(self, country):
+        if country == 'Global':
+            data = self.build_global()
+        else:
+            data = self.load_results(key)
+        self[key] = data
 
 
-def getfield(data, field):
+mem = joblib.Memory(cachedir = '__joblib__')
+
+@mem.cache(ignore = ['results'])
+def getfield(country, field, results):
+    data = results[country]
     t = data.t
     retval = {}
     for (obj, k) in ((data.baseline, 'Status Quo'),
@@ -147,36 +170,39 @@ def plot_selected():
                                 squeeze = False)
 
     for (i, country) in enumerate(countries_to_plot):
-        if country == 'Global':
-            data = model.build_global()
-        else:
-            data = load_results(country)
+        with Results() as results:
+            if country == 'United States of America':
+                ylabel = 'United States'
+            else:
+                ylabel = country
 
-        if country == 'United States of America':
-            ylabel = 'United States'
-        else:
-            ylabel = country
+            plotcell(axes[i, 0],
+                     getfield(country, 'infected', results),
+                     scale = 1e6,
+                     ylabel = ylabel, legend = (i == 0),
+                     title = ('People Living with HIV\n(M)'
+                              if (i == 0) else None))
 
-        plotcell(axes[i, 0], getfield(data, 'infected'),
-                 scale = 1e6,
-                 ylabel = ylabel, legend = (i == 0),
-                 title = 'People Living with HIV\n(M)' if (i == 0) else None)
+            plotcell(axes[i, 1],
+                     getfield(country, 'AIDS', results),
+                     scale = 1e3,
+                     legend = False,
+                     title = ('People with AIDS\n(1000s)'
+                              if (i == 0) else None))
 
-        plotcell(axes[i, 1], getfield(data, 'AIDS'),
-                 scale = 1e3,
-                 legend = False,
-                 title = 'People with AIDS\n(1000s)' if (i == 0) else None)
+            plotcell(axes[i, 2],
+                     getfield(country, 'incidence_per_capita', results),
+                     scale = 1e-6,
+                     legend = False,
+                     title = ('HIV Incidence\n(per M people per y)'
+                              if (i == 0) else None))
 
-        plotcell(axes[i, 2], getfield(data, 'incidence_per_capita'),
-                 scale = 1e-6,
-                 legend = False,
-                 title = ('HIV Incidence\n(per M people per y)'
-                          if (i == 0) else None))
-
-        plotcell(axes[i, 3], getfield(data, 'prevalence'),
-                 percent = True,
-                 legend = False,
-                 title = 'HIV Prevelance\n' if (i == 0) else None)
+            plotcell(axes[i, 3],
+                     getfield(country, 'prevalence', results),
+                     percent = True,
+                     legend = False,
+                     title = ('HIV Prevelance\n'
+                              if (i == 0) else None))
 
     fig.tight_layout()
 
@@ -185,6 +211,6 @@ def plot_selected():
 
 
 if __name__ == '__main__':
-    plot_selected()
+    plot_selected(results)
 
     pyplot.show()
