@@ -57,8 +57,8 @@ def getfield(data, field):
             retval[k] = x / n
         else:
             retval[k] = getattr(obj, field)
-        if field.startswith('incidence'):
-            t = t[1 : ]
+    if field.startswith('incidence'):
+        t = t[1 : ]
     return (t, retval)
 
 
@@ -97,9 +97,8 @@ colors = {'Status Quo': cp[2],
           '90–90–90': cp[0]}
 
 def plotcell(ax, tx,
-             ylabel = None, scale = 1,
-             legend = True, xlabel = True, title = None,
-             percent = False):
+             scale = 1, percent = False,
+             xlabel = True, ylabel = None, legend = True, title = None):
     t, x = tx
 
     if percent:
@@ -159,15 +158,18 @@ def plot_selected():
                  scale = 1e6,
                  xlabel = False, ylabel = ylabel, legend = (i == 0),
                  title = 'People Living with HIV\n(M)' if (i == 0) else None)
+
         plotcell(axes[i, 1], getfield(data, 'AIDS'),
                  scale = 1e3,
                  xlabel = False, ylabel = False, legend = False,
                  title = 'People with AIDS\n(1000s)' if (i == 0) else None)
+
         plotcell(axes[i, 2], getfield(data, 'incidence_per_capita'),
                  scale = 1e-6,
                  xlabel = False, ylabel = False, legend = False,
                  title = ('HIV Incidence\n(per M people per y)'
                           if (i == 0) else None))
+
         plotcell(axes[i, 3], getfield(data, 'prevalence'),
                  percent = True,
                  xlabel = False, ylabel = False, legend = False,
@@ -175,8 +177,8 @@ def plot_selected():
 
     fig.tight_layout()
 
-    # fig.savefig('effectiveness.pdf')
-    # fig.savefig('effectiveness.png')
+    fig.savefig('effectiveness.pdf')
+    fig.savefig('effectiveness.png')
 
 
 if __name__ == '__main__':
