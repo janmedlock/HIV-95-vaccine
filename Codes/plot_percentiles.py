@@ -25,7 +25,6 @@ x = numpy.vstack(getattr(data.baseline, k))
 y = numpy.vstack(getattr(data, k))
 z = x - y
 
-m = numpy.median(z, axis = 0)
 p = numpy.linspace(0, 100, 101)
 q = numpy.percentile(z, p, axis = 0)
 C = numpy.outer(2 * numpy.abs(p / 100 - 0.5), numpy.ones(numpy.shape(z)[1]))
