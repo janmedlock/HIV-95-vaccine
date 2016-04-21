@@ -211,6 +211,6 @@ def plot_selected():
 
 
 if __name__ == '__main__':
-    plot_selected(results)
+    plot_selected()
 
     pyplot.show()
