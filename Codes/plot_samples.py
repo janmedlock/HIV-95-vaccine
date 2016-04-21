@@ -95,10 +95,13 @@ class PercentFormatter(ticker.ScalarFormatter):
 cp = seaborn.color_palette('colorblind')
 colors = {'Status Quo': cp[2],
           '90–90–90': cp[0]}
+# cp = seaborn.color_palette('Dark2')
+# colors = {'Status Quo': cp[1],
+#           '90–90–90': cp[0]}
 
 def plotcell(ax, tx,
              scale = 1, percent = False,
-             xlabel = True, ylabel = None, legend = True, title = None):
+             xlabel = None, ylabel = None, title = None, legend = True):
     t, x = tx
 
     if percent:
@@ -122,19 +125,19 @@ def plotcell(ax, tx,
         #               cmap = cmaps[k], alpha = 0.5)
 
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
-    if xlabel:
-        ax.set_xlabel('Year')
-    if ylabel is not None:
-        ax.set_ylabel(ylabel, size = 'medium')
     ax.grid(True, which = 'both', axis = 'both')
     ax.set_xticks([2015, 2025, 2035])
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
-    if legend:
-        ax.legend(loc = 'best')
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, size = 'medium')
     if title is not None:
         ax.set_title(title, size = 'medium')
+    if legend:
+        ax.legend(loc = 'best')
 
 
 def plot_selected():
@@ -156,23 +159,23 @@ def plot_selected():
 
         plotcell(axes[i, 0], getfield(data, 'infected'),
                  scale = 1e6,
-                 xlabel = False, ylabel = ylabel, legend = (i == 0),
+                 ylabel = ylabel, legend = (i == 0),
                  title = 'People Living with HIV\n(M)' if (i == 0) else None)
 
         plotcell(axes[i, 1], getfield(data, 'AIDS'),
                  scale = 1e3,
-                 xlabel = False, ylabel = False, legend = False,
+                 legend = False,
                  title = 'People with AIDS\n(1000s)' if (i == 0) else None)
 
         plotcell(axes[i, 2], getfield(data, 'incidence_per_capita'),
                  scale = 1e-6,
-                 xlabel = False, ylabel = False, legend = False,
+                 legend = False,
                  title = ('HIV Incidence\n(per M people per y)'
                           if (i == 0) else None))
 
         plotcell(axes[i, 3], getfield(data, 'prevalence'),
                  percent = True,
-                 xlabel = False, ylabel = False, legend = False,
+                 legend = False,
                  title = 'HIV Prevelance\n' if (i == 0) else None)
 
     fig.tight_layout()
