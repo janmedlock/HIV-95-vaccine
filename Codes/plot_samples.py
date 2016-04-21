@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import collections
-import joblib
 import os
 import pickle
 import warnings
 
+import joblib
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
@@ -32,44 +31,42 @@ countries_to_plot = (
 )
 
 
-class Results(collections.UserDict):
+class Results:
     resultsdir = 'results'
 
+    def __init__(self, country):
+        self._country = country
+        self._data = None
+
     def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, tb):
         pass
 
-    def __exit__(self):
-        pass
-
-    @staticmethod
-    def load_results(country):
-        path = os.path.join(self.resultsdir, '{}.pkl'.format(country))
-        with open(path, 'rb') as fd:
-            data = pickle.load(fd)
-        return data
-
-    @staticmethod
-    def build_global():
-        data = model.build_global()
-        return data
-
-    def __missing__(self, country):
-        if country == 'Global':
-            data = self.build_global()
+    def _load_data(self):
+        print('Loading data...')
+        if self._country == 'Global':
+            self._data = model.build_global()
         else:
-            data = self.load_results(key)
-        self[key] = data
+            path = os.path.join(self.resultsdir,
+                                '{}.pkl'.format(self._country))
+            with open(path, 'rb') as fd:
+                self._data = pickle.load(fd)
+
+    def __getattr__(self, key):
+        if self._data is None:
+            self._load_data()
+        return getattr(self._data, key)
 
 
-mem = joblib.Memory(cachedir = '__joblib__')
-
+mem = joblib.Memory(cachedir = '_joblib')
 @mem.cache(ignore = ['results'])
 def getfield(country, field, results):
-    data = results[country]
-    t = data.t
+    t = results.t
     retval = {}
-    for (obj, k) in ((data.baseline, 'Status Quo'),
-                     (data, '90–90–90')):
+    for (obj, k) in ((results.baseline, 'Status Quo'),
+                     (results, '90–90–90')):
         if field == 'incidence':
             ni = numpy.vstack(obj.new_infections)
             retval[k] = numpy.diff(ni) / numpy.diff(t)
@@ -174,7 +171,7 @@ def plot_selected():
                                 squeeze = False)
 
     for (i, country) in enumerate(countries_to_plot):
-        with Results() as results:
+        with Results(country) as results:
             if country == 'United States of America':
                 ylabel = 'United States'
             else:

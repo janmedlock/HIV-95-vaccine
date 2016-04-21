@@ -9,6 +9,10 @@ run_samples
 -----------
 .. automodule:: run_samples
 
+plot_samples
+------------
+.. automodule:: plot_samples
+
 map_initial_proportions
 -----------------------
 .. automodule:: map_initial_proportions
