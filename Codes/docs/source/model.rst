@@ -66,6 +66,14 @@ model.R0
 --------
 .. automodule:: model.R0
 
+model.results
+-------------
+.. automodule:: model.results
+
+model.samples
+-------------
+.. automodule:: model.samples
+
 model.simulation
 ----------------
 .. automodule:: model.simulation

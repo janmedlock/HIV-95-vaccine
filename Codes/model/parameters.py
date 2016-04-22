@@ -2,9 +2,6 @@
 Parameter data.
 '''
 
-import copy
-import pickle
-
 import numpy
 import pandas
 from scipy import stats
@@ -14,7 +11,11 @@ from . import latin_hypercube_sampling
 from . import R0
 
 
-samplesfile = 'samples.pkl'
+
+def uniform(minimum, maximum):
+    loc = minimum
+    scale = maximum - minimum
+    return stats.uniform(loc, scale)
 
 
 def triangular(mode, minimum, maximum):
@@ -24,10 +25,14 @@ def triangular(mode, minimum, maximum):
     return stats.triang(shape, loc, scale)
 
 
-def uniform(minimum, maximum):
+def PERT(mode, minimum, maximum, lambda_ = 4):
+    mu = (minimum + maximum + lambda_ * mode) / (lambda_ + 2)
+    v = ((mu - minimum) * (2 * mode - minimum - maximum)
+         / (mode - mu) / (maximum - minimum))
+    w = v * (maximum - mu) / (mu - minimum)
     loc = minimum
     scale = maximum - minimum
-    return stats.uniform(loc, scale)
+    return stats.beta(v, w, loc, scale)
 
 
 class Parameters:

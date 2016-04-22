@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 
-import os
-import pickle
 import warnings
 
-import joblib
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
+
+import model
 
 # Silence warnings from matplotlib trigged by seaborn.
 warnings.filterwarnings(
@@ -29,60 +28,6 @@ countries_to_plot = (
     'Uganda',
     'United States of America',
 )
-
-
-class Results:
-    resultsdir = 'results'
-
-    def __init__(self, country):
-        self._country = country
-        self._data = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type_, value, tb):
-        pass
-
-    def _load_data(self):
-        print('Loading data for {}...'.format(self._country)
-        if self._country == 'Global':
-            self._data = model.build_global()
-        else:
-            path = os.path.join(self.resultsdir,
-                                '{}.pkl'.format(self._country))
-            with open(path, 'rb') as fd:
-                self._data = pickle.load(fd)
-
-    def __getattr__(self, key):
-        if self._data is None:
-            self._load_data()
-        return getattr(self._data, key)
-
-
-@joblib.Memory(cachedir = '_joblib').cache(ignore = ['results'])
-def getfield(country, field, results):
-    t = results.t
-    retval = {}
-    for (obj, k) in ((results.baseline, 'Status Quo'),
-                     (results, '90–90–90')):
-        if field == 'incidence':
-            ni = numpy.vstack(obj.new_infections)
-            retval[k] = numpy.diff(ni) / numpy.diff(t)
-        elif field == 'incidence_per_capita':
-            ni = numpy.vstack(obj.new_infections)
-            n = numpy.vstack(obj.alive)
-            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
-        elif field.endswith('_per_capita'):
-            field_ = field.replace('_per_capita', '')
-            x = numpy.vstack(getattr(obj, field_))
-            n = numpy.vstack(obj.alive)
-            retval[k] = x / n
-        else:
-            retval[k] = getattr(obj, field)
-    if field.startswith('incidence'):
-        t = t[1 : ]
-    return (t, retval)
 
 
 def getstats(x):
@@ -170,35 +115,35 @@ def plot_selected():
                                 squeeze = False)
 
     for (i, country) in enumerate(countries_to_plot):
-        with Results(country) as results:
+        with model.results.Results(country) as results:
             if country == 'United States of America':
                 ylabel = 'United States'
             else:
                 ylabel = country
 
             plotcell(axes[i, 0],
-                     getfield(country, 'infected', results),
+                     results.getfield('infected'),
                      scale = 1e6,
                      ylabel = ylabel, legend = (i == 0),
                      title = ('People Living with HIV\n(M)'
                               if (i == 0) else None))
 
             plotcell(axes[i, 1],
-                     getfield(country, 'AIDS', results),
+                     results.getfield('AIDS'),
                      scale = 1e3,
                      legend = False,
                      title = ('People with AIDS\n(1000s)'
                               if (i == 0) else None))
 
             plotcell(axes[i, 2],
-                     getfield(country, 'incidence_per_capita', results),
+                     results.getfield('incidence_per_capita'),
                      scale = 1e-6,
                      legend = False,
                      title = ('HIV Incidence\n(per M people per y)'
                               if (i == 0) else None))
 
             plotcell(axes[i, 3],
-                     getfield(country, 'prevalence', results),
+                     results.getfield('prevalence'),
                      percent = True,
                      legend = False,
                      title = ('HIV Prevelance\n'

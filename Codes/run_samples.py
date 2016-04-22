@@ -8,9 +8,6 @@ import numpy
 import model
 
 
-samplesfile = 'samples.pkl'
-resultsfiletemplate = 'results/{}.pkl'
-
 countries = model.get_country_list()
 # Move these to the front.
 countries_to_plot = ['United States of America',
@@ -27,6 +24,7 @@ t_end = 20
 
 target = '909090'
 
+
 def _run_country(country, samples):
     print('Running {}.'.format(country))
 
@@ -40,17 +38,13 @@ def _run_country(country, samples):
 
 
 def _main():
-    with open(samplesfile, 'rb') as fd:
-        samples = pickle.load(fd)
-
-    print('Loaded {} samples.'.format(len(samples)))
+    samples = model.samples.load()
 
     for country in countries:
         resultsfile = resultsfiletemplate.format(country)
         if not os.path.exists(resultsfile):
             results = _run_country(country, samples)
-            with open(resultsfile, 'wb') as fd:
-                pickle.dump(results, fd)
+            model.results.dump(country, results)
 
 
 if __name__ == '__main__':
