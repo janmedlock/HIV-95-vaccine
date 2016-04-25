@@ -9,9 +9,17 @@ run_samples
 -----------
 .. automodule:: run_samples
 
-plot_samples
-------------
-.. automodule:: plot_samples
+plot_effectiveness
+------------------
+.. automodule:: plot_effectiveness
+
+plot_differences
+----------------
+.. automodule:: plot_differences
+
+plot_relative_differences
+-------------------------
+.. automodule:: plot_relative_differences
 
 map_initial_proportions
 -----------------------
