@@ -74,9 +74,8 @@ class Results:
         self._data = None
 
     @staticmethod
-    def get_path(county):
-        path = os.path.join(resultsdir,
-                            '{}.pkl'.format(self._country))
+    def get_path(country):
+        path = os.path.join(resultsdir, '{}.pkl'.format(country))
         return path
 
 
