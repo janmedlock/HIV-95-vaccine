@@ -20,7 +20,7 @@ import seaborn
 
 
 countries_to_plot = (
-    # 'Global',
+    'Global',
     'India',
     'Nigeria',
     'Rwanda',

@@ -39,7 +39,7 @@ class Results:
     def _load_data(self):
         print('Loading data for {}...'.format(self._country))
         if self._country == 'Global':
-            self._data = self._build_global()
+            self._build_global()
         else:
             path = os.path.join(resultsdir,
                                 '{}.pkl'.format(self._country))
@@ -48,44 +48,49 @@ class Results:
 
     def _build_global(self):
         data = {}
-        for f in os.listdir(resultsdir):
+        for f in sorted(os.listdir(resultsdir)):
             if f.endswith('.pkl'):
                 country = f.replace('.pkl', '')
                 data[country] = Results(country)
+        self._data = global_.Global(data)
         
     def __getattr__(self, key):
         if self._data is None:
             self._load_data()
         return getattr(self._data, key)
 
-    def getfield(self, field):
-        return _getfield_cached(self._country, field, self)
+    def getfield(self, field, force_call = False):
+        if force_call:
+            # Don't use the value in the cache.
+            return _getfield_cached.call(self._country, field, self)
+        else:
+            return _getfield_cached(self._country, field, self)
 
     def flush(self):
         del self._data
         self._data = None
 
 
-cachedir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        '_joblib')
-mem = joblib.Memory(cachedir = cachedir)
-@mem.cache(ignore = ['results'])
+_cachedir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                         '_joblib')
+_mem = joblib.Memory(cachedir = _cachedir)
+@_mem.cache(ignore = ['results'])
 def _getfield_cached(country, field, results):
     t = results.t
     retval = {}
     for (obj, k) in ((results.baseline, 'Status Quo'),
                      (results, '90–90–90')):
         if field == 'incidence':
-            ni = numpy.vstack(obj.new_infections)
+            ni = numpy.asarray(obj.new_infections)
             retval[k] = numpy.diff(ni) / numpy.diff(t)
         elif field == 'incidence_per_capita':
-            ni = numpy.vstack(obj.new_infections)
-            n = numpy.vstack(obj.alive)
+            ni = numpy.asarray(obj.new_infections)
+            n = numpy.asarray(obj.alive)
             retval[k] = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
         elif field.endswith('_per_capita'):
             field_ = field.replace('_per_capita', '')
-            x = numpy.vstack(getattr(obj, field_))
-            n = numpy.vstack(obj.alive)
+            x = numpy.asarray(getattr(obj, field_))
+            n = numpy.asarray(obj.alive)
             retval[k] = x / n
         else:
             retval[k] = getattr(obj, field)
@@ -95,4 +100,4 @@ def _getfield_cached(country, field, results):
 
 
 def _clear_cache():
-    mem.clear()
+    _mem.clear()
