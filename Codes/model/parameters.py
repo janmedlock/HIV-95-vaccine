@@ -95,9 +95,9 @@ class Parameters:
         # Vaccinated.
         self.initial_conditions['Q'] = 0
 
-        # Add people dead from AIDS.
+        # Deaths from AIDS.
         self.initial_conditions['Z'] = 0
-        # Add new infections.
+        # New infections.
         self.initial_conditions['R'] = 0
 
         # Order correctly.
@@ -262,12 +262,14 @@ class ParameterSample:
         proportionAIDS = (1 / (1
                                + self.death_rate_AIDS
                                / self.progression_rate_unsuppressed))
-        newAIDS = proportionAIDS * self.initial_conditions['D']
-        self.initial_conditions['W'] = newAIDS
-        self.initial_conditions['D'] -= newAIDS
+
+        ics = self.initial_conditions.copy()
+        newAIDS = proportionAIDS * ics['D']
+        ics['W'] = newAIDS
+        ics['D'] -= newAIDS
 
         # Now convert to numpy object for speed.
-        self.initial_conditions = self.initial_conditions.values
+        self.initial_conditions = ics.values
 
     @property
     def R0(self):
