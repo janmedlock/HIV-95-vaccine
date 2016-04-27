@@ -2,11 +2,13 @@
 Store and retrieve simulation results.
 '''
 
-import os.path
+import os
 import pickle
 
 import joblib
 import numpy
+
+from . import global_
 
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -37,13 +39,20 @@ class Results:
     def _load_data(self):
         print('Loading data for {}...'.format(self._country))
         if self._country == 'Global':
-            self._data = model.build_global()
+            self._data = self._build_global()
         else:
             path = os.path.join(resultsdir,
                                 '{}.pkl'.format(self._country))
             with open(path, 'rb') as fd:
                 self._data = pickle.load(fd)
 
+    def _build_global(self):
+        data = {}
+        for f in os.listdir(resultsdir):
+            if f.endswith('.pkl'):
+                country = f.replace('.pkl', '')
+                data[country] = Results(country)
+        
     def __getattr__(self, key):
         if self._data is None:
             self._load_data()
@@ -51,6 +60,10 @@ class Results:
 
     def getfield(self, field):
         return _getfield_cached(self._country, field, self)
+
+    def flush(self):
+        del self._data
+        self._data = None
 
 
 cachedir = os.path.join(os.path.dirname(os.path.abspath(__file__)),

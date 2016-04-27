@@ -2,10 +2,6 @@
 Aggregate global results.
 '''
 
-import collections
-
-import numpy
-
 from . import container
 from . import parameters
 
@@ -25,16 +21,19 @@ class Global(container.Container):
     global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
     global_annual_AIDS_deaths = 1.2e6  # CI (0.98e6, 1.6e6), UNAIDS 2014
 
+
     def __init__(self, data):
-        levels = list(data.keys())
-        self.t = data[levels[0]].t
+        self.t = None
 
         for k in self.keys():
             setattr(self, k, 0)
         for (l, v) in data.items():
+            if self.t is None:
+                self.t = v.t
             for k in self.keys():
                 setattr(self, k,
                         getattr(self, k) + getattr(v, k))
+            v.flush() # Free memory
 
         # Convert global annual AIDS deaths
         # to global number of people with AIDS.
@@ -63,13 +62,3 @@ class Global(container.Container):
         prev = self.infected / self.alive
         prev *= self.global_prevalence / prev[0]
         return prev
-
-
-def build_global(results):
-    countries = list(results.keys())
-    levels = list(results[countries[0]].keys())
-    data = collections.OrderedDict()
-    for l in levels:
-        results_ = {c: results[c][l] for c in countries}
-        data[l] = Global(results_)
-    return data
