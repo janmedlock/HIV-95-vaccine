@@ -41,8 +41,7 @@ def _main():
     samples = model.samples.load()
 
     for country in countries:
-        resultsfile = resultsfiletemplate.format(country)
-        if not os.path.exists(resultsfile):
+        if not model.results.exists(country):
             results = _run_country(country, samples)
             model.results.dump(country, results)
 

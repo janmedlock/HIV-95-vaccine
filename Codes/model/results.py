@@ -15,9 +15,13 @@ resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
 
 
+def exists(country):
+    resultsfile = Results.get_path(country)
+    return os.path.exists(resultsfile)
+    
+
 def dump(country, results):
-    resultsfile = os.path.join(resultsdir,
-                               '{}.pkl'.format(country))
+    resultsfile = Results.get_path(country)
     with open(resultsfile, 'wb') as fd:
         pickle.dump(results, fd)
 
@@ -41,8 +45,7 @@ class Results:
         if self._country == 'Global':
             self._build_global()
         else:
-            path = os.path.join(resultsdir,
-                                '{}.pkl'.format(self._country))
+            path = self.get_path(self._country)
             with open(path, 'rb') as fd:
                 self._data = pickle.load(fd)
 
@@ -69,6 +72,12 @@ class Results:
     def flush(self):
         del self._data
         self._data = None
+
+    @staticmethod
+    def get_path(county):
+        path = os.path.join(resultsdir,
+                            '{}.pkl'.format(self._country))
+        return path
 
 
 _cachedir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
