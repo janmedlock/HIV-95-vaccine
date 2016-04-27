@@ -142,7 +142,7 @@ class CountryData:
 
     def __repr__(self):
         cls = self.__class__
-        retval = '<{}.{}: country = {}\n'.format(cls.__module,
+        retval = '<{}.{}: country = {}\n'.format(cls.__module__,
                                                  cls.__name__,
                                                  self.country)
         retval += '\n'.join('{} = {}'.format(k, getattr(self, k))
