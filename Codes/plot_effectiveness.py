@@ -105,7 +105,7 @@ def plotcell(ax, tx,
     if title is not None:
         ax.set_title(title, size = 'medium')
     if legend:
-        ax.legend(loc = 'best')
+        ax.legend(loc = 'upper left')
 
 
 def plot_selected():
@@ -155,7 +155,54 @@ def plot_selected():
     fig.savefig('effectiveness.png')
 
 
-if __name__ == '__main__':
-    plot_selected()
+def plot_all():
+    # countries = ???
+    # set up pdf???
+    for (i, country) in enumerate(countries):
+        with model.results.Results(country) as results:
+            if country == 'United States of America':
+                title = 'United States'
+            else:
+                title = country
 
-    pyplot.show()
+            fig, axes = pyplot.subplots(4,
+                                        figsize = (11, 8.5),
+                                        sharex = True,
+                                        squeeze = True)
+
+            plotcell(axes[0],
+                     results.getfield('infected'),
+                     scale = 1e6,
+                     ylabel = 'People Living with HIV\n(M)',
+                     legend = True,
+                     title = title)
+
+            plotcell(axes[1],
+                     results.getfield('AIDS'),
+                     scale = 1e3,
+                     ylabel = 'People with AIDS\n(1000s)',
+                     legend = False)
+
+            plotcell(axes[2],
+                     results.getfield('incidence_per_capita'),
+                     scale = 1e-6,
+                     ylabel = 'HIV Incidence\n(per M people per y)',
+                     legend = False)
+
+            plotcell(axes[3],
+                     results.getfield('prevalence'),
+                     percent = True,
+                     ylabel = 'HIV Prevelance\n',
+                     legend = False)
+
+            fig.tight_layout()
+
+            fig.savefig('effectiveness_{}.pdf'.format(country))
+
+
+if __name__ == '__main__':
+    # plot_selected()
+
+    plot_all()
+
+    # pyplot.show()
