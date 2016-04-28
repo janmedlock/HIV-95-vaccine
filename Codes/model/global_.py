@@ -86,8 +86,6 @@ class Global(_GlobalSuper):
                 self._add(k, v)
                 self.baseline._add(k, v.baseline)
             v.flush() # Free memory
-            print(numpy.asarray(self.AIDS)[:, 0])
-            print(numpy.asarray(self.baseline.AIDS)[:, 0])
 
         self._normalize()
         self.baseline._normalize()
