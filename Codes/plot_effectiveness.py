@@ -156,48 +156,53 @@ def plot_selected():
 
 
 def plot_all():
-    # countries = ???
-    # set up pdf???
-    for (i, country) in enumerate(countries):
-        with model.results.Results(country) as results:
-            if country == 'United States of America':
-                title = 'United States'
-            else:
-                title = country
+    countries = ['Global'] + sorted(model.get_country_list())
 
-            fig, axes = pyplot.subplots(4,
-                                        figsize = (11, 8.5),
-                                        sharex = True,
-                                        squeeze = True)
+    with backend_pdf.PdfPages('effectiveness_all.pdf') as pdf:
+        for (i, country) in enumerate(countries):
+            with model.results.Results(country) as results:
+                if country == 'United States of America':
+                    title = 'United States'
+                else:
+                    title = country
 
-            plotcell(axes[0],
-                     results.getfield('infected'),
-                     scale = 1e6,
-                     ylabel = 'People Living with HIV\n(M)',
-                     legend = True,
-                     title = title)
+                fig, axes = pyplot.subplots(4,
+                                            figsize = (11, 8.5),
+                                            sharex = True,
+                                            squeeze = True)
 
-            plotcell(axes[1],
-                     results.getfield('AIDS'),
-                     scale = 1e3,
-                     ylabel = 'People with AIDS\n(1000s)',
-                     legend = False)
+                try:
+                    plotcell(axes[0],
+                             results.getfield('infected'),
+                             scale = 1e6,
+                             ylabel = 'People Living with HIV\n(M)',
+                             legend = True,
+                             title = title)
 
-            plotcell(axes[2],
-                     results.getfield('incidence_per_capita'),
-                     scale = 1e-6,
-                     ylabel = 'HIV Incidence\n(per M people per y)',
-                     legend = False)
+                    plotcell(axes[1],
+                             results.getfield('AIDS'),
+                             scale = 1e3,
+                             ylabel = 'People with AIDS\n(1000s)',
+                             legend = False)
 
-            plotcell(axes[3],
-                     results.getfield('prevalence'),
-                     percent = True,
-                     ylabel = 'HIV Prevelance\n',
-                     legend = False)
+                    plotcell(axes[2],
+                             results.getfield('incidence_per_capita'),
+                             scale = 1e-6,
+                             ylabel = 'HIV Incidence\n(per M people per y)',
+                             legend = False)
 
-            fig.tight_layout()
-
-            fig.savefig('effectiveness_{}.pdf'.format(country))
+                    plotcell(axes[3],
+                             results.getfield('prevalence'),
+                             percent = True,
+                             ylabel = 'HIV Prevelance\n',
+                             legend = False)
+                except FileNotFoundError:
+                    pass
+                else:
+                    fig.tight_layout()
+                    pdf.savefig(fig)
+                finally:
+                    pyplot.close(fig)
 
 
 if __name__ == '__main__':
