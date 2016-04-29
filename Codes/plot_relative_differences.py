@@ -24,7 +24,7 @@ import model
 
 
 countries_to_plot = (
-    # 'Global',
+    'Global',
     'India',
     'Nigeria',
     'Rwanda',
@@ -153,7 +153,7 @@ def plot_selected():
 
     fig.tight_layout()
 
-    # fig.savefig('relative_differences.pdf')
+    fig.savefig('relative_differences.pdf')
     fig.savefig('relative_differences.png')
 
 
