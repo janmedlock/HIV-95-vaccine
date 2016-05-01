@@ -56,7 +56,7 @@ class Parameters:
     death_rate_AIDS = 1 / 2
 
     # From Samji et al, 2013 & UNAIDS, 2014.
-    death_years_lost_by_supression = uniform(5, 8)
+    death_years_lost_by_suppression = uniform(5, 8)
 
     # From Wawer et al, 2005.
     transmission_per_coital_act_acute = triangular(0.0082, 0.0039, 0.0150)
@@ -121,6 +121,16 @@ class Parameters:
                     rvs.append(a)
         return latin_hypercube_sampling.lhs(rvs, nsamples)
 
+    @classmethod
+    def get_rv_names(cls):
+        rvs = []
+        for k in dir(cls):
+            if not k.startswith('_'):
+                a = getattr(cls, k)
+                if hasattr(a, 'rvs'):
+                    rvs.append(k)
+        return rvs
+
     def __repr__(self):
         cls = self.__class__
         retval = '<{}.{}: country = {}\n'.format(cls.__module__,
@@ -165,12 +175,11 @@ class ParameterSample:
         for s in samples:
             yield cls(parameters, s)
 
-
     def calculate_secondary_parameters(self):
         life_span = 1 / self.death_rate
         time_with_AIDS = 1 / self.death_rate_AIDS
         time_in_suppression = (life_span
-                               - self.death_years_lost_by_supression
+                               - self.death_years_lost_by_suppression
                                - time_with_AIDS)
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
