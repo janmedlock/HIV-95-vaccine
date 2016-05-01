@@ -3,6 +3,7 @@
 Map the 90-90-90 results.
 '''
 
+import os.path
 import pickle
 import warnings
 
@@ -20,6 +21,9 @@ import seaborn
 
 import mapplot
 import mapplot.cmap
+
+
+filebase, _ = os.path.splitext(__file__)
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -50,7 +54,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
 
     m.label(countries)
 
-    m.savefig('map909090_effectiveness.pdf')
+    m.savefig('{}_effectiveness.pdf'.format(filebase))
 
     return m
 
@@ -89,7 +93,7 @@ def plot_cost(countries, cost, cost_base):
 
     m.label(countries)
 
-    m.savefig('map909090_cost.pdf')
+    m.savefig('{}_cost.pdf'.format(filebase))
 
     return m
 
@@ -166,7 +170,7 @@ def plot_ICER(countries, ICER):
 
     m.label(countries)
 
-    m.savefig('map909090_ICER.pdf')
+    m.savefig('{}_ICER.pdf'.format(filebase))
 
     return m
 

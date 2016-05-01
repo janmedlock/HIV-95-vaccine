@@ -3,6 +3,9 @@
 Calculate PRCCs.
 '''
 
+import os.path
+import sys
+
 from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
@@ -10,6 +13,7 @@ from scipy import interpolate
 from scipy import stats
 import seaborn
 
+sys.path.append('..')
 import model
 
 
@@ -261,12 +265,12 @@ if __name__ == '__main__':
 
     fig, axes = plot_samples(parameter_samples, outcome_samples,
                              parameter_names = parameter_names)
-    fig.savefig('parameters.png')
-    fig.savefig('parameters.pdf')
+    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
+    m.savefig('{}.png'.format(os.path.splitext(__file__)))
 
     fig, axes = plot_ranks(parameter_samples, outcome_samples,
                            parameter_names = parameter_names)
-    fig.savefig('parameters_rank.png')
-    fig.savefig('parameters_rank.pdf')
+    m.savefig('{}_rank.pdf'.format(os.path.splitext(__file__)))
+    m.savefig('{}_rank.png'.format(os.path.splitext(__file__)))
 
     pyplot.show()

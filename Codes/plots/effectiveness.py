@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os.path
 import warnings
 
 from matplotlib import pyplot
@@ -151,14 +152,15 @@ def plot_selected():
 
     fig.tight_layout()
 
-    fig.savefig('effectiveness.pdf')
-    fig.savefig('effectiveness.png')
+    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
+    m.savefig('{}.png'.format(os.path.splitext(__file__)))
 
 
 def plot_all():
     countries = ['Global'] + sorted(model.get_country_list())
 
-    with backend_pdf.PdfPages('effectiveness_all.pdf') as pdf:
+    filename = '{}_all.pdf'.format(os.path.splitext(__file__))
+    with backend_pdf.PdfPages(filename) as pdf:
         for (i, country) in enumerate(countries):
             with model.results.Results(country) as results:
                 if country == 'United States of America':

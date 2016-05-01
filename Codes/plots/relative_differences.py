@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 '''
-Plot differences for samples from uncertainty analysis.
+Plot relative differences for samples from uncertainty analysis.
 '''
 
+import os.path
 import warnings
 
 from matplotlib import cm
@@ -77,21 +78,15 @@ cmap = cmap_reflected(cmap_base)
 
 
 def plotcell(ax, tx,
-             scale = 1, percent = False,
              xlabel = None, ylabel = None, title = None):
     t, x = tx
 
-    if percent:
-        scale = 1 / 100
-    elif scale == 'auto':
-        if max(max(x) for x in stats.values()) > 1e6:
-            scale = 1e6
-        else:
-            scale = 1e3
+    # percent == True
+    scale = 1 / 100
 
     a = numpy.asarray(x['Status Quo'])
     b = numpy.asarray(x['90–90–90'])
-    d = a - b
+    d = numpy.ma.divide(a - b, a)
     q, C = getpercentiles(d)
     col = ax.pcolormesh(t + 2015, q / scale, C, cmap = cmap)
 
@@ -99,8 +94,7 @@ def plotcell(ax, tx,
     ax.grid(True, which = 'both', axis = 'both')
     ax.set_xticks([2015, 2025, 2035])
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
-    if percent:
-        ax.yaxis.set_major_formatter(PercentFormatter())
+    ax.yaxis.set_major_formatter(PercentFormatter())
     if xlabel is not None:
         ax.set_xlabel(xlabel)
     if ylabel is not None:
@@ -131,7 +125,6 @@ def plot_selected():
             ax = fig.add_subplot(gs[i, 0])
             plotcell(ax,
                      results.getfield('infected'),
-                     scale = 1e6,
                      ylabel = ylabel,
                      title = ('People Living with HIV\n(M)'
                               if (i == 0) else None))
@@ -139,21 +132,18 @@ def plot_selected():
             ax = fig.add_subplot(gs[i, 1])
             plotcell(ax,
                      results.getfield('AIDS'),
-                     scale = 1e3,
                      title = ('People with AIDS\n(1000s)'
                               if (i == 0) else None))
 
             ax = fig.add_subplot(gs[i, 2])
             plotcell(ax,
                      results.getfield('incidence_per_capita'),
-                     scale = 1e-6,
                      title = ('HIV Incidence\n(per M people per y)'
                               if (i == 0) else None))
 
             ax = fig.add_subplot(gs[i, 3])
             plotcell(ax,
                      results.getfield('prevalence'),
-                     percent = True,
                      title = ('HIV Prevelance\n'
                               if (i == 0) else None))
 
@@ -167,8 +157,8 @@ def plot_selected():
 
     fig.tight_layout()
 
-    fig.savefig('differences.pdf')
-    fig.savefig('differences.png')
+    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
+    m.savefig('{}.png'.format(os.path.splitext(__file__)))
 
 
 if __name__ == '__main__':

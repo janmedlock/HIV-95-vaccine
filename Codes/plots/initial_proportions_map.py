@@ -80,7 +80,7 @@ def _main():
 
     m.tighten()
 
-    m.savefig('map_initial_proportions.pdf')
+    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
 
     m.show()
 
