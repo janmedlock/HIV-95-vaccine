@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+'''
+Plot differences for samples from uncertainty analysis.
+'''
 
 import warnings
 

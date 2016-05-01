@@ -5,6 +5,10 @@ datasheet
 ---------
 .. automodule:: tests.datasheet
 
+global_
+-------
+.. automodule:: tests.global_
+
 logmodel
 --------
 .. automodule:: tests.logmodel

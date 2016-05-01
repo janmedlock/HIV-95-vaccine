@@ -21,6 +21,14 @@ plot_relative_differences
 -------------------------
 .. automodule:: plot_relative_differences
 
+plot_samples
+------------
+.. automodule:: plot_samples
+
+prcc
+----
+.. automodule:: prcc
+
 map_initial_proportions
 -----------------------
 .. automodule:: map_initial_proportions
