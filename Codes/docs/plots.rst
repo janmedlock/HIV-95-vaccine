@@ -1,22 +1,22 @@
 plots
 =====
 
-plot_effectiveness
-------------------
-.. automodule:: plots.plot_effectiveness
+effectiveness
+-------------
+.. automodule:: plots.effectiveness
 
-plot_differences
-----------------
-.. automodule:: plots.plot_differences
+differences
+-----------
+.. automodule:: plots.differences
 
-plot_relative_differences
--------------------------
-.. automodule:: plots.plot_relative_differences
+relative_differences
+--------------------
+.. automodule:: plots.relative_differences
 
-prcc
-----
-.. automodule:: plots.prcc
+parameters
+----------
+.. automodule:: plots.parameters
 
-map_initial_proportions
+initial_proportions_map
 -----------------------
-.. automodule:: plots.map_initial_proportions
+.. automodule:: plots.initial_proportions_map
