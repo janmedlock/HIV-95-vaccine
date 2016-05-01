@@ -3,9 +3,14 @@
 Map the initial proportions diagnosed, treated, and viral suppressed.
 '''
 
+import os.path
+import sys
+
 import pandas
 
+sys.path.append('..')
 import model
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import mapplot
 
 

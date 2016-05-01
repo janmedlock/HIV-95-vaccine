@@ -23,8 +23,7 @@ warnings.filterwarnings(
                'please use the latter.'))
 import seaborn
 
-sys.path.append('..')
-
+sys.path.append('../..')
 import model
 
 

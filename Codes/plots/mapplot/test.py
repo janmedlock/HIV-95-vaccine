@@ -1,16 +1,16 @@
 #!/usr/bin/python3
-
 '''
 Test :mod:`mapplot`.
 '''
 
 
+import os.path
 import sys
 
 import numpy
 from matplotlib import pyplot
 
-sys.path.append('..')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import mapplot
 
 

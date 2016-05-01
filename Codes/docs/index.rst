@@ -10,11 +10,12 @@ Documentation for 90-90-90
    :maxdepth: 2
 
    scripts
+   drive
+   model
+   plots
+   mapplot
    effectiveness
    vaccine
-   model
-   mapplot
-   drive
    tests
 
 

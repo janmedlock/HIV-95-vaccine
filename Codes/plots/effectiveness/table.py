@@ -9,7 +9,7 @@ import numpy
 import pandas
 import sys
 
-sys.path.append('..')
+sys.path.append('../..')
 import model
 
 

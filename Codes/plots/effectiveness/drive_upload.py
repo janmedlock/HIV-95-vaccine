@@ -5,7 +5,7 @@ Upload figures etc to Google Drive.
 
 import sys
 
-sys.path.append('..')
+sys.path.append('../..')
 import drive
 
 

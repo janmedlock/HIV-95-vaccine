@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 '''
-Make maps of the prevalence at different times.
+Make maps of the infections averted at different times.
 '''
 
+import os.path
 import pickle
 import sys
 
@@ -12,69 +13,61 @@ from matplotlib import ticker
 import numpy
 import pandas
 
-sys.path.append('..')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import mapplot
 
 
 k909090 = ('909090', 0)
 kbaseline = ('baseline', 0)
-# cmap = 'afmhot_r'
-cmap = 'YlOrRd'
-norm = mcolors.LogNorm
+cmap = 'viridis'
 label_coords = (-120, -20)
-ticks = ticker.LogLocator(10, [1, 2, 5])
-title = 'Prevalence'
-height = 0.28
+ticks = ticker.MultipleLocator(10)
+title = 'Reduction in New Infections (Compared to Status Quo)'
+height = 0.4
 pad = 0.035
 cpad = 0.05
-aspect = 1.5
+aspect = 1.05
 
 
-def animation(prevalence, vmin, vmax, norm,
+def animation(infections_averted, vmin, vmax,
               frames_per_year = 12, years_per_second = 2):
     fig = pyplot.figure()
     m = mapplot.Basemap()
 
     m.tighten(aspect_adjustment = 1.35)
 
-    countries = prevalence.columns
+    countries = infections_averted.columns
 
     freq_ = (len(t) - 1) / (t[-1] - t[0])
     skip = max(int(freq_ / frames_per_year), 1)
-    data = prevalence.iloc[: : skip].as_matrix()
-    T = prevalence.index[: : skip]
+    data = infections_averted.iloc[: : skip].as_matrix()
+    T = infections_averted.index[: : skip]
 
     ani = m.choropleth_animate(countries, T + 2015, 100 * data,
                                cmap = cmap,
-                               norm = norm(vmin = 100 * vmin,
-                                           vmax = 100 * vmax),
                                vmin = 100 * vmin,
                                vmax = 100 * vmax,
                                label_coords = label_coords)
 
-    cbar = m.colorbar(label = 'Prevalence',
-                      format = '%g%%',
-                      ticks = ticks)
-    ticklabels = cbar.ax.get_xticklabels()
-    if len(ticklabels) > 0:
-        ticklabels[0] = '≤{}'.format(ticklabels[0].get_text())
-        ticklabels[-1] = '≥{}'.format(ticklabels[-1].get_text())
-        cbar.ax.set_xticklabels(ticklabels)
+    cbar = m.colorbar(
+        label = title,
+        format = '%g%%',
+        ticks = ticks)
 
-    ani.save('map_prevalence.mp4',
+    ani.save('map_infections_averted.mp4',
              fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
 
 
-def plot(prevalence, vmin, vmax, norm):
-    T = [0, 10, 20]
+def plot(results, vmin, vmax):
+    T = [10, 20]
 
     fig = pyplot.figure()
 
-    countries = prevalence.columns
+    countries = infections_averted.columns
 
-    data = prevalence.loc[T]
+    data = infections_averted.loc[T]
 
     for i in range(len(T)):
         if i < len(T) - 1:
@@ -89,8 +82,6 @@ def plot(prevalence, vmin, vmax, norm):
 
         mappable = m.choropleth(countries, 100 * data.iloc[i],
                                 cmap = cmap,
-                                norm = norm(100 * vmin,
-                                            100 * vmax),
                                 vmin = 100 * vmin,
                                 vmax = 100 * vmax)
 
@@ -103,24 +94,18 @@ def plot(prevalence, vmin, vmax, norm):
     cbar = fig.colorbar(mappable,
                         label = title,
                         format = '%g%%',
-                        ticks = ticks,
                         orientation = 'horizontal',
                         fraction = 0.2,
                         pad = cpad,
                         shrink = 0.8,
-                        panchor = False)
-    ticklabels = cbar.ax.get_xticklabels()
-    if len(ticklabels) > 0:
-        ticklabels[0] = '≤{}'.format(ticklabels[0].get_text())
-        ticklabels[-1] = '≥{}'.format(ticklabels[-1].get_text())
-        cbar.ax.set_xticklabels(ticklabels)
+                        panchor = False,
+                        ticks = ticks)
 
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
 
-    fig.savefig('map_prevalence.pdf')
-    fig.savefig('map_prevalence.png')
-
+    fig.savefig('map_infections_averted.pdf')
+    fig.savefig('map_infections_averted.png')
 
 
 if __name__ == '__main__':
@@ -129,15 +114,18 @@ if __name__ == '__main__':
     countries = list(results.keys())
     t = results[countries[0]][k909090].t
 
-    prevalence = pandas.DataFrame(columns = countries,
-                                  index = t)
+    infections_averted = pandas.DataFrame(columns = countries,
+                                          index = t)
     for c in countries:
-        prevalence[c] = results[c][k909090].prevalence
+        r = results[c]
+        infections_averted[c] = numpy.ma.divide(
+            (r[kbaseline].new_infections - r[k909090].new_infections),
+            r[kbaseline].new_infections).filled(0)
 
-    vmin = max(prevalence.min().min(), 0.005)
-    vmax = min(prevalence.max().max(), 0.2)
+    vmin = min(infections_averted.min().min(), 0)
+    vmax = max(infections_averted.max().max(), 0.7)
 
-    # plot(prevalence, vmin, vmax, norm)
-    animation(prevalence, vmin, vmax, norm)
+    plot(infections_averted, vmin, vmax)
+    animation(infections_averted, vmin, vmax)
 
-    pyplot.show()
+    # pyplot.show()
