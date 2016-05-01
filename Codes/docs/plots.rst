@@ -20,3 +20,10 @@ parameters
 initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
+
+
+.. toctree::
+
+   plots.mapplot
+   plots.effectiveness_
+   plots.vaccine

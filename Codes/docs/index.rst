@@ -13,9 +13,6 @@ Documentation for 90-90-90
    drive
    model
    plots
-   plots.mapplot
-   plots.effectiveness_
-   plots.vaccine
    tests
 
 
