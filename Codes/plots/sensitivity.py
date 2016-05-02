@@ -25,17 +25,6 @@ stat = 'prevalence'
 t = 20
 
 
-parameter_order = (
-    'coital_acts_per_year',
-    'death_years_lost_by_suppression',
-    'progression_rate_acute',
-    'suppression_rate',
-    'transmission_per_coital_act_acute',
-    'transmission_per_coital_act_unsuppressed',
-    'transmission_per_coital_act_reduction_by_suppression'
-)
-
-
 parameter_name = dict(
     coital_acts_per_year = 'annual\nsex\nacts',
     death_years_lost_by_suppression = 'life-years lost:\non suppression',
@@ -69,11 +58,14 @@ def rankdata(X):
                            axis = -1)
         
 
-def cc(X, y, use_ranks = True):
-    if use_ranks:
-        result = (stats.spearmanr(y, x) for x in X.T)
-    else:
-        result = (stats.pearsonr(y, x) for x in X.T)
+def cc(X, y):
+    result = (stats.pearsonr(y, x) for x in X.T)
+    rho, p = zip(*result)
+    return rho, p
+
+
+def rcc(X, y):
+    result = (stats.spearmanr(y, x) for x in X.T)
     rho, p = zip(*result)
     return rho, p
 
@@ -88,12 +80,8 @@ def get_residuals(Z, b):
     return residuals
 
 
-def pcc(X, y, use_ranks = True):
+def pcc(X, y):
     n = numpy.shape(X)[-1]
-
-    if use_ranks:
-        X = rankdata(X)
-        y = rankdata(y)
 
     rho = numpy.empty(n)
     for i in range(n):
@@ -107,14 +95,21 @@ def pcc(X, y, use_ranks = True):
     return rho
 
 
-def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2):
+def prcc(X, y):
+    return pcc(rankdata(X), rankdata(y))
+
+
+def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
+               colors = None):
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
     X = rankdata(X)
     y = rankdata(y)
 
-    colors = seaborn.color_palette('Dark2', n)
+    if colors is None:
+        colors = seaborn.color_palette('Dark2', n)
+
     fig, axes = pyplot.subplots(n, 2,
                                 sharex = 'col',
                                 sharey = 'col',
@@ -184,11 +179,14 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2):
     fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
 
 
-def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2):
+def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2,
+                 colors = None):
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
-    colors = seaborn.color_palette('Dark2', n)
+    if colors is None:
+        colors = seaborn.color_palette('Dark2', n)
+
     fig, axes = pyplot.subplots(n, 2,
                                 sharey = 'col',
                                 figsize = (6, 11))
@@ -247,42 +245,64 @@ def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2):
     fig.savefig('{}.pdf'.format(common.get_filebase()))
 
 
-def tornado(X, y, parameter_names = None):
+def tornado(X, y, parameter_names = None, colors = None):
+    n = numpy.shape(X)[-1]
+
     if parameter_names is None:
-        parameter_names = ['parameter[{}]'.format(i)
-                           for i range(numpy.shape(X)[-1])]
+        parameter_names = ['parameter[{}]'.format(i) for i in range(n)]
 
-    rho, p = cc(X, y, use_ranks = True)
-    print('\nRCCs:')
-    for (rho_, p_, n) in zip(rho, p, parameter_names):
-        print('{}: rho = {} (p = {})'.format(n, rho_, p_))
+    rho = prcc(parameter_samples, outcome_samples)
 
-    rho = pcc(parameter_samples, outcome_samples, use_ranks = True)
-    print('\nPRCCs:')
-    for (rho_, n) in zip(rho, parameter_names):
-        print('{}: rho = {}'.format(n, rho_))
-    
+    fig, ax = pyplot.subplots()
+    h = range(n, 0, - 1)
+    ax.barh(h, rho,
+            height = 1, left = 0,
+            align = 'center',
+            color = colors,
+            edgecolor = colors)
+    ax.set_xlabel('PRCC')
+    ax.set_ylim(0.5, n + 0.5)
+    ax.set_yticks(h)
+    ax.set_yticklabels(parameter_names,
+                       horizontalalignment = 'center')
+    ax.yaxis.set_tick_params(pad = 35)
+    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
+    ax.grid(True, which = 'both')
+    ax.yaxis.grid(False)
+
+    fig.tight_layout()
+
+    fig.savefig('{}_tornado.png'.format(common.get_filebase()))
+    fig.savefig('{}_tornado.pdf'.format(common.get_filebase()))
+
 
 if __name__ == '__main__':
     parameter_samples = model.samples.load()
-    parameters = model.parameters.Parameters.get_rv_names()
-
-    # Order
-    ix = [parameter_order.index(n) for n in parameters]
-    parameter_samples = parameter_samples[:, ix]
-    parameters = [parameters[i] for i in ix]
-
-    parameter_names = [parameter_name[p] for p in parameters]
-
     outcome_samples = get_outcome_samples(country, stat, t)
 
+    # Get names.
+    parameters = model.parameters.Parameters.get_rv_names()
+    parameter_names = [parameter_name[p] for p in parameters]
+
+    # Order parameters by abs(prcc).
+    rho = prcc(parameter_samples, outcome_samples)
+    ix = numpy.argsort(numpy.abs(rho))[ : : -1]
+    parameter_samples = parameter_samples[:, ix]
+    parameters = [parameters[i] for i in ix]
+    parameter_names = [parameter_names[i] for i in ix]
+
+    colors = seaborn.color_palette('Dark2', len(parameter_names))
+
     plot_samples(parameter_samples, outcome_samples,
-                 parameter_names = parameter_names)
+                 parameter_names = parameter_names,
+                 colors = colors)
 
     plot_ranks(parameter_samples, outcome_samples,
-               parameter_names = parameter_names)
+               parameter_names = parameter_names,
+               colors = colors)
 
     tornado(parameter_samples, outcome_samples,
-            parameter_names = parameter_names)
+            parameter_names = parameter_names,
+            colors = colors)
 
     pyplot.show()
