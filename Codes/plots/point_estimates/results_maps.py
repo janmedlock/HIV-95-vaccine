@@ -11,8 +11,8 @@ from matplotlib import cm
 from matplotlib import pyplot
 import numpy
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import common
-sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import mapplot
 import mapplot.cmap
 
@@ -86,7 +86,7 @@ def plot_cost(countries, cost, cost_base):
 
     m.label(countries)
 
-    m.savefig('{}_cost.pdf'.format(common.get_filebase()s))
+    m.savefig('{}_cost.pdf'.format(common.get_filebase()))
 
     return m
 

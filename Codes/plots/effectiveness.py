@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os.path
 import sys
 
 from matplotlib import pyplot
@@ -7,6 +8,7 @@ from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 sys.path.append('..')
 import model

@@ -8,10 +8,10 @@ import sys
 
 import pandas
 
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 sys.path.append('..')
 import model
-sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import mapplot
 
 

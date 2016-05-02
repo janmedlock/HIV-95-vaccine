@@ -3,6 +3,7 @@
 Calculate PRCCs.
 '''
 
+import os.path
 import sys
 
 from matplotlib import pyplot
@@ -11,6 +12,7 @@ import numpy
 from scipy import interpolate
 from scipy import stats
 
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 sys.path.append('..')
 import model
