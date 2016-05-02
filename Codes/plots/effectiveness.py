@@ -1,65 +1,18 @@
 #!/usr/bin/python3
 
-import os.path
-import warnings
+import sys
 
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 
+import common
+sys.path.append('..')
 import model
 
-# Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
 import seaborn
 
-
-countries_to_plot = (
-    'Global',
-    'India',
-    'Nigeria',
-    'Rwanda',
-    'South Africa',
-    'Uganda',
-    'United States of America',
-)
-
-
-def getstats(x):
-    avg = numpy.median(x, axis = 0)
-    CIlevel = 0.5
-    CI = numpy.percentile(x,
-                          [100 * CIlevel / 2, 100 * (1 - CIlevel / 2)],
-                          axis = 0)
-    # avg = numpy.mean(x, axis = 0)
-    # std = numpy.std(x, axis = 0, ddof = 1)
-    # CI = [avg + std, avg - std]
-    return (avg, CI)
-
-
-def getpercentiles(x):
-    p = numpy.linspace(0, 100, 101)
-    q = numpy.percentile(x, p, axis = 0)
-    C = numpy.outer(2 * numpy.abs(p / 100 - 0.5),
-                    numpy.ones(numpy.shape(x)[1]))
-    return (q, C)
-
-
-class PercentFormatter(ticker.ScalarFormatter):
-    def _set_format(self, vmin, vmax):
-        super()._set_format(vmin, vmax)
-        if self._usetex:
-            self.format = self.format[: -1] + '%%$'
-        elif self._useMathText:
-            self.format = self.format[: -2] + '%%}$'
-        else:
-            self.format += '%%'
 
 cp = seaborn.color_palette('colorblind')
 colors = {'Status Quo': cp[2],
@@ -83,22 +36,19 @@ def plotcell(ax, tx,
 
     for k in ('Status Quo', '90–90–90'):
         v = x[k]
-        avg, CI = getstats(v)
+        avg, CI = common.getstats(v)
         ax.plot(t + 2015, avg / scale, color = colors[k], label = k,
                 zorder = 2)
         ax.fill_between(t + 2015, CI[0] / scale, CI[1] / scale,
                         color = colors[k],
                         alpha = 0.3)
-        # q, C = getpercentiles(v)
-        # ax.pcolormesh(t + 2015, q / scale, C,
-        #               cmap = cmaps[k], alpha = 0.5)
 
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     ax.grid(True, which = 'both', axis = 'both')
     ax.set_xticks([2015, 2025, 2035])
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
-        ax.yaxis.set_major_formatter(PercentFormatter())
+        ax.yaxis.set_major_formatter(common.PercentFormatter())
     if xlabel is not None:
         ax.set_xlabel(xlabel)
     if ylabel is not None:
@@ -110,12 +60,12 @@ def plotcell(ax, tx,
 
 
 def plot_selected():
-    fig, axes = pyplot.subplots(len(countries_to_plot), 4,
+    fig, axes = pyplot.subplots(len(common.countries_to_plot), 4,
                                 figsize = (8.5, 11),
                                 sharex = True,
                                 squeeze = False)
 
-    for (i, country) in enumerate(countries_to_plot):
+    for (i, country) in enumerate(common.countries_to_plot):
         with model.results.Results(country) as results:
             if country == 'United States of America':
                 ylabel = 'United States'
@@ -152,14 +102,14 @@ def plot_selected():
 
     fig.tight_layout()
 
-    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
-    m.savefig('{}.png'.format(os.path.splitext(__file__)))
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    fig.savefig('{}.png'.format(common.get_filebase()))
 
 
 def plot_all():
     countries = ['Global'] + sorted(model.get_country_list())
 
-    filename = '{}_all.pdf'.format(os.path.splitext(__file__))
+    filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         for (i, country) in enumerate(countries):
             with model.results.Results(country) as results:
@@ -210,6 +160,6 @@ def plot_all():
 if __name__ == '__main__':
     plot_selected()
 
-    plot_all()
+    # plot_all()
 
-    pyplot.show()
+    # pyplot.show()

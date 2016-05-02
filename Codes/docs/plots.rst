@@ -1,6 +1,10 @@
 plots
 =====
 
+common
+------
+.. automodule:: plots.common
+
 effectiveness
 -------------
 .. automodule:: plots.effectiveness
