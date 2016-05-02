@@ -43,7 +43,7 @@ def get_filebase():
     return filebase
 
 
-def getstats(x, alpha = 0.5):
+def getstats(x, alpha = 0.05):
     avg = numpy.median(x, axis = 0)
     CI = numpy.percentile(x,
                           [100 * alpha / 2, 100 * (1 - alpha / 2)],

@@ -160,6 +160,6 @@ def plot_all():
 if __name__ == '__main__':
     plot_selected()
 
-    # plot_all()
+    plot_all()
 
-    # pyplot.show()
+    pyplot.show()
