@@ -3,7 +3,6 @@
 Calculate PRCCs.
 '''
 
-import os.path
 import sys
 
 from matplotlib import pyplot
@@ -11,15 +10,18 @@ from matplotlib import ticker
 import numpy
 from scipy import interpolate
 from scipy import stats
-import seaborn
 
+import common
 sys.path.append('..')
 import model
+
+import seaborn
 
 
 country = 'Global'
 stat = 'prevalence'
 t = 20
+
 
 parameter_order = (
     'coital_acts_per_year',
@@ -30,6 +32,7 @@ parameter_order = (
     'transmission_per_coital_act_unsuppressed',
     'transmission_per_coital_act_reduction_by_suppression'
 )
+
 
 parameter_name = dict(
     coital_acts_per_year = 'annual\nsex\nacts',
@@ -265,12 +268,12 @@ if __name__ == '__main__':
 
     fig, axes = plot_samples(parameter_samples, outcome_samples,
                              parameter_names = parameter_names)
-    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
-    m.savefig('{}.png'.format(os.path.splitext(__file__)))
+    fig.savefig('{}.png'.format(common.get_filebase()))
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
 
     fig, axes = plot_ranks(parameter_samples, outcome_samples,
                            parameter_names = parameter_names)
-    m.savefig('{}_rank.pdf'.format(os.path.splitext(__file__)))
-    m.savefig('{}_rank.png'.format(os.path.splitext(__file__)))
+    fig.savefig('{}_rank.png'.format(common.get_filebase()))
+    fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
 
     pyplot.show()

@@ -8,6 +8,7 @@ import sys
 
 import pandas
 
+import common
 sys.path.append('..')
 import model
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
@@ -80,7 +81,7 @@ def _main():
 
     m.tighten()
 
-    m.savefig('{}.pdf'.format(os.path.splitext(__file__)))
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
 
     m.show()
 

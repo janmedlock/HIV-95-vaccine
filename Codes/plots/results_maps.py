@@ -5,25 +5,18 @@ Map the 90-90-90 results.
 
 import os.path
 import pickle
-import warnings
+import sys
 
 from matplotlib import cm
 from matplotlib import pyplot
 import numpy
-# Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
 
+import common
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import mapplot
 import mapplot.cmap
 
-
-filebase, _ = os.path.splitext(__file__)
+import seaborn
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -54,7 +47,7 @@ def plot_effectiveness(countries, effectiveness, effectiveness_base):
 
     m.label(countries)
 
-    m.savefig('{}_effectiveness.pdf'.format(filebase))
+    m.savefig('{}_effectiveness.pdf'.format(common.get_filebase()))
 
     return m
 
@@ -93,7 +86,7 @@ def plot_cost(countries, cost, cost_base):
 
     m.label(countries)
 
-    m.savefig('{}_cost.pdf'.format(filebase))
+    m.savefig('{}_cost.pdf'.format(common.get_filebase()s))
 
     return m
 
@@ -170,7 +163,7 @@ def plot_ICER(countries, ICER):
 
     m.label(countries)
 
-    m.savefig('{}_ICER.pdf'.format(filebase))
+    m.savefig('{}_ICER.pdf'.format(common.get_filebase()))
 
     return m
 
