@@ -22,8 +22,8 @@ initial_proportions_map
 .. automodule:: plots.initial_proportions_map
 
 
-.. toctree::
+.. include:: mapplot.rst_
 
-   plots.mapplot
-   plots.effectiveness_
-   plots.vaccine
+.. include:: point_estimates.rst_
+
+.. include:: vaccine.rst_

@@ -1,0 +1,20 @@
+mapplot
+-------
+.. automodule:: plots.mapplot
+
+basemap
+~~~~~~~
+.. automodule:: plots.mapplot.basemap
+
+cmap
+~~~~
+.. automodule:: mapplot.cmap
+
+locators
+~~~~~~~~
+.. automodule:: mapplot.locators
+   :inherited-members:
+
+test
+~~~~
+.. automodule:: plots.mapplot.test

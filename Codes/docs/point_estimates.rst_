@@ -1,0 +1,22 @@
+point_estimates
+---------------
+
+drive_upload
+~~~~~~~~~~~~
+.. automodule:: plots.point_estimates.drive_upload
+
+effectiveness
+~~~~~~~~~~~~~
+.. automodule:: plots.point_estimates.effectiveness
+
+map_infections_averted
+~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: plots.point_estimates.map_infections_averted
+
+map_prevalence
+~~~~~~~~~~~~~~
+.. automodule:: plots.point_estimates.map_prevalence
+
+table
+~~~~~
+.. automodule:: plots.point_estimates.table

@@ -11,7 +11,7 @@ __pycache__/
 /Codes/plots/**/*.pdf
 /Codes/plots/**/*.png
 /Codes/plots/**/*.mp4
-/Codes/plots/effectiveness_/table.csv
+/Codes/plots/**/*.csv
 /Documents/Latex/*.pdf
 /Documents/Latex/.auto
 /Documents/Latex/*.aux

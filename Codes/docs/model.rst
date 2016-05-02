@@ -2,86 +2,86 @@ model
 =====
 .. automodule:: model
 
-model.control_rates
--------------------
+control_rates
+-------------
 .. automodule:: model.control_rates
 
-model.cost
-----------
+cost
+----
 .. automodule:: model.cost
 
-model.datasheet
----------------
+datasheet
+---------
 .. automodule:: model.datasheet
 
-model.effectiveness
--------------------
+effectiveness
+-------------
 .. automodule:: model.effectiveness
 
-model.global_
--------------
+global_
+-------
 .. automodule:: model.global_
 
-model.latin_hypercube_sampling
-------------------------------
+latin_hypercube_sampling
+------------------------
 .. automodule:: model.latin_hypercube_sampling
 
-model.multisim
---------------
+multisim
+--------
 .. automodule:: model.multisim
 
-model.net_benefit
------------------
+net_benefit
+-----------
 .. automodule:: model.net_benefit
 
-model.ODEs
-----------
+ODEs
+----
 .. automodule:: model.ODEs
 
-model.optimization
-------------------
+optimization
+------------
 .. automodule:: model.optimization
 
-model.optimization.effectiveness
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+effectiveness
+~~~~~~~~~~~~~
 .. automodule:: model.optimization.effectiveness
 
-model.optimization.net_benefit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+net_benefit
+~~~~~~~~~~~
 .. automodule:: model.optimization.net_benefit
 
-model.parameters
-----------------
+parameters
+----------
 .. automodule:: model.parameters
 
-model.plot
-----------
+plot
+----
 .. automodule:: model.plot
 
-model.proportions
------------------
+proportions
+-----------
 .. automodule:: model.proportions
 
-model.R0
---------
+R0
+--
 .. automodule:: model.R0
 
-model.results
--------------
+results
+-------
 .. automodule:: model.results
 
-model.samples
--------------
+samples
+-------
 .. automodule:: model.samples
 
-model.simulation
-----------------
+simulation
+----------
 .. automodule:: model.simulation
 
-model.targets
--------------
+targets
+-------
 .. automodule:: model.targets
 
-model.test
-----------
+test
+----
 .. automodule:: model.test

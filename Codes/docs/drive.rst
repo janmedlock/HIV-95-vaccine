@@ -2,6 +2,6 @@ drive
 =====
 .. automodule:: drive
 
-drive.driver
-------------
+driver
+------
 .. automodule:: drive.driver

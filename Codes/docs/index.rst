@@ -7,7 +7,6 @@ Documentation for 90-90-90
 ==========================
 
 .. toctree::
-   :maxdepth: 2
 
    scripts
    drive
