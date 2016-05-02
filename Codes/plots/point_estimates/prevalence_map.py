@@ -62,7 +62,7 @@ def animation(prevalence, vmin, vmax, norm,
         ticklabels[-1] = '≥{}'.format(ticklabels[-1].get_text())
         cbar.ax.set_xticklabels(ticklabels)
 
-    ani.save('map_prevalence.mp4',
+    ani.save('prevalence_map.mp4',
              fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
@@ -119,8 +119,8 @@ def plot(prevalence, vmin, vmax, norm):
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
 
-    fig.savefig('map_prevalence.pdf')
-    fig.savefig('map_prevalence.png')
+    fig.savefig('prevalence_map.pdf')
+    fig.savefig('prevalence_map.png')
 
 
 

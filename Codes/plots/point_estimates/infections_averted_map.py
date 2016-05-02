@@ -54,7 +54,7 @@ def animation(infections_averted, vmin, vmax,
         format = '%g%%',
         ticks = ticks)
 
-    ani.save('map_infections_averted.mp4',
+    ani.save('infections_averted_map.mp4',
              fps = frames_per_year * years_per_second,
              dpi = 300,
              extra_args = ('-vcodec', 'libx264'))
@@ -104,8 +104,8 @@ def plot(results, vmin, vmax):
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
 
-    fig.savefig('map_infections_averted.pdf')
-    fig.savefig('map_infections_averted.png')
+    fig.savefig('infections_averted_map.pdf')
+    fig.savefig('infections_averted_map.png')
 
 
 if __name__ == '__main__':

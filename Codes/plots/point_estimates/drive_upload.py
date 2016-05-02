@@ -13,10 +13,10 @@ files = (
     'effectiveness_all.pdf',
     'effectiveness.pdf',
     'effectiveness.png',
-    'map_infections_averted.mp4',
-    'map_infections_averted.pdf',
-    'map_infections_averted.png',
-    'map_prevalence.mp4',
+    'infections_averted_map.mp4',
+    'infections_averted_map.pdf',
+    'infections_averted_map.png',
+    'prevalence_map.mp4',
     'table.csv'
 )
        
