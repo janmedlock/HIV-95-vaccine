@@ -57,8 +57,7 @@ def getstats(x, alpha = 0.05):
 def getpercentiles(x):
     p = numpy.linspace(0, 100, 101)
     q = numpy.percentile(x, p, axis = 0)
-    C = numpy.outer(2 * numpy.abs(p / 100 - 0.5),
-                    numpy.ones(numpy.shape(x)[1]))
+    C = numpy.outer(p, numpy.ones(numpy.shape(x)[1]))
     return (q, C)
 
 
