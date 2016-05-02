@@ -8,6 +8,7 @@ import warnings
 
 import matplotlib
 from matplotlib import cm
+from matplotlib import colors
 from matplotlib import ticker
 import numpy
 
