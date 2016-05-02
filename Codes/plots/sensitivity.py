@@ -180,7 +180,8 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2):
                      horizontalalignment = 'center',
                      verticalalignment = 'center')
 
-    return (fig, axes)
+    fig.savefig('{}_rank.png'.format(common.get_filebase()))
+    fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
 
 
 def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2):
@@ -242,8 +243,25 @@ def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2):
                      horizontalalignment = 'center',
                      verticalalignment = 'center')
 
-    return (fig, axes)
+    fig.savefig('{}.png'.format(common.get_filebase()))
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
 
+
+def tornado(X, y, parameter_names = None):
+    if parameter_names is None:
+        parameter_names = ['parameter[{}]'.format(i)
+                           for i range(numpy.shape(X)[-1])]
+
+    rho, p = cc(X, y, use_ranks = True)
+    print('\nRCCs:')
+    for (rho_, p_, n) in zip(rho, p, parameter_names):
+        print('{}: rho = {} (p = {})'.format(n, rho_, p_))
+
+    rho = pcc(parameter_samples, outcome_samples, use_ranks = True)
+    print('\nPRCCs:')
+    for (rho_, n) in zip(rho, parameter_names):
+        print('{}: rho = {}'.format(n, rho_))
+    
 
 if __name__ == '__main__':
     parameter_samples = model.samples.load()
@@ -254,28 +272,17 @@ if __name__ == '__main__':
     parameter_samples = parameter_samples[:, ix]
     parameters = [parameters[i] for i in ix]
 
-    outcome_samples = get_outcome_samples(country, stat, t)
-
-    # rho, p = cc(parameter_samples, outcome_samples, use_ranks = True)
-    # print('\nRCCs:')
-    # for (rho_, p_, n) in zip(rho, p, parameters):
-    #     print('{}: rho = {} (p = {})'.format(n, rho_, p_))
-
-    # rho = pcc(parameter_samples, outcome_samples, use_ranks = True)
-    # print('\nPRCCs:')
-    # for (rho_, n) in zip(rho, parameters):
-    #     print('{}: rho = {}'.format(n, rho_))
-    
     parameter_names = [parameter_name[p] for p in parameters]
 
-    fig, axes = plot_samples(parameter_samples, outcome_samples,
-                             parameter_names = parameter_names)
-    fig.savefig('{}.png'.format(common.get_filebase()))
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    outcome_samples = get_outcome_samples(country, stat, t)
 
-    fig, axes = plot_ranks(parameter_samples, outcome_samples,
-                           parameter_names = parameter_names)
-    fig.savefig('{}_rank.png'.format(common.get_filebase()))
-    fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
+    plot_samples(parameter_samples, outcome_samples,
+                 parameter_names = parameter_names)
+
+    plot_ranks(parameter_samples, outcome_samples,
+               parameter_names = parameter_names)
+
+    tornado(parameter_samples, outcome_samples,
+            parameter_names = parameter_names)
 
     pyplot.show()
