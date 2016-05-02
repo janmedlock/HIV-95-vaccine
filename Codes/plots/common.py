@@ -6,9 +6,9 @@ import inspect
 import os.path
 import warnings
 
+import matplotlib
 from matplotlib import ticker
 import numpy
-
 
 # Silence warnings from matplotlib trigged by seaborn.
 warnings.filterwarnings(
@@ -17,6 +17,7 @@ warnings.filterwarnings(
     message = ('axes.color_cycle is deprecated '
                'and replaced with axes.prop_cycle; '
                'please use the latter.'))
+import seaborn
 
 
 countries_to_plot = (
@@ -28,6 +29,9 @@ countries_to_plot = (
     'Uganda',
     'United States of America',
 )
+
+
+matplotlib.rc('axes.grid', which = 'both')  # major & minor
 
 
 def get_filebase():
