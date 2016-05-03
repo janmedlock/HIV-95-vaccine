@@ -73,12 +73,14 @@ def tornado(ax, country, outcome, t, parameter_samples, colors,
 
 if __name__ == '__main__':
     country = 'Global'
-    outcomes = (
-        ('infected', 'People Living with HIV'),
-        ('AIDS', 'People with AIDS'),
-        ('incidence_per_capita', 'HIV Incidence'),
-        ('prevalence', 'HIV Prevelance'))
+    outcome = 'prevalence'
     times = (10, 20)
+
+    figsize = (8, 5)
+    legend_width = 0.4
+    labelspacing = 1
+    handleheight = 5
+    palette = 'Dark2'
 
     parameter_samples = model.samples.load()
 
@@ -93,55 +95,43 @@ if __name__ == '__main__':
     # parameters = [parameters[i] for i in ix]
     # parameter_names = [parameter_names[i] for i in ix]
 
-    # Order colors by order of prccs in top left.
-    outcome_samples = get_outcome_samples(country, outcomes[0], times[0])
+    # Order colors by order of prccs for 1st time.
+    outcome_samples = get_outcome_samples(country, outcome, times[0])
     rho = stats.prcc(parameter_samples, outcome_samples)
     ix = numpy.argsort(numpy.abs(rho))[ : : -1]
     labels = [parameter_names[i] for i in ix]
-    colors_ = seaborn.color_palette('Dark2', len(parameter_names))
+    colors_ = seaborn.color_palette(palette, len(parameter_names))
     colors = {l: c for (l, c) in zip(labels, colors_)}
 
-    nrow = len(times)
-    ncol = len(outcomes) + 1
-    legend_width = 0.7
-    gs = gridspec.GridSpec(nrow, ncol,
+    ncol = len(times) + 1
+    gs = gridspec.GridSpec(1, ncol,
                            width_ratios = [1] * (ncol - 1) + [legend_width])
-    fig = pyplot.figure(figsize = (11, 8.5))
+    fig = pyplot.figure(figsize = figsize)
     sharedax = None
     for (i, t) in enumerate(times):
-        for (j, x) in enumerate(outcomes):
-            outcome, title = x
-            ax = fig.add_subplot(gs[i, j],
-                                 sharex = sharedax, sharey = sharedax)
-            sharedax = ax
-            patches_ = tornado(ax, country, outcome, t, parameter_samples,
-                               colors,
-                               parameter_names = parameter_names)
-            if i == 0:
-                ax.set_title(title)
-            if i != nrow - 1:
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
-            if j == 0:
-                ax.set_ylabel(t + 2015)
-            if j != 0:
-                for l in ax.get_yticklabels():
-                    l.set_visible(False)
-                ax.yaxis.offsetText.set_visible(False)
+        ax = fig.add_subplot(gs[0, i],
+                             sharex = sharedax, sharey = sharedax)
+        sharedax = ax
+        patches_ = tornado(ax, country, outcome, t, parameter_samples,
+                           colors,
+                           parameter_names = parameter_names)
+        ax.set_xlabel('PRCC')
+        ax.set_title(t + 2015)
+        for l in ax.get_yticklabels():
+            l.set_visible(False)
 
-            # Save for legend.
-            if i == 0 and j == 0:
-                patches = patches_
+        # Save for legend.
+        if i == 0:
+            patches = patches_
 
     fig.legend(patches[ : : -1], labels,
                loc = 'center right',
-               labelspacing = 1,
-               handleheight = 5)
+               labelspacing = labelspacing,
+               handleheight = handleheight)
 
     fig.tight_layout()
 
-    fig.savefig('{}.png'.format(common.get_filebase()))
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    # fig.savefig('{}.png'.format(common.get_filebase()))
+    # fig.savefig('{}.pdf'.format(common.get_filebase()))
 
     pyplot.show()
