@@ -21,9 +21,13 @@ relative_differences
 --------------------
 .. automodule:: plots.relative_differences
 
-parameters
-----------
-.. automodule:: plots.parameters
+prcc
+----
+.. automodule:: plots.prcc
+
+sensitivity
+-----------
+.. automodule:: plots.sensitivity
 
 stats
 -----

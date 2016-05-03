@@ -20,11 +20,6 @@ import stats
 import seaborn
 
 
-country = 'Global'
-stat = 'prevalence'
-t = 20
-
-
 parameter_name = dict(
     coital_acts_per_year = 'annual\nsex\nacts',
     death_years_lost_by_suppression = 'life-years lost:\non suppression',
@@ -225,6 +220,10 @@ def tornado(X, y, parameter_names = None, colors = None):
 
 
 if __name__ == '__main__':
+    country = 'Global'
+    stat = 'prevalence'
+    t = 20
+
     parameter_samples = model.samples.load()
     outcome_samples = get_outcome_samples(country, stat, t)
 
@@ -249,8 +248,8 @@ if __name__ == '__main__':
                parameter_names = parameter_names,
                colors = colors)
 
-    tornado(parameter_samples, outcome_samples,
-            parameter_names = parameter_names,
-            colors = colors)
+    # tornado(parameter_samples, outcome_samples,
+    #         parameter_names = parameter_names,
+    #         colors = colors)
 
     pyplot.show()
