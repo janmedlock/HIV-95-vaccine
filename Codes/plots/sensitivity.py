@@ -47,8 +47,8 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
-    X = stats.rankdata(X)
-    y = stats.rankdata(y)
+    X = (stats.rankdata(X) - 1) / (m - 1)
+    y = (stats.rankdata(y) - 1) / (m - 1)
 
     if colors is None:
         colors = seaborn.color_palette('Dark2', n)

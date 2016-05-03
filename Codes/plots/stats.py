@@ -6,15 +6,8 @@ import numpy
 import scipy.stats
 
 
-def rankdata(X):
-    if numpy.ndim(X) == 0:
-        raise ValueError('Need at least 1-D data.')
-    elif numpy.ndim(X) == 1:
-        return (scipy.stats.rankdata(X) - 1) / (len(X) - 1)
-    else:
-        return numpy.stack([rankdata(X[..., i])
-                            for i in range(numpy.shape(X)[-1])],
-                           axis = -1)
+def rankdata(X, axis = 0):
+    return numpy.apply_along_axis(scipy.stats.rankdata, axis, X)
 
 
 def cc(X, y):

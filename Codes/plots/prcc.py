@@ -82,7 +82,7 @@ def tornados():
     outcome = 'prevalence'
     times = (10, 20)
 
-    figsize = (8, 5)
+    figsize = (8, 6)
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()
