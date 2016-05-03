@@ -10,12 +10,12 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 from scipy import interpolate
-from scipy import stats
 
-sys.path.append(os.path.dirname(__file__))  # For Sphinx.
-import common
+sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
 sys.path.append('..')
+import common
 import model
+import stats
 
 import seaborn
 
@@ -47,65 +47,13 @@ def get_outcome_samples(country, stat, t):
     return outcome_samples
 
 
-def rankdata(X):
-    if numpy.ndim(X) == 0:
-        raise ValueError('Need at least 1-D data.')
-    elif numpy.ndim(X) == 1:
-        return (stats.rankdata(X) - 1) / (len(X) - 1)
-    else:
-        return numpy.stack([rankdata(X[..., i])
-                            for i in range(numpy.shape(X)[-1])],
-                           axis = -1)
-        
-
-def cc(X, y):
-    result = (stats.pearsonr(y, x) for x in X.T)
-    rho, p = zip(*result)
-    return rho, p
-
-
-def rcc(X, y):
-    result = (stats.spearmanr(y, x) for x in X.T)
-    rho, p = zip(*result)
-    return rho, p
-
-
-def get_residuals(Z, b):
-    # Add a column of ones for intercept term.
-    A = numpy.column_stack((numpy.ones_like(Z[..., 0]), Z))
-    result = numpy.linalg.lstsq(A, b)
-    coefs = result[0]
-    # residuals = b - A @ coefs  # Stupid Sphinx bug.
-    residuals = b - numpy.dot(A, coefs)
-    return residuals
-
-
-def pcc(X, y):
-    n = numpy.shape(X)[-1]
-
-    rho = numpy.empty(n)
-    for i in range(n):
-        # Separate ith column from other columns.
-        mask = numpy.array([j == i for j in range(n)])
-        x = numpy.squeeze(X[..., mask])
-        Z = X[..., ~mask]
-        x_res = get_residuals(Z, x)
-        y_res = get_residuals(Z, y)
-        rho[i], _ = stats.pearsonr(x_res, y_res)
-    return rho
-
-
-def prcc(X, y):
-    return pcc(rankdata(X), rankdata(y))
-
-
 def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
                colors = None):
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
-    X = rankdata(X)
-    y = rankdata(y)
+    X = stats.rankdata(X)
+    y = stats.rankdata(y)
 
     if colors is None:
         colors = seaborn.color_palette('Dark2', n)
@@ -122,8 +70,8 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
 
         ax[0].scatter(x, y, color = colors[i], s = size, alpha = alpha)
 
-        x_res = get_residuals(Z, x)
-        y_res = get_residuals(Z, y)
+        x_res = stats.get_residuals(Z, x)
+        y_res = stats.get_residuals(Z, y)
 
         ax[1].scatter(x_res, y_res, color = colors[i], s = size, alpha = alpha)
 
@@ -199,8 +147,8 @@ def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2,
 
         ax[0].scatter(x, y, color = colors[i], s = size, alpha = alpha)
 
-        x_res = get_residuals(Z, x)
-        y_res = get_residuals(Z, y)
+        x_res = stats.get_residuals(Z, x)
+        y_res = stats.get_residuals(Z, y)
 
         ax[1].scatter(x_res, y_res, color = colors[i], s = size, alpha = alpha)
 
@@ -251,7 +199,7 @@ def tornado(X, y, parameter_names = None, colors = None):
     if parameter_names is None:
         parameter_names = ['parameter[{}]'.format(i) for i in range(n)]
 
-    rho = prcc(parameter_samples, outcome_samples)
+    rho = stats.prcc(parameter_samples, outcome_samples)
 
     fig, ax = pyplot.subplots()
     h = range(n, 0, - 1)
@@ -285,7 +233,7 @@ if __name__ == '__main__':
     parameter_names = [parameter_name[p] for p in parameters]
 
     # Order parameters by abs(prcc).
-    rho = prcc(parameter_samples, outcome_samples)
+    rho = stats.prcc(parameter_samples, outcome_samples)
     ix = numpy.argsort(numpy.abs(rho))[ : : -1]
     parameter_samples = parameter_samples[:, ix]
     parameters = [parameters[i] for i in ix]
