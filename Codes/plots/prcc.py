@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Calculate PRCCs.
+Calculate PRCCs and make tornado plots.
 '''
 
 import os.path
