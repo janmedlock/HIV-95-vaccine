@@ -44,7 +44,7 @@ def get_outcome_samples(country, stat, t):
 
 
 def tornado(ax, country, outcome, t, parameter_samples, colors,
-            parameter_names = None):
+            parameter_names = None, ylabels = 'left'):
     outcome_samples = get_outcome_samples(country, outcome, t)
 
     n = numpy.shape(parameter_samples)[-1]
@@ -56,44 +56,38 @@ def tornado(ax, country, outcome, t, parameter_samples, colors,
 
     ix = numpy.argsort(numpy.abs(rho))
 
-    c = [colors[parameter_names[i]] for i in ix]
+    labels = [parameter_names[i] for i in ix]
+    c = [colors[l] for l in labels]
 
-    patches = ax.barh(range(n), rho[ix],
+    h = range(n)
+    patches = ax.barh(h, rho[ix],
                       height = 1, left = 0,
                       align = 'center',
-                    color = c,
+                      color = c,
                       edgecolor = c)
-    # ax.set_ylim(0.5, n + 0.5)
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
-    ax.yaxis.set_major_locator(ticker.NullLocator())
+    ax.set_yticks(h)
+    ax.set_ylim(- 0.5, n - 0.5)
+    ax.set_yticklabels(labels)
     ax.grid(True, which = 'both')
+    ax.grid(False, axis = 'y', which = 'both')
+
+    ax.yaxis.set_ticks_position(ylabels)
 
     return patches
 
 
-if __name__ == '__main__':
+def tornados():
     country = 'Global'
     outcome = 'prevalence'
     times = (10, 20)
 
     figsize = (8, 5)
-    legend_width = 0.4
-    labelspacing = 1
-    handleheight = 5
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()
-
-    # Get names.
-    parameters = model.parameters.Parameters.get_rv_names()  
-    parameter_names = [parameter_name[p] for p in parameters]
-
-    # # Order parameters by abs(prcc).
-    # rho = stats.prcc(parameter_samples, outcome_samples)
-    # ix = numpy.argsort(numpy.abs(rho))[ : : -1]
-    # parameter_samples = parameter_samples[:, ix]
-    # parameters = [parameters[i] for i in ix]
-    # parameter_names = [parameter_names[i] for i in ix]
+    parameters = model.parameters.Parameters.get_rv_names()   # Get names.
+    parameter_names = [parameter_name[p] for p in parameters] # Get fancy names.
 
     # Order colors by order of prccs for 1st time.
     outcome_samples = get_outcome_samples(country, outcome, times[0])
@@ -103,35 +97,34 @@ if __name__ == '__main__':
     colors_ = seaborn.color_palette(palette, len(parameter_names))
     colors = {l: c for (l, c) in zip(labels, colors_)}
 
-    ncol = len(times) + 1
-    gs = gridspec.GridSpec(1, ncol,
-                           width_ratios = [1] * (ncol - 1) + [legend_width])
+    gs = gridspec.GridSpec(1, len(times))
     fig = pyplot.figure(figsize = figsize)
     sharedax = None
     for (i, t) in enumerate(times):
         ax = fig.add_subplot(gs[0, i],
-                             sharex = sharedax, sharey = sharedax)
+                             sharex = sharedax)
         sharedax = ax
-        patches_ = tornado(ax, country, outcome, t, parameter_samples,
-                           colors,
-                           parameter_names = parameter_names)
+
+        if i == 0:
+            ylabels = 'left'
+        elif i == len(times) - 1:
+            ylabels = 'right'
+        else:
+            ylabels = 'none'
+        tornado(ax, country, outcome, t, parameter_samples,
+                colors,
+                parameter_names = parameter_names,
+                ylabels = ylabels)
         ax.set_xlabel('PRCC')
         ax.set_title(t + 2015)
-        for l in ax.get_yticklabels():
-            l.set_visible(False)
-
-        # Save for legend.
-        if i == 0:
-            patches = patches_
-
-    fig.legend(patches[ : : -1], labels,
-               loc = 'center right',
-               labelspacing = labelspacing,
-               handleheight = handleheight)
 
     fig.tight_layout()
 
-    # fig.savefig('{}.png'.format(common.get_filebase()))
-    # fig.savefig('{}.pdf'.format(common.get_filebase()))
+    fig.savefig('{}.png'.format(common.get_filebase()))
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
+
+
+if __name__ == '__main__':
+    tornados()
 
     pyplot.show()
