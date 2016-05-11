@@ -69,6 +69,8 @@ def tornado(ax, country, outcome, t, parameter_samples, colors,
     ax.set_yticks(h)
     ax.set_ylim(- 0.5, n - 0.5)
     ax.set_yticklabels(labels)
+    ax.tick_params(axis = 'both', which = 'both',
+                   top = False, bottom = False, right = False, left = False)
     ax.grid(True, which = 'both')
     ax.grid(False, axis = 'y', which = 'both')
 
