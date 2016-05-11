@@ -13,8 +13,11 @@ from matplotlib import ticker
 import numpy
 import pandas
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.dirname(__file__))
+import common
 import mapplot
+sys.path.append('..')
+import model
 
 
 k909090 = ('909090', 0)
@@ -109,21 +112,25 @@ def plot(results, vmin, vmax):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('../909090.pkl', 'rb'))
+    countries = model.get_country_list()
 
-    countries = list(results.keys())
-    t = results[countries[0]][k909090].t
-
+    t_end = 20
+    pts_per_year = 120
+    t = numpy.linspace(0, t_end, t_end * pts_per_year + 1)
     infections_averted = pandas.DataFrame(columns = countries,
                                           index = t)
-    for c in countries:
-        r = results[c]
-        infections_averted[c] = numpy.ma.divide(
-            (r[kbaseline].new_infections - r[k909090].new_infections),
-            r[kbaseline].new_infections).filled(0)
+
+    for country in countries:
+        with model.results.Results(country) as results:
+            t, x = results.getfield('new_infections')
+            a = numpy.asarray(x['Status Quo'])
+            b = numpy.asarray(x['90–90–90'])
+            d = numpy.ma.divide(a - b, a)
+            m = numpy.median(d, axis = 0)
+            infections_averted[country] = m.filled(0)
 
     vmin = min(infections_averted.min().min(), 0)
-    vmax = max(infections_averted.max().max(), 0.7)
+    vmax = max(infections_averted.max().max(), 0.6)
 
     plot(infections_averted, vmin, vmax)
     animation(infections_averted, vmin, vmax)
