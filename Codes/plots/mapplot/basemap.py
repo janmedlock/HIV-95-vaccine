@@ -85,7 +85,7 @@ class Basemap:
 
     def _load_borders(self):
         border_feature = cartopy.io.shapereader.natural_earth(
-            resolution = '110m',
+            resolution = '50m',
             category = 'cultural',
             name = 'admin_0_countries')
         # The Natural Earth coordinate system
@@ -93,10 +93,14 @@ class Basemap:
         border_reader = cartopy.io.shapereader.Reader(border_feature)
         self.borders = {}
         for record in border_reader.records():
-            country = record.attributes['subunit']
-            # country = record.attributes['iso_a3']
+            country = record.attributes['sovereignt']
+            if country not in self.borders:
+                geometry = record.geometry
+            else:
+                geometry = (list(self.borders[country].geometries())
+                            + [record.geometry])
             self.borders[country] = cartopy.feature.ShapelyFeature(
-                record.geometry, self.border_crs)
+                geometry, self.border_crs)
 
     def _get_colors(self, c):
         if isinstance(c, str):
@@ -123,8 +127,10 @@ class Basemap:
                 border = self.borders[c]
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
-            self.ax.add_feature(border, facecolor = 'None', zorder = zorder,
-                                *args, **kwargs)
+            else:
+                self.ax.add_feature(border, facecolor = 'None',
+                                    zorder = zorder,
+                                    *args, **kwargs)
 
     def choropleth(self, countries, values, *args, **kwargs):
         '''
@@ -142,11 +148,11 @@ class Basemap:
                 border = self.borders[c]
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
-                continue
-            self.ax.add_feature(border,
-                                facecolor = cmap_norm.to_rgba(v),
-                                *args,
-                                **kwargs)
+            else:
+                self.ax.add_feature(border,
+                                    facecolor = cmap_norm.to_rgba(v),
+                                    *args,
+                                    **kwargs)
         # Make pyplot.colorbar() work.
         self.ax._current_image = cmap_norm
         return cmap_norm
@@ -186,11 +192,12 @@ class Basemap:
                 border = self.borders[c]
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
-            self._artists.append(self.ax.add_feature(
-                border,
-                facecolor = 'None',
-                *args,
-                **kwargs))
+            else:
+                self._artists.append(self.ax.add_feature(
+                    border,
+                    facecolor = 'None',
+                    *args,
+                    **kwargs))
             self._artist_map[c] = i
         if label_coords is not None:
             X, Y = label_coords
