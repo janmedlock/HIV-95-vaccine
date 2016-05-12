@@ -20,6 +20,8 @@ class _Locator:
     Abstract base class for locators.
     '''
 
+    crs = cartopy.crs.PlateCarree()
+
     def get_locations(self, countries):
         '''
         Do many calls to :meth:`get_location` and stack results.
@@ -33,6 +35,8 @@ class GeocodeLocator(_Locator):
     '''
     Use :mod:`geopy.geocoders.Nominatim` to get country coordinates.
     '''
+
+    crs = cartopy.crs.PlateCarree()
 
     def __init__(self, *args, **kwargs):
         import geopy
@@ -59,6 +63,13 @@ class CentroidLocator(_Locator):
     _equalarea_crs = cartopy.crs.AlbersEqualArea()
     def __init__(self, borders):
         self.borders = borders
+
+        try:
+            geom = next(self.borders.geometries())
+        except StopIteration:
+            self.crs = None
+        else:
+            self.crs = geom.crs
 
     def get_location(self, country):
         border = self.borders[country]
