@@ -179,7 +179,7 @@ class Basemap:
             try:
                 border = self.borders[c]
             except KeyError:
-                    print('Country "{}" not in border records.'.format(c))
+                    print('Country "{}" borders not in records.'.format(c))
             else:
                 self.ax.add_feature(border,
                                     facecolor = color,
