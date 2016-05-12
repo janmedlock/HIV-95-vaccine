@@ -64,6 +64,7 @@ class Basemap:
         self.ax.outline_patch.set_visible(False)
         self._do_basemap()
         self._load_borders()
+        self._load_tiny_points()
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
 
@@ -72,35 +73,64 @@ class Basemap:
                     land_color = cartopy.feature.COLORS['land_alt1'],
                     ocean_color = cartopy.feature.COLORS['water'],
                     *args, **kwargs):
-        self.ax.add_feature(cartopy.feature.LAND,
+        LAND = cartopy.feature.LAND
+        OCEAN = cartopy.feature.OCEAN
+        # LAND = cartopy.feature.NaturalEarthFeature('physical',
+        #                                            'land',
+        #                                            '50m',
+        #                                            edgecolor = 'face')
+        # OCEAN = cartopy.feature.NaturalEarthFeature('physical',
+        #                                             'ocean',
+        #                                             '50m',
+        #                                             edgecolor = 'face')
+        self.ax.add_feature(LAND,
                             facecolor = land_color,
                             zorder = zorder)
-        self.ax.add_feature(cartopy.feature.OCEAN,
+        self.ax.add_feature(OCEAN,
                             facecolor = ocean_color,
                             zorder = zorder)
+
         # self.ax.add_feature(cartopy.feature.COASTLINE, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.BORDERS, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.LAKES, alpha=0.5, zorder = zorder)
         # self.ax.add_feature(cartopy.feature.RIVERS, zorder = zorder)
 
-    def _load_borders(self):
-        border_feature = cartopy.io.shapereader.natural_earth(
-            resolution = '50m',
-            category = 'cultural',
-            name = 'admin_0_countries')
+    def _load_natural_earth(self, attr_for_key, resolution, category, name):
+        feature = cartopy.io.shapereader.natural_earth(
+            resolution = resolution,
+            category = category,
+            name = name)
         # The Natural Earth coordinate system
-        self.border_crs = cartopy.crs.PlateCarree()
-        border_reader = cartopy.io.shapereader.Reader(border_feature)
-        self.borders = {}
-        for record in border_reader.records():
-            country = record.attributes['sovereignt']
-            if country not in self.borders:
-                geometry = record.geometry
-            else:
-                geometry = (list(self.borders[country].geometries())
-                            + [record.geometry])
-            self.borders[country] = cartopy.feature.ShapelyFeature(
-                geometry, self.border_crs)
+        crs = cartopy.crs.PlateCarree()
+        reader = cartopy.io.shapereader.Reader(feature)
+        geometries = {}
+        for record in reader.records():
+            country = record.attributes[attr_for_key]
+            geometry = geometries.get(country, [])
+            geometries[country] = geometry + [record.geometry]
+        return {k: cartopy.feature.ShapelyFeature(v, crs)
+                for (k, v) in geometries.items()}
+
+    def _load_borders(self):
+        self.borders = self._load_natural_earth('sovereignt',
+                                                '110m',
+                                                'cultural',
+                                                'admin_0_countries')
+
+        # Use higher resolution if missing in lower resolution.
+        borders1 = self._load_natural_earth('sovereignt',
+                                            '50m',
+                                            'cultural',
+                                            'admin_0_countries')
+        for (k, v) in borders1.items():
+            if k not in self.borders:
+                self.borders[k] = v
+
+    def _load_tiny_points(self):
+        self.tiny_points = self._load_natural_earth('subunit',
+                                                    '50m',
+                                                    'cultural',
+                                                    'admin_0_tiny_countries')
 
     def _get_colors(self, c):
         if isinstance(c, str):
@@ -132,7 +162,8 @@ class Basemap:
                                     zorder = zorder,
                                     *args, **kwargs)
 
-    def choropleth(self, countries, values, *args, **kwargs):
+    def choropleth(self, countries, values, tiny_points_size = 0,
+                   *args, **kwargs):
         '''
         Color whole countries depending on the values.
         '''
@@ -144,15 +175,31 @@ class Basemap:
         cmap_norm.set_clim(vmin, vmax)
         cmap_norm.set_array(values)
         for (c, v) in zip(countries, values):
+            color = cmap_norm.to_rgba(v)
             try:
                 border = self.borders[c]
             except KeyError:
-                print('Country "{}" borders not in records.'.format(c))
+                    print('Country "{}" not in border records.'.format(c))
             else:
                 self.ax.add_feature(border,
-                                    facecolor = cmap_norm.to_rgba(v),
+                                    facecolor = color,
                                     *args,
                                     **kwargs)
+
+            if tiny_points_size > 0:
+                try:
+                    point = self.tiny_points[c]
+                except KeyError:
+                    pass
+                else:
+                    x, y = zip(*(p.xy for p in point.geometries()))
+                    self.ax.scatter(x, y,
+                                    transform = point.crs,
+                                    facecolor = color,
+                                    s = tiny_points_size,
+                                    *args,
+                                    **kwargs)
+
         # Make pyplot.colorbar() work.
         self.ax._current_image = cmap_norm
         return cmap_norm
@@ -193,12 +240,11 @@ class Basemap:
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
             else:
-                self._artists.append(self.ax.add_feature(
-                    border,
-                    facecolor = 'None',
-                    *args,
-                    **kwargs))
-            self._artist_map[c] = i
+                self._artists.append(self.ax.add_feature(border,
+                                                         facecolor = 'None',
+                                                         *args,
+                                                         **kwargs))
+                self._artist_map[c] = i
         if label_coords is not None:
             X, Y = label_coords
             self._label = self.text_coords(X, Y, '',
@@ -237,7 +283,7 @@ class Basemap:
     def scatter(self, countries, *args, **kwargs):
         x, y = self.locator.get_locations(countries)
         self.ax.scatter(x, y,
-                        transform = self.border_crs,
+                        transform = self.locator.crs,
                         *args,
                         **kwargs)
         self.draw_borders(countries, *args, **kwargs)
@@ -250,7 +296,7 @@ class Basemap:
              *args, **kwargs):
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         radius = numpy.sqrt(s) / numpy.pi
         if not isinstance(radius, abc.Iterable):
             radius = itertools.repeat(radius)
@@ -281,7 +327,7 @@ class Basemap:
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
             width = widthscale
@@ -320,7 +366,7 @@ class Basemap:
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
             height = heightscale
@@ -358,7 +404,7 @@ class Basemap:
                     *args, **kwargs):
         values = numpy.asarray(values)
         x, y = self.ax.projection.transform_point(
-            X, Y, self.border_crs)
+            X, Y, self.locator.crs)
         height = heightscale
         widths = values * widthscale
         # Center on y
@@ -382,7 +428,7 @@ class Basemap:
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
             height = heightscale
@@ -420,7 +466,7 @@ class Basemap:
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
             height = heightscale
@@ -475,7 +521,7 @@ class Basemap:
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
             x, y, z = xyz
             self._star(v,
@@ -494,7 +540,7 @@ class Basemap:
               *args, **kwargs):
         X, Y = self.locator.get_locations(countries)
         coords_t = self.ax.projection.transform_points(
-            self.border_crs, X, Y)
+            self.locator.crs, X, Y)
         for (xyz, country) in zip(coords_t, countries):
             x, y, z = xyz
             if country in replace:
@@ -512,12 +558,12 @@ class Basemap:
     def text_coords(self, X, Y, s,
                    *args, **kwargs):
         x, y = self.ax.projection.transform_point(
-            X, Y, self.border_crs)
+            X, Y, self.locator.crs)
         return self.ax.text(x, y, s, *args, **kwargs)
 
     def rectangle_coords(self, X, Y, w, h, *args, **kwargs):
         xy = self.ax.projection.transform_point(
-            X, Y, self.border_crs)
+            X, Y, self.locator.crs)
         self.ax.add_patch(patches.Rectangle(xy, w, h, *args, **kwargs))
 
     def colorbar(self, orientation = 'horizontal', fraction = 0.2,
