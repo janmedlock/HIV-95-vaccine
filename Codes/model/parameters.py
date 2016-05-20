@@ -5,24 +5,28 @@ Parameter data.
 import numpy
 import pandas
 from scipy import stats
+from scipy import optimize
 
 from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
 
 
-
 def uniform(minimum, maximum):
     loc = minimum
     scale = maximum - minimum
-    return stats.uniform(loc, scale)
+    retval = stats.uniform(loc, scale)
+    retval.mode = (minimum + maximum) / 2
+    return retval
 
 
 def triangular(mode, minimum, maximum):
     shape = (mode - minimum) / (maximum - minimum)
     loc = minimum
     scale = maximum - minimum
-    return stats.triang(shape, loc, scale)
+    retval = stats.triang(shape, loc, scale)
+    retval.mode = mode
+    return retval
 
 
 def PERT(mode, minimum, maximum, lambda_ = 4):
@@ -32,7 +36,9 @@ def PERT(mode, minimum, maximum, lambda_ = 4):
     w = v * (maximum - mu) / (mu - minimum)
     loc = minimum
     scale = maximum - minimum
-    return stats.beta(v, w, loc, scale)
+    retval = stats.beta(v, w, loc, scale)
+    retval.mode = mode
+    return retval
 
 
 class Parameters:
@@ -112,6 +118,10 @@ class Parameters:
             return [ParameterSample(self) for i in range(nsamples)]
 
     @classmethod
+    def mode(cls):
+        return ParameterMode(self)
+
+    @classmethod
     def generate_samples(cls, nsamples):
         rvs = []
         for k in dir(cls):
@@ -145,35 +155,12 @@ class Parameters:
         return retval
 
 
-class ParameterSample:
-    def __init__(self, parameters, values = None):
+class _ParameterSuper:
+    def __init__(self, parameters):
         self.country = parameters.country
-
-        if values is not None:
-            values = list(values)
-
-        # Import attributes from parameters into self,
-        # but sample rvs.
-        for k in dir(parameters):
-            if not k.startswith('_'):
-                a = getattr(parameters, k)
-                if not callable(a):
-                    if hasattr(a, 'rvs'):
-                        if values is None:
-                            setattr(self, k, a.rvs())
-                        else:
-                            setattr(self, k, values.pop(0))
-                    else:
-                        setattr(self, k, a)
 
         self.calculate_secondary_parameters()
         self.update_initial_conditions()
-
-    @classmethod
-    def from_samples(cls, country, samples):
-        parameters = Parameters(country)
-        for s in samples:
-            yield cls(parameters, s)
 
     def calculate_secondary_parameters(self):
         life_span = 1 / self.death_rate
@@ -299,3 +286,75 @@ class ParameterSample:
                                 and (not callable(getattr(self, k)))))
         retval += '>'
         return retval
+
+
+class ParameterSample(_ParameterSuper):
+    def __init__(self, parameters, values = None):
+        if values is not None:
+            values = list(values)
+
+        # Import attributes from parameters into self,
+        # but sample rvs.
+        for k in dir(parameters):
+            if not k.startswith('_'):
+                a = getattr(parameters, k)
+                if not callable(a):
+                    if hasattr(a, 'rvs'):
+                        if values is None:
+                            setattr(self, k, a.rvs())
+                        else:
+                            setattr(self, k, values.pop(0))
+                    else:
+                        setattr(self, k, a)
+
+        super().__init__(parameters)
+
+    @classmethod
+    def from_samples(cls, country, samples):
+        parameters = Parameters(country)
+        for s in samples:
+            yield cls(parameters, s)
+
+
+class ParameterMode(_ParameterSuper):
+    def __init__(self, parameters):
+        # Import attributes from parameters into self,
+        # but use mode of rvs.
+        for k in dir(parameters):
+            if not k.startswith('_'):
+                a = getattr(parameters, k)
+                if not callable(a):
+                    if isinstance(a, (stats._distn_infrastructure.rv_generic,
+                                      stats._distn_infrastructure.rv_frozen)):
+                        setattr(self, k, self.mode(a))
+                    else:
+                        setattr(self, k, a)
+
+        super().__init__(parameters)
+
+    @staticmethod
+    def mode(D):
+        if hasattr(D, 'mode'):
+            return D.mode
+        else:
+            def f(x):
+                return - D.logpdf(x)
+            x0 = D.mean()
+            if numpy.isscalar(x0):
+                res = optimize.minimize_scalar(f,
+                                               method = 'Brent',
+                                               options = dict(maxiter = 10000,
+                                                              xtol = 1e-12))
+                if not res.success:
+                    raise RuntimeError('Optimizer failed to find mode.')
+                return res.x
+            else:
+                res = optimize.minimize(f, D.mean())
+                if not res.success:
+                    raise RuntimeError('Optimizer failed to find mode.')
+                return numpy.squeeze(res.x)
+
+    @classmethod
+    def from_country(cls, country):
+        parameters = Parameters(country)
+        return cls(parameters)
