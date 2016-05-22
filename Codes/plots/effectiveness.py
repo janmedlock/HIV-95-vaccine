@@ -3,6 +3,8 @@
 import os.path
 import sys
 
+from matplotlib import gridspec
+from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
@@ -15,6 +17,8 @@ import model
 
 import seaborn
 
+
+keys_ordered = ('Status Quo', '90–90–90')
 
 cp = seaborn.color_palette('colorblind')
 colors = {'Status Quo': cp[2],
@@ -36,7 +40,7 @@ def plotcell(ax, tx,
         else:
             scale = 1e3
 
-    for k in ('Status Quo', '90–90–90'):
+    for k in keys_ordered:
         v = x[k]
         avg, CI = common.getstats(v)
         ax.plot(t + 2015, avg / scale, color = colors[k], label = k,
@@ -62,10 +66,12 @@ def plotcell(ax, tx,
 
 
 def plot_selected():
-    fig, axes = pyplot.subplots(len(common.countries_to_plot), 4,
-                                figsize = (8.5, 11),
-                                sharex = True,
-                                squeeze = False)
+    fig = pyplot.figure(figsize = (8.5, 11))
+
+    # Legend in tiny bottom row
+    gs = gridspec.GridSpec(
+        len(common.countries_to_plot) + 1, 4,
+        height_ratios = ((1, ) * len(common.countries_to_plot) + (0.1, )))
 
     for (i, country) in enumerate(common.countries_to_plot):
         with model.results.Results(country) as results:
@@ -74,33 +80,50 @@ def plot_selected():
             else:
                 ylabel = country
 
-            plotcell(axes[i, 0],
+            axis = fig.add_subplot(gs[i, 0])
+            plotcell(axis,
                      results.getfield('infected'),
                      scale = 1e6,
-                     ylabel = ylabel, legend = (i == 0),
+                     ylabel = ylabel,
+                     legend = False,
                      title = ('People Living with HIV\n(M)'
                               if (i == 0) else None))
 
-            plotcell(axes[i, 1],
+            axis = fig.add_subplot(gs[i, 1])
+            plotcell(axis,
                      results.getfield('AIDS'),
                      scale = 1e3,
                      legend = False,
                      title = ('People with AIDS\n(1000s)'
                               if (i == 0) else None))
 
-            plotcell(axes[i, 2],
+            axis = fig.add_subplot(gs[i, 2])
+            plotcell(axis,
                      results.getfield('incidence_per_capita'),
                      scale = 1e-6,
                      legend = False,
                      title = ('HIV Incidence\n(per M people per y)'
                               if (i == 0) else None))
 
-            plotcell(axes[i, 3],
+            axis = fig.add_subplot(gs[i, 3])
+            plotcell(axis,
                      results.getfield('prevalence'),
                      percent = True,
                      legend = False,
                      title = ('HIV Prevelance\n'
                               if (i == 0) else None))
+
+    lines_ = [lines.Line2D([0], [0], color = colors[k])
+              for k in keys_ordered]
+    labels = keys_ordered
+    axis = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
+    axis.tick_params(labelbottom = False, labelleft = False)
+    axis.grid(False)
+    axis.legend(lines_, labels,
+                loc = 'center',
+                ncol = len(labels),
+                frameon = True,
+                fontsize = 'large')
 
     fig.tight_layout()
 
