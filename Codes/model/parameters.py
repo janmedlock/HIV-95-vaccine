@@ -17,6 +17,8 @@ def uniform(minimum, maximum):
     scale = maximum - minimum
     retval = stats.uniform(loc, scale)
     retval.mode = (minimum + maximum) / 2
+    retval.min = minimum
+    retval.max = maximum
     return retval
 
 
@@ -26,10 +28,12 @@ def triangular(mode, minimum, maximum):
     scale = maximum - minimum
     retval = stats.triang(shape, loc, scale)
     retval.mode = mode
+    retval.min = minimum
+    retval.max = maximum
     return retval
 
 
-def PERT(mode, minimum, maximum, lambda_ = 4):
+def beta(mode, minimum, maximum, lambda_ = 4):
     mu = (minimum + maximum + lambda_ * mode) / (lambda_ + 2)
     v = ((mu - minimum) * (2 * mode - minimum - maximum)
          / (mode - mu) / (maximum - minimum))
@@ -38,6 +42,8 @@ def PERT(mode, minimum, maximum, lambda_ = 4):
     scale = maximum - minimum
     retval = stats.beta(v, w, loc, scale)
     retval.mode = mode
+    retval.min = minimum
+    retval.max = maximum
     return retval
 
 
@@ -333,8 +339,8 @@ class ParameterMode(_ParameterSuper):
         super().__init__(parameters)
 
     @staticmethod
-    def mode(D):
-        if hasattr(D, 'mode'):
+    def mode(D, _force_compute = False):
+        if hasattr(D, 'mode') and not _force_compute:
             return D.mode
         else:
             def f(x):

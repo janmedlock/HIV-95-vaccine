@@ -1,4 +1,0 @@
-* Plot density of differences between baseline and 90-90-90.
-
-* Update maps using median.
-* Fix filenames for graph outputs.
