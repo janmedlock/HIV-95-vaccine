@@ -123,7 +123,7 @@ def plot_selected():
                 loc = 'center',
                 ncol = len(labels),
                 frameon = True,
-                fontsize = 'large')
+                fontsize = 'medium')
 
     fig.tight_layout()
 
