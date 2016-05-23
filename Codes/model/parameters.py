@@ -55,7 +55,7 @@ class Parameters:
     # Hollingsworth et al, 2008.
     # 2.9 month duration of acute stage.
     progression_rate_acute = triangular(12 / 2.9, 2, 9.6)
-    
+
     # From Morgan et al, 2002.
     # 9.4 years until AIDS untreated.
     progression_rate_unsuppressed = 1 / 9.4
@@ -83,9 +83,9 @@ class Parameters:
                                                           _maximum)
 
     # From Donnell et al, 2010.
-    transmission_per_coital_act_reduction_by_suppression = triangular(0.08,
-                                                                      0.002,
-                                                                      0.57)
+    transmission_per_coital_act_reduction_by_suppression = beta(0.08,
+                                                                0.002,
+                                                                0.57)
 
     # From Wawer et al, 2005.
     # 9ish per month.
