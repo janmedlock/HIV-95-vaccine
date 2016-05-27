@@ -18,6 +18,8 @@ import model
 import seaborn
 
 
+alpha = 0.5
+
 keys_ordered = ('Status Quo', '90–90–90')
 
 cp = seaborn.color_palette('colorblind')
@@ -42,7 +44,7 @@ def plotcell(ax, tx,
 
     for k in keys_ordered:
         v = x[k]
-        avg, CI = common.getstats(v)
+        avg, CI = common.getstats(v, alpha = alpha)
         ax.plot(t + 2015, avg / scale, color = colors[k], label = k,
                 zorder = 2)
         ax.fill_between(t + 2015, CI[0] / scale, CI[1] / scale,
