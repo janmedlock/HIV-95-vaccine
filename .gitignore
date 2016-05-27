@@ -12,6 +12,11 @@ __pycache__/
 /Codes/plots/**/*.png
 /Codes/plots/**/*.mp4
 /Codes/plots/**/*.csv
+/Codes/plots/.auto
+/Codes/plots/*.aux
+/Codes/plots/*.log
+/Codes/plots/*.out
+/Codes/plots/table_sub.tex
 /Documents/Latex/*.pdf
 /Documents/Latex/.auto
 /Documents/Latex/*.aux

@@ -33,6 +33,18 @@ stats
 -----
 .. automodule:: plots.stats
 
+table
+-----
+.. automodule:: plots.table
+
+table_format
+------------
+.. automodule:: plots.table_format
+
+table_incidence
+---------------
+.. automodule:: plots.table_incidence
+
 
 .. include:: mapplot.rst_
 

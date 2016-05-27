@@ -39,7 +39,8 @@ def plotcell(ax, tx,
     b = numpy.asarray(x['90–90–90'])
     d = a - b
     q, C = common.getpercentiles(d)
-    col = ax.pcolormesh(t + 2015, q / scale, C, cmap = common.cmap)
+    col = ax.pcolormesh(t + 2015, q / scale, C, cmap = common.cmap,
+                        shading = 'gouraud')
 
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     ax.grid(True, which = 'both', axis = 'both')
@@ -116,7 +117,55 @@ def plot_selected():
     fig.savefig('{}.png'.format(common.get_filebase()))
 
 
+def plot_all():
+    countries = ['Global'] + sorted(model.get_country_list())
+
+    filename = '{}_all.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        for (i, country) in enumerate(countries):
+                if country == 'United States of America':
+                    title = 'United States'
+                else:
+                    title = country
+
+                fig, axes = pyplot.subplots(4,
+                                            figsize = (11, 8.5),
+                                            sharex = True,
+                                            squeeze = True)
+
+                try:
+                    plotcell(axes[0],
+                             results.getfield('infected'),
+                             scale = 1e6,
+                             ylabel = 'People Living with HIV\n(M)',
+                             title = title)
+
+                    plotcell(axes[1],
+                             results.getfield('AIDS'),
+                             scale = 1e3,
+                             ylabel = 'People with AIDS\n(1000s)')
+
+                    plotcell(axes[2],
+                             results.getfield('incidence_per_capita'),
+                             scale = 1e-6,
+                             ylabel = 'HIV Incidence\n(per M people per y)')
+
+                    plotcell(axes[3],
+                             results.getfield('prevalence'),
+                             percent = True,
+                             ylabel = 'HIV Prevelance\n')
+                except FileNotFoundError:
+                    pass
+                else:
+                    fig.tight_layout()
+                    pdf.savefig(fig)
+                finally:
+                    pyplot.close(fig)
+                    break
+
 if __name__ == '__main__':
     plot_selected()
+
+    # plot_all()
 
     pyplot.show()

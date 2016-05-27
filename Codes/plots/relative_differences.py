@@ -33,7 +33,8 @@ def plotcell(ax, tx,
     b = numpy.asarray(x['90–90–90'])
     d = numpy.ma.divide(a - b, a)
     q, C = common.getpercentiles(d)
-    col = ax.pcolormesh(t + 2015, q / scale, C, cmap = common.cmap)
+    col = ax.pcolormesh(t + 2015, q / scale, C, cmap = common.cmap,
+                        shading = 'gouraud')
 
     ax.set_xlim(t[0] + 2015, t[-1] + 2015)
     ax.grid(True, which = 'both', axis = 'both')

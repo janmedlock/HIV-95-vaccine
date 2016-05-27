@@ -20,7 +20,3 @@ prevalence_map
 results_maps
 ~~~~~~~~~~~~
 .. automodule:: plots.point_estimates.results_maps
-
-table
-~~~~~
-.. automodule:: plots.point_estimates.table
