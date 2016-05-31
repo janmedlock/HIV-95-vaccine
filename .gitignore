@@ -8,6 +8,7 @@ __pycache__/
 /Codes/drive/credentials.json
 /Codes/plots/mapplot/_cartopy/
 /Codes/plots/mapplot/_shelve/
+/Codes/plots/Drive
 /Codes/plots/**/*.pdf
 /Codes/plots/**/*.png
 /Codes/plots/**/*.mp4
