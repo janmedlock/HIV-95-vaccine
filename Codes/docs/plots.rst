@@ -13,6 +13,10 @@ differences
 -----------
 .. automodule:: plots.differences
 
+infections_averted_map
+----------------------
+.. automodule:: plots.infections_averted_map
+
 initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map

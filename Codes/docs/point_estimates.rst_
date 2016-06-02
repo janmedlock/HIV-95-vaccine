@@ -9,10 +9,6 @@ effectiveness
 ~~~~~~~~~~~~~
 .. automodule:: plots.point_estimates.effectiveness
 
-infections_averted_map
-~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: plots.point_estimates.infections_averted_map
-
 prevalence_map
 ~~~~~~~~~~~~~~
 .. automodule:: plots.point_estimates.prevalence_map
