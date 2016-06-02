@@ -126,6 +126,40 @@ class GDPSheet(Sheet):
         return super().get_data(p, allow_missing = allow_missing)
 
 
+class IncidenceSheet(Sheet):
+    sheetname = 'Incidence'
+
+    @classmethod
+    def get_data(cls, p, allow_missing = False):
+        sheet = p._wb.parse(cls.sheetname)
+        try:
+            data = sheet[p.country_on_datasheet]
+        except KeyError:
+            if allow_missing:
+                data = itertools.repeat(numpy.nan, len(cls.parameter_names))
+            else:
+                raise
+        for n, v in zip(cls.parameter_names, data):
+            setattr(p, n, v)
+
+    @classmethod
+    def get_country_list(cls):
+        with pandas.ExcelFile(datapath) as _wb:
+            data = _wb.parse(cls.sheetname)
+            # Skip header column and drop junk rows at end.
+            data_ = data.iloc[: len(cls.parameter_names), 1 :]
+            ix = data_.notnull().all(0)
+            return convert_countries(data_.columns[ix])
+
+    @classmethod
+    def read_all(cls):
+        with pandas.ExcelFile(datapath) as data:
+            df = data.parse(cls.sheetname, index_col = 0).T
+        index = convert_countries(df.index)
+        df.index = index
+        return df
+
+
 class CountryData:
     '''
     Data from the datasheet for a country.
