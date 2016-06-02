@@ -23,8 +23,8 @@ class TestCE(unittest.TestCase):
                                       19579571706.41235))
 
     def test_DALYs(self):
-        self.assertTrue(numpy. isclose(self.simulation.DALYs,
-                                       13807040.061347544))
+        self.assertTrue(numpy.isclose(self.simulation.DALYs,
+                                      13807040.061347544))
 
     def test_QALYs(self):
         self.assertTrue(numpy.isclose(self.simulation.QALYs,
