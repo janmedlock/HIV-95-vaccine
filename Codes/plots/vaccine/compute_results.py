@@ -22,10 +22,8 @@ countries = model.get_country_list()
 
 targets = ('baseline', '909090')
 
-# vaccine_targets = (0, 0.5, 0.75)
-vaccine_targets = (0, 0.75)
-# vaccine_efficacies = (0.5, 0.75)
-vaccine_efficacies = (0.5, )
+vaccine_targets = (0, 0.5, 0.75)
+vaccine_efficacies = (0.5, 0.75)
 vaccine_times_to_start = (5, )
 # vaccine_times_to_full_implementation = (5, 2)
 vaccine_times_to_full_implementation = (2, )
