@@ -2,6 +2,7 @@
 Load data from the datafile.
 '''
 
+import collections.abc
 import itertools
 import os.path
 
@@ -51,34 +52,96 @@ def convert_countries(countries, inverse = False):
 
 class Sheet:
     @classmethod
-    def get_data(cls, p, allow_missing = False):
-        sheet = p._wb.parse(cls.sheetname)
+    def drop_junk_rows(cls, sheet):
+        '''
+        Drop junk rows at end of sheet.
+        '''
+        return sheet.iloc[: len(cls.parameter_names)].copy()
+
+    @classmethod
+    def get_index(cls, sheet):
+        return cls.parameter_names
+
+    @classmethod
+    def get_all(cls, wb = None):
+        if wb is None:
+            wb = pandas.ExcelFile(datapath)
+            should_close = True
+        else:
+            should_close = False
+        sheet_ = wb.parse(cls.sheetname, index_col = 0)
+        if should_close:
+            wb.close()
+
+        sheet = cls.drop_junk_rows(sheet_)
+        sheet.index = cls.get_index(sheet)
+        # Convert country names.
+        sheet.columns = convert_countries(sheet.columns)
+
+        if hasattr(cls, 'parse_entry'):
+            for i in sheet.index:
+                for j in sheet.columns:
+                    sheet.loc[i, j] = cls.parse_entry(sheet.loc[i, j])
+
+        return sheet
+
+    @classmethod
+    def get_data_name(cls):
+        '''
+        The class name with the ending 'Sheet' removed,
+        then lower cased, and with any inner capital letters
+        replaced by '_' followed by the lower-cased letter.
+        '''
+        # Start with the 
+        name = cls.__name__.replace('Sheet', '')
+        if len(name) > 0:
+            name = name[0].lower() + name[1 : ]
+            i = 1
+            while (i < len(name)):
+                if name[i].isupper():
+                    rep = '_' + name[i].lower() + name[i + 1 : ]
+                    name = name[ : i] + rep
+                    i += 1  # Since we added the '_'
+                i += 1
+        return name
+
+    @classmethod
+    def get_country_data(cls, country, allow_missing = False, wb = None):
+        sheet = cls.get_all(wb = wb)
         try:
-            data = sheet[p.country_on_datasheet]
+            data = sheet[country]
         except KeyError:
             if allow_missing:
-                data = itertools.repeat(numpy.nan, len(cls.parameter_names))
+                data = pandas.Series(index = cls.parameter_names)
             else:
                 raise
+        data.name = cls.get_data_name()
+        return data
+
+    @classmethod
+    def set_attrs(cls, country_data, data):
         for n, v in zip(cls.parameter_names, data):
-            setattr(p, n, v)
+            setattr(country_data, n, v)
 
     @classmethod
-    def get_country_list(cls):
-        with pandas.ExcelFile(datapath) as _wb:
-            data = _wb.parse(cls.sheetname)
-            # Skip header column and drop junk rows at end.
-            data_ = data.iloc[: len(cls.parameter_names), 1 :]
-            ix = data_.notnull().all(0)
-            return convert_countries(data_.columns[ix])
+    def get_country_data_and_set_attrs(cls, country_data, *args, **kwargs):
+        country = country_data.country
+        wb = getattr(country_data, '_wb', None)
+        data = cls.get_country_data(country, wb = wb, *args, **kwargs)
+        cls.set_attrs(country_data, data)
+
+    @staticmethod
+    def has_data(sheet):
+        '''
+        Select columns where all data is present.
+        '''
+        return sheet.notnull().all(0)
 
     @classmethod
-    def read_all(cls):
-        with pandas.ExcelFile(datapath) as data:
-            df = data.parse(cls.sheetname, index_col = 0).T
-        index = convert_countries(df.index)
-        df.index = index
-        return df
+    def get_country_list(cls, wb = None):
+        sheet = cls.get_all(wb = wb)
+        hasdata = cls.has_data(sheet)
+        return sheet.columns[hasdata]
 
 
 class ParameterSheet(Sheet):
@@ -86,24 +149,13 @@ class ParameterSheet(Sheet):
     parameter_names = ('birth_rate', 'death_rate')
 
 
-class InitialConditionSheet(Sheet):
+class InitialConditionsSheet(Sheet):
     sheetname = 'Initial Conditions'
     parameter_names = ('S', 'A', 'U', 'D', 'T', 'V')
 
     @classmethod
-    def get_data(cls, p, allow_missing = False):
-        sheet = p._wb.parse(cls.sheetname)
-        try:
-            data = sheet[p.country_on_datasheet]
-        except KeyError:
-            if allow_missing:
-                data = pandas.Series(
-                    itertools.repeat(numpy.nan,
-                                     len(cls.parameter_names)))
-            else:
-                raise
-        data.index = cls.parameter_names
-        setattr(p, 'initial_conditions', data)
+    def set_attrs(cls, country_data, data):
+        setattr(country_data, 'initial_conditions', data)
 
 
 class CostSheet(Sheet):
@@ -113,8 +165,13 @@ class CostSheet(Sheet):
                        'cost_AIDS_death')
 
     @classmethod
-    def get_data(cls, p, allow_missing = True):
-        return super().get_data(p, allow_missing = allow_missing)
+    def get_country_data(cls, country, allow_missing = True, wb = None):
+        '''
+        Changing default allow_missing to True.
+        '''
+        return super().get_country_data(country,
+                                        allow_missing = allow_missing,
+                                        wb = wb)
 
 
 class GDPSheet(Sheet):
@@ -122,42 +179,69 @@ class GDPSheet(Sheet):
     parameter_names = ('GDP_per_capita', 'GDP_PPP_per_capita')
 
     @classmethod
-    def get_data(cls, p, allow_missing = True):
-        return super().get_data(p, allow_missing = allow_missing)
+    def get_country_data(cls, country, allow_missing = True, wb = None):
+        '''
+        Changing default allow_missing to True.
+        '''
+        return super().get_country_data(country,
+                                        allow_missing = allow_missing,
+                                        wb = wb)
 
 
 class IncidenceSheet(Sheet):
     sheetname = 'Incidence'
 
+    _smallest = '<0.01'
+    _smallest_rep = str(float(_smallest.replace('<', '')) / 2)  # Halfway to 0.
     @classmethod
-    def get_data(cls, p, allow_missing = False):
-        sheet = p._wb.parse(cls.sheetname)
-        try:
-            data = sheet[p.country_on_datasheet]
-        except KeyError:
-            if allow_missing:
-                data = itertools.repeat(numpy.nan, len(cls.parameter_names))
-            else:
-                raise
-        for n, v in zip(cls.parameter_names, data):
-            setattr(p, n, v)
+    def parse_entry(cls, x):
+        if isinstance(x, str):
+            if x.startswith(cls._smallest):
+                x = x.replace(cls._smallest, cls._smallest_rep)
+
+            if '-' in x:
+                y = x.split('-')
+                x = numpy.mean(list(map(float, y)))
+
+            try:
+                return float(x)
+            except ValueError:
+                return x
+        else:
+            return x
 
     @classmethod
-    def get_country_list(cls):
-        with pandas.ExcelFile(datapath) as _wb:
-            data = _wb.parse(cls.sheetname)
-            # Skip header column and drop junk rows at end.
-            data_ = data.iloc[: len(cls.parameter_names), 1 :]
-            ix = data_.notnull().all(0)
-            return convert_countries(data_.columns[ix])
+    def drop_junk_rows(cls, sheet):
+        '''
+        Drop rows whose index is not a valid year.
+        '''
+        def isyear(x):
+            try:
+                return (1900 < x < 2100)
+            except TypeError:
+                return False
+
+        goodrows = list(map(isyear, sheet.index))
+        return sheet[goodrows].copy()
 
     @classmethod
-    def read_all(cls):
-        with pandas.ExcelFile(datapath) as data:
-            df = data.parse(cls.sheetname, index_col = 0).T
-        index = convert_countries(df.index)
-        df.index = index
-        return df
+    def get_index(cls, sheet):
+        '''
+        Keep current index values (i.e. years).
+        '''
+        return sheet.index
+
+    @staticmethod
+    def has_data(sheet):
+        '''
+        Select columns where data for at least one year is present.
+        '''
+        return sheet.notnull().any(0)
+
+    @classmethod
+    def set_attrs(cls, country_data, data):
+        data_ = data[data.notnull()]
+        setattr(country_data, 'incidence', data_)
 
 
 class CountryData:
@@ -168,11 +252,13 @@ class CountryData:
         self.country = country
         self.country_on_datasheet = convert_country(self.country,
                                                     inverse = True)
+        # Share workbook for speed.
         with pandas.ExcelFile(datapath) as self._wb:
-            ParameterSheet.get_data(self)
-            InitialConditionSheet.get_data(self)
-            CostSheet.get_data(self)
-            GDPSheet.get_data(self)
+            ParameterSheet.get_country_data_and_set_attrs(self)
+            InitialConditionsSheet.get_country_data_and_set_attrs(self)
+            IncidenceSheet.get_country_data_and_set_attrs(self)
+            CostSheet.get_country_data_and_set_attrs(self)
+            GDPSheet.get_country_data_and_set_attrs(self)
 
     def __repr__(self):
         cls = self.__class__
@@ -194,9 +280,11 @@ def get_country_list(sheet = 'Parameters'):
     elif sheet == 'Costs':
         cls = CostSheet
     elif sheet == 'Initial Conditions':
-        cls = InitialConditionSheet
+        cls = InitialConditionsSheet
     elif sheet == 'GDP':
         cls = GDPSheet
+    elif sheet == 'Incidence':
+        cls = IncidenceSheet
     else:
         raise ValueError("Unknown sheet '{}'!".format(sheet))
     return cls.get_country_list()
