@@ -123,8 +123,7 @@ class Parameters:
         else:
             return [ParameterSample(self) for i in range(nsamples)]
 
-    @classmethod
-    def mode(cls):
+    def mode(self):
         return ParameterMode(self)
 
     @classmethod
