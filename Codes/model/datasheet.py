@@ -63,6 +63,11 @@ class Sheet:
         return cls.parameter_names
 
     @classmethod
+    def get_columns(cls, sheet):
+        # Convert country names.
+        return convert_countries(sheet.columns)
+
+    @classmethod
     def get_all(cls, wb = None):
         if wb is None:
             wb = pandas.ExcelFile(datapath)
@@ -75,8 +80,7 @@ class Sheet:
 
         sheet = cls.drop_junk_rows(sheet_)
         sheet.index = cls.get_index(sheet)
-        # Convert country names.
-        sheet.columns = convert_countries(sheet.columns)
+        sheet.columns = cls.get_columns(sheet)
 
         if hasattr(cls, 'parse_entry'):
             for i in sheet.index:
@@ -155,7 +159,7 @@ class InitialConditionsSheet(Sheet):
 
     @classmethod
     def set_attrs(cls, country_data, data):
-        setattr(country_data, 'initial_conditions', data)
+        setattr(country_data, data.name, data)
 
 
 class CostSheet(Sheet):
@@ -191,13 +195,23 @@ class GDPSheet(Sheet):
 class IncidenceSheet(Sheet):
     sheetname = 'Incidence'
 
+    # The smallest incidence is reported with this string.
     _smallest = '<0.01'
-    _smallest_rep = str(float(_smallest.replace('<', '')) / 2)  # Halfway to 0.
+    # Covert to (the string representation of) an actual float
+    # that is halfway to 0.
+    # E.g. '<0.01' -> 0.005.
+    _smallest_rep = float(_smallest.replace('<', '')) / 2
+
     @classmethod
     def parse_entry(cls, x):
+        '''
+        Replace {} with {} and then map any ranges 'a - b'
+        to the mean of a and b.
+        '''.format(cls._smallest, cls._smallest_rep)
+
         if isinstance(x, str):
             if x.startswith(cls._smallest):
-                x = x.replace(cls._smallest, cls._smallest_rep)
+                x = x.replace(cls._smallest, str(cls._smallest_rep))
 
             if '-' in x:
                 y = x.split('-')
@@ -210,10 +224,31 @@ class IncidenceSheet(Sheet):
         else:
             return x
 
+    _incidence_strings = ['incidence', 'new infections', 'new cases',
+                          '# positive hiv test reports', 'new hiv cases',
+                          'new diagnoses']
+    _prevalence_strings = ['prevalence', 'reported # hiv infections']
+    @classmethod
+    def _get_datatype(cls, note):
+        if pandas.isnull(note) or (note == ''):
+            # Empty.  Assume incidence
+            return 'incidence'
+        else:
+            note_ = note.lower()
+            for v in cls._incidence_strings:
+                if v in note_:
+                    return 'incidence'
+            for v in cls._prevalence_strings:
+                if v in note_:
+                    return 'prevalence'
+            raise ValueError("Unknown data type!  note = '{}'.".format(note))
+
     @classmethod
     def drop_junk_rows(cls, sheet):
         '''
-        Drop rows whose index is not a valid year.
+        Drop rows whose index is not a valid year,
+        but parse the notes to detemine which columns
+        have prevalence instead of incidence.
         '''
         def isyear(x):
             try:
@@ -221,8 +256,20 @@ class IncidenceSheet(Sheet):
             except TypeError:
                 return False
 
-        goodrows = list(map(isyear, sheet.index))
-        return sheet[goodrows].copy()
+        goodrows = numpy.array(list(map(isyear, sheet.index)))
+        sheet_ = sheet[goodrows].copy()
+
+        # Build a multi-index with (countryname, datatype),
+        # where datatype is 'incidence' or 'prevalence'
+        # Depending on what's in the notes.
+        notes = sheet.loc['NOTES']
+        tuples = []
+        for country in sheet_.columns:
+            tuples.append((country, cls._get_datatype(notes[country])))
+
+        mdx = pandas.MultiIndex.from_tuples(tuples)
+        sheet_.columns = mdx
+        return sheet_
 
     @classmethod
     def get_index(cls, sheet):
@@ -230,6 +277,17 @@ class IncidenceSheet(Sheet):
         Keep current index values (i.e. years).
         '''
         return sheet.index
+
+    @classmethod
+    def get_columns(cls, sheet):
+        '''
+        Convert country names,
+        but keep data type (incidence or prevalence).
+        '''
+        tuples = []
+        for (country, datatype) in sheet.columns.values:
+            tuples.append((convert_country(country), datatype))
+        return pandas.MultiIndex.from_tuples(tuples)
 
     @staticmethod
     def has_data(sheet):
@@ -239,9 +297,24 @@ class IncidenceSheet(Sheet):
         return sheet.notnull().any(0)
 
     @classmethod
+    def get_country_data(cls, country, allow_missing = False, wb = None):
+        '''
+        Deal with multiindex.
+        '''
+        data = super().get_country_data(country,
+                                        allow_missing = allow_missing,
+                                        wb = wb)
+
+        # Make sure we get exactly 1 column.
+        assert data.shape[1] == 1
+
+        # Return that 1 column as a Series.
+        return data.iloc[:, 0]
+
+    @classmethod
     def set_attrs(cls, country_data, data):
         data_ = data[data.notnull()]
-        setattr(country_data, 'incidence', data_)
+        setattr(country_data, data_.name, data_)
 
 
 class CountryData:
