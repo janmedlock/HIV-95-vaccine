@@ -52,7 +52,7 @@ def convert_countries(countries, inverse = False):
 
 class Sheet:
     @classmethod
-    def drop_junk_rows(cls, sheet):
+    def clean(cls, sheet):
         '''
         Drop junk rows at end of sheet.
         '''
@@ -78,15 +78,9 @@ class Sheet:
         if should_close:
             wb.close()
 
-        sheet = cls.drop_junk_rows(sheet_)
+        sheet = cls.clean(sheet_)
         sheet.index = cls.get_index(sheet)
         sheet.columns = cls.get_columns(sheet)
-
-        if hasattr(cls, 'parse_entry'):
-            for i in sheet.index:
-                for j in sheet.columns:
-                    sheet.loc[i, j] = cls.parse_entry(sheet.loc[i, j])
-
         return sheet
 
     @classmethod
@@ -205,6 +199,8 @@ class IncidenceSheet(Sheet):
     @classmethod
     def parse_entry(cls, x):
         '''
+        Divide everything by 100 because Amber used percent.
+
         Replace {} with {} and then map any ranges 'a - b'
         to the mean of a and b.
         '''.format(cls._smallest, cls._smallest_rep)
@@ -218,11 +214,13 @@ class IncidenceSheet(Sheet):
                 x = numpy.mean(list(map(float, y)))
 
             try:
-                return float(x)
+                x = float(x)
             except ValueError:
                 return x
-        else:
-            return x
+
+        # Divide every cell by 100
+        # because Amber used percent.
+        return x / 100
 
     _incidence_strings = ['incidence', 'new infections', 'new cases',
                           '# positive hiv test reports', 'new hiv cases',
@@ -244,10 +242,10 @@ class IncidenceSheet(Sheet):
             raise ValueError("Unknown data type!  note = '{}'.".format(note))
 
     @classmethod
-    def drop_junk_rows(cls, sheet):
+    def clean(cls, sheet):
         '''
         Drop rows whose index is not a valid year,
-        but parse the notes to detemine which columns
+        and parse the notes to detemine which columns
         have prevalence instead of incidence.
         '''
         def isyear(x):
@@ -259,6 +257,11 @@ class IncidenceSheet(Sheet):
         goodrows = numpy.array(list(map(isyear, sheet.index)))
         sheet_ = sheet[goodrows].copy()
 
+        # Parse each entry.
+        for i in sheet_.index:
+            for j in sheet_.columns:
+                sheet_.loc[i, j] = cls.parse_entry(sheet_.loc[i, j])
+
         # Build a multi-index with (countryname, datatype),
         # where datatype is 'incidence' or 'prevalence'
         # Depending on what's in the notes.
@@ -266,7 +269,6 @@ class IncidenceSheet(Sheet):
         tuples = []
         for country in sheet_.columns:
             tuples.append((country, cls._get_datatype(notes[country])))
-
         mdx = pandas.MultiIndex.from_tuples(tuples)
         sheet_.columns = mdx
         return sheet_
