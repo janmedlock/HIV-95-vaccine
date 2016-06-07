@@ -44,7 +44,8 @@ class Simulation(container.Container):
         self.t_end = t_end
 
         pts_per_year = 120  # = 10 per month
-        self.t = numpy.linspace(0, t_end, t_end * pts_per_year + 1)
+        self.t = numpy.linspace(0, t_end,
+                                numpy.abs(t_end) * pts_per_year + 1)
 
         if kwargs:
             self.parameters = copy.copy(self.parameters)
