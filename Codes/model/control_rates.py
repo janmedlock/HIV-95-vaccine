@@ -6,7 +6,6 @@ import numpy
 
 from . import container
 from . import proportions
-from . import targets
 
 
 class ControlRatesMax:
