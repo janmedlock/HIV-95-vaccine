@@ -4,6 +4,7 @@ ODEs representing the HIV model.
 
 import numpy
 
+from . import simulation
 
 def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
@@ -96,8 +97,7 @@ def ODEs_log(t, state_log, targets_, parameters):
     # W is AIDS.
     # Z is dead from AIDS.
     # R is new infectons.
-    state = numpy.hstack((numpy.exp(state_log[ : -2]),
-                          state_log[-2 : ]))
+    state = simulation.transform_inv(state_log)
     S, Q, A, U, D, T, V, W, Z, R = state
     (S_log, Q_log, A_log, U_log, D_log,
      T_log, V_log, W_log) = state_log[ : -2]

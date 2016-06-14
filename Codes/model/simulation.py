@@ -10,11 +10,32 @@ from . import container
 from . import cost
 from . import effectiveness
 from . import net_benefit
-from . import ODEs
 from . import parameters
 from . import plot
 from . import proportions
 from . import targets
+
+
+def transform(state):
+    '''
+    Log transform all the state variables except the last two,
+    cumulative dead and cumulative new infections.  These last two
+    can be negative if time goes backwards.
+    '''
+    state_trans = numpy.ma.hstack((numpy.ma.log(state[..., : -2]),
+                                   state[..., -2 : ]))
+    return state_trans
+
+
+def transform_inv(state_trans):
+    '''
+    Inverse log transform all the state variables except the last two,
+    cumulative dead and cumulative new infections.  These last two
+    can be negative if time goes backwards.
+    '''
+    state = numpy.hstack((numpy.exp(state_trans[..., : -2]),
+                          state_trans[..., -2 : ]))
+    return state
 
 
 class Simulation(container.Container):
@@ -46,6 +67,8 @@ class Simulation(container.Container):
                  pts_per_year = 120, # = 10 per month
                  integrator = 'lsoda',
                  **kwargs):
+        from . import ODEs
+
         self.parameters = parameters_
 
         self.country = self.parameters.country
@@ -65,10 +88,9 @@ class Simulation(container.Container):
         self._use_log = _use_log
 
         if self._use_log:
-            # Take log, but map 0 to e^-20.
-            Y0 = numpy.ma.log(self.parameters.initial_conditions).filled(-20)
-            # Last two variables are not log transformed.
-            Y0[-2 : ] = self.parameters.initial_conditions[-2 : ]
+            Y0 = transform(self.parameters.initial_conditions).copy()
+            # Map 0 to e^-20.
+            Y0 = Y0.filled(-20)
             fcn = ODEs.ODEs_log
         else:
             Y0 = self.parameters.initial_conditions.copy()
@@ -99,8 +121,7 @@ class Simulation(container.Container):
                 # assert solver.successful()
 
         if self._use_log:
-            self.state = numpy.hstack((numpy.exp(Y[:, : -2]),
-                                       Y[:, -2 : ]))
+            self.state = transform_inv(Y)
         else:
             self.state = Y
 

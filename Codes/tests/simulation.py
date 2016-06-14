@@ -24,6 +24,8 @@ def _main():
 
     simulation.plot()
 
+    return simulation
+
 
 if __name__ == '__main__':
-    _main()
+    s = _main()
