@@ -10,7 +10,7 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-def ODEs(t, state, targets_, parameters):
+def ODEs(t, state, targets_, parameters, direction = 1):
     # Force the state variables to be non-negative.
     # The last two state variables, dead from AIDS and new infections,
     # are cumulative numbers that are set to 0 at t = 0: these
@@ -86,7 +86,7 @@ def ODEs(t, state, targets_, parameters):
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def ODEs_log(t, state_log, targets_, parameters):
+def ODEs_log(t, state_log, targets_, parameters, direction = 1):
     # S is susceptible.
     # Q is vaccinated.
     # A is acute infection.
@@ -173,10 +173,11 @@ def ODEs_log(t, state_log, targets_, parameters):
     dstate = numpy.array([dS_log, dQ_log, dA_log, dU_log, dD_log,
                           dT_log, dV_log, dW_log, dZ, dR])
 
-    # If one of the log variables is very small
-    # and has a negative derivative,
-    # set the derivative to 0.
-    dstate[ : -2] = numpy.where((state_log <= -20) & (dstate < 0),
-                                0, dstate)[ : -2]
+    if direction == -1:
+        # If one of the log variables is very small
+        # and has a negative derivative,
+        # set the derivative to 0.
+        dstate[ : -2] = numpy.where((state_log <= -20) & (dstate > 0),
+                                    0, dstate)[ : -2]
 
     return dstate
