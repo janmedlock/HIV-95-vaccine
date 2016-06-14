@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 '''
 Test :mod:`model.global_`.
-'''
 
+This requires data from the simulation runs in the directory './results'.
+'''
 
 import sys
 import warnings
