@@ -269,7 +269,7 @@ class _ParameterSuper:
         ics['W'] = newAIDS
         ics['D'] -= newAIDS
 
-        # Now convert to numpy object for speed.
+        # Convert to numpy object for speed.
         self.initial_conditions = ics.values
 
     @property

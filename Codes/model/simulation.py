@@ -75,9 +75,6 @@ class Simulation(container.Container):
 
         self.t_end = t_end
 
-        self.t = numpy.linspace(0, t_end,
-                                numpy.abs(t_end) * pts_per_year + 1)
-
         if kwargs:
             self.parameters = copy.copy(self.parameters)
             for (k, v) in kwargs.items():
@@ -87,9 +84,12 @@ class Simulation(container.Container):
 
         self._use_log = _use_log
 
+        t = numpy.linspace(0, t_end,
+                           numpy.abs(t_end) * pts_per_year + 1)
+
         if self._use_log:
             Y0 = transform(self.parameters.initial_conditions).copy()
-            # Map 0 to e^-20.
+            # Map 0 to exp(-20).
             Y0 = Y0.filled(-20)
             fcn = ODEs.ODEs_log
         else:
@@ -101,7 +101,7 @@ class Simulation(container.Container):
                 return fcn(t, Y, targets_, parameters)
             Y = integrate.odeint(fcn_swap_Yt,
                                  Y0,
-                                 self.t,
+                                 t,
                                  args = (self.targets,
                                          self.parameters),
                                  mxstep = 2000)
@@ -110,20 +110,38 @@ class Simulation(container.Container):
             solver.set_integrator(integrator, nsteps = 2000)
             solver.set_f_params(self.targets, self.parameters)
             solver.set_initial_value(Y0, 0)
-            Y = numpy.empty((len(self.t), len(Y0)))
+            Y = numpy.empty((len(t), len(Y0)))
             Y[0] = Y0
-            for i in range(1, len(self.t)):
-                Y[i] = solver.integrate(self.t[i])
+            for i in range(1, len(t)):
+                Y[i] = solver.integrate(t[i])
                 if not _use_log:
                     # Force to be non-negative.
-                    Y[i][ : -2] = Y[i][ : -2].clip(0, numpy.inf)
-                    solver.set_initial_value(Y[i], self.t[i])
-                # assert solver.successful()
+                    Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
+                    solver.set_initial_value(Y.iloc[i], t[i])
+                try:
+                    assert solver.successful()
+                except AssertionError:
+                    dY = fcn(t[i - 1], Y[i - 1],
+                             self.targets, self.parameters)
+                    print('t = {}'.format(t[i - 1]))
+                    import pandas
+                    if _use_log:
+                        idx = ['S_log', 'Q_log', 'A_log', 'U_log', 'D_log',
+                               'T_log', 'V_log', 'W_log', 'Z', 'R']
+                    else:
+                        idx = ['S', 'Q', 'A', 'U', 'D',
+                               'T', 'V', 'W', 'Z', 'R']
+                    print('Y = {}'.format(pandas.Series(Y[i - 1],
+                                                        index = idx)))
+                    print('dY = {}'.format(pandas.Series(dY,
+                                                         index = idx)))
+                    raise
 
         if self._use_log:
             self.state = transform_inv(Y)
         else:
             self.state = Y
+        self.t = t
 
         for (k, v) in zip(self.keys(), ODEs.split_state(self.state)):
             setattr(self, k, v)

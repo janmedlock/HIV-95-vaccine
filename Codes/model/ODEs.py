@@ -167,5 +167,16 @@ def ODEs_log(t, state_log, targets_, parameters):
 
     dR = force_of_infection * S
 
-    return [dS_log, dQ_log, dA_log, dU_log, dD_log,
-            dT_log, dV_log, dW_log, dZ, dR]
+    # return [dS_log, dQ_log, dA_log, dU_log, dD_log,
+    #         dT_log, dV_log, dW_log, dZ, dR]
+
+    dstate = numpy.array([dS_log, dQ_log, dA_log, dU_log, dD_log,
+                          dT_log, dV_log, dW_log, dZ, dR])
+
+    # If one of the log variables is very small
+    # and has a negative derivative,
+    # set the derivative to 0.
+    dstate[ : -2] = numpy.where((state_log <= -20) & (dstate < 0),
+                                0, dstate)[ : -2]
+
+    return dstate

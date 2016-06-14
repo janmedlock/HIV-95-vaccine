@@ -21,13 +21,14 @@ import seaborn
 sys.path.append('..')
 import model
 
-def _main():
+
+if __name__ == '__main__':
     p = model.Parameters('South Africa').mode()
 
     s = model.Simulation(p, 'baseline',
                          t_end = -25,
                          run_baseline = False,
-                         _use_log = False,
+                         _use_log = True,
                          integrator = 'dop853')
     s.incidence = numpy.diff(s.new_infections) / numpy.diff(s.t)
     s.incidence_per_capita = s.incidence / s.alive[...,  : -1]
@@ -39,9 +40,3 @@ def _main():
     ax.set_ylim(0, max(p.incidence) * 1.5)
 
     pyplot.show()
-
-    return s
-
-
-if __name__ == '__main__':
-    s = _main()
