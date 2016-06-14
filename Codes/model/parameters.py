@@ -329,8 +329,9 @@ class ParameterMode(_ParameterSuper):
             if not k.startswith('_'):
                 a = getattr(parameters, k)
                 if not callable(a):
-                    if isinstance(a, (stats._distn_infrastructure.rv_generic,
-                                      stats._distn_infrastructure.rv_frozen)):
+                    if isinstance(a, (stats.distributions.rv_continuous,
+                                      stats.distributions.rv_discrete,
+                                      stats.distributions.rv_frozen)):
                         setattr(self, k, self.mode(a))
                     else:
                         setattr(self, k, a)
