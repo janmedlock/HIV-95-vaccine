@@ -20,6 +20,11 @@ from . import targets
 class Simulation(container.Container):
     '''
     A class to hold the simulation information.
+
+    `integrator` is a
+    :class:`scipy.integrate.ode` integrator---``'lsoda'``,
+    ``'vode'``, ``'dopri5'``, ``'dop853'``---or
+    ``'odeint'`` to use :func:`scipy.integrate.odeint`.
     '''
 
     _keys = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
@@ -39,6 +44,7 @@ class Simulation(container.Container):
                  run_baseline = True,
                  _use_log = False,
                  pts_per_year = 120, # = 10 per month
+                 integrator = 'lsoda',
                  **kwargs):
         self.parameters = parameters_
 
@@ -68,28 +74,29 @@ class Simulation(container.Container):
             Y0 = self.parameters.initial_conditions.copy()
             fcn = ODEs.ODEs
 
-        # Y = integrate.odeint(fcn,
-        #                      Y0,
-        #                      self.t,
-        #                      args = (self.targets,
-        #                              self.parameters),
-        #                      mxstep = 2000)
-        def fcn_swap_tY(t, Y, targets_, parameters):
-            return fcn(Y, t, targets_, parameters)
-        r = integrate.ode(fcn_swap_tY)
-        r.set_integrator('dop853')
-        r.set_f_params(self.targets, self.parameters)
-        r.set_initial_value(Y0, 0)
-        Y = numpy.empty((len(self.t), len(Y0)))
-        Y[0] = Y0
-        for (i, t_i) in enumerate(self.t[1 : ]):
-            y_i = r.integrate(t_i)
-            if not _use_log:
-                # Force to be non-negative.
-                y_i[ : -2] = y_i[ : -2].clip(0, numpy.inf)
-                r.set_initial_value(y_i, t_i)
-            Y[i] = y_i
-            # assert r.successful()
+        if integrator == 'odeint':
+            def fcn_swap_Yt(Y, t, targets_, parameters):
+                return fcn(t, Y, targets_, parameters)
+            Y = integrate.odeint(fcn_swap_Yt,
+                                 Y0,
+                                 self.t,
+                                 args = (self.targets,
+                                         self.parameters),
+                                 mxstep = 2000)
+        else:
+            solver = integrate.ode(fcn)
+            solver.set_integrator(integrator)
+            solver.set_f_params(self.targets, self.parameters)
+            solver.set_initial_value(Y0, 0)
+            Y = numpy.empty((len(self.t), len(Y0)))
+            Y[0] = Y0
+            for (i, t_i) in enumerate(self.t[1 : ]):
+                Y[i] = solver.integrate(t_i)
+                if not _use_log:
+                    # Force to be non-negative.
+                    Y[i][ : -2] = Y[i][ : -2].clip(0, numpy.inf)
+                    solver.set_initial_value(Y[i], t_i)
+                # assert solver.successful()
 
         if self._use_log:
             self.state = numpy.hstack((numpy.exp(Y[:, : -2]),

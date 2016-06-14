@@ -139,7 +139,7 @@ class Sheet:
     def get_country_list(cls, wb = None):
         sheet = cls.get_all(wb = wb)
         hasdata = cls.has_data(sheet)
-        return sheet.columns[hasdata]
+        return list(sheet.columns[hasdata])
 
 
 class ParameterSheet(Sheet):
