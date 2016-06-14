@@ -4,48 +4,37 @@ Tests.
 
 import unittest
 
-import numpy
-
-from . import datasheet
-from . import simulation
+# Import tests from other modules.
+# These get automatically run without any further code.
 from .cost import TestRelativeCostOfEffort
 from .effectiveness import TestDALYsQALYs
 
 
 class TestCE(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        country = 'Nigeria'
-        cls.simulation = simulation.Simulation(country, '909090')
+    '''
+    Tests of statsistics from a run of the simulation with
+    precomputed values.
+    '''
+    country = 'Nigeria'
+    # Precomputed values.
+    stats = dict(cost = 44373373515.342896,
+                 DALYs = 25118516.824676983,
+                 QALYs = 2201334748.7090836,
+                 incremental_cost = 32324197633.36628,
+                 incremental_DALYs = 23269279.560440436,
+                 incremental_QALYs = 27464382.193239689,
+                 ICER_DALYs = 0.43365824620362664,
+                 ICER_QALYs = 0.36741823987165301)
 
-    def test_cost(self):
-        self.assertTrue(numpy.isclose(self.simulation.cost,
-                                      19579571706.41235))
-
-    def test_DALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.DALYs,
-                                      13807040.061347544))
-
-    def test_QALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.QALYs,
-                                      1542178864.3872309))
-
-    def test_incremental_cost(self):
-        self.assertTrue(numpy.isclose(self.simulation.incremental_cost,
-                                      14362126332.038065))
-        
-    def test_incremental_DALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.incremental_DALYs,
-                                      4564739.0117855407))
-
-    def test_incremental_QALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.incremental_QALYs,
-                                      5248944.484855175))
-
-    def test_ICER_DALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.ICER_DALYs,
-                                      0.98221278690875868))
-
-    def test_ICER_QALYs(self):
-        self.assertTrue(numpy.isclose(self.simulation.ICER_QALYs,
-                                      0.85418030981532012))
+    def test_stats(self):
+        import numpy
+        from .parameters import Parameters
+        from .simulation import Simulation
+        parameters = Parameters(self.country).mode()
+        simulation = Simulation(parameters, '909090')
+        for (i, kv) in enumerate(self.stats.items()):
+            k, v = kv
+            with self.subTest(i = i):
+                actual = getattr(simulation, k)
+                msg = '{}: Expected {}.  Got {}.'.format(k, v, actual)
+                self.assertTrue(numpy.isclose(actual, v), msg)

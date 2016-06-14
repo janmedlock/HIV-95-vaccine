@@ -46,9 +46,11 @@ def DALYs(simulation):
 
 class TestDALYsQALYs(unittest.TestCase):
     def test_DALYs_QALYs(self):
-        from . import simulation
+        from .parameters import Parameters
+        from .simulation import Simulation
         country = 'Nigeria'
-        simulation = simulation.Simulation(country, '909090')
+        parameters = Parameters(country).mode()
+        simulation = Simulation(parameters, '909090')
         self.assertTrue(numpy.isclose(
             integrate.simps(simulation.alive + simulation.dead, simulation.t)
             - simulation.DALYs,
