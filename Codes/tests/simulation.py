@@ -15,8 +15,10 @@ def _main():
 
     print(country)
 
+    parameters = model.Parameters(country).mode()
+
     simulation = model.Simulation(
-        country,
+        parameters,
         '909090',
         targets_kwds = dict(vaccine_target = model.Target(0.5, 5, 5)))
 

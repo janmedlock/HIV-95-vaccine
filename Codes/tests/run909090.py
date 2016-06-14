@@ -11,13 +11,12 @@ import model
 
 def _main(parallel = True):
     country = 'Nigeria'
-    parameters = model.Parameters(country)
+    parameters = model.Parameters(country).mode()
 
     results = {}
     for k in ('baseline', '909090'):
-        results[k] = model.Simulation(country, k,
-                                      run_baseline = False,
-                                      parameters_ = parameters)
+        results[k] = model.Simulation(parameters, k,
+                                      run_baseline = False)
         print('{}: {:g} DALYs'.format(k, results[k].DALYs))
 
 

@@ -13,7 +13,7 @@ def test_one(country):
     '''
     Test loading one country's data from the datasheet.
     '''
-    parameters = model.Parameters(country)
+    parameters = model.Parameters(country).mode()
 
     print(parameters)
 

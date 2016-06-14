@@ -11,7 +11,7 @@ import model
 
 def _main():
     for country in model.get_country_list():
-        p = model.Parameters(country)
+        p = model.Parameters(country).mode()
         print('{}: R_0 = {:g}'.format(country, p.R0))
 
 

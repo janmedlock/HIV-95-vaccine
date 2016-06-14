@@ -18,19 +18,17 @@ def _main():
     country = 'Nigeria'
     targets = '909090'
     
-    parameters = model.Parameters(country)
+    parameters = model.Parameters(country).mode()
 
     time0 = time.time()
-    simulation = model.Simulation(country, targets,
-                                  parameters_ = parameters,
+    simulation = model.Simulation(parameters, targets,
                                   run_baseline = False,
                                   _use_log = False)
     time1 = time.time()
     print('Non-log model took {} sec.'.format(time1 - time0))
 
     time0 = time.time()
-    simulation_log = model.Simulation(country, targets,
-                                      parameters_ = parameters,
+    simulation_log = model.Simulation(parameters, targets,
                                       run_baseline = False,
                                       _use_log = True)
     time1 = time.time()
