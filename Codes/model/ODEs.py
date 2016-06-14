@@ -10,6 +10,12 @@ def split_state(state):
 
 
 def ODEs(state, t, targets_, parameters):
+    # Force the state variables to be non-negative.
+    # The last two state variables, dead from AIDS and new infections,
+    # are cumulative numbers that are set to 0 at t = 0: these
+    # can be negative if time goes backwards.
+    state[ : -2] = state[ : - 2].clip(0, numpy.inf)
+
     # S is susceptible.
     # Q is vaccinated.
     # A is acute infection.
@@ -76,11 +82,10 @@ def ODEs(state, t, targets_, parameters):
 
     dR = force_of_infection * S
 
-    return (dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR)
+    return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
 def ODEs_log(state_log, t, targets_, parameters):
-    state = numpy.exp(state_log)
     # S is susceptible.
     # Q is vaccinated.
     # A is acute infection.
@@ -91,9 +96,11 @@ def ODEs_log(state_log, t, targets_, parameters):
     # W is AIDS.
     # Z is dead from AIDS.
     # R is new infectons.
-    S, Q, A, U, D, T, V, W, Z, R = numpy.exp(state_log)
+    state = numpy.hstack((numpy.exp(state_log[ : -2]),
+                          state_log[-2 : ]))
+    S, Q, A, U, D, T, V, W, Z, R = state
     (S_log, Q_log, A_log, U_log, D_log,
-     T_log, V_log, W_log, Z_log, R_log) = state_log
+     T_log, V_log, W_log) = state_log[ : -2]
 
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
@@ -156,9 +163,9 @@ def ODEs_log(state_log, t, targets_, parameters):
         + parameters.progression_rate_suppressed * numpy.exp(V_log - W_log)
         - parameters.death_rate_AIDS)
 
-    dZ_log = parameters.death_rate_AIDS * numpy.exp(W_log - Z_log)
+    dZ = parameters.death_rate_AIDS * W
 
-    dR_log = force_of_infection * numpy.exp(S_log - R_log)
+    dR = force_of_infection * S
 
-    return (dS_log, dQ_log, dA_log, dU_log, dD_log,
-            dT_log, dV_log, dW_log, dZ_log, dR_log)
+    return [dS_log, dQ_log, dA_log, dU_log, dD_log,
+            dT_log, dV_log, dW_log, dZ, dR]

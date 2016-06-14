@@ -32,10 +32,13 @@ class Simulation(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, parameters_, targets_, targets_kwds = {},
+    def __init__(self, parameters_, targets_,
+                 targets_kwds = {},
                  t_end = 20,
                  baseline = 'baseline',
-                 run_baseline = True, _use_log = False,
+                 run_baseline = True,
+                 _use_log = False,
+                 pts_per_year = 120, # = 10 per month
                  **kwargs):
         self.parameters = parameters_
 
@@ -43,7 +46,6 @@ class Simulation(container.Container):
 
         self.t_end = t_end
 
-        pts_per_year = 120  # = 10 per month
         self.t = numpy.linspace(0, t_end,
                                 numpy.abs(t_end) * pts_per_year + 1)
 
@@ -59,20 +61,39 @@ class Simulation(container.Container):
         if self._use_log:
             # Take log, but map 0 to e^-20.
             Y0 = numpy.ma.log(self.parameters.initial_conditions).filled(-20)
+            # Last two variables are not log transformed.
+            Y0[-2 : ] = self.parameters.initial_conditions[-2 : ]
             fcn = ODEs.ODEs_log
         else:
             Y0 = self.parameters.initial_conditions.copy()
             fcn = ODEs.ODEs
 
-        Y = integrate.odeint(fcn,
-                             Y0,
-                             self.t,
-                             args = (self.targets,
-                                     self.parameters),
-                             mxstep = 2000)
+        # Y = integrate.odeint(fcn,
+        #                      Y0,
+        #                      self.t,
+        #                      args = (self.targets,
+        #                              self.parameters),
+        #                      mxstep = 2000)
+        def fcn_swap_tY(t, Y, targets_, parameters):
+            return fcn(Y, t, targets_, parameters)
+        r = integrate.ode(fcn_swap_tY)
+        r.set_integrator('dop853')
+        r.set_f_params(self.targets, self.parameters)
+        r.set_initial_value(Y0, 0)
+        Y = numpy.empty((len(self.t), len(Y0)))
+        Y[0] = Y0
+        for (i, t_i) in enumerate(self.t[1 : ]):
+            y_i = r.integrate(t_i)
+            if not _use_log:
+                # Force to be non-negative.
+                y_i[ : -2] = y_i[ : -2].clip(0, numpy.inf)
+                r.set_initial_value(y_i, t_i)
+            Y[i] = y_i
+            # assert r.successful()
 
         if self._use_log:
-            self.state = numpy.exp(Y)
+            self.state = numpy.hstack((numpy.exp(Y[:, : -2]),
+                                       Y[:, -2 : ]))
         else:
             self.state = Y
 
