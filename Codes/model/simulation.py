@@ -90,12 +90,12 @@ class Simulation(container.Container):
             solver.set_initial_value(Y0, 0)
             Y = numpy.empty((len(self.t), len(Y0)))
             Y[0] = Y0
-            for (i, t_i) in enumerate(self.t[1 : ]):
-                Y[i] = solver.integrate(t_i)
+            for i in range(1, len(self.t)):
+                Y[i] = solver.integrate(self.t[i])
                 if not _use_log:
                     # Force to be non-negative.
                     Y[i][ : -2] = Y[i][ : -2].clip(0, numpy.inf)
-                    solver.set_initial_value(Y[i], t_i)
+                    solver.set_initial_value(Y[i], self.t[i])
                 # assert solver.successful()
 
         if self._use_log:
