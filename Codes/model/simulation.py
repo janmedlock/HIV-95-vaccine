@@ -42,7 +42,7 @@ class Simulation(container.Container):
                  t_end = 20,
                  baseline = 'baseline',
                  run_baseline = True,
-                 _use_log = False,
+                 _use_log = True,
                  pts_per_year = 120, # = 10 per month
                  integrator = 'lsoda',
                  **kwargs):
@@ -85,7 +85,7 @@ class Simulation(container.Container):
                                  mxstep = 2000)
         else:
             solver = integrate.ode(fcn)
-            solver.set_integrator(integrator)
+            solver.set_integrator(integrator, nsteps = 2000)
             solver.set_f_params(self.targets, self.parameters)
             solver.set_initial_value(Y0, 0)
             Y = numpy.empty((len(self.t), len(Y0)))
