@@ -13,10 +13,9 @@ from .. import parameters
 from .. import simulation
 
 
-def _objective_function(targets, country, CE_threshold, parameters_,
+def _objective_function(targets, parameters_, CE_threshold,
                         scale = 1):
-    sim = simulation.Simulation(country, targets,
-                                parameters_ = parameters_,
+    sim = simulation.Simulation(parameters_, targets,
                                 run_baseline = False)
     return - sim.net_benefit(CE_threshold) / scale
 
@@ -43,7 +42,7 @@ def _do_minimize(*args, **kwds):
     return res
     
 
-def maximize(country, CE_threshold,
+def maximize(parameters_, CE_threshold,
              method = 'l-bfgs-b', nruns = 8,
              debug = False, parallel = True):
     '''
@@ -54,8 +53,6 @@ def maximize(country, CE_threshold,
 
     Uses `nruns` random uniform restarts.
     '''
-    parameters_ = parameters.Parameters(country)
-
     # All variables are between 0 and 1.
     bounds = ((0, 1), ) * 3
 
@@ -63,11 +60,10 @@ def maximize(country, CE_threshold,
     # by running at the lower bounds (0, 0, 0).
     targets0 = [b[0] for b in bounds]
     scale = numpy.abs(_objective_function(targets0,
-                                          country,
-                                          CE_threshold,
-                                          parameters_))
+                                          parameters_,
+                                          CE_threshold))
 
-    args = (country, CE_threshold, parameters_, scale)
+    args = (parameters_, CE_threshold, scale)
 
     options = dict(disp = debug)
 
@@ -136,7 +132,6 @@ def maximize(country, CE_threshold,
 
     net_benefit = - best.fun * scale
 
-    sim = simulation.Simulation(country, targets,
-                                parameters_ = parameters_)
+    sim = simulation.Simulation(parameters_, targets)
 
     return (targets, sim.incremental_net_benefit(CE_threshold))

@@ -12,13 +12,15 @@ import model
 def _main(parallel = True, debug = True, **kwargs):
     country = 'Nigeria'
 
+    parameters = model.Parameters(country).mode()
+
     # 0 is just cost.
     # inf is just DALYs.
     # Other values are multiples of per-capita GDP.
     cost_effectiveness_threshold = 1
 
     result = model.optimization.net_benefit.maximize(
-        country,
+        parameters,
         cost_effectiveness_threshold,
         parallel = parallel,
         debug = debug,
