@@ -1,4 +1,9 @@
 #!/usr/bin/python3
+'''
+Plot the effectiveness of interventions.
+
+.. todo:: Add historical incidence and prevalence to plots.
+'''
 
 import os.path
 import sys

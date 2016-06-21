@@ -109,7 +109,7 @@ class Simulation(container.Container):
             solver = integrate.ode(fcn)
             solver.set_integrator(integrator, nsteps = 2000)
             solver.set_f_params(self.targets, self.parameters)
-            solver.set_initial_value(Y0, 0)
+            solver.set_initial_value(Y0, t[0])
             Y = numpy.empty((len(t), len(Y0)))
             Y[0] = Y0
             for i in range(1, len(t)):

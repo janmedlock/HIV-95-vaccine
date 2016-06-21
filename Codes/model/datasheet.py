@@ -199,11 +199,13 @@ class IncidenceSheet(Sheet):
     @classmethod
     def parse_entry(cls, x):
         '''
-        Divide everything by 100 because Amber used percent.
+        Divide everything by 100 because data use percent.
 
-        Replace {} with {} and then map any ranges 'a - b'
+        Replace '<0.01' with '0.005' and then map any ranges 'a - b'
         to the mean of a and b.
-        '''.format(cls._smallest, cls._smallest_rep)
+
+        .. todo:: Replace smallest mechanism.
+        '''
 
         if isinstance(x, str):
             if x.startswith(cls._smallest):
