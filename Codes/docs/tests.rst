@@ -5,10 +5,6 @@ datasheet
 ---------
 .. automodule:: tests.datasheet
 
-fitincidence
-------------
-.. automodule:: tests.fitincidence
-
 global_
 -------
 .. automodule:: tests.global_
