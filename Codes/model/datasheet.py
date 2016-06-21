@@ -203,13 +203,18 @@ class IncidencePrevalenceSheet(Sheet):
         elif '*' in x:
             # Only keep first part
             return x.split('*')[0]
+        elif ('(' in x) and (')' in x):
+            # Drop parentheses and everything inside.
+            a = x.find('(')
+            b = x.find(')')
+            return (x[ : a] + x[b + 1 : ])
         else:
             return x
 
     @classmethod
     def parse_entry(cls, x):
         '''
-        First, strip any trailing *'s etc.
+        First, strip any trailing '*' etc.
 
         Next, map any ranges 'a - b' to the mean of a and b.
 
@@ -227,11 +232,10 @@ class IncidencePrevalenceSheet(Sheet):
                 x = numpy.mean(list(map(cls.parse_entry, y)))
             elif x.startswith('<'):
                 x = float(x.replace('<', '')) / 2
+            elif x.strip() == '':
+                x = numpy.nan
             else:
-                try:
-                    x = float(x)
-                except ValueError:
-                    return x
+                x = float(x)
 
         # Divide every cell by 100 because data use percent.
         return x / 100
@@ -304,6 +308,13 @@ class IncidencePrevalenceSheet(Sheet):
             tuples.append((convert_country(country), datatype))
         return pandas.MultiIndex.from_tuples(tuples)
 
+    @classmethod
+    def set_attrs(cls, country_data, data):
+        # drop years with no incidence or prevalence data
+        data_ = data[data.notnull().any(1)]
+        for (name, vals) in data_.items():
+            setattr(country_data, name, vals)
+
     @staticmethod
     def has_data(sheet):
         '''
@@ -313,11 +324,11 @@ class IncidencePrevalenceSheet(Sheet):
         return sheet.notnull().any(0).any(level = 0)
 
     @classmethod
-    def set_attrs(cls, country_data, data):
-        # drop years with no incidence or prevalence data
-        data_ = data[data.notnull().any(1)]
-        for (name, vals) in data_.items():
-            setattr(country_data, name, vals)
+    def get_country_list(cls, wb = None):
+        sheet = cls.get_all(wb = wb)
+        hasdata = cls.has_data(sheet)
+        countries = sheet.columns.levels[0]
+        return list(countries[hasdata])
 
 
 class CountryData:

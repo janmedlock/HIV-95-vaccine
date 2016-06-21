@@ -28,3 +28,7 @@ run909090
 simulation
 ----------
 .. automodule:: tests.simulation
+
+transmission_rates
+------------------
+.. automodule:: tests.transmission_rates

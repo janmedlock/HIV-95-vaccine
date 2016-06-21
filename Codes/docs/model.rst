@@ -42,14 +42,6 @@ optimization
 ------------
 .. automodule:: model.optimization
 
-effectiveness
-~~~~~~~~~~~~~
-.. automodule:: model.optimization.effectiveness
-
-net_benefit
-~~~~~~~~~~~
-.. automodule:: model.optimization.net_benefit
-
 parameters
 ----------
 .. automodule:: model.parameters
@@ -85,3 +77,7 @@ targets
 test
 ----
 .. automodule:: model.test
+
+transmission_rate
+-----------------
+.. automodule:: model.transmission_rate

@@ -10,6 +10,7 @@ from scipy import optimize
 from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
+from . import transmission_rate
 
 
 def uniform(minimum, maximum):
@@ -116,6 +117,8 @@ class Parameters:
         self.initial_conditions = self.initial_conditions.reindex(
             ('S', 'Q', 'A', 'U', 'D',
              'T', 'V', 'W', 'Z', 'R'))
+
+        self.transmission_rate = transmission_rate.estimate(self)
 
     def sample(self, nsamples = 1):
         if nsamples == 1:
