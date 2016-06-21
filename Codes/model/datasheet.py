@@ -186,93 +186,104 @@ class GDPSheet(Sheet):
                                         wb = wb)
 
 
-class IncidenceSheet(Sheet):
-    sheetname = 'Incidence'
+class IncidencePrevalenceSheet(Sheet):
+    sheetname = 'IncidencePrevalence'
 
-    # The smallest incidence is reported with this string.
-    _smallest = '<0.01'
-    # Covert to (the string representation of) an actual float
-    # that is halfway to 0.
-    # E.g. '<0.01' -> 0.005.
-    _smallest_rep = float(_smallest.replace('<', '')) / 2
+    _incidence_start_string = 'INCIDENCE (15-49)'
+    _prevalence_start_string = 'PREVALENCE (15-49)'
+
+    @staticmethod
+    def _clean_entry(x):
+        '''
+        Strip trailing *'s etc.
+        '''
+        if x.endswith('*'):
+            return x[-1]
+        # Patterns like '0.01 *0.001459'
+        elif '*' in x:
+            # Only keep first part
+            return x.split('*')[0]
+        else:
+            return x
 
     @classmethod
     def parse_entry(cls, x):
         '''
-        Divide everything by 100 because data use percent.
+        First, strip any trailing *'s etc.
 
-        Replace '<0.01' with '0.005' and then map any ranges 'a - b'
-        to the mean of a and b.
+        Next, map any ranges 'a - b' to the mean of a and b.
 
-        .. todo:: Replace smallest mechanism.
+        Next, replace '<x' with x / 2.
+
+        Finally, divide everything by 100 because data use percent.
         '''
-
         if isinstance(x, str):
-            if x.startswith(cls._smallest):
-                x = x.replace(cls._smallest, str(cls._smallest_rep))
+            x = cls._clean_entry(x)
 
             if '-' in x:
                 y = x.split('-')
-                x = numpy.mean(list(map(float, y)))
+                # Recursively call this function in case
+                # there's a '<' in one of the pieces.
+                x = numpy.mean(list(map(cls.parse_entry, y)))
+            elif x.startswith('<'):
+                x = float(x.replace('<', '')) / 2
+            else:
+                try:
+                    x = float(x)
+                except ValueError:
+                    return x
 
-            try:
-                x = float(x)
-            except ValueError:
-                return x
-
-        # Divide every cell by 100
-        # because Amber used percent.
+        # Divide every cell by 100 because data use percent.
         return x / 100
 
-    _incidence_strings = ['incidence', 'new infections', 'new cases',
-                          '# positive hiv test reports', 'new hiv cases',
-                          'new diagnoses']
-    _prevalence_strings = ['prevalence', 'reported # hiv infections']
-    @classmethod
-    def _get_datatype(cls, note):
-        if pandas.isnull(note) or (note == ''):
-            # Empty.  Assume incidence
-            return 'incidence'
-        else:
-            note_ = note.lower()
-            for v in cls._incidence_strings:
-                if v in note_:
-                    return 'incidence'
-            for v in cls._prevalence_strings:
-                if v in note_:
-                    return 'prevalence'
-            raise ValueError("Unknown data type!  note = '{}'.".format(note))
+    @staticmethod
+    def _isyear(x):
+        try:
+            return (1900 < x < 2100)
+        except TypeError:
+            return False
 
     @classmethod
     def clean(cls, sheet):
         '''
-        Drop rows whose index is not a valid year,
-        and parse the notes to detemine which columns
-        have prevalence instead of incidence.
+        Rearrange data so that (country, incidence/prevalence) are columns
+        and years are rows.
         '''
-        def isyear(x):
-            try:
-                return (1900 < x < 2100)
-            except TypeError:
-                return False
+        datatype = None
+        goodrows = {}
+        years = []
+        for (i, v) in enumerate(sheet.index):
+            if v == cls._incidence_start_string:
+                datatype = 'incidence'
+            elif v == cls._prevalence_start_string:
+                datatype = 'prevalence'
+            elif cls._isyear(v):
+                assert (datatype is not None)
+                if datatype not in goodrows:
+                    goodrows[datatype] = []
+                # Record integer location index because multiple years
+                # (the pandas.Index index) will appear twice in the same column,
+                # once for incidence and once for prevalence.
+                goodrows[datatype].append(i)
+                if v not in years:
+                    years.append(v)
 
-        goodrows = numpy.array(list(map(isyear, sheet.index)))
-        sheet_ = sheet[goodrows].copy()
-
-        # Parse each entry.
-        for i in sheet_.index:
-            for j in sheet_.columns:
-                sheet_.loc[i, j] = cls.parse_entry(sheet_.loc[i, j])
-
-        # Build a multi-index with (countryname, datatype),
-        # where datatype is 'incidence' or 'prevalence'
-        # Depending on what's in the notes.
-        notes = sheet.loc['NOTES']
-        tuples = []
-        for country in sheet_.columns:
-            tuples.append((country, cls._get_datatype(notes[country])))
-        mdx = pandas.MultiIndex.from_tuples(tuples)
-        sheet_.columns = mdx
+        countries = sheet.columns
+        datatypes = goodrows.keys()
+        mdx = pandas.MultiIndex.from_product([countries, datatypes])
+        sheet_ = pandas.DataFrame(index = years,
+                                  columns = mdx,
+                                  dtype = float)
+        for col in sheet_.columns:
+            country, datatype = col
+            # These are integer location indices, not pandas.Index indices.
+            rows = goodrows[datatype]
+            for i in rows:
+                year = sheet.index[i]
+                val = sheet[country].iloc[i]
+                if isinstance(val, str):
+                    val = val.rstrip('*')
+                sheet_.loc[year, col] = cls.parse_entry(val)
         return sheet_
 
     @classmethod
@@ -296,29 +307,17 @@ class IncidenceSheet(Sheet):
     @staticmethod
     def has_data(sheet):
         '''
-        Select columns where data for at least one year is present.
+        Select columns where data for at least one year is present
+        for both incidence and prevalence.
         '''
-        return sheet.notnull().any(0)
-
-    @classmethod
-    def get_country_data(cls, country, allow_missing = False, wb = None):
-        '''
-        Deal with multiindex.
-        '''
-        data = super().get_country_data(country,
-                                        allow_missing = allow_missing,
-                                        wb = wb)
-
-        # Make sure we get exactly 1 column.
-        assert data.shape[1] == 1
-
-        # Return that 1 column as a Series.
-        return data.iloc[:, 0]
+        return sheet.notnull().any(0).any(level = 0)
 
     @classmethod
     def set_attrs(cls, country_data, data):
-        data_ = data[data.notnull()]
-        setattr(country_data, data_.name, data_)
+        # drop years with no incidence or prevalence data
+        data_ = data[data.notnull().any(1)]
+        for (name, vals) in data_.items():
+            setattr(country_data, name, vals)
 
 
 class CountryData:
@@ -331,11 +330,9 @@ class CountryData:
                                                     inverse = True)
         # Share workbook for speed.
         with pandas.ExcelFile(datapath) as self._wb:
-            ParameterSheet.get_country_data_and_set_attrs(self)
-            InitialConditionsSheet.get_country_data_and_set_attrs(self)
-            IncidenceSheet.get_country_data_and_set_attrs(self)
-            CostSheet.get_country_data_and_set_attrs(self)
-            GDPSheet.get_country_data_and_set_attrs(self)
+            for cls in (ParameterSheet, InitialConditionsSheet,
+                        IncidencePrevalenceSheet, CostSheet, GDPSheet):
+                cls.get_country_data_and_set_attrs(self)
 
     def __repr__(self):
         cls = self.__class__
@@ -360,8 +357,8 @@ def get_country_list(sheet = 'Parameters'):
         cls = InitialConditionsSheet
     elif sheet == 'GDP':
         cls = GDPSheet
-    elif sheet == 'Incidence':
-        cls = IncidenceSheet
+    elif sheet == 'IncidencePrevalence':
+        cls = IncidencePrevalenceSheet
     else:
         raise ValueError("Unknown sheet '{}'!".format(sheet))
     return cls.get_country_list()
