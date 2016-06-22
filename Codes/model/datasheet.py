@@ -50,6 +50,13 @@ def convert_countries(countries, inverse = False):
     return [convert_country(c, inverse = inverse) for c in countries]
 
 
+def isyear(x):
+    try:
+        return (1900 < x < 2100)
+    except TypeError:
+        return False
+
+
 class Sheet:
     @classmethod
     def clean(cls, sheet):
@@ -240,13 +247,6 @@ class IncidencePrevalenceSheet(Sheet):
         # Divide every cell by 100 because data use percent.
         return x / 100
 
-    @staticmethod
-    def _isyear(x):
-        try:
-            return (1900 < x < 2100)
-        except TypeError:
-            return False
-
     @classmethod
     def clean(cls, sheet):
         '''
@@ -261,7 +261,7 @@ class IncidencePrevalenceSheet(Sheet):
                 datatype = 'incidence'
             elif v == cls._prevalence_start_string:
                 datatype = 'prevalence'
-            elif cls._isyear(v):
+            elif isyear(v):
                 assert (datatype is not None)
                 if datatype not in goodrows:
                     goodrows[datatype] = []
@@ -311,7 +311,7 @@ class IncidencePrevalenceSheet(Sheet):
     @classmethod
     def set_attrs(cls, country_data, data):
         # drop years with no incidence or prevalence data
-        data_ = data[data.notnull().any(1)]
+        data_ = data.dropna(how = 'all', axis = 0)
         for (name, vals) in data_.items():
             setattr(country_data, name, vals)
 
@@ -331,18 +331,74 @@ class IncidencePrevalenceSheet(Sheet):
         return list(countries[hasdata])
 
 
+class PopulationSheet(Sheet):
+    sheetname = 'Population (15-49)'
+
+    @classmethod
+    def clean(cls, sheet):
+        '''
+        Drop rows that don't have a year index.
+        '''
+        goodrows = [isyear(x) for x in sheet.index]
+        sheet_ = sheet.loc[goodrows].copy()
+        try:
+            return sheet_.astype(int)
+        except ValueError:
+            return sheet_
+
+    @classmethod
+    def get_index(cls, sheet):
+        '''
+        Keep current index values (i.e. years).
+        '''
+        # But convert to int.
+        return pandas.Index(sheet.index.values, dtype = int)
+
+    @classmethod
+    def set_attrs(cls, country_data, data):
+        # drop years with no incidence or prevalence data
+        data_ = data.dropna(axis = 1)
+        for (name, vals) in data_.items():
+            setattr(country_data, name, vals)
+
+    @staticmethod
+    def has_data(sheet):
+        '''
+        Select columns where data for at least one year is present
+        for both incidence and prevalence.
+        '''
+        return sheet.notnull().any(0).any(level = 0)
+
+    @classmethod
+    def set_attrs(cls, country_data, data):
+        # Drop years with no data
+        data_ = data.dropna()
+        setattr(country_data, data.name, data_)
+
+    @staticmethod
+    def has_data(sheet):
+        '''
+        Select columns where data for at least one year is present
+        for population.
+        '''
+        return sheet.notnull().any(0)
+
+
 class CountryData:
     '''
     Data from the datasheet for a country.
     '''
+    _sheets = (ParameterSheet, InitialConditionsSheet,
+               IncidencePrevalenceSheet, CostSheet, GDPSheet,
+               PopulationSheet)
+
     def __init__(self, country):
         self.country = country
         self.country_on_datasheet = convert_country(self.country,
                                                     inverse = True)
         # Share workbook for speed.
         with pandas.ExcelFile(datapath) as self._wb:
-            for cls in (ParameterSheet, InitialConditionsSheet,
-                        IncidencePrevalenceSheet, CostSheet, GDPSheet):
+            for cls in self._sheets:
                 cls.get_country_data_and_set_attrs(self)
 
     def __repr__(self):
@@ -370,6 +426,10 @@ def get_country_list(sheet = 'Parameters'):
         cls = GDPSheet
     elif sheet == 'IncidencePrevalence':
         cls = IncidencePrevalenceSheet
+    elif sheet == 'DrugCoverage':
+        cls = DrugCoverageSheet
+    elif sheet == 'Population':
+        cls = PopulationSheet
     else:
         raise ValueError("Unknown sheet '{}'!".format(sheet))
     return cls.get_country_list()

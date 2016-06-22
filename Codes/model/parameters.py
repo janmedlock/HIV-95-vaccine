@@ -284,7 +284,7 @@ class _ParameterSuper:
         ics['D'] -= newAIDS
 
         # Convert to numpy object for speed.
-        self.initial_conditions = ics.values
+        self.initial_conditions = ics.values.astype(float)
 
     @property
     def R0(self):
