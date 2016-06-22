@@ -51,10 +51,7 @@ def beta(mode, minimum, maximum, lambda_ = 4):
 class Parameters:
     r'''
     Convert parameter data in datafile into object for use in simulations.
-
-    .. todo:: Use new transmission distribution.
     '''
-
     # Hollingsworth et al, 2008.
     # 2.9 month duration of acute stage.
     progression_rate_acute = triangular(12 / 2.9, 2, 9.6)
@@ -181,22 +178,34 @@ class _ParameterSuper:
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
 
-        self.transmission_rate_acute = (
+        transmission_rate_acute_relative = (
             1 -
             (1 - self.transmission_per_coital_act_acute)
             ** self.coital_acts_per_year)
 
-        self.transmission_rate_unsuppressed = (
+        transmission_rate_unsuppressed_relative = (
             1 -
             (1 - self.transmission_per_coital_act_unsuppressed)
             ** self.coital_acts_per_year)
 
-        self.transmission_rate_suppressed = (
+        transmission_rate_suppressed_relative = (
             1 -
             (1 -
              self.transmission_per_coital_act_reduction_by_suppression
              * self.transmission_per_coital_act_unsuppressed)
             ** self.coital_acts_per_year)
+
+        # Scale all transmission rates by
+        # transmission_rate / transmission_rate_unsuppressed_relative.
+        self.transmission_rate_unsuppressed = self.transmission_rate
+        self.transmission_rate_suppressed = (
+            transmission_rate_suppressed_relative
+            * self.transmission_rate
+            / transmission_rate_unsuppressed_relative)
+        self.transmission_rate_acute = (
+            transmission_rate_acute_relative
+            * self.transmission_rate
+            / transmission_rate_unsuppressed_relative)
 
         self.vaccine_efficacy = 0.5
 
