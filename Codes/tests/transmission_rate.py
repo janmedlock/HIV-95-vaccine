@@ -8,6 +8,7 @@ import sys
 import warnings
 
 from matplotlib import pyplot
+import numpy
 import pandas
 
 # Silence warnings from matplotlib trigged by seaborn.
@@ -31,8 +32,7 @@ def test_one(country):
 
 def build_data_all():
     countries = model.get_country_list('IncidencePrevalence')
-    
-    transmission_rates = pandas.Series(index = countries)
+    transmission_rates = {}
     transmission_rates_vs_time = {}
     for country in countries:
         print('Estimating transmission rate for {}'.format(country))
@@ -51,20 +51,23 @@ def plot_all(transmission_rates, transmission_rates_vs_time):
                             'United Kingdom': 'UK',
                             'United States of America': 'USA'}
 
+    # Convert keys for later sorting.
+    transmission_rates_ = {}
+    for country in transmission_rates.keys():
+        country_ = country_replacements.get(country, country)
+        transmission_rates_[country_] = transmission_rates[country]
+
     # Add ' (N = {})' to the country name for plot labels.
     labels = []
-    for country, vals in transmission_rates_vs_time.items():
+    for country in transmission_rates_vs_time.columns:
+        country_ = country_replacements.get(country, country)
         labels.append('{} (N = {})'.format(
-            country_replacements.get(country, country),
-            len(vals.dropna())))
-
-    # Make copies since I'm messing with the indices
+            country_,
+            len(transmission_rates_vs_time[country].dropna())))
+    # Make a copy since I'm messing with the indices
     # for the plot labels.
-    transmission_rates_ = transmission_rates.copy()
     transmission_rates_vs_time_ = transmission_rates_vs_time.copy()
-    transmission_rates_.index = labels
     transmission_rates_vs_time_.columns = labels
-    transmission_rates_.sort_index(inplace = True)
     transmission_rates_vs_time_.sort_index(axis = 1, inplace = True)
 
     fig, ax = pyplot.subplots(figsize = (8.5, 11))
@@ -74,13 +77,28 @@ def plot_all(transmission_rates, transmission_rates_vs_time):
                        scale = 'count',
                        orient = 'h',
                        ax = ax)
-    ax.plot(transmission_rates_, range(len(transmission_rates_)),
-            linestyle = 'none', marker = 'o', markersize = 5,
-            markeredgewidth = 1.5, markeredgecolor = 'black',
-            markerfacecolor = 'none')
+    median = []
+    err = []
+    for k in sorted(transmission_rates_.keys()):
+        T = transmission_rates_[k]
+        m = T.median()
+        q = T.ppf([0.25, 0.75])
+        median.append(m)
+        err.append([m - q[0], q[1] - m])
+    ax.errorbar(median, range(len(median)),
+                xerr = numpy.array(err).T,
+                linestyle = 'none',
+                marker = 'o',
+                markersize = 5,
+                markeredgewidth = 1.5,
+                markeredgecolor = 'black',
+                markerfacecolor = 'none',
+                ecolor = 'black',
+                elinewidth = 1.5)
     ax.set_xlabel('Transmission rate (per year)')
     ax.set_ylabel('')
     fig.tight_layout()
+    fig.savefig('transmission_rates.pdf')
     return (fig, ax)
 
 

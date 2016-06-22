@@ -29,6 +29,6 @@ simulation
 ----------
 .. automodule:: tests.simulation
 
-transmission_rates
-------------------
-.. automodule:: tests.transmission_rates
+transmission_rate
+-----------------
+.. automodule:: tests.transmission_rate

@@ -51,6 +51,8 @@ def beta(mode, minimum, maximum, lambda_ = 4):
 class Parameters:
     r'''
     Convert parameter data in datafile into object for use in simulations.
+
+    .. todo:: Use new transmission distribution.
     '''
 
     # Hollingsworth et al, 2008.
