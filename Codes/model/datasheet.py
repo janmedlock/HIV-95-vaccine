@@ -69,8 +69,8 @@ class Sheet:
     def get_index(cls, sheet):
         return cls.parameter_names
 
-    @classmethod
-    def get_columns(cls, sheet):
+    @staticmethod
+    def get_columns(sheet):
         # Convert country names.
         return convert_countries(sheet.columns)
 
@@ -158,8 +158,8 @@ class InitialConditionsSheet(Sheet):
     sheetname = 'Initial Conditions'
     parameter_names = ('S', 'A', 'U', 'D', 'T', 'V')
 
-    @classmethod
-    def set_attrs(cls, country_data, data):
+    @staticmethod
+    def set_attrs(country_data, data):
         setattr(country_data, data.name, data)
 
 
@@ -222,16 +222,12 @@ class IncidencePrevalenceSheet(Sheet):
     def parse_entry(cls, x):
         '''
         First, strip any trailing '*' etc.
-
         Next, map any ranges 'a - b' to the mean of a and b.
-
         Next, replace '<x' with x / 2.
-
         Finally, divide everything by 100 because data use percent.
         '''
         if isinstance(x, str):
             x = cls._clean_entry(x)
-
             if '-' in x:
                 y = x.split('-')
                 # Recursively call this function in case
@@ -243,7 +239,6 @@ class IncidencePrevalenceSheet(Sheet):
                 x = numpy.nan
             else:
                 x = float(x)
-
         # Divide every cell by 100 because data use percent.
         return x / 100
 
@@ -290,26 +285,25 @@ class IncidencePrevalenceSheet(Sheet):
                 sheet_.loc[year, col] = cls.parse_entry(val)
         return sheet_
 
-    @classmethod
-    def get_index(cls, sheet):
+    @staticmethod
+    def get_index(sheet):
         '''
         Keep current index values (i.e. years).
         '''
         return sheet.index
 
-    @classmethod
-    def get_columns(cls, sheet):
+    @staticmethod
+    def get_columns(sheet):
         '''
-        Convert country names,
-        but keep data type (incidence or prevalence).
+        Convert country names and add data type (incidence or prevalence).
         '''
         tuples = []
         for (country, datatype) in sheet.columns.values:
             tuples.append((convert_country(country), datatype))
         return pandas.MultiIndex.from_tuples(tuples)
 
-    @classmethod
-    def set_attrs(cls, country_data, data):
+    @staticmethod
+    def set_attrs(country_data, data):
         # drop years with no incidence or prevalence data
         data_ = data.dropna(how = 'all', axis = 0)
         for (name, vals) in data_.items():
@@ -331,46 +325,30 @@ class IncidencePrevalenceSheet(Sheet):
         return list(countries[hasdata])
 
 
-class PopulationSheet(Sheet):
-    sheetname = 'Population (15-49)'
-
-    @classmethod
-    def clean(cls, sheet):
+class AnnualSheet(Sheet):
+    @staticmethod
+    def clean(sheet):
         '''
         Drop rows that don't have a year index.
         '''
         goodrows = [isyear(x) for x in sheet.index]
         sheet_ = sheet.loc[goodrows].copy()
+        # Convert to int.
+        sheet_.index = pandas.Index(sheet_.index.values, dtype = int)
         try:
             return sheet_.astype(int)
         except ValueError:
             return sheet_
 
-    @classmethod
-    def get_index(cls, sheet):
+    @staticmethod
+    def get_index(sheet):
         '''
         Keep current index values (i.e. years).
         '''
-        # But convert to int.
-        return pandas.Index(sheet.index.values, dtype = int)
-
-    @classmethod
-    def set_attrs(cls, country_data, data):
-        # drop years with no incidence or prevalence data
-        data_ = data.dropna(axis = 1)
-        for (name, vals) in data_.items():
-            setattr(country_data, name, vals)
+        return sheet.index
 
     @staticmethod
-    def has_data(sheet):
-        '''
-        Select columns where data for at least one year is present
-        for both incidence and prevalence.
-        '''
-        return sheet.notnull().any(0).any(level = 0)
-
-    @classmethod
-    def set_attrs(cls, country_data, data):
+    def set_attrs(country_data, data):
         # Drop years with no data
         data_ = data.dropna()
         setattr(country_data, data.name, data_)
@@ -382,6 +360,50 @@ class PopulationSheet(Sheet):
         for population.
         '''
         return sheet.notnull().any(0)
+    
+
+class PopulationSheet(AnnualSheet):
+    sheetname = 'Population (15-49)'
+
+
+class TreatedSheet(AnnualSheet):
+    sheetname = 'ARV'
+
+    @classmethod
+    def parse_entry(cls, x):
+        '''
+        Strip trailing (x)'s etc.
+        '''
+        if isinstance(x, str):
+            if ('(' in x) and (')' in x):
+                # Drop parentheses and everything inside.
+                a = x.find('(')
+                b = x.find(')')
+                x = x[ : a] + x[b + 1 : ]
+            elif ' ' in x:
+                # Keep first of two numbers 'x y'.
+                x = x.split(' ')[0]
+            x = float(x)
+        return x
+
+    @classmethod
+    def clean(cls, sheet):
+        '''
+        Drop rows that don't have a year index.
+        '''
+        goodrows = [isyear(x) for x in sheet.index]
+        sheet_ = sheet.loc[goodrows].copy()
+        # Convert to int.
+        sheet_.index = pandas.Index(sheet_.index.values, dtype = int)
+        # Header row has 'Year' in left column.
+        countries = sheet.loc['Year']
+        sheet_.columns = countries
+        # Parse each entry to clean.
+        for year in sheet_.index:
+            for country in sheet_.columns:
+                sheet_.loc[year, country] = cls.parse_entry(
+                    sheet_.loc[year, country])
+        return sheet_.astype(float)
 
 
 class CountryData:
@@ -390,7 +412,7 @@ class CountryData:
     '''
     _sheets = (ParameterSheet, InitialConditionsSheet,
                IncidencePrevalenceSheet, CostSheet, GDPSheet,
-               PopulationSheet)
+               PopulationSheet, TreatedSheet)
 
     def __init__(self, country):
         self.country = country
@@ -426,8 +448,8 @@ def get_country_list(sheet = 'Parameters'):
         cls = GDPSheet
     elif sheet == 'IncidencePrevalence':
         cls = IncidencePrevalenceSheet
-    elif sheet == 'DrugCoverage':
-        cls = DrugCoverageSheet
+    elif sheet == 'Treated':
+        cls = TreatedSheet
     elif sheet == 'Population':
         cls = PopulationSheet
     else:

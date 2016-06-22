@@ -2,6 +2,8 @@
 Parameter data.
 '''
 
+import warnings
+
 import numpy
 import pandas
 from scipy import stats
@@ -118,6 +120,21 @@ class Parameters:
              'T', 'V', 'W', 'Z', 'R'))
 
         self.transmission_rate = transmission_rate.estimate(self)
+
+        self.compute_drug_coverage()
+
+    def compute_drug_coverage(self):
+        drug_coverage = self.treated / self.prevalence / self.population
+        if any(self.treated <= 1):
+            warnings.warn(
+                'Some ARV treated data appear to be proportion treated.  '
+                'These are tricky to interpret.  '
+                'My guess may not be correct!')
+            # If 0 <= treated <= 1, use that directly as drug_coverage.
+            # Otherwise, use above definition.
+            drug_coverage = self.treated.where(self.treated <= 1,
+                                               drug_coverage)
+        self.drug_coverage = drug_coverage.dropna()
 
     def sample(self, nsamples = 1):
         if nsamples == 1:

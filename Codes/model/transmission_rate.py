@@ -9,6 +9,8 @@ from scipy import stats
 def estimate_vs_time(parameters):
     '''
     Estimate the transmission rate at each time.
+    The transmission rate at a time is simply
+    incidence / prevalence / (1 - prevalence).
     '''
     prevalence = parameters.prevalence.interpolate(method = 'index')
     incidence = parameters.incidence.interpolate(method = 'index')
