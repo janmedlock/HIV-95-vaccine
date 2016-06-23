@@ -96,7 +96,7 @@ class Parameters:
     def __init__(self, country):
         self.country = country
 
-        data = datasheet.CountryData(country)
+        data = datasheet.country_data[country]
         # Import attributes from cd into self.
         for k in dir(data):
             a = getattr(data, k)
@@ -127,9 +127,10 @@ class Parameters:
         drug_coverage = self.treated / self.prevalence / self.population
         if any(self.treated <= 1):
             warnings.warn(
-                'Some ARV treated data appear to be proportion treated.  '
-                'These are tricky to interpret.  '
-                'My guess may not be correct!')
+                "country = '{}':  ".format(self.country)
+                + 'Some ARV treated data appear to be proportion treated.  '
+                + 'These are tricky to interpret.  '
+                + 'My guess may not be correct!')
             # If 0 <= treated <= 1, use that directly as drug_coverage.
             # Otherwise, use above definition.
             drug_coverage = self.treated.where(self.treated <= 1,

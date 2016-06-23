@@ -175,7 +175,6 @@ def get_all(estimator):
     countries = model.get_country_list('IncidencePrevalence')
     transmission_rates = {}
     for country in countries:
-        print('Estimating transmission rate for {}'.format(country))
         parameters = model.Parameters(country)
         transmission_rates[country] = estimator(parameters)
 
