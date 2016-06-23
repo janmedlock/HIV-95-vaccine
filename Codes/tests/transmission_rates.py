@@ -13,11 +13,25 @@ sys.path.append('..')
 import model
 
 
-def estimate_geometric_mean(country):
-    '''
-    Estimate the transmission rate at each time using
-    incidence / prevalence / (1 - prevalence),
-    then take the geometric mean over time.
+def estimate_vs_time(country):
+    r'''
+    Estimate the transmission rate at each time.
+
+    The per-capita incidence is
+
+    .. math:: i(t) = \lambda(t) \frac{S(t)}{N(t)}
+              = \beta \frac{I(t)}{N(t)} \frac{S(t)}{N(t)},
+
+    assuming no differences in transmission between acute, unsuppressed,
+    suppressed and AIDS classes (i.e. :math:`I = A + U + D + V + W`).
+
+    If :math:`p = \frac{I}{N}` is the prevalence,
+
+    .. math:: i(t) = \beta p(t) (1 - p(t)).
+
+    Rearranging gives
+
+    .. math:: \beta(t) = \frac{i(t)}{p(t) (1 - p(t))}.
     '''
     # Read the parameters, incidence, prevalence, etc from the datasheet.
     parameters = model.Parameters(country)
@@ -28,31 +42,29 @@ def estimate_geometric_mean(country):
 
     transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
 
-    # Remove nan entries so gmean will work correctly.
+    # Remove nan entries.
     transmission_rates_vs_time.dropna(inplace = True)
+
+    return transmission_rates_vs_time
+
+
+def estimate_geometric_mean(country):
+    '''
+    Estimate the transmission rate at each time,
+    then take the geometric mean over time.
+    '''
+    transmission_rates_vs_time = estimate_vs_time(country)
 
     return stats.gmean(transmission_rates_vs_time)
 
 
 def estimate_lognormal(country):
     '''
-    Estimate the transmission rate at each time using
-    incidence / prevalence / (1 - prevalence),
+    Estimate the transmission rate at each time,
     then build a lognormal random variable using statistics
     from the result.
     '''
-    # Read the incidence, prevalence, population, etc
-    # from the datasheet.
-    parameters = model.Parameters(country)
-
-    # Interpolate in case of any missing data.
-    prevalence = parameters.prevalence.interpolate(method = 'index')
-    incidence = parameters.incidence.interpolate(method = 'index')
-
-    transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
-
-    # Remove nan entries.
-    transmission_rates_vs_time.dropna(inplace = True)
+    transmission_rates_vs_time = estimate_vs_time(country)
 
     gmean = stats.gmean(transmission_rates_vs_time)
     sigma = numpy.std(numpy.log(transmission_rates_vs_time), ddof = 1)
@@ -79,7 +91,8 @@ def estimate_least_squares(country):
               \frac{S(t)}{N(t)},
 
     assuming that acute transmission has only a small effect
-    (:math:`\beta_A A(t) \ll \beta_U (U(t) + D(t)), \beta_V V(t)`),
+    (:math:`\beta_A A(t) \ll \beta_U (U(t) + D(t))` and
+    :math:`\beta_A A(t) \ll \beta_V V(t)`),
     that there are few treated people without viral suppression
     (:math:`T(t) \approx 0`), and that the AIDS class is small
     (:math:`W(t) \approx 0`).
