@@ -416,7 +416,6 @@ class CountryData:
     '''
     Data from the datasheet for a country.
     '''
-
     def __init__(self, country):
         self.country = country
         self.country_on_datasheet = convert_country(self.country,
@@ -440,14 +439,24 @@ class CountryData:
         return retval
 
 
+def _get_valid_sheets():
+    return (s.__name__.replace('Sheet', '') for s in _sheets)
+
+
 def get_country_list(sheet = 'Parameters'):
-    try:
-        cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
-    except AttributeError:
-        raise AttributeError(
-            "I don't know how to parse '{}' sheet from DataSheet!  ".format(
-                sheet)
-            + "Valid sheets are {}.".format([s.__name__.replace('Sheet', '')
-                                             for s in _sheets]))
+    if sheet == 'all':
+        # Return countries that are in *any* sheet.
+        lists = (get_country_list(name) for name in _get_valid_sheets())
+        sets = (set(l) for l in lists)
+        union = set.union(*sets)
+        return sorted(union)
     else:
-        return cls.get_country_list()
+        try:
+            cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
+        except AttributeError:
+            raise AttributeError(
+                "I don't know how to parse '{}' sheet from DataSheet!".format(
+                    sheet)
+                + "  Valid sheets are {}.".format(_get_valid_sheets()))
+        else:
+            return cls.get_country_list()
