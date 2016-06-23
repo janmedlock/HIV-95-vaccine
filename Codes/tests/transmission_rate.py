@@ -1,115 +1,183 @@
 #!/usr/bin/python3
 '''
-Test the estimation of transmission rates using
-:mod:`model.transmission_rate`.
+Test the estimation of transmission rates.
 '''
 
 import sys
-import warnings
 
-from matplotlib import pyplot
 import numpy
 import pandas
-
-# Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
+from scipy import stats
 
 sys.path.append('..')
 import model
-from model import transmission_rate
 
 
-def test_one(country):
-    p = model.Parameters(country)
-    transmission_rate.plot(p, show = False)
+def estimate_geometric_mean(country):
+    '''
+    Estimate the transmission rate at each time using
+    incidence / prevalence / (1 - prevalence),
+    then take the geometric mean over time.
+    '''
+    # Read the parameters, incidence, prevalence, etc from the datasheet.
+    parameters = model.Parameters(country)
+
+    # Interpolate in case of any missing data.
+    prevalence = parameters.prevalence.interpolate(method = 'index')
+    incidence = parameters.incidence.interpolate(method = 'index')
+
+    transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
+
+    # Remove nan entries so gmean will work correctly.
+    transmission_rates_vs_time.dropna(inplace = True)
+
+    return stats.gmean(transmission_rates_vs_time)
 
 
-def build_data_all():
+def estimate_lognormal(country):
+    '''
+    Estimate the transmission rate at each time using
+    incidence / prevalence / (1 - prevalence),
+    then build a lognormal random variable using statistics
+    from the result.
+    '''
+    # Read the incidence, prevalence, population, etc
+    # from the datasheet.
+    parameters = model.Parameters(country)
+
+    # Interpolate in case of any missing data.
+    prevalence = parameters.prevalence.interpolate(method = 'index')
+    incidence = parameters.incidence.interpolate(method = 'index')
+
+    transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
+
+    # Remove nan entries.
+    transmission_rates_vs_time.dropna(inplace = True)
+
+    gmean = stats.gmean(transmission_rates_vs_time)
+    sigma = numpy.std(numpy.log(transmission_rates_vs_time), ddof = 1)
+
+    # Note that the median of this lognormal RV is gmean.
+    transmission_rates = stats.lognorm(sigma, scale = gmean)
+
+    # scipy RVs don't define .mode (i.e. MLE),
+    # so I explicitly add it so I can use it
+    # as the point estimate later.
+    transmission_rates.mode = gmean * numpy.exp(- sigma ** 2)
+
+    return transmission_rates
+
+
+def estimate_least_squares(country):
+    r'''
+    Estimate the transmission rates.
+
+    The per-capita incidence is
+
+    .. math:: i(t) = \lambda(t) \frac{S(t)}{N(t)}
+              = \frac{\beta_U (U(t) + D(t)) + \beta_V V(t)}{N(t)}
+              \frac{S(t)}{N(t)},
+
+    assuming that acute transmission has only a small effect
+    (:math:`\beta_A A(t) \ll \beta_U (U(t) + D(t)), \beta_V V(t)`),
+    that there are few treated people without viral suppression
+    (:math:`T(t) \approx 0`), and that the AIDS class is small
+    (:math:`W(t) \approx 0`).
+
+    If :math:`p = \frac{U + D + V}{N}` is the prevalence and
+    :math:`c = \frac{V}{U + D + V}` is the drug coverage,
+
+    .. math:: i(t) = [\beta_U (1 - c(t)) + \beta_V c(t)] p(t) (1 - p(t)).
+
+    Rearranging gives the least-squares problem
+
+    .. math:: [(1 - c(t)) \beta_U + c(t) \beta_V]
+              = \frac{i(t)}{p(t) (1 - p(t))},
+
+    or
+
+    .. math:: \mathbf{A} \mathbf{\beta} = \mathbf{b},
+
+    with
+
+    .. math:: \mathbf{A} =
+              \begin{bmatrix}
+              \vdots & \vdots \\
+              1 - c(t) & c(t) \\
+              \vdots & \vdots
+              \end{bmatrix},
+
+    .. math:: \mathbf{b} =
+              \begin{bmatrix}
+              \vdots \\
+              \frac{i(t)}{p(t) (1 - p(t))} \\
+              \vdots
+              \end{bmatrix},
+
+    and
+
+    .. math:: \mathbf{\beta} =
+              \begin{bmatrix}
+              \beta_U \\ \beta_V
+              \end{bmatrix}.
+    '''
+    # Read the parameters, incidence, prevalence, etc from the datasheet.
+    parameters = model.Parameters(country)
+
+    # Interpolate in case of any missing data.
+    prevalence = parameters.prevalence.interpolate(method = 'index')
+    incidence = parameters.incidence.interpolate(method = 'index')
+    drug_coverage = parameters.drug_coverage.interpolate(method = 'index')
+
+    # Set up A matrix and b vector.
+    A = pandas.DataFrame([1 - drug_coverage, drug_coverage],
+                         index = ('unsuppressed', 'suppressed')).T
+    b = incidence / prevalence / (1 - prevalence)
+
+    # Align them to the same years.
+    A, b = A.align(b, axis = 0)
+
+    # Drop years where there's missing data in either A or b.
+    goodrows = A.notnull().all(axis = 1) & b.notnull()
+    A = A[goodrows]
+    b = b[goodrows]
+
+    if len(A) > 0:
+        betas, _, _, _ = numpy.linalg.lstsq(A, b)
+    else:
+        # No years with all data!
+        betas = numpy.nan * numpy.ones(2)
+    return pandas.Series(betas, index = A.columns)
+
+
+def get_all(estimator):
+    '''
+    Use `estimator` to get the transmission rate for all countries.
+    '''
     countries = model.get_country_list('IncidencePrevalence')
     transmission_rates = {}
-    transmission_rates_vs_time = {}
     for country in countries:
         print('Estimating transmission rate for {}'.format(country))
-        p = model.Parameters(country)
-        transmission_rates[country] = transmission_rate.estimate(p)
-        transmission_rates_vs_time[country] \
-            = transmission_rate.estimate_vs_time(p)
-    transmission_rates_vs_time = pandas.DataFrame(transmission_rates_vs_time)
-    return (transmission_rates, transmission_rates_vs_time)
+        transmission_rates[country] = estimator(country)
 
-
-def plot_all(transmission_rates, transmission_rates_vs_time):
-    country_replacements = {'Democratic Republic of the Congo': 'DR Congo',
-                            'Republic of Congo': 'Rep of Congo',
-                            'The Bahamas': 'Bahamas',
-                            'United Kingdom': 'UK',
-                            'United States of America': 'USA'}
-
-    # Convert keys for later sorting.
-    transmission_rates_ = {}
-    for country in transmission_rates.keys():
-        country_ = country_replacements.get(country, country)
-        transmission_rates_[country_] = transmission_rates[country]
-
-    # Add ' (N = {})' to the country name for plot labels.
-    labels = []
-    for country in transmission_rates_vs_time.columns:
-        country_ = country_replacements.get(country, country)
-        labels.append('{} (N = {})'.format(
-            country_,
-            len(transmission_rates_vs_time[country].dropna())))
-    # Make a copy since I'm messing with the indices
-    # for the plot labels.
-    transmission_rates_vs_time_ = transmission_rates_vs_time.copy()
-    transmission_rates_vs_time_.columns = labels
-    transmission_rates_vs_time_.sort_index(axis = 1, inplace = True)
-
-    fig, ax = pyplot.subplots(figsize = (8.5, 11))
-    seaborn.violinplot(data = transmission_rates_vs_time_,
-                       cut = 0,
-                       inner = 'stick',
-                       scale = 'count',
-                       orient = 'h',
-                       ax = ax)
-    median = []
-    err = []
-    for k in sorted(transmission_rates_.keys()):
-        T = transmission_rates_[k]
-        m = T.median()
-        q = T.ppf([0.25, 0.75])
-        median.append(m)
-        err.append([m - q[0], q[1] - m])
-    ax.errorbar(median, range(len(median)),
-                xerr = numpy.array(err).T,
-                linestyle = 'none',
-                marker = 'o',
-                markersize = 5,
-                markeredgewidth = 1.5,
-                markeredgecolor = 'black',
-                markerfacecolor = 'none',
-                ecolor = 'black',
-                elinewidth = 1.5)
-    ax.set_xlabel('Transmission rate (per year)')
-    ax.set_ylabel('')
-    fig.tight_layout()
-    fig.savefig('transmission_rates.pdf')
-    return (fig, ax)
-
-
-def test_all():
-    transmission_rates, transmission_rates_vs_time = build_data_all()
-    (fig, ax) = plot_all(transmission_rates, transmission_rates_vs_time)
-    return (fig, ax)
+    ndim = numpy.ndim(list(transmission_rates.values()))
+    if ndim == 1:
+        return pandas.Series(transmission_rates)
+    elif ndim == 2:
+        return pandas.DataFrame(transmission_rates).T
+    else:
+        # What else to do?
+        # Maybe use pandas.Panel() if ndim == 3.
+        return transmission_rates
 
 
 if __name__ == '__main__':
-    # country = 'South Africa'
-    # test_one(country)
-    (fig, ax) = test_all()
-    pyplot.show()
+    country = 'South Africa'
+    print(country)
+    transmission_rates = estimate_geometric_mean(country)
+    # transmission_rates = estimate_lognormal(country)
+    # transmission_rates = estimate_least_squares(country)
+    print(transmission_rates)
+
+    # transmission_rates = get_all(estimate_geometric_mean)
+    # print(transmission_rates)
