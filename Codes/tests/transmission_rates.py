@@ -233,8 +233,6 @@ def plot_lognormal(parameters):
     '''
     Plot the lognormal estimate of the transmision rate.
     '''
-    prop_cycler = pyplot.rcParams['axes.prop_cycle']()
-
     plot_vs_time(parameters, legend = False)
 
     transmission_rates = estimate_lognormal(parameters)
