@@ -119,9 +119,9 @@ class Parameters:
             ('S', 'Q', 'A', 'U', 'D',
              'T', 'V', 'W', 'Z', 'R'))
 
-        self.transmission_rate = transmission_rate.estimate(self)
-
         self.compute_drug_coverage()
+
+        self.transmission_rate = transmission_rate.estimate(self)
 
     def compute_drug_coverage(self):
         drug_coverage = self.treated / self.prevalence / self.population
