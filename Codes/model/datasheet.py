@@ -5,6 +5,7 @@ Load data from the datafile.
 import collections.abc
 import itertools
 import os.path
+import sys
 
 import numpy
 import pandas
@@ -149,7 +150,7 @@ class Sheet:
         return list(sheet.columns[hasdata])
 
 
-class ParameterSheet(Sheet):
+class ParametersSheet(Sheet):
     sheetname = 'Parameters'
     parameter_names = ('birth_rate', 'death_rate')
 
@@ -406,13 +407,15 @@ class TreatedSheet(AnnualSheet):
         return sheet_.astype(float)
 
 
+_sheets = (ParametersSheet, InitialConditionsSheet,
+           IncidencePrevalenceSheet, CostSheet, GDPSheet,
+           PopulationSheet, TreatedSheet)
+
+
 class CountryData:
     '''
     Data from the datasheet for a country.
     '''
-    _sheets = (ParameterSheet, InitialConditionsSheet,
-               IncidencePrevalenceSheet, CostSheet, GDPSheet,
-               PopulationSheet, TreatedSheet)
 
     def __init__(self, country):
         self.country = country
@@ -420,7 +423,7 @@ class CountryData:
                                                     inverse = True)
         # Share workbook for speed.
         with pandas.ExcelFile(datapath) as self._wb:
-            for cls in self._sheets:
+            for cls in _sheets:
                 cls.get_country_data_and_set_attrs(self)
 
     def __repr__(self):
@@ -438,20 +441,13 @@ class CountryData:
 
 
 def get_country_list(sheet = 'Parameters'):
-    if sheet == 'Parameters':
-        cls = ParameterSheet
-    elif sheet == 'Costs':
-        cls = CostSheet
-    elif sheet == 'Initial Conditions':
-        cls = InitialConditionsSheet
-    elif sheet == 'GDP':
-        cls = GDPSheet
-    elif sheet == 'IncidencePrevalence':
-        cls = IncidencePrevalenceSheet
-    elif sheet == 'Treated':
-        cls = TreatedSheet
-    elif sheet == 'Population':
-        cls = PopulationSheet
+    try:
+        cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
+    except AttributeError:
+        raise AttributeError(
+            "I don't know how to parse '{}' sheet from DataSheet!  ".format(
+                sheet)
+            + "Valid sheets are {}.".format([s.__name__.replace('Sheet', '')
+                                             for s in _sheets]))
     else:
-        raise ValueError("Unknown sheet '{}'!".format(sheet))
-    return cls.get_country_list()
+        return cls.get_country_list()
