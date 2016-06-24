@@ -12,7 +12,6 @@ from scipy import optimize
 from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
-from . import transmission_rate
 
 
 def uniform(minimum, maximum):
@@ -121,8 +120,6 @@ class Parameters:
 
         self.compute_drug_coverage()
 
-        self.transmission_rate = transmission_rate.estimate(self)
-
     def compute_drug_coverage(self):
         drug_coverage = self.treated / self.prevalence / self.population
         if any(self.treated <= 1):
@@ -196,34 +193,22 @@ class _ParameterSuper:
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
 
-        transmission_rate_acute_relative = (
+        self.transmission_rate_acute = (
             1 -
             (1 - self.transmission_per_coital_act_acute)
             ** self.coital_acts_per_year)
 
-        transmission_rate_unsuppressed_relative = (
+        self.transmission_rate_unsuppressed = (
             1 -
             (1 - self.transmission_per_coital_act_unsuppressed)
             ** self.coital_acts_per_year)
 
-        transmission_rate_suppressed_relative = (
+        self.transmission_rate_suppressed = (
             1 -
             (1 -
              self.transmission_per_coital_act_reduction_by_suppression
              * self.transmission_per_coital_act_unsuppressed)
             ** self.coital_acts_per_year)
-
-        # Scale all transmission rates by
-        # transmission_rate / transmission_rate_unsuppressed_relative.
-        self.transmission_rate_unsuppressed = self.transmission_rate
-        self.transmission_rate_suppressed = (
-            transmission_rate_suppressed_relative
-            * self.transmission_rate
-            / transmission_rate_unsuppressed_relative)
-        self.transmission_rate_acute = (
-            transmission_rate_acute_relative
-            * self.transmission_rate
-            / transmission_rate_unsuppressed_relative)
 
         self.vaccine_efficacy = 0.5
 
