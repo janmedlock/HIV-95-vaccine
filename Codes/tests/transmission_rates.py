@@ -3,6 +3,7 @@
 Test the estimation of transmission rates.
 '''
 
+import numbers
 import sys
 import warnings
 
@@ -165,7 +166,15 @@ def estimate_least_squares(parameters):
     else:
         # No years with all data!
         betas = numpy.nan * numpy.ones(2)
-    return pandas.Series(betas, index = A.columns)
+    betas = pandas.Series(betas, index = A.columns)
+
+    if betas['suppressed'] > betas['unsuppressed']:
+        warnings.warn(
+            "country = '{}':  ".format(parameters.country)
+            + 'The transmission rate for people with viral suppression '
+            + 'is higher than for people without viral suppression!')
+
+    return betas
 
 
 def get_all(estimator):
@@ -190,72 +199,65 @@ def get_all(estimator):
         return transmission_rates
 
 
-def plot_vs_time(parameters,
-                 label = 'estimates at each time',
-                 marker = '.', markersize = 10,
-                 legend = True,
-                 *args, **kwargs):
+def plot(estimator, parameters, plot_vs_time = True):
     '''
-    Get and plot the estimates of transmission rates vs time.
+    Get and plot the estimate of the transmision rate.
     '''
-    transmission_rates_vs_time = estimate_vs_time(parameters)
-    pyplot.plot(transmission_rates_vs_time.index,
-                transmission_rates_vs_time,
-                label = label,
-                marker = marker, markersize = markersize,
-                *args,
-                **kwargs)
+    if plot_vs_time:
+        transmission_rates_vs_time = estimate_vs_time(parameters)
+        pyplot.plot(transmission_rates_vs_time.index,
+                    transmission_rates_vs_time,
+                    label = 'estimates at each time',
+                    marker = '.', markersize = 10)
+
+    transmission_rates = estimator(parameters)
+
+    estimator_name = estimator.__name__.replace('estimate_', '')
+
+    # Get next line properties (color, etc.).
+    props = next(pyplot.gca()._get_lines.prop_cycler)
+    # We're going to vary linestyle for the different transmission rate
+    # estimates, so remove linestyle from props, if it's there.
+    props.pop('linestyle', None)
+    linestyles = pyplot.cycler(
+        linestyle = ['solid', 'dashed', 'dotted', 'dashdot'])()
+    if isinstance(transmission_rates, numbers.Number):
+        linestyle = next(linestyles)
+        pyplot.axhline(transmission_rates,
+                       label = estimator_name,
+                       **props, **linestyle)
+    elif isinstance(transmission_rates, pandas.Series):
+        for (k, v) in transmission_rates.items():
+            linestyle = next(linestyles)
+            pyplot.axhline(v,
+                           label = '{} {}'.format(estimator_name, k),
+                           **props, **linestyle)
+    elif hasattr(transmission_rates, 'rvs'):
+        # We have a scipy random variable.
+
+        for level in [0, 0.5, 0.9, 0.95]:
+            if level == 0:
+                quantiles = [0.5]
+            else:
+                quantiles = [0.5 - level / 2, 0.5 + level / 2]
+            linestyle = next(linestyles)
+            level_label_set = False
+            for q in quantiles:
+                if not level_label_set:
+                    if q == 0.5:
+                        label = '{} median'.format(estimator_name)
+                    else:
+                        label = '{} inner {:g}%tile'.format(estimator_name,
+                                                            100 * level)
+                    level_label_set = True
+                else:
+                    label = None
+                pyplot.axhline(transmission_rates.ppf(q),
+                               label = label,
+                               **props, **linestyle)
 
     pyplot.ylabel('Transmission rate (per year)')
     pyplot.title(parameters.country)
-    if legend:
-        pyplot.legend(loc = 'upper right', frameon = False)
-
-
-def plot_geometric_mean(parameters):
-    '''
-    Plot the geometric-mean estimate of the transmision rate.
-    '''
-    plot_vs_time(parameters, legend = False)
-
-    transmission_rates = estimate_geometric_mean(parameters)
-    # Get next line properties (color, etc.).
-    props = next(pyplot.gca()._get_lines.prop_cycler)
-    pyplot.axhline(transmission_rates,
-                   label = 'geometric mean',
-                   **props)
-
-    pyplot.legend(loc = 'upper right', frameon = False)
-
-
-def plot_lognormal(parameters):
-    '''
-    Plot the lognormal estimate of the transmision rate.
-    '''
-    plot_vs_time(parameters, legend = False)
-
-    transmission_rates = estimate_lognormal(parameters)
-    # Get next line properties (color, etc.).
-    props = next(pyplot.gca()._get_lines.prop_cycler)
-    # We're going to vary linestyle for the different quantiles,
-    # so remove linestyle from props, if it's there.
-    props.pop('linestyle', None)
-    pyplot.axhline(transmission_rates.median(),
-                   label = 'lognormal median (= geometric mean)',
-                   **props)
-    for (i, q) in enumerate([0.25, 0.75]):
-        pyplot.axhline(
-            transmission_rates.ppf(q),
-            label = 'lognormal inner 75%tile' if i == 0 else None,
-            linestyle = 'dashed',
-            **props)
-    for (i, q) in enumerate([0.05, 0.95]):
-        pyplot.axhline(
-            transmission_rates.ppf(q),
-            label = 'lognormal inner 90%tile' if i == 0 else None,
-            linestyle = 'dotted',
-            **props)
-
     pyplot.legend(loc = 'upper right', frameon = False)
 
 
@@ -264,14 +266,17 @@ if __name__ == '__main__':
     print(country)
     # Read the incidence, prevalence, population, etc from the datasheet.
     parameters = model.Parameters(country)
-    # transmission_rates = estimate_geometric_mean(parameters)
-    # transmission_rates = estimate_lognormal(parameters)
-    # transmission_rates = estimate_least_squares(parameters)
-    # print(transmission_rates)
-    # plot_geometric_mean(parameters)
-    plot_lognormal(parameters)
 
-    # transmission_rates = get_all(estimate_geometric_mean)
+    # estimator = estimate_geometric_mean
+    # estimator = estimate_lognormal
+    estimator = estimate_least_squares
+
+    # transmission_rates = estimator(parameters)
+    # print(transmission_rates)
+
+    plot(estimator, parameters)
+
+    # transmission_rates = get_all(estimator)
     # print(transmission_rates)
 
     pyplot.show()
