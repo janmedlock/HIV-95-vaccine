@@ -237,9 +237,8 @@ def plot_tranmission_rates(estimator, country, plot_vs_time = True):
             pyplot.axhline(v,
                            label = '{} {}'.format(estimator_name, k),
                            **props, **linestyle)
-    elif hasattr(transmission_rates, 'rvs'):
-        # We have a scipy random variable.
-
+    elif hasattr(transmission_rates, 'ppf'):
+        # transmission_rates is a scipy random variable.
         for level in [0, 0.5, 0.9, 0.95]:
             if level == 0:
                 quantiles = [0.5]
@@ -260,6 +259,10 @@ def plot_tranmission_rates(estimator, country, plot_vs_time = True):
                 pyplot.axhline(transmission_rates.ppf(q),
                                label = label,
                                **props, **linestyle)
+    else:
+        raise TypeError(
+            "I don't know how to handle transmission_rates type '{}'!".format(
+                type(transmission_rates)))
 
     pyplot.ylabel('Transmission rate (per year)')
     pyplot.title(country)
