@@ -9,6 +9,7 @@ import warnings
 
 from matplotlib import pyplot
 from matplotlib import ticker
+from matplotlib.backends import backend_pdf
 import numpy
 import pandas
 from scipy import stats
@@ -120,6 +121,7 @@ class Estimator(metaclass = abc.ABCMeta):
     def plot_transmission_rates(self,
                                 ax = None,
                                 plot_vs_time = True,
+                                title = True,
                                 **kwargs):
         '''
         Plot estimates of the transmission rates and, optionally,
@@ -143,7 +145,8 @@ class Estimator(metaclass = abc.ABCMeta):
         self.plot_estimates(ax, **kwargs)
 
         ax.set_ylabel('Transmission rate (per year)')
-        ax.set_title(country)
+        if title:
+            ax.set_title(self.country)
         ax.legend(loc = 'upper right', frameon = False)
 
         return ax
@@ -192,12 +195,12 @@ class Estimator(metaclass = abc.ABCMeta):
         else:
             raise ValueError("Unknown stat '{}'".format(stat))
 
-        # Plot simulation data.
-        ax.plot(t + 2015, val / scale)
-
         # Plot historical data.
         data_ = data.dropna()
         ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
+
+        # Plot simulation data.
+        ax.plot(t + 2015, val / scale)
 
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
@@ -220,41 +223,50 @@ class Estimator(metaclass = abc.ABCMeta):
         if title is not None:
             ax.set_title(title, size = 'medium')
 
-    def plot_simulation(self, fig = None):
+    def plot(self, fig = None):
         results = self.simulate()
         if fig is None:
             fig = pyplot.gcf()
         nsubplots = 3
         axes = []
+        ax = fig.add_subplot(1, 2, 1)
+        axes.append(ax)
         for i in range(nsubplots):
-            sharex = axes[0] if i > 0 else None
-            ax = fig.add_subplot(nsubplots, 1, i + 1, sharex = sharex)
+            sharex = axes[1] if i > 0 else None
+            ax = fig.add_subplot(nsubplots, 2, 2 * i + 2, sharex = sharex)
             axes.append(ax)
         # Turn off x-axis labels on non-bottom subplots.
         if nsubplots > 1:
-            for ax in axes[ : -1]:
+            for ax in axes[1 : -1]:
                 for l in ax.get_xticklabels():
                     l.set_visible(False)
                 ax.xaxis.offsetText.set_visible(False)
 
-        self._plot_sim_cell(axes[0],
-                            results,
-                            'infected',
-                            scale = 1e6,
-                            title = self.country,
-                            ylabel = 'People Living with HIV\n(M)')
+        title = '{}: R_0 = {:.3f}'.format(self.country,
+                                          self.R0)
+        fig.text(0.5, 1, title,
+                 verticalalignment = 'top',
+                 horizontalalignment = 'center')
+
+        self.plot_transmission_rates(axes[0], title = False)
 
         self._plot_sim_cell(axes[1],
                             results,
-                            'incidence',
-                            scale = 1e-3,
-                            ylabel = 'HIV Incidence\n(per 1000 people per y)')
+                            'infected',
+                            scale = 1e6,
+                            ylabel = 'Infected\n(M)')
 
         self._plot_sim_cell(axes[2],
                             results,
                             'prevalence',
                             percent = True,
-                            ylabel = 'HIV Prevelance\n')
+                            ylabel = 'Prevelance\n')
+
+        self._plot_sim_cell(axes[3],
+                            results,
+                            'incidence',
+                            scale = 1e-3,
+                            ylabel = 'Incidence\n(per 1000 per y)')
 
         fig.tight_layout()
         return fig
@@ -478,23 +490,32 @@ class LeastSquares(Estimator):
                        **kwargs, **linestyle)
     
 
+def plot_all(estimator):
+    '''
+    Call estimator(country).plot() for each country with data
+    in the IncidencePrevalence datasheet.
+    '''
+    countries = model.get_country_list('IncidencePrevalence')
+    filename = '{}_all.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        for country in countries:
+            print(country)
+            fig = estimator(country).plot()
+            pdf.savefig(fig)
+            pyplot.close(fig)
+
+
 if __name__ == '__main__':
     estimator = GeometricMean
     # estimator = Lognormal
     # estimator = LeastSquares
 
-    ###################
-    # Do one country. #
-    ###################
-    country = 'South Africa'
-    print(country)
+    # country = 'South Africa'
+    # print(country)
+    # e = estimator(country)
+    # print('transmission rate = {}'.format(e.transmission_rates))
+    # e.plot()
 
-    e = estimator(country)
-    print('transmission rate = {}'.format(e.transmission_rates))
-    print('R0 = {}'.format(e.R0))
-    # e.plot_transmission_rates()
-    e.plot_simulation()
+    # pyplot.show()
 
-    # countries = model.get_country_list('IncidencePrevalence')
-
-    pyplot.show()
+    plot_all(estimator)
