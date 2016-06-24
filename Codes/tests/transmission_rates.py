@@ -25,7 +25,7 @@ sys.path.append('..')
 import model
 
 
-def estimate_vs_time(parameters):
+def estimate_vs_time(country):
     r'''
     Estimate the transmission rate at each time.
 
@@ -45,6 +45,9 @@ def estimate_vs_time(parameters):
 
     .. math:: \beta(t) = \frac{i(t)}{p(t) (1 - p(t))}.
     '''
+    # Read the incidence, prevalence, population, etc from the datasheet.
+    parameters = model.Parameters(country)
+
     # Interpolate in case of any missing data.
     prevalence = parameters.prevalence.interpolate(method = 'index')
     incidence = parameters.incidence.interpolate(method = 'index')
@@ -57,23 +60,23 @@ def estimate_vs_time(parameters):
     return transmission_rates_vs_time
 
 
-def estimate_geometric_mean(parameters):
+def estimate_geometric_mean(country):
     '''
     Estimate the transmission rate at each time,
     then take the geometric mean over time.
     '''
-    transmission_rates_vs_time = estimate_vs_time(parameters)
+    transmission_rates_vs_time = estimate_vs_time(country)
 
     return stats.gmean(transmission_rates_vs_time)
 
 
-def estimate_lognormal(parameters):
+def estimate_lognormal(country):
     '''
     Estimate the transmission rate at each time,
     then build a lognormal random variable using statistics
     from the result.
     '''
-    transmission_rates_vs_time = estimate_vs_time(parameters)
+    transmission_rates_vs_time = estimate_vs_time(country)
 
     gmean = stats.gmean(transmission_rates_vs_time)
     sigma = numpy.std(numpy.log(transmission_rates_vs_time), ddof = 1)
@@ -89,7 +92,7 @@ def estimate_lognormal(parameters):
     return transmission_rates
 
 
-def estimate_least_squares(parameters):
+def estimate_least_squares(country):
     r'''
     Estimate the transmission rates.
 
@@ -143,6 +146,9 @@ def estimate_least_squares(parameters):
               \beta_U \\ \beta_V
               \end{bmatrix}.
     '''
+    # Read the incidence, prevalence, population, etc from the datasheet.
+    parameters = model.Parameters(country)
+
     # Interpolate in case of any missing data.
     prevalence = parameters.prevalence.interpolate(method = 'index')
     incidence = parameters.incidence.interpolate(method = 'index')
@@ -170,7 +176,7 @@ def estimate_least_squares(parameters):
 
     if betas['suppressed'] > betas['unsuppressed']:
         warnings.warn(
-            "country = '{}':  ".format(parameters.country)
+            "country = '{}':  ".format(country)
             + 'The transmission rate for people with viral suppression '
             + 'is higher than for people without viral suppression!')
 
@@ -181,11 +187,10 @@ def get_all(estimator):
     '''
     Use `estimator` to get the transmission rate for all countries.
     '''
+    # Get the estimates for each country.
     countries = model.get_country_list('IncidencePrevalence')
-    transmission_rates = {}
-    for country in countries:
-        parameters = model.Parameters(country)
-        transmission_rates[country] = estimator(parameters)
+    transmission_rates = {country: estimator(country)
+                          for country in countries}
 
     # Put the data in the right kind of pandas data structure.
     ndim = numpy.ndim(list(transmission_rates.values()))
@@ -199,18 +204,18 @@ def get_all(estimator):
         return transmission_rates
 
 
-def plot(estimator, parameters, plot_vs_time = True):
+def plot_tranmission_rates(estimator, country, plot_vs_time = True):
     '''
     Get and plot the estimate of the transmision rate.
     '''
     if plot_vs_time:
-        transmission_rates_vs_time = estimate_vs_time(parameters)
+        transmission_rates_vs_time = estimate_vs_time(country)
         pyplot.plot(transmission_rates_vs_time.index,
                     transmission_rates_vs_time,
                     label = 'estimates at each time',
                     marker = '.', markersize = 10)
 
-    transmission_rates = estimator(parameters)
+    transmission_rates = estimator(country)
 
     estimator_name = estimator.__name__.replace('estimate_', '')
 
@@ -257,25 +262,29 @@ def plot(estimator, parameters, plot_vs_time = True):
                                **props, **linestyle)
 
     pyplot.ylabel('Transmission rate (per year)')
-    pyplot.title(parameters.country)
+    pyplot.title(country)
     pyplot.legend(loc = 'upper right', frameon = False)
 
 
 if __name__ == '__main__':
-    country = 'South Africa'
-    print(country)
-    # Read the incidence, prevalence, population, etc from the datasheet.
-    parameters = model.Parameters(country)
-
     # estimator = estimate_geometric_mean
     # estimator = estimate_lognormal
     estimator = estimate_least_squares
 
-    # transmission_rates = estimator(parameters)
+    ###################
+    # Do one country. #
+    ###################
+    country = 'South Africa'
+    print(country)
+
+    # transmission_rates = estimator(country)
     # print(transmission_rates)
 
-    plot(estimator, parameters)
+    plot_tranmission_rates(estimator, country)
 
+    #####################
+    # Do all countries. #
+    #####################
     # transmission_rates = get_all(estimator)
     # print(transmission_rates)
 
