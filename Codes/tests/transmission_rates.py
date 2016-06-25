@@ -168,31 +168,48 @@ class Estimator(metaclass = abc.ABCMeta):
                 **kwargs)
         return ax
 
-    def _plot_sim_cell(self, ax, results, stat,
-                       plot_data = True,
-                       scale = 1, percent = False,
-                       xlabel = None, ylabel = None, title = None):
-        if percent:
-            scale = 1 / 100
-
-        t = results.t
+    def _plot_sim_cell(self, ax, results, stat, plot_data = True):
+        '''
+        Plot one axes of simulation and historical data figure.
+        '''
+        percent = False
         if stat == 'infected':
-            val = results.infected
+            scale = 1e6
+            ylabel = 'Infected\n(M)'
             data = self.parameters.prevalence * self.parameters.population
+            t = results.t
+            val = results.infected
         elif stat == 'prevalence':
-            val = results.prevalence
+            percent = True
+            ylabel = 'Prevelance\n'
             data = self.parameters.prevalence
+            t = results.t
+            val = results.prevalence
         elif stat == 'incidence':
+            scale = 1e-3
+            ylabel = 'Incidence\n(per 1000 per y)'
+            data = self.parameters.incidence
             # Compute from simulation results.
+            t = results.t
             ni = numpy.asarray(results.new_infections)
             n = numpy.asarray(results.alive)
             val = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
             # Need to drop one t value since we have differences above.
             t = t[1 : ]
-            # Get from historical data.
-            data = self.parameters.incidence
+        elif stat == 'drug_coverage':
+            percent = True
+            ylabel = 'Drug\ncoverage'
+            data = self.parameters.drug_coverage
+            t = results.t
+            on_drugs = numpy.asarray(results.treated
+                                     + results.viral_suppression)
+            infected = numpy.asarray(results.infected)
+            val = on_drugs / infected
         else:
             raise ValueError("Unknown stat '{}'".format(stat))
+
+        if percent:
+            scale = 1 / 100
 
         # Plot historical data.
         data_ = data.dropna()
@@ -217,59 +234,58 @@ class Estimator(metaclass = abc.ABCMeta):
         ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
         if percent:
             ax.yaxis.set_major_formatter(common.PercentFormatter())
-        if xlabel is not None:
-            ax.set_xlabel(xlabel)
-        if ylabel is not None:
-            ax.set_ylabel(ylabel, size = 'medium')
-        if title is not None:
-            ax.set_title(title, size = 'medium')
+        ax.set_ylabel(ylabel, size = 'medium')
 
     def plot(self, fig = None, plot_data = True):
+        '''
+        Plot transmission rate estimates and compare simulation
+        with historical data.
+        '''
         results = self.simulate()
+
         if fig is None:
             fig = pyplot.gcf()
-        nsubplots = 3
+        # Layout is 2 columns,
+        # 1 big axes in the left column
+        # for plotting transmission rates,
+        # and nsubplots axes in the right column for plotting
+        # simulation vs historical data.
+        nsubplots = 4
         axes = []
         ax = fig.add_subplot(1, 2, 1)
         axes.append(ax)
         for i in range(nsubplots):
+            # Use the first axes in this column to share x-axis
+            # range, labels, etc.
             sharex = axes[1] if i > 0 else None
             ax = fig.add_subplot(nsubplots, 2, 2 * i + 2, sharex = sharex)
             axes.append(ax)
         # Turn off x-axis labels on non-bottom subplots.
         if nsubplots > 1:
-            for ax in axes[1 : -1]:
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
+            for ax in axes:
+                if not ax.is_last_row():
+                    for l in ax.get_xticklabels():
+                        l.set_visible(False)
+                    ax.xaxis.offsetText.set_visible(False)
 
+        # Set title
         fig.text(0.5, 1, self.country,
                  verticalalignment = 'top',
                  horizontalalignment = 'center')
 
-        self.plot_transmission_rates(axes[0],
-                                     title = False,
+        self.plot_transmission_rates(axes[0], title = False,
                                      plot_vs_time = plot_data)
 
-        self._plot_sim_cell(axes[1],
-                            results,
-                            'infected',
-                            scale = 1e6,
-                            ylabel = 'Infected\n(M)',
+        self._plot_sim_cell(axes[1], results, 'infected',
                             plot_data = plot_data)
 
-        self._plot_sim_cell(axes[2],
-                            results,
-                            'prevalence',
-                            percent = True,
-                            ylabel = 'Prevelance\n',
+        self._plot_sim_cell(axes[2], results, 'prevalence',
                             plot_data = plot_data)
 
-        self._plot_sim_cell(axes[3],
-                            results,
-                            'incidence',
-                            scale = 1e-3,
-                            ylabel = 'Incidence\n(per 1000 per y)',
+        self._plot_sim_cell(axes[3], results, 'incidence',
+                            plot_data = plot_data)
+
+        self._plot_sim_cell(axes[4], results, 'drug_coverage',
                             plot_data = plot_data)
 
         fig.tight_layout()
@@ -282,6 +298,10 @@ class GeometricMean(Estimator):
     then take the geometric mean over time.
     '''
     def estimate(self):
+        '''
+        Get the estimates of the transmission rate at each time
+        and take the geometric mean over time.
+        '''
         transmission_rates_vs_time = self.estimate_vs_time()
         return stats.gmean(transmission_rates_vs_time)
 
@@ -314,6 +334,10 @@ class Lognormal(Estimator):
     from the result.
     '''
     def estimate(self):
+        '''
+        Get the estimates of the transmission rate at each time
+        and build a lognormal random variable.
+        '''
         transmission_rates_vs_time = self.estimate_vs_time()
 
         gmean = stats.gmean(transmission_rates_vs_time)
@@ -432,6 +456,10 @@ class LeastSquares(Estimator):
               \end{bmatrix}.
     '''
     def estimate(self):
+        '''
+        Use the least squares problem to estimate of the transmission
+        rates.
+        '''
         # Interpolate in case of any missing data.
         prevalence = self.parameters.prevalence.interpolate(method = 'index')
         incidence = self.parameters.incidence.interpolate(method = 'index')
@@ -458,9 +486,16 @@ class LeastSquares(Estimator):
             betas = numpy.nan * numpy.ones(2)
         betas = pandas.Series(betas, index = A.columns)
 
+        if any(betas < 0):
+            warnings.warn(
+                "country = '{}': ".format(self.country)
+                + "Negative transmission rate '{}'.  ".format(betas[betas < 0])
+                + 'Setting to 0.')
+            betas[betas < 0] = 0
+
         if betas['suppressed'] > betas['unsuppressed']:
             warnings.warn(
-                "country = '{}':  ".format(country)
+                "country = '{}': ".format(self.country)
                 + 'The transmission rate for people with viral suppression '
                 + 'is higher than for people without viral suppression!')
 
@@ -494,28 +529,28 @@ class LeastSquares(Estimator):
                        **kwargs, **linestyle)
     
 
-def plot_all_estimators(country, estimators = None, fig = None):
+def plot_all_estimators(country, Estimators = None, fig = None):
     '''
     Plot all estimator methods in the same figure.
 
-    `estimators = None` uses all defined estimators.
+    `Estimators = None` uses all defined estimators.
     '''
-    if estimators is None:
-        estimators = Estimator.__subclasses__()
+    if Estimators is None:
+        Estimators = Estimator.__subclasses__()
     if fig is None:
         fig = pyplot.gcf()
     # Plot the data only on the first time through.
     plot_data = True
-    for estimator in estimators:
-        e = estimator(country)
-        print('\t{}: R_0 = {:.2f}'.format(estimator.__name__,
+    for E in Estimators:
+        e = E(country)
+        print('\t{}: R_0 = {:.2f}'.format(E.__name__,
                                           e.R0))
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
     return fig
 
 
-def plot_all_countries(estimators = None):
+def plot_all_countries(Estimators = None):
     '''
     Make a PDF with a page of all estimator plots for each country
     with data in the IncidencePrevalence datasheet.
@@ -528,14 +563,14 @@ def plot_all_countries(estimators = None):
         for country in countries:
             print(country)
             fig = pyplot.figure()
-            plot_all_estimators(country, estimators = estimators, fig = fig)
+            plot_all_estimators(country, Estimators = Estimators, fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
 
 
 if __name__ == '__main__':
     country = 'South Africa'
-    print(country)
+    # print(country)
     # e = GeometricMean(country)
     # e = Lognormal(country)
     # e = LeastSquares(country)
