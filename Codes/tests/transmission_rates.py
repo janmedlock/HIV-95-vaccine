@@ -555,7 +555,7 @@ def plot_all_countries(Estimators = None):
     Make a PDF with a page of all estimator plots for each country
     with data in the IncidencePrevalence datasheet.
 
-    `estimators = None` uses all defined estimators.
+    `Estimators = None` uses all defined estimators.
     '''
     countries = model.get_country_list('IncidencePrevalence')
     filename = '{}_all.pdf'.format(common.get_filebase())
