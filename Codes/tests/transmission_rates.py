@@ -153,8 +153,6 @@ class Estimator(metaclass = abc.ABCMeta):
 
     def plot_transmission_rates_vs_time(self,
                                         ax = None,
-                                        marker = '.', markersize = 10,
-                                        label = 'estimates at each time',
                                         **kwargs):
         '''
         Plot the estimate of the transmision rates vs. time.
@@ -164,13 +162,14 @@ class Estimator(metaclass = abc.ABCMeta):
         transmission_rates_vs_time = self.estimate_vs_time()
         ax.plot(transmission_rates_vs_time.index,
                 transmission_rates_vs_time,
-                label = label,
-                marker = marker,
-                markersize = markersize,
+                label = 'estimates at each time',
+                marker = '.',
+                markersize = 10,
                 **kwargs)
         return ax
 
     def _plot_sim_cell(self, ax, results, stat,
+                       plot_data = True,
                        scale = 1, percent = False,
                        xlabel = None, ylabel = None, title = None):
         if percent:
@@ -197,7 +196,8 @@ class Estimator(metaclass = abc.ABCMeta):
 
         # Plot historical data.
         data_ = data.dropna()
-        ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
+        if plot_data:
+            ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
 
         # Plot simulation data.
         ax.plot(t + 2015, val / scale)
@@ -206,7 +206,8 @@ class Estimator(metaclass = abc.ABCMeta):
         # and the begining of the simulation.
         x = [data_.index[-1], t[0] + 2015]
         y = [data_.iloc[-1], val[0]]
-        ax.plot(x, numpy.asarray(y) / scale, linestyle = 'dotted')
+        ax.plot(x, numpy.asarray(y) / scale,
+                linestyle = 'dotted', color = 'black')
 
         ax.set_xlim(1990, t[-1] + 2015)
         ax.grid(True, which = 'both', axis = 'both')
@@ -223,7 +224,7 @@ class Estimator(metaclass = abc.ABCMeta):
         if title is not None:
             ax.set_title(title, size = 'medium')
 
-    def plot(self, fig = None):
+    def plot(self, fig = None, plot_data = True):
         results = self.simulate()
         if fig is None:
             fig = pyplot.gcf()
@@ -242,31 +243,34 @@ class Estimator(metaclass = abc.ABCMeta):
                     l.set_visible(False)
                 ax.xaxis.offsetText.set_visible(False)
 
-        title = '{}: R_0 = {:.3f}'.format(self.country,
-                                          self.R0)
-        fig.text(0.5, 1, title,
+        fig.text(0.5, 1, self.country,
                  verticalalignment = 'top',
                  horizontalalignment = 'center')
 
-        self.plot_transmission_rates(axes[0], title = False)
+        self.plot_transmission_rates(axes[0],
+                                     title = False,
+                                     plot_vs_time = plot_data)
 
         self._plot_sim_cell(axes[1],
                             results,
                             'infected',
                             scale = 1e6,
-                            ylabel = 'Infected\n(M)')
+                            ylabel = 'Infected\n(M)',
+                            plot_data = plot_data)
 
         self._plot_sim_cell(axes[2],
                             results,
                             'prevalence',
                             percent = True,
-                            ylabel = 'Prevelance\n')
+                            ylabel = 'Prevelance\n',
+                            plot_data = plot_data)
 
         self._plot_sim_cell(axes[3],
                             results,
                             'incidence',
                             scale = 1e-3,
-                            ylabel = 'Incidence\n(per 1000 per y)')
+                            ylabel = 'Incidence\n(per 1000 per y)',
+                            plot_data = plot_data)
 
         fig.tight_layout()
         return fig
@@ -490,32 +494,54 @@ class LeastSquares(Estimator):
                        **kwargs, **linestyle)
     
 
-def plot_all(estimator):
+def plot_all_estimators(country, estimators = None, fig = None):
     '''
-    Call estimator(country).plot() for each country with data
-    in the IncidencePrevalence datasheet.
+    Plot all estimator methods in the same figure.
+
+    `estimators = None` uses all defined estimators.
+    '''
+    if estimators is None:
+        estimators = Estimator.__subclasses__()
+    if fig is None:
+        fig = pyplot.gcf()
+    # Plot the data only on the first time through.
+    plot_data = True
+    for estimator in estimators:
+        e = estimator(country)
+        print('\t{}: R_0 = {:.2f}'.format(estimator.__name__,
+                                          e.R0))
+        e.plot(fig = fig, plot_data = plot_data)
+        plot_data = False
+    return fig
+
+
+def plot_all_countries(estimators = None):
+    '''
+    Make a PDF with a page of all estimator plots for each country
+    with data in the IncidencePrevalence datasheet.
+
+    `estimators = None` uses all defined estimators.
     '''
     countries = model.get_country_list('IncidencePrevalence')
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         for country in countries:
             print(country)
-            fig = estimator(country).plot()
+            fig = pyplot.figure()
+            plot_all_estimators(country, estimators = estimators, fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
 
 
 if __name__ == '__main__':
-    estimator = GeometricMean
-    # estimator = Lognormal
-    # estimator = LeastSquares
-
-    # country = 'South Africa'
-    # print(country)
-    # e = estimator(country)
+    country = 'South Africa'
+    print(country)
+    # e = GeometricMean(country)
+    # e = Lognormal(country)
+    # e = LeastSquares(country)
     # print('transmission rate = {}'.format(e.transmission_rates))
     # e.plot()
+    plot_all_estimators(country)
+    pyplot.show()
 
-    # pyplot.show()
-
-    plot_all(estimator)
+    # plot_all_countries()
