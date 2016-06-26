@@ -109,6 +109,17 @@ class Estimator(metaclass = abc.ABCMeta):
 
         self.set_transmission_rates()
 
+        # Make sure all transmission rates are finite.
+        # assert numpy.isfinite(self.parameter_values.transmission_rates).all()
+        if not numpy.isfinite(self.parameter_values.transmission_rates).all():
+            msg = "{}: country = '{}': Non-finite transmission_rates = {}!"
+            warnings.warn(msg.format(self.__class__.__name__,
+                                     self.country,
+                                     self.parameter_values.transmission_rates))
+
+        # Make sure all transmission rates are non-negative.
+        assert not numpy.any(self.parameter_values.transmission_rates < 0)
+
     def simulate(self):
         '''
         Simulate the model forward in time.
@@ -142,6 +153,8 @@ class Estimator(metaclass = abc.ABCMeta):
         # plot_estimates().
         style = next(ax._get_lines.prop_cycler)
         kwargs.update(style)
+        # Add some alpha.
+        kwargs.update(dict(alpha = 0.7))
         self.plot_estimates(ax, **kwargs)
 
         ax.set_ylabel('Transmission rate (per year)')
@@ -217,7 +230,7 @@ class Estimator(metaclass = abc.ABCMeta):
             ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
 
         # Plot simulation data.
-        ax.plot(t + 2015, val / scale)
+        ax.plot(t + 2015, val / scale, alpha = 0.7)
 
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
@@ -543,10 +556,9 @@ def plot_all_estimators(country, Estimators = None, fig = None):
     plot_data = True
     for E in Estimators:
         e = E(country)
-        print('\t{}: R_0 = {:.2f}'.format(E.__name__,
-                                          e.R0))
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
+        print('\t{}: R_0 = {:.2f}'.format(E.__name__, e.R0))
     return fig
 
 
