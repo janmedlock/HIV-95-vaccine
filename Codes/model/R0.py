@@ -46,12 +46,19 @@ def R0(parameters):
 
     G = numpy.dot(F, numpy.linalg.inv(V))
 
-    evals = numpy.linalg.eigvals(G)
+    if numpy.isfinite(G).all():
+        evals = numpy.linalg.eigvals(G)
 
-    i = numpy.argmax(numpy.abs(evals))
-    R0 = numpy.asscalar(numpy.real_if_close(evals[i]))
+        i = numpy.argmax(numpy.abs(evals))
+        R0 = numpy.asscalar(numpy.real_if_close(evals[i]))
 
-    assert numpy.isreal(R0)
-    assert (R0 > 0)
+        assert numpy.isreal(R0)
+        assert (R0 > 0)
+    else:
+        if numpy.isnan(G).any():
+            R0 = numpy.nan
+        else:
+            assert not numpy.isneginf(G).any()
+            R0 = numpy.inf
 
     return R0
