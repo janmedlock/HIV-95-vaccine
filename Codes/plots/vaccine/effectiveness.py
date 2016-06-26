@@ -120,12 +120,13 @@ def plotcell(ax, tx,
 
     for k in keys_ordered:
         v = x[k]
-        ax.plot(t + 2015, v / scale, label = getlabel(k),
+        ax.plot(t, v / scale, label = getlabel(k),
                 **styles[k])
 
-    ax.set_xlim(t[0] + 2015, t[-1] + 2015)
+    ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
-    ax.set_xticks([2015, 2025, 2035])
+    # Every 10 years.
+    ax.set_xticks(range(int(t[0]), int(t[-1]), 10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.tick_params(labelsize = 'large')
     if percent:

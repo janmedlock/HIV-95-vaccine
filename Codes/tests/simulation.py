@@ -19,8 +19,8 @@ def _main():
 
     simulation = model.Simulation(
         parameters,
-        '909090',
-        targets_kwds = dict(vaccine_target = model.Target(0.5, 5, 5)))
+        '909090')
+        # targets_kwds = dict(vaccine_target = model.Target(0.5, 2020, 2025)))
 
     simulation.plot()
 

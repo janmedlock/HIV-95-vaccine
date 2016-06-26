@@ -3,6 +3,7 @@ Simulation of the HIV model.
 '''
 
 import copy
+
 import numpy
 from scipy import integrate
 
@@ -60,7 +61,8 @@ class Simulation(container.Container):
 
     def __init__(self, parameters_, targets_,
                  targets_kwds = {},
-                 t_end = 20,
+                 t_start = 2015,
+                 t_end = 2035,
                  baseline = 'baseline',
                  run_baseline = True,
                  _use_log = True,
@@ -73,6 +75,7 @@ class Simulation(container.Container):
 
         self.country = self.parameters.country
 
+        self.t_start = t_start
         self.t_end = t_end
 
         if kwargs:
@@ -84,8 +87,9 @@ class Simulation(container.Container):
 
         self._use_log = _use_log
 
-        t = numpy.linspace(0, t_end,
-                           numpy.abs(t_end) * pts_per_year + 1)
+        t = numpy.linspace(
+            self.t_start, self.t_end,
+            numpy.abs(self.t_end - self.t_start) * pts_per_year + 1)
 
         if self._use_log:
             Y0 = transform(self.parameters.initial_conditions).copy()
@@ -149,6 +153,7 @@ class Simulation(container.Container):
         if run_baseline:
             self.baseline = Simulation(self.parameters,
                                        baseline,
+                                       t_start = self.t_start,
                                        t_end = self.t_end,
                                        run_baseline = False,
                                        _use_log = self._use_log)

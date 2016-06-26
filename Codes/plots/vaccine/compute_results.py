@@ -15,8 +15,6 @@ sys.path.append('../..')
 import model
 
 
-t_end = 20
-
 # countries = effectiveness.countries_to_plot
 countries = model.get_country_list()
 
@@ -24,9 +22,9 @@ targets = ('baseline', '909090')
 
 vaccine_targets = (0, 0.5, 0.75)
 vaccine_efficacies = (0.5, 0.75)
-vaccine_times_to_start = (5, )
-# vaccine_times_to_full_implementation = (5, 2)
-vaccine_times_to_full_implementation = (2, )
+vaccine_times_to_start = (2020, )
+# vaccine_times_to_full_implementation = (2025, 2022)
+vaccine_times_to_full_implementation = (2022, )
 
 vaccine_info = []
 if 0 in vaccine_targets:
@@ -63,7 +61,6 @@ def _get_kwds(vaccine_target, *args):
 def _run_one(key, parameters, targets_, **kwargs):
     print(parameters.country, targets_, kwargs)
     return (key, model.Simulation(parameters, targets_,
-                                  t_end = t_end,
                                   run_baseline = False,
                                   **kwargs))
 

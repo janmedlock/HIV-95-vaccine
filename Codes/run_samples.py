@@ -20,8 +20,6 @@ for c in countries_to_plot:
     countries.remove(c)
 countries = countries_to_plot + countries
 
-t_end = 20
-
 target = '909090'
 
 

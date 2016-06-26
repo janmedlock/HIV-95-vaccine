@@ -45,7 +45,7 @@ def animation(prevalence, vmin, vmax, norm,
     data = prevalence.iloc[: : skip].as_matrix()
     T = prevalence.index[: : skip]
 
-    ani = m.choropleth_animate(countries, T + 2015, 100 * data,
+    ani = m.choropleth_animate(countries, T, 100 * data,
                                cmap = cmap,
                                norm = norm(vmin = 100 * vmin,
                                            vmax = 100 * vmax),
@@ -96,7 +96,7 @@ def plot(prevalence, vmin, vmax, norm):
                                 vmax = 100 * vmax)
 
         X, Y = label_coords
-        m.text_coords(X, Y, str(int(T[i] + 2015)),
+        m.text_coords(X, Y, str(int(T[i])),
                       fontdict = dict(size = 20,
                                       weight = 'bold'),
                       horizontalalignment = 'left')

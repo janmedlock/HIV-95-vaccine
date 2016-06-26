@@ -40,12 +40,13 @@ def plotcell(ax, tx,
     b = numpy.asarray(x['90–90–90'])
     d = a - b
     q, C = common.getpercentiles(d)
-    col = ax.pcolormesh(t + 2015, q / scale, C, cmap = common.cmap,
+    col = ax.pcolormesh(t, q / scale, C, cmap = common.cmap,
                         shading = 'gouraud')
 
-    ax.set_xlim(t[0] + 2015, t[-1] + 2015)
+    ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
-    ax.set_xticks([2015, 2025, 2035])
+    # Every 10 years.
+    ax.set_xticks(range(data_start_year, int(t[-1]), 10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(common.PercentFormatter())

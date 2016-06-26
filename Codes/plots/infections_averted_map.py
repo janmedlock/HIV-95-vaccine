@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections averted at different times.
+
+.. todo:: Should read years from simulation output.
 '''
 
 import os.path
@@ -46,7 +48,7 @@ def animation(infections_averted, vmin, vmax,
     data = infections_averted.iloc[: : skip].as_matrix()
     T = infections_averted.index[: : skip]
 
-    ani = m.choropleth_animate(countries, T + 2015, 100 * data,
+    ani = m.choropleth_animate(countries, T, 100 * data,
                                cmap = cmap,
                                vmin = 100 * vmin,
                                vmax = 100 * vmax,
@@ -89,7 +91,7 @@ def plot(results, vmin, vmax):
                                 vmax = 100 * vmax)
 
         X, Y = label_coords
-        m.text_coords(X, Y, str(int(T[i] + 2015)),
+        m.text_coords(X, Y, str(int(T[i])),
                       fontdict = dict(size = 20,
                                       weight = 'bold'),
                       horizontalalignment = 'left')
@@ -114,9 +116,10 @@ def plot(results, vmin, vmax):
 if __name__ == '__main__':
     countries = model.get_country_list()
 
-    t_end = 20
+    t_start = 2015
+    t_end = 2035
     pts_per_year = 120
-    t = numpy.linspace(0, t_end, t_end * pts_per_year + 1)
+    t = numpy.linspace(t_start, t_end, (t_end - t_start) * pts_per_year + 1)
     infections_averted = pandas.DataFrame(columns = countries,
                                           index = t)
 

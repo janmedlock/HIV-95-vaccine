@@ -62,15 +62,16 @@ def plotcell(ax, tx,
     for k in ('Status Quo', '90–90–90'):
         v = x[k]
         avg, CI = getstats(v)
-        ax.plot(t + 2015, avg / scale, color = colors[k], label = k,
+        ax.plot(t, avg / scale, color = colors[k], label = k,
                 zorder = 2)
-        ax.fill_between(t + 2015, CI[0] / scale, CI[1] / scale,
+        ax.fill_between(t, CI[0] / scale, CI[1] / scale,
                         color = colors[k],
                         alpha = 0.3)
 
-    ax.set_xlim(t[0] + 2015, t[-1] + 2015)
+    ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
-    ax.set_xticks([2015, 2025, 2035])
+    # Every 10 years.
+    ax.set_xticks(range(int(t[0]), int(t[-1]), 10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(PercentFormatter())

@@ -33,7 +33,7 @@ def _main():
             y = x[key]
             s = 0
             for z in y:
-                v = numpy.interp(years, t + 2015, z)
+                v = numpy.interp(years, t, z)
                 if v[-1] > v[0]:
                     s += 1
             d[c] = s / len(y)

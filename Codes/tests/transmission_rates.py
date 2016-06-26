@@ -224,19 +224,22 @@ class Estimator(metaclass = abc.ABCMeta):
             ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
 
         # Plot simulation data.
-        ax.plot(t + 2015, val / scale, alpha = 0.7)
+        ax.plot(t, val / scale, alpha = 0.7)
 
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
-        x = [data_.index[-1], t[0] + 2015]
+        x = [data_.index[-1], t[0]]
         y = [data_.iloc[-1], val[0]]
         ax.plot(x, numpy.asarray(y) / scale,
                 linestyle = 'dotted', color = 'black')
 
-        ax.set_xlim(1990, t[-1] + 2015)
+        data_start_year = 1990
+        ax.set_xlim(data_start_year, t[-1])
         ax.grid(True, which = 'both', axis = 'both')
-        ax.set_xticks(range(1990, int(t[-1] + 2015), 10))
+        # Every 10 years.
+        ax.set_xticks(range(data_start_year, int(t[-1]), 10))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
+        # One minor tick between major ticks.
         ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
         ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
         if percent:

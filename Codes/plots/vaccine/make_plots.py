@@ -33,8 +33,8 @@ def getlabel(k):
         fmtstr = ' with {:g}% eff vac at {:g}% cov rolled out {:g}–{:g}'
         label += fmtstr.format(100 * k[1],
                                100 * k[2],
-                               2015 + k[3],
-                               2015 + k[3] + k[4])
+                               k[3],
+                               k[4])
     return label
 
 
@@ -47,11 +47,11 @@ def baseplot(ax, t, data, ylabel, scale = 1,
     for (x, style) in zip(data.items(), styles):
         k, v = x
         ls, c = style
-        ax.plot(t + 2015, v / scale,
+        ax.plot(t, v / scale,
                 linestyle = ls,
                 color = c,
                 label = getlabel(k))
-    ax.set_xlim(t[0] + 2015, t[-1] + 2015)
+    ax.set_xlim(t[0], t[-1])
     if xlabel:
         ax.set_xlabel('Year')
     if scale > 1:

@@ -68,15 +68,15 @@ def baseplot(ax, t, data, ylabel = None, scale = 1,
         else:
             scale = 1e3
     for k in (kbaseline, k909090):
-        ax.plot(t + 2015, data[k] / scale,
-                label = getlabel(k))
-    ax.set_xlim(t[0] + 2015, t[-1] + 2015)
+        ax.plot(t, data[k] / scale, label = getlabel(k))
+    ax.set_xlim(t[0], t[-1])
     if xlabel:
         ax.set_xlabel('Year')
     if ylabel is not None:
         ax.set_ylabel(ylabel, size = 'medium')
     ax.grid(True, which = 'both', axis = 'both')
-    ax.set_xticks([2015, 2025, 2035])
+    # Every 10 years.
+    ax.set_xticks(range(data_start_year, int(t[-1]), 10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(PercentFormatter())

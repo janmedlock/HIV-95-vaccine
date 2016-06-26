@@ -59,7 +59,7 @@ def _main():
                     avg, CI = common.getstats(x[k], alpha = alpha)
 
                     for (v, s) in zip((avg, CI[0], CI[1]), stats):
-                        z = numpy.interp(years, t + 2015, v)
+                        z = numpy.interp(years, t, v)
                         for (i, y) in enumerate(years):
                             df.loc[(c, k), (y, m, s)] = z[i]
 

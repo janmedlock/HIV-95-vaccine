@@ -119,7 +119,7 @@ def tornados():
                 parameter_names = parameter_names,
                 ylabels = ylabels)
         ax.set_xlabel('PRCC')
-        ax.set_title(t + 2015)
+        ax.set_title(t)
 
     fig.tight_layout()
 

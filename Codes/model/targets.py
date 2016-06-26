@@ -16,8 +16,7 @@ class Target:
     '''
     Simple container for a single target.
     '''
-    def __init__(self, target, time_to_start = 0,
-                 time_to_full_implementation = 5):
+    def __init__(self, target, time_to_start, time_to_full_implementation):
         self.target = target
         self.time_to_start = time_to_start
         self.time_to_full_implementation = time_to_full_implementation
@@ -58,29 +57,36 @@ class Targets(container.Container):
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
     def __init__(self, targets,
-                 vaccine_target = Target(0, 0, 0),
-                 times_to_start = 0,
-                 times_to_full_implementation = 5):
+                 vaccine_target = None,
+                 times_to_start = 2015,
+                 times_to_full_implementation = 2020):
         self.targets = targets
-        self.vaccine_target = vaccine_target
 
-        # Append vaccine to times_to_start.
+        # Convert to arrays.
         if numpy.isscalar(times_to_start):
             times_to_start *= numpy.ones(len(self._keys) - 1)
         else:
             times_to_start = numpy.asarray(times_to_start)
-        times_to_start = numpy.hstack((times_to_start,
-                                       vaccine_target.time_to_start))
 
-        # Append vaccine to times_to_full_implementation.
         if numpy.isscalar(times_to_full_implementation):
             times_to_full_implementation *= numpy.ones(len(self._keys) - 1)
         else:
             times_to_full_implementation = numpy.asarray(
                 times_to_full_implementation)
+
+        if vaccine_target is None:
+            self.vaccine_target = Target(0,
+                                         times_to_start[0],
+                                         times_to_full_implementation[0])
+        else:
+            self.vaccine_target = vaccine_target
+
+        times_to_start = numpy.hstack((times_to_start,
+                                       self.vaccine_target.time_to_start))
+
         times_to_full_implementation = numpy.hstack((
             times_to_full_implementation,
-            vaccine_target.time_to_full_implementation))
+            self.vaccine_target.time_to_full_implementation))
 
         # Use names.
         self.times_to_start = numpy.rec.fromarrays(
@@ -139,8 +145,9 @@ class TargetValues(container.Container):
                                                   k)
             amount_implemented = numpy.where(
                 t < time_to_start, 0,
-                numpy.where(t - time_to_start < time_to_full_implementation,
-                            (t - time_to_start) / time_to_full_implementation,
+                numpy.where(t < time_to_full_implementation,
+                            ((t - time_to_start)
+                             / (time_to_full_implementation - time_to_start)),
                             1))
 
             v = (initial_proportion
