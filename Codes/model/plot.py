@@ -2,19 +2,14 @@
 Make plots.
 '''
 
-import warnings
-
 from matplotlib import pyplot
 from matplotlib import ticker
 
-# Silence warnings from matplotlib trigged by seaborn
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
+# Silence warnings from matplotlib trigged by seaborn.
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    import seaborn
 
 
 def simulation(sim, show = True):

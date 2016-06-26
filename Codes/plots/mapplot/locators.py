@@ -2,17 +2,13 @@
 Locators to get the coordinates of a country.
 '''
 
-import warnings
-
 import numpy
 
 # Silence warnings from matplotlib trigged by cartopy.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('This has been deprecated in mpl 1.5, please use the\n'
-               'axes property.  A removal date has not been set.'))
-import cartopy
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    import cartopy
 
 
 class _Locator:

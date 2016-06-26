@@ -4,7 +4,6 @@ Common plotting settings etc.
 
 import inspect
 import os.path
-import warnings
 
 import matplotlib
 from matplotlib import cm
@@ -13,13 +12,10 @@ from matplotlib import ticker
 import numpy
 
 # Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    import seaborn
 
 
 countries_to_plot = (

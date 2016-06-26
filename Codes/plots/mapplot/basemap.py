@@ -5,7 +5,6 @@ Make nice graphs on maps.
 from collections import abc
 import itertools
 import os.path
-import warnings
 
 import numpy
 from matplotlib import animation
@@ -13,22 +12,12 @@ from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 
-# Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
-
-# Silence warnings from matplotlib trigged by cartopy.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('This has been deprecated in mpl 1.5, please use the\n'
-               'axes property.  A removal date has not been set.'))
-import cartopy
+# Silence warnings from matplotlib trigged by seaborn and cartopy.
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore')
+    import seaborn
+    import cartopy
 
 from . import locators
 

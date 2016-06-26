@@ -14,19 +14,13 @@ import numpy
 import pandas
 from scipy import stats
 
-# Silence warnings from matplotlib trigged by seaborn.
-warnings.filterwarnings(
-    'ignore',
-    module = 'matplotlib',
-    message = ('axes.color_cycle is deprecated '
-               'and replaced with axes.prop_cycle; '
-               'please use the latter.'))
-import seaborn
-
 sys.path.append('../plots')
 import common
 sys.path.append('..')
 import model
+
+# Here because code to suppress warnings is in common.
+import seaborn
 
 
 class Estimator(metaclass = abc.ABCMeta):
