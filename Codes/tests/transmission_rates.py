@@ -388,9 +388,7 @@ class Lognormal(Estimator):
 
         # Vary linestyle for the different quantile levels.
         # Hopefully 4 is enough...
-        linestyles = pyplot.cycler(
-            'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])
-        linestyles = itertools.cycle(linestyles)
+        linestyles = itertools.cycle(['solid', 'dashed', 'dashdot', 'dotted'])
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for level in quantile_levels:
@@ -398,7 +396,6 @@ class Lognormal(Estimator):
                 quantiles = [0.5]
             else:
                 quantiles = [0.5 - level / 2, 0.5 + level / 2]
-            linestyle = next(linestyles)
             level_label_set = False
             for q in quantiles:
                 if not level_label_set:
@@ -412,7 +409,8 @@ class Lognormal(Estimator):
                     label = None
                 ax.axhline(self.transmission_rates.ppf(q),
                            label = label,
-                           **kwargs, **linestyle)
+                           linestyle = next(linestyles),
+                           **kwargs)
 
 
 class LeastSquares(Estimator):
@@ -532,15 +530,15 @@ class LeastSquares(Estimator):
         label_base = self.__class__.__name__
         # Vary linestyle for the different transmission rates.
         # Hopefull 4 is enough...
-        linestyles = pyplot.cycler(
-            linestyle = ['solid', 'dashed', 'dotted', 'dashdot'])()
+        linestyles = itertools.cycle(['solid', 'dashed', 'dotted', 'dashdot'])
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for (k, v) in self.transmission_rates.items():
             linestyle = next(linestyles)
             ax.axhline(v,
                        label = '{} {}'.format(label_base, k),
-                       **kwargs, **linestyle)
+                       linestyle = next(linestyles),
+                       **kwargs)
     
 
 def plot_all_estimators(country, Estimators = None, fig = None):
