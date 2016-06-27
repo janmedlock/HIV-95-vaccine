@@ -397,6 +397,7 @@ class Lognormal(Estimator):
             else:
                 quantiles = [0.5 - level / 2, 0.5 + level / 2]
             level_label_set = False
+            linestyle = next(linestyles)
             for q in quantiles:
                 if not level_label_set:
                     if q == 0.5:
@@ -409,7 +410,7 @@ class Lognormal(Estimator):
                     label = None
                 ax.axhline(self.transmission_rates.ppf(q),
                            label = label,
-                           linestyle = next(linestyles),
+                           linestyle = linestyle,
                            **kwargs)
 
 
