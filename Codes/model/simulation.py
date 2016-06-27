@@ -100,34 +100,42 @@ class Simulation(container.Container):
             Y0 = self.parameters.initial_conditions.copy()
             fcn = ODEs.ODEs
 
+        # Scale time to start at 0 to avoid some solver warnings.
+        t_scaled = t - t[0]
+        def fcn_scaled(t_scaled, Y, targets_, parameters):
+            return fcn(t_scaled + t[0], Y, targets_, parameters)
+
         if integrator == 'odeint':
-            def fcn_swap_Yt(Y, t, targets_, parameters):
-                return fcn(t, Y, targets_, parameters)
-            Y = integrate.odeint(fcn_swap_Yt,
+            def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
+                return fcn_scaled(t_scaled, Y, targets_, parameters)
+            Y = integrate.odeint(fcn_scaled_swap_Yt,
                                  Y0,
-                                 t,
+                                 t_scaled,
                                  args = (self.targets,
                                          self.parameters),
-                                 mxstep = 2000)
+                                 mxstep = 2000,
+                                 mxhnil = 1)
         else:
-            solver = integrate.ode(fcn)
-            solver.set_integrator(integrator, nsteps = 2000)
+            solver = integrate.ode(fcn_scaled)
+            solver.set_integrator(integrator,
+                                  nsteps = 2000,
+                                  max_hnil = 1)
             solver.set_f_params(self.targets, self.parameters)
-            solver.set_initial_value(Y0, t[0])
-            Y = numpy.empty((len(t), len(Y0)))
+            solver.set_initial_value(Y0, t_scaled[0])
+            Y = numpy.empty((len(t_scaled), len(Y0)))
             Y[0] = Y0
-            for i in range(1, len(t)):
-                Y[i] = solver.integrate(t[i])
+            for i in range(1, len(t_scaled)):
+                Y[i] = solver.integrate(t_scaled[i])
                 if not _use_log:
                     # Force to be non-negative.
                     Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
-                    solver.set_initial_value(Y.iloc[i], t[i])
+                    solver.set_initial_value(Y.iloc[i], t_scaled[i])
                 try:
                     assert solver.successful()
                 except AssertionError:
-                    dY = fcn(t[i - 1], Y[i - 1],
-                             self.targets, self.parameters)
-                    print('t = {}'.format(t[i - 1]))
+                    dY = fcn_scaled(t_scaled[i - 1], Y[i - 1],
+                                    self.targets, self.parameters)
+                    print('t = {}'.format(t_scaled[i - 1]))
                     import pandas
                     if _use_log:
                         idx = ['S_log', 'Q_log', 'A_log', 'U_log', 'D_log',
