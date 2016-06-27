@@ -388,7 +388,12 @@ class Lognormal(Estimator):
         # Vary linestyle for the different quantile levels.
         # Hopefull 4 is enough...
         linestyles = pyplot.cycler(
-            'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])()
+            'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])
+        # Catch issues between different versions of matplotlib.
+        try:
+            linestyles = linstyles()
+        except TypeError:
+            pass
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for level in quantile_levels:
