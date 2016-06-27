@@ -10,15 +10,14 @@ import warnings
 
 from matplotlib import pyplot
 from matplotlib import ticker
-from matplotlib.backends import backend_pdf
 import numpy
 import pandas
 from scipy import stats
 
-sys.path.append('../plots')
-import common
 sys.path.append('..')
 import model
+sys.path.append('../plots')
+import common
 
 # Here because code to suppress warnings is in common.
 import seaborn
@@ -28,6 +27,8 @@ class Estimator(metaclass = abc.ABCMeta):
     '''
     Abstract base class for transmission-rate estimators.
     '''
+    _label = 'Estimator abstract base class'
+
     def __init__(self, country):
         self.country = country
         # Read the incidence, prevalence, population, etc from the datasheet.
@@ -152,6 +153,8 @@ class Estimator(metaclass = abc.ABCMeta):
         kwargs.update(dict(alpha = 0.7))
         self.plot_estimates(ax, **kwargs)
 
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer = True))
+        ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
         ax.set_ylabel('Transmission rate (per year)')
         if title:
             ax.set_title(self.country)
@@ -231,10 +234,11 @@ class Estimator(metaclass = abc.ABCMeta):
 
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
-        x = [data_.index[-1], t[0]]
-        y = [data_.iloc[-1], val[0]]
-        ax.plot(x, numpy.asarray(y) / scale,
-                linestyle = 'dotted', color = 'black', zorder = 1)
+        if len(data_) > 0:
+            x = [data_.index[-1], t[0]]
+            y = [data_.iloc[-1], val[0]]
+            ax.plot(x, numpy.asarray(y) / scale,
+                    linestyle = 'dotted', color = 'black', zorder = 1)
 
         data_start_year = 1990
         ax.set_xlim(data_start_year, t[-1])
@@ -310,10 +314,11 @@ class GeometricMean(Estimator):
     Estimate the transmission rate at each time,
     then take the geometric mean over time.
     '''
+    _label = 'Geometric Mean'
+
     def estimate(self):
         '''
-        Get the estimates of the transmission rate at each time
-        and take the geometric mean over time.
+        Estimate the transmission rate.
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
         return stats.gmean(transmission_rates_vs_time)
@@ -332,9 +337,9 @@ class GeometricMean(Estimator):
 
     def plot_estimates(self, ax, **kwargs):
         '''
-        Make a horizontal line at the value of the geometric mean estimate.
+        Make a horizontal line at the value of the estimate.
         '''
-        label = self.__class__.__name__
+        label = self._label
         ax.axhline(self.transmission_rates,
                    label = label,
                    **kwargs)
@@ -346,10 +351,11 @@ class Lognormal(Estimator):
     then build a lognormal random variable using statistics
     from the result.
     '''
+    _label = 'Lognormal'
+
     def estimate(self):
         '''
-        Get the estimates of the transmission rate at each time
-        and build a lognormal random variable.
+        Estimate the transmission rate.
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
 
@@ -384,7 +390,7 @@ class Lognormal(Estimator):
         '''
         Make horizontal lines at the median and other quantiles.
         '''
-        label_base = self.__class__.__name__
+        label_base = self._label
 
         # Vary linestyle for the different quantile levels.
         # Hopefully 4 is enough...
@@ -412,6 +418,55 @@ class Lognormal(Estimator):
                            label = label,
                            linestyle = linestyle,
                            **kwargs)
+
+
+def EWM_factory(halflife_):
+    class ExponentiallyWeightedMean(Estimator):
+        '''
+        Estimate the transmission rate at each time,
+        then take the exponentially weighted average over time.
+        '''
+        _label = 'EWM{}'.format(halflife_)
+
+        # def __init__(self, country, halflife = 2):
+        def __init__(self, country, halflife = halflife_):
+            self.halflife = halflife
+            super().__init__(country)
+
+        def estimate(self):
+            '''
+            Estimate the transmission rate.
+            '''
+            transmission_rates_vs_time = self.estimate_vs_time()
+            ewm = transmission_rates_vs_time.ewm(halflife = self.halflife).mean()
+            # Just use the last one.
+            return ewm.iloc[-1]
+
+        def set_transmission_rates(self):
+            '''
+            Scale parameters.transmission_rate_* by the estimated
+            (parameter_values.transmission_rates
+            / parameter_values.transmission_rate_unsuppressed).
+            '''
+            scale = (self.parameter_values.transmission_rates
+                     / self.parameter_values.transmission_rate_unsuppressed)
+            self.parameter_values.transmission_rate_unsuppressed *= scale
+            self.parameter_values.transmission_rate_suppressed *= scale
+            self.parameter_values.transmission_rate_acute *= scale
+
+        def plot_estimates(self, ax, **kwargs):
+            '''
+            Make a horizontal line at the value of the estimate.
+            '''
+            label = self._label
+            ax.axhline(self.transmission_rates,
+                       label = label,
+                       **kwargs)
+
+    return ExponentiallyWeightedMean
+
+
+EWMs = [EWM_factory(halflife) for halflife in [5, 2, 1]]
 
 
 class LeastSquares(Estimator):
@@ -468,10 +523,11 @@ class LeastSquares(Estimator):
               \beta_U \\ \beta_V
               \end{bmatrix}.
     '''
+    _label = 'Least squares'
+
     def estimate(self):
         '''
-        Use the least squares problem to estimate of the transmission
-        rates.
+        Estimate of the transmission rates.
         '''
         # Interpolate in case of any missing data.
         prevalence = self.parameters.prevalence.interpolate(method = 'index')
@@ -528,7 +584,7 @@ class LeastSquares(Estimator):
         '''
         Make horizontal lines at the values of the estimates.
         '''
-        label_base = self.__class__.__name__
+        label_base = self._label
         # Vary linestyle for the different transmission rates.
         # Hopefull 4 is enough...
         linestyles = itertools.cycle(['solid', 'dashed', 'dotted', 'dashdot'])
@@ -548,7 +604,8 @@ def plot_all_estimators(country, Estimators = None, fig = None):
     `Estimators = None` uses all defined estimators.
     '''
     if Estimators is None:
-        Estimators = Estimator.__subclasses__()
+        # Estimators = Estimator.__subclasses__()
+        Estimators = [GeometricMean] + EWMs
     if fig is None:
         fig = pyplot.gcf()
     # Plot the data only on the first time through.
@@ -557,31 +614,14 @@ def plot_all_estimators(country, Estimators = None, fig = None):
         e = E(country)
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
-        print('\t{}: R_0 = {:.2f}'.format(E.__name__, e.R0))
+        # print('\t{}: R_0 = {:.2f}'.format(E.__name__, e.R0))
+        print('\t{}: R_0 = {:.2f}'.format(E._label, e.R0))
     return fig
-
-
-def plot_all_countries(Estimators = None):
-    '''
-    Make a PDF with a page of all estimator plots for each country
-    with data in the IncidencePrevalence datasheet.
-
-    `Estimators = None` uses all defined estimators.
-    '''
-    countries = model.get_country_list('IncidencePrevalence')
-    filename = '{}_all.pdf'.format(common.get_filebase())
-    with backend_pdf.PdfPages(filename) as pdf:
-        for country in countries:
-            print(country)
-            fig = pyplot.figure()
-            plot_all_estimators(country, Estimators = Estimators, fig = fig)
-            pdf.savefig(fig)
-            pyplot.close(fig)
 
 
 if __name__ == '__main__':
     country = 'South Africa'
-    # print(country)
+    print(country)
     # e = GeometricMean(country)
     # e = Lognormal(country)
     # e = LeastSquares(country)
@@ -589,5 +629,3 @@ if __name__ == '__main__':
     # e.plot()
     plot_all_estimators(country)
     pyplot.show()
-
-    # plot_all_countries()
