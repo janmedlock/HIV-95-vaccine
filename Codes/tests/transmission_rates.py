@@ -387,7 +387,7 @@ class Lognormal(Estimator):
         label_base = self.__class__.__name__
 
         # Vary linestyle for the different quantile levels.
-        # Hopefull 4 is enough...
+        # Hopefully 4 is enough...
         linestyles = pyplot.cycler(
             'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])
         linestyles = itertools.cycle(linestyles)
