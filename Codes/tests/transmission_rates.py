@@ -226,14 +226,14 @@ class Estimator(metaclass = abc.ABCMeta):
                     zorder = 2)
 
         # Plot simulation data.
-        ax.plot(t, val / scale, alpha = 0.7)
+        ax.plot(t, val / scale, alpha = 0.7, zorder = 1)
 
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         x = [data_.index[-1], t[0]]
         y = [data_.iloc[-1], val[0]]
         ax.plot(x, numpy.asarray(y) / scale,
-                linestyle = 'dotted', color = 'black')
+                linestyle = 'dotted', color = 'black', zorder = 1)
 
         data_start_year = 1990
         ax.set_xlim(data_start_year, t[-1])
@@ -388,7 +388,7 @@ class Lognormal(Estimator):
         # Vary linestyle for the different quantile levels.
         # Hopefull 4 is enough...
         linestyles = pyplot.cycler(
-            linestyle = ['solid', 'dashed', 'dashdot', 'dotted'])()
+            'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])()
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for level in quantile_levels:
