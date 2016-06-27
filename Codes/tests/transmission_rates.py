@@ -4,6 +4,7 @@ Test the estimation of transmission rates.
 '''
 
 import abc
+import itertools
 import sys
 import warnings
 
@@ -389,11 +390,7 @@ class Lognormal(Estimator):
         # Hopefull 4 is enough...
         linestyles = pyplot.cycler(
             'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])
-        # Catch issues between different versions of matplotlib.
-        try:
-            linestyles = linestyles()
-        except TypeError:
-            pass
+        linestyles = itertools.cycle(linestyles)
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for level in quantile_levels:
