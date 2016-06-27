@@ -108,10 +108,12 @@ class Estimator(metaclass = abc.ABCMeta):
         # Make sure all transmission rates are finite.
         # assert numpy.isfinite(self.parameter_values.transmission_rates).all()
         if not numpy.isfinite(self.parameter_values.transmission_rates).all():
-            msg = "{}: country = '{}': Non-finite transmission_rates = {}!"
-            warnings.warn(msg.format(self.__class__.__name__,
-                                     self.country,
-                                     self.parameter_values.transmission_rates))
+            msg = ("{}: country = '{}': "
+                   + "Non-finite transmission_rates = {}!").format(
+                       self.__class__.__name__,
+                       self.country,
+                       self.parameter_values.transmission_rates)
+            warnings.warn(msg)
 
         # Make sure all transmission rates are non-negative.
         assert not numpy.any(self.parameter_values.transmission_rates < 0)
@@ -214,7 +216,10 @@ class Estimator(metaclass = abc.ABCMeta):
             t = results.t
             on_drugs = numpy.asarray(results.treated
                                      + results.viral_suppression)
-            infected = numpy.asarray(results.infected)
+            infected = numpy.asarray(results.diagnosed
+                                     + results.treated
+                                     + results.viral_suppression
+                                     + results.AIDS)
             val = on_drugs / infected
         else:
             raise ValueError("Unknown stat '{}'".format(stat))
@@ -556,17 +561,17 @@ class LeastSquares(Estimator):
         betas = pandas.Series(betas, index = A.columns)
 
         if any(betas < 0):
-            warnings.warn(
-                "country = '{}': ".format(self.country)
-                + "Negative transmission rate '{}'.  ".format(betas[betas < 0])
-                + 'Setting to 0.')
+            msg = ("country = '{}': Negative transmission rate '{}'.  "
+                   + "Setting to 0.").format(self.country,
+                                             betas[betas < 0])
+            warnings.warn(msg)
             betas[betas < 0] = 0
 
         if betas['suppressed'] > betas['unsuppressed']:
-            warnings.warn(
-                "country = '{}': ".format(self.country)
-                + 'The transmission rate for people with viral suppression '
-                + 'is higher than for people without viral suppression!')
+            msg = ("country = '{}': The transmission rate for people "
+                   + "with viral suppression is higher than for people "
+                   + "without viral suppression!").format(country)
+            warnings.warn(msg)
 
         return betas
 

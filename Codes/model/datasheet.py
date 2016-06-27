@@ -113,13 +113,22 @@ class Sheet:
         return name
 
     @classmethod
-    def get_country_data(cls, country, wb = None):
+    def get_empty(cls):
+        return pandas.Series(index = cls.parameter_names)
+
+    @classmethod
+    def get_country_data(cls, country, wb = None, allow_missing = None):
+        '''
+        `allow_missing = None` uses the class default.
+        '''
+        if allow_missing is None:
+            allow_missing = cls.allow_missing
         sheet = cls.get_all(wb = wb)
         try:
             data = sheet[country]
         except KeyError:
-            if cls.allow_missing:
-                data = pandas.Series(index = cls.parameter_names)
+            if allow_missing:
+                data = cls.get_empty()
             else:
                 raise
         data.name = cls.get_data_name()
@@ -131,9 +140,11 @@ class Sheet:
             setattr(country_data, n, v)
 
     @classmethod
-    def get_country_data_and_set_attrs(cls, country_data, wb = None):
+    def get_country_data_and_set_attrs(cls, country_data, wb = None,
+                                       allow_missing = None):
         country = country_data.country
-        data = cls.get_country_data(country, wb = wb)
+        data = cls.get_country_data(country, wb = wb,
+                                    allow_missing = allow_missing)
         cls.set_attrs(country_data, data)
 
     @staticmethod
@@ -184,24 +195,30 @@ class IncidencePrevalenceSheet(Sheet):
     _incidence_start_string = 'INCIDENCE (15-49)'
     _prevalence_start_string = 'PREVALENCE (15-49)'
 
-    @staticmethod
-    def _clean_entry(x):
+    @classmethod
+    def _clean_entry(cls, x):
         '''
         Strip trailing *'s etc.
         '''
+        # Strip trailing '*'
         if x.endswith('*'):
-            return x[-1]
+            x = x.rstrip('*')
         # Patterns like '0.01 *0.001459'
-        elif '*' in x:
+        if '*' in x:
             # Only keep first part
-            return x.split('*')[0]
-        elif ('(' in x) and (')' in x):
-            # Drop parentheses and everything inside.
+            x = x.split('*')[0]
+        # Drop parentheses and everything after.
+        if ('(' in x) and (')' in x):
             a = x.find('(')
-            b = x.find(')')
-            return (x[ : a] + x[b + 1 : ])
-        else:
-            return x
+            x = x[ : a]
+        # Drop square brackets and everything inside.
+        if ('[' in x) and (']' in x):
+            a = x.find('[')
+            x = x[ : a]
+        if ' ' in x:
+            # Catch space as a thousands seperator.
+            x = x.replace(' ', '')
+        return x
 
     @classmethod
     def parse_entry(cls, x):
@@ -213,7 +230,7 @@ class IncidencePrevalenceSheet(Sheet):
         '''
         if isinstance(x, str):
             x = cls._clean_entry(x)
-            if '-' in x:
+            if '-' in x and not ('E-' in x or 'e-' in x):
                 y = x.split('-')
                 # Recursively call this function in case
                 # there's a '<' in one of the pieces.
@@ -223,7 +240,10 @@ class IncidencePrevalenceSheet(Sheet):
             elif x.strip() == '':
                 x = numpy.nan
             else:
-                x = float(x)
+                try:
+                    x = float(x)
+                except ValueError:
+                    raise
         # Divide every cell by 100 because data use percent.
         return x / 100
 
@@ -233,24 +253,29 @@ class IncidencePrevalenceSheet(Sheet):
         Rearrange data so that (country, incidence/prevalence) are columns
         and years are rows.
         '''
-        datatype = None
         goodrows = {}
         years = []
+        indata = False
         for (i, v) in enumerate(sheet.index):
             if v == cls._incidence_start_string:
                 datatype = 'incidence'
+                indata = True
             elif v == cls._prevalence_start_string:
                 datatype = 'prevalence'
-            elif isyear(v):
-                assert (datatype is not None)
-                if datatype not in goodrows:
-                    goodrows[datatype] = []
-                # Record integer location index because multiple years
-                # (the pandas.Index index) will appear twice in the same column,
-                # once for incidence and once for prevalence.
-                goodrows[datatype].append(i)
-                if v not in years:
-                    years.append(v)
+                indata = True
+            elif indata:
+                if isyear(v):
+                    if datatype not in goodrows:
+                        goodrows[datatype] = []
+                    # Record integer location index because multiple
+                    # years (the pandas.Index index) will appear twice
+                    # in the same column, once for incidence and once
+                    # for prevalence.
+                    goodrows[datatype].append(i)
+                    if v not in years:
+                        years.append(v)
+                else:
+                    indata = False
 
         countries = sheet.columns
         datatypes = goodrows.keys()
@@ -265,9 +290,11 @@ class IncidencePrevalenceSheet(Sheet):
             for i in rows:
                 year = sheet.index[i]
                 val = sheet[country].iloc[i]
-                if isinstance(val, str):
-                    val = val.rstrip('*')
-                sheet_.loc[year, col] = cls.parse_entry(val)
+                try:
+                    sheet_.loc[year, col] = cls.parse_entry(val)
+                except ValueError:
+                    raise ValueError('country = {}, row = {}: {}'.format(
+                        country, i, val))
         return sheet_
 
     @staticmethod
@@ -286,6 +313,10 @@ class IncidencePrevalenceSheet(Sheet):
         for (country, datatype) in sheet.columns.values:
             tuples.append((convert_country(country), datatype))
         return pandas.MultiIndex.from_tuples(tuples)
+
+    @staticmethod
+    def get_empty():
+        return pandas.DataFrame(columns = ['prevalence', 'incidence'])
 
     @staticmethod
     def set_attrs(country_data, data):
@@ -346,6 +377,10 @@ class AnnualSheet(Sheet):
         '''
         return sheet.notnull().any(0)
     
+    @classmethod
+    def get_empty(cls):
+        return pandas.Series()
+
 
 class PopulationSheet(AnnualSheet):
     sheetname = 'Population (15-49)'
@@ -361,10 +396,9 @@ class TreatedSheet(AnnualSheet):
         '''
         if isinstance(x, str):
             if ('(' in x) and (')' in x):
-                # Drop parentheses and everything inside.
+                # Drop parentheses and everything after.
                 a = x.find('(')
-                b = x.find(')')
-                x = x[ : a] + x[b + 1 : ]
+                x = x[ : a]
             elif ' ' in x:
                 # Keep first of two numbers 'x y'.
                 x = x.split(' ')[0]
@@ -380,9 +414,6 @@ class TreatedSheet(AnnualSheet):
         sheet_ = sheet.loc[goodrows].copy()
         # Convert to int.
         sheet_.index = pandas.Index(sheet_.index.values, dtype = int)
-        # Header row has 'Year' in left column.
-        countries = sheet.loc['Year']
-        sheet_.columns = countries
         # Parse each entry to clean.
         for year in sheet_.index:
             for country in sheet_.columns:
@@ -400,7 +431,10 @@ class CountryData:
     '''
     Data from the datasheet for a country.
     '''
-    def __init__(self, country, wb = None):
+    def __init__(self, country, wb = None, allow_missing = None):
+        '''
+        `allow_missing = None` uses Sheet defaults.
+        '''
         self.country = country
         self.country_on_datasheet = convert_country(self.country,
                                                     inverse = True)
@@ -409,7 +443,8 @@ class CountryData:
             wb = pandas.ExcelFile(datapath)
 
         for cls in _sheets:
-            cls.get_country_data_and_set_attrs(self, wb = wb)
+            cls.get_country_data_and_set_attrs(self, wb = wb,
+                                               allow_missing = allow_missing)
 
     def __repr__(self):
         cls = self.__class__
@@ -449,8 +484,10 @@ class CountryDataShelf(collections.abc.Mapping):
     def _build_all(self):
         print('Rebuilding cache of {}.'.format(os.path.relpath(datapath)))
         with pandas.ExcelFile(datapath) as wb:
-            countries = get_country_list('all', wb = wb)
-            self._shelf = {country: CountryData(country, wb = wb)
+            countries = get_country_list('any', wb = wb)
+            self._shelf = {country: CountryData(country,
+                                                wb = wb,
+                                                allow_missing = True)
                            for country in countries}
             pickle.dump(self._shelf, open(self._shelfpath, 'wb'))
 
@@ -490,13 +527,20 @@ def get_country_list(sheet = 'Parameters', wb = None):
         sets = (set(l) for l in lists)
         intersection = set.intersection(*sets)
         return sorted(intersection)
+    elif sheet == 'any':
+        # Return countries that are in *any* sheet.
+        if wb is None:
+            wb = pandas.ExcelFile(datapath)
+        lists = (cls.get_country_list(wb = wb) for cls in _sheets)
+        sets = (set(l) for l in lists)
+        union = set.union(*sets)
+        return sorted(union)
     else:
         try:
             cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
             return cls.get_country_list(wb = wb)
         except AttributeError:
             _valid_sheets = (s.__name__.replace('Sheet', '') for s in _sheets)
-            raise AttributeError(
-                "I don't know how to parse '{}' sheet from DataSheet!".format(
-                    sheet)
-                + "  Valid sheets are {}.".format(_valid_sheets))
+            msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
+                   + "Valid sheets are {}.").format(sheet, _valid_sheets)
+            raise AttributeError(msg)
