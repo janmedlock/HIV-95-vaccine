@@ -534,7 +534,6 @@ class LeastSquares(Estimator):
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
         for (k, v) in self.transmission_rates.items():
-            linestyle = next(linestyles)
             ax.axhline(v,
                        label = '{} {}'.format(label_base, k),
                        linestyle = next(linestyles),
