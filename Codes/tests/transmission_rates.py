@@ -221,7 +221,9 @@ class Estimator(metaclass = abc.ABCMeta):
         # Plot historical data.
         data_ = data.dropna()
         if plot_data:
-            ax.plot(data_.index, data_ / scale, marker = '.', markersize = 10)
+            ax.plot(data_.index, data_ / scale,
+                    marker = '.', markersize = 10,
+                    zorder = 2)
 
         # Plot simulation data.
         ax.plot(t, val / scale, alpha = 0.7)
