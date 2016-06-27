@@ -391,7 +391,7 @@ class Lognormal(Estimator):
             'linestyle', ['solid', 'dashed', 'dashdot', 'dotted'])
         # Catch issues between different versions of matplotlib.
         try:
-            linestyles = linstyles()
+            linestyles = linestyles()
         except TypeError:
             pass
         # Remove linestyle from kwargs, if it's there.
