@@ -26,8 +26,8 @@ class Proportions(container.Container):
         self.diagnosed = _safe_divide(D + T + V + W,
                                       A + U + D + T + V + W)
 
-        # (T + V) / (D + T + V + W)
-        self.treated = _safe_divide(T + V,
+        # (T + V + W) / (D + T + V + W)
+        self.treated = _safe_divide(T + V + W,
                                     D + T + V + W)
 
         # V / (T + V)
