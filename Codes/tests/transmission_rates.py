@@ -124,7 +124,7 @@ class Estimator(metaclass = abc.ABCMeta):
         '''
         results = model.Simulation(self.parameter_values,
                                    'baseline',
-                                   run_baseline = False)
+                                   baseline_targets = None)
         return results
 
     def plot_transmission_rates(self,

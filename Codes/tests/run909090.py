@@ -16,7 +16,7 @@ def _main(parallel = True):
     results = {}
     for k in ('baseline', '909090'):
         results[k] = model.Simulation(parameters, k,
-                                      run_baseline = False)
+                                      baseline_targets = None)
         print('{}: {:g} DALYs'.format(k, results[k].DALYs))
 
 

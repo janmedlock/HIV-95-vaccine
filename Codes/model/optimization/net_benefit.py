@@ -16,7 +16,7 @@ from .. import simulation
 def _objective_function(targets, parameters_, CE_threshold,
                         scale = 1):
     sim = simulation.Simulation(parameters_, targets,
-                                run_baseline = False)
+                                baseline_targets = None)
     return - sim.net_benefit(CE_threshold) / scale
 
 

@@ -42,33 +42,36 @@ class Simulation(container.Container):
                  targets_kwds = {},
                  t_start = 2015,
                  t_end = 2035,
-                 baseline = 'baseline',
-                 run_baseline = True,
-                 _use_log = True,
+                 baseline_targets = 'baseline',
+                 baseline_targets_kwds = {},
                  pts_per_year = 120, # = 10 per month
                  integrator = 'lsoda',
+                 _use_log = True,
                  **kwargs):
-        from . import ODEs
-
         self.parameters = parameters_
-
         self.country = self.parameters.country
+        self.baseline_targets = baseline_targets
+        self.baseline_targets_kwds = baseline_targets_kwds
+        self.pts_per_year = pts_per_year
+        self.integrator = integrator
+        self._use_log = _use_log
+        self.kwargs = kwargs
 
-        self.t_start = t_start
-        self.t_end = t_end
-
-        if kwargs:
+        if len(self.kwargs) > 0:
             self.parameters = copy.copy(self.parameters)
-            for (k, v) in kwargs.items():
+            for (k, v) in self.kwargs.items():
                 setattr(self.parameters, k, v)
 
         self.targets = targets.Targets(targets_, **targets_kwds)
 
-        self._use_log = _use_log
+        self.t = numpy.linspace(
+            t_start, t_end,
+            numpy.abs(t_end - t_start) * self.pts_per_year + 1)
 
-        t = numpy.linspace(
-            self.t_start, self.t_end,
-            numpy.abs(self.t_end - self.t_start) * pts_per_year + 1)
+        self.simulate()
+
+    def simulate(self):
+        from . import ODEs
 
         if self._use_log:
             Y0 = ODEs.transform(self.parameters.initial_conditions.copy())
@@ -78,11 +81,11 @@ class Simulation(container.Container):
             fcn = ODEs.ODEs
 
         # Scale time to start at 0 to avoid some solver warnings.
-        t_scaled = t - t[0]
+        t_scaled = self.t - self.t[0]
         def fcn_scaled(t_scaled, Y, targets_, parameters):
-            return fcn(t_scaled + t[0], Y, targets_, parameters)
+            return fcn(t_scaled + self.t[0], Y, targets_, parameters)
 
-        if integrator == 'odeint':
+        if self.integrator == 'odeint':
             def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
                 return fcn_scaled(t_scaled, Y, targets_, parameters)
             Y = integrate.odeint(fcn_scaled_swap_Yt,
@@ -94,7 +97,7 @@ class Simulation(container.Container):
                                  mxhnil = 1)
         else:
             solver = integrate.ode(fcn_scaled)
-            solver.set_integrator(integrator,
+            solver.set_integrator(self.integrator,
                                   nsteps = 2000,
                                   max_hnil = 1)
             solver.set_f_params(self.targets, self.parameters)
@@ -103,7 +106,7 @@ class Simulation(container.Container):
             Y[0] = Y0
             for i in range(1, len(t_scaled)):
                 Y[i] = solver.integrate(t_scaled[i])
-                if not _use_log:
+                if not self._use_log:
                     # Force to be non-negative.
                     Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
                     solver.set_initial_value(Y[i], t_scaled[i])
@@ -116,7 +119,7 @@ class Simulation(container.Container):
                     import pandas
                     idx = ['S', 'Q', 'A', 'U', 'D',
                            'T', 'V', 'W', 'Z', 'R']
-                    if _use_log:
+                    if self._use_log:
                         for i in ODEs.vars_log:
                             idx[i] += '_log'
                     print('Y = {}'.format(pandas.Series(Y[i - 1],
@@ -126,8 +129,7 @@ class Simulation(container.Container):
                     raise
                 if numpy.any(numpy.isnan(Y[i])):
                     msg = ("country = '{}': "
-                           + "NaN state values = {} at time t = {}!  "
-                           + "Are some parameter values missing?").format(
+                           + "NaN state values = {} at time t = {}!").format(
                                self.country, Y[i], t[i])
                     warnings.warn(msg)
                     Y[i : ] = numpy.nan
@@ -137,18 +139,22 @@ class Simulation(container.Container):
             self.state = ODEs.transform_inv(Y)
         else:
             self.state = Y
-        self.t = t
 
         for (k, v) in zip(self.keys(), ODEs.split_state(self.state)):
             setattr(self, k, v)
 
-        if run_baseline:
-            self.baseline = Simulation(self.parameters,
-                                       baseline,
-                                       t_start = self.t_start,
-                                       t_end = self.t_end,
-                                       run_baseline = False,
-                                       _use_log = self._use_log)
+        if self.baseline_targets is not None:
+            self.baseline = Simulation(
+                self.parameters,
+                self.baseline_targets,
+                targets_kwds = self.baseline_targets_kwds,
+                t_start = self.t[0],
+                t_end = self.t[-1],
+                baseline_targets = None,
+                pts_per_year = self.pts_per_year,
+                integrator = self.integrator,
+                _use_log = self._use_log,
+                **self.kwargs)
 
     @property
     def proportions(self):
