@@ -11,6 +11,7 @@ import sys
 
 from matplotlib.backends import backend_pdf
 from matplotlib import pyplot
+from matplotlib import ticker
 import numpy
 import pandas
 
@@ -51,15 +52,31 @@ def plot_transmission_rates(Estimator, quantile_level = 0.01, scale = 0.8):
                        color = 'black')
         except AttributeError:
             pass
-    ax.set_xlim(0)
     ax.set_xlabel('Transmission rate (per year)')
+    ax.set_xlim(0, 1)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
     ax.set_yticklabels(reversed(countries), fontdict = dict(size = 6))
     ax.grid(False, axis = 'y')
     fig.tight_layout()
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
     return fig
+
+
+def plot_all_countries(Estimator):
+    filename = '{}.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        fig = plot_transmission_rates(Estimator)
+        pdf.savefig(fig)
+
+        for country in countries:
+            print(country)
+            fig = pyplot.figure(figsize = (11, 8.5))
+            transmission_rates.plot_all_estimators(country,
+                                                   Estimators = [Estimator],
+                                                   fig = fig)
+            pdf.savefig(fig)
+            pyplot.close(fig)
 
 
 def plot_all_estimators(Estimators = None):
@@ -78,7 +95,8 @@ def plot_all_estimators(Estimators = None):
 if __name__ == '__main__':
     E = transmission_rates.ExponentiallyWeightedLognormal
     # plot_transmission_rates(E)
+    plot_all_countries(E)
 
-    plot_all_estimators([E])
+    # plot_all_estimators()
 
     # pyplot.show()
