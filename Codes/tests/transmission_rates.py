@@ -222,9 +222,13 @@ class Estimator(metaclass = abc.ABCMeta):
         # Plot historical data.
         data_ = data.dropna()
         if plot_data:
-            ax.plot(data_.index, data_ / scale,
-                    marker = '.', markersize = 10,
-                    zorder = 2)
+            if len(data_) > 0:
+                ax.plot(data_.index, data_ / scale,
+                        marker = '.', markersize = 10,
+                        zorder = 2)
+            else:
+                # Pop a style for consistency with other plots.
+                style = next(ax._get_lines.prop_cycler)
 
         # Plot simulation data.
         ax.plot(t, val / scale, alpha = 0.7, zorder = 1)
@@ -692,8 +696,8 @@ def plot_all_estimators(country, Estimators = None, fig = None):
 if __name__ == '__main__':
     country = 'South Africa'
     print(country)
-    # e = ExponentiallyWeightedMean(country)
+    e = ExponentiallyWeightedLognormal(country)
     # print('transmission rate = {}'.format(e.transmission_rates))
-    # e.plot()
-    plot_all_estimators(country)
+    e.plot()
+    # plot_all_estimators(country)
     pyplot.show()
