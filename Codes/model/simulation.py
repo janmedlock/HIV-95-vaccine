@@ -85,7 +85,24 @@ class Simulation(container.Container):
         def fcn_scaled(t_scaled, Y, targets_, parameters):
             return fcn(t_scaled + self.t[0], Y, targets_, parameters)
 
-        if self.integrator == 'odeint':
+        # If R0 is nan or fcn() is nan, then return nans without
+        # running solver.
+        if (numpy.isnan(self.parameters.R0)
+            or numpy.any(numpy.isnan(fcn_scaled(t_scaled[0], Y0,
+                                                self.targets,
+                                                self.parameters)))):
+            msg = "country = '{}': ".format(self.country)
+            if numpy.isnan(self.parameters.R0):
+                msg += "R_0 = NaN!"
+            else:
+                msg += "{}() has NaN at t[0] = {}!".format(fcn.__name__,
+                                                           self.t[0])
+            msg += "  There are probably NaN parameter values!"
+            msg += "  Skipping solver."
+            warnings.warn(msg)
+            Y = numpy.nan * numpy.ones(
+                (len(self.t), len(self.parameters.initial_conditions)))
+        elif self.integrator == 'odeint':
             def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
                 return fcn_scaled(t_scaled, Y, targets_, parameters)
             Y = integrate.odeint(fcn_scaled_swap_Yt,
