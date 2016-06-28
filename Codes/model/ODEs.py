@@ -23,12 +23,13 @@ vars_log = [0, 3, 4, 5, 6, 7]
 # Variables to not log transform: Q, A, Z, R
 vars_nonlog = [1, 2, 8, 9]
 
-def transform(state):
+def transform(state, _log0 = -20):
     '''
     Log transform some of the state variables.
     '''
     state_trans = numpy.empty(numpy.shape(state))
-    state_trans[..., vars_log] = numpy.log(state[..., vars_log])
+    state_trans[..., vars_log] = numpy.ma.log(state[..., vars_log]).filled(
+        _log0)
     state_trans[..., vars_nonlog] = state[..., vars_nonlog]
     return state_trans
 
@@ -112,10 +113,10 @@ def ODEs(t, state, targets_, parameters):
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def ODEs_log(t, state_log, targets_, parameters):
-    state = transform_inv(state_log)
+def ODEs_log(t, state_trans, targets_, parameters):
+    state = transform_inv(state_trans)
     S, Q, A, U, D, T, V, W, Z, R = state
-    (S_log, U_log, D_log, T_log, V_log, W_log) = state_log[vars_log]
+    (S_log, U_log, D_log, T_log, V_log, W_log) = state_trans[vars_log]
 
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
@@ -131,7 +132,7 @@ def ODEs_log(t, state_log, targets_, parameters):
               + numpy.exp(T_log - N_log)))
         + parameters.transmission_rate_suppressed * numpy.exp(V_log - N_log))
 
-    dS_log = (parameters.birth_rate * N * numpy.exp(- S_log)
+    dS_log = (parameters.birth_rate * numpy.exp(N_log - S_log)
               - control_rates.vaccination
               - force_of_infection
               - parameters.death_rate)
@@ -179,4 +180,5 @@ def ODEs_log(t, state_log, targets_, parameters):
 
     dR = force_of_infection * S
 
-    return [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]
+    dstate = [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]
+    return dstate

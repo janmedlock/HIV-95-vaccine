@@ -108,23 +108,24 @@ class Simulation(container.Container):
                     solver.set_initial_value(Y[i], t_scaled[i])
                 try:
                     assert solver.successful()
-                    assert not numpy.any(numpy.isnan(Y[i]))
                 except AssertionError:
                     dY = fcn_scaled(t_scaled[i - 1], Y[i - 1],
                                     self.targets, self.parameters)
                     print('t = {}'.format(t_scaled[i - 1]))
                     import pandas
+                    idx = ['S', 'Q', 'A', 'U', 'D',
+                           'T', 'V', 'W', 'Z', 'R']
                     if _use_log:
-                        idx = ['S_log', 'Q_log', 'A_log', 'U_log', 'D_log',
-                               'T_log', 'V_log', 'W_log', 'Z', 'R']
-                    else:
-                        idx = ['S', 'Q', 'A', 'U', 'D',
-                               'T', 'V', 'W', 'Z', 'R']
+                        for i in ODEs.vars_log:
+                            idx[i] += '_log'
                     print('Y = {}'.format(pandas.Series(Y[i - 1],
                                                         index = idx)))
                     print('dY = {}'.format(pandas.Series(dY,
                                                          index = idx)))
                     raise
+                if numpy.any(numpy.isnan(Y[i])):
+                    Y[i : ] = numpy.nan
+                    break
 
         if self._use_log:
             self.state = ODEs.transform_inv(Y)
