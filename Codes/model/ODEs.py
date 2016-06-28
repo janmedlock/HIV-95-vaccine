@@ -6,27 +6,53 @@ import numpy
 
 from . import simulation
 
+
+# S is susceptible.
+# Q is vaccinated.
+# A is acute infection.
+# U is undiagnosed.
+# D is diagnosed but not treated.
+# T is treated but not viral suppressed.
+# V is viral suppressed.
+# W is AIDS.
+# Z is dead from AIDS.
+# R is new infectons.
+
+# Variables to log transform: S, U, D, T, V, W
+vars_log = [0, 3, 4, 5, 6, 7]
+# Variables to not log transform: Q, A, Z, R
+vars_nonlog = [1, 2, 8, 9]
+
+def transform(state):
+    '''
+    Log transform some of the state variables.
+    '''
+    state_trans = numpy.empty(numpy.shape(state))
+    state_trans[..., vars_log] = numpy.log(state[..., vars_log])
+    state_trans[..., vars_nonlog] = state[..., vars_nonlog]
+    return state_trans
+
+def transform_inv(state_trans):
+    '''
+    Inverse log transform all the state variables.
+    '''
+    state = numpy.empty(numpy.shape(state_trans))
+    state[..., vars_log] = numpy.exp(state_trans[..., vars_log])
+    state[..., vars_nonlog] = state_trans[..., vars_nonlog]
+    return state
+
+
 def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-def ODEs(t, state, targets_, parameters, direction = 1):
+def ODEs(t, state, targets_, parameters):
     # Force the state variables to be non-negative.
     # The last two state variables, dead from AIDS and new infections,
     # are cumulative numbers that are set to 0 at t = 0: these
     # can be negative if time goes backwards.
     state[ : -2] = state[ : - 2].clip(0, numpy.inf)
 
-    # S is susceptible.
-    # Q is vaccinated.
-    # A is acute infection.
-    # U is undiagnosed.
-    # D is diagnosed but not treated.
-    # T is treated but not viral suppressed.
-    # V is viral suppressed.
-    # W is AIDS.
-    # Z is dead from AIDS.
-    # R is new infectons.
     S, Q, A, U, D, T, V, W, Z, R = state
 
     # Total sexually active population.
@@ -86,21 +112,10 @@ def ODEs(t, state, targets_, parameters, direction = 1):
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def ODEs_log(t, state_log, targets_, parameters, direction = 1):
-    # S is susceptible.
-    # Q is vaccinated.
-    # A is acute infection.
-    # U is undiagnosed.
-    # D is diagnosed but not treated.
-    # T is treated but not viral suppressed.
-    # V is viral suppressed.
-    # W is AIDS.
-    # Z is dead from AIDS.
-    # R is new infectons.
-    state = simulation.transform_inv(state_log)
+def ODEs_log(t, state_log, targets_, parameters):
+    state = transform_inv(state_log)
     S, Q, A, U, D, T, V, W, Z, R = state
-    (S_log, Q_log, A_log, U_log, D_log,
-     T_log, V_log, W_log) = state_log[ : -2]
+    (S_log, U_log, D_log, T_log, V_log, W_log) = state_log[vars_log]
 
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
@@ -109,31 +124,28 @@ def ODEs_log(t, state_log, targets_, parameters, direction = 1):
     control_rates = targets_(parameters, t).control_rates(state)
 
     force_of_infection = (
-        (parameters.transmission_rate_acute
-         * numpy.exp(A_log - N_log))
+        parameters.transmission_rate_acute * A / N
         + (parameters.transmission_rate_unsuppressed
            * (numpy.exp(U_log - N_log)
               + numpy.exp(D_log - N_log)
               + numpy.exp(T_log - N_log)))
-        + (parameters.transmission_rate_suppressed
-           * numpy.exp(V_log - N_log)))
+        + parameters.transmission_rate_suppressed * numpy.exp(V_log - N_log))
 
     dS_log = (parameters.birth_rate * N * numpy.exp(- S_log)
               - control_rates.vaccination
               - force_of_infection
               - parameters.death_rate)
 
-    dQ_log = (control_rates.vaccination * numpy.exp(S_log - Q_log)
-              - (1 - parameters.vaccine_efficacy) * force_of_infection
-              - parameters.death_rate)
+    dQ = (control_rates.vaccination * numpy.exp(S_log)
+          - (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          - parameters.death_rate * Q)
 
-    dA_log = (force_of_infection * numpy.exp(S_log - A_log)
-              + ((1 - parameters.vaccine_efficacy) * force_of_infection
-                 * numpy.exp(Q_log - A_log))
-              - parameters.progression_rate_acute
-              - parameters.death_rate)
+    dA = (force_of_infection * numpy.exp(S_log)
+          + (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          - parameters.progression_rate_acute * A
+          - parameters.death_rate * A)
 
-    dU_log = (parameters.progression_rate_acute * numpy.exp(A_log - U_log)
+    dU_log = (parameters.progression_rate_acute * A * numpy.exp(- U_log)
               - control_rates.diagnosis
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
@@ -167,17 +179,4 @@ def ODEs_log(t, state_log, targets_, parameters, direction = 1):
 
     dR = force_of_infection * S
 
-    # return [dS_log, dQ_log, dA_log, dU_log, dD_log,
-    #         dT_log, dV_log, dW_log, dZ, dR]
-
-    dstate = numpy.array([dS_log, dQ_log, dA_log, dU_log, dD_log,
-                          dT_log, dV_log, dW_log, dZ, dR])
-
-    if direction == -1:
-        # If one of the log variables is very small
-        # and has a negative derivative,
-        # set the derivative to 0.
-        dstate[ : -2] = numpy.where((state_log <= -20) & (dstate > 0),
-                                    0, dstate)[ : -2]
-
-    return dstate
+    return [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]

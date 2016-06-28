@@ -122,7 +122,7 @@ class Parameters:
 
     def compute_drug_coverage(self):
         drug_coverage = self.treated / self.prevalence / self.population
-        if any(self.treated <= 1):
+        if any((self.treated > 0) & (self.treated <= 1)):
             warnings.warn(
                 "country = '{}':  ".format(self.country)
                 + 'Some ARV treated data appear to be proportion treated.  '

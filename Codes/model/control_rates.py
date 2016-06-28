@@ -109,4 +109,3 @@ class ControlRates(container.Container):
         self.vaccination = (ControlRatesMax.vaccination
                             * ramp(target_values.vaccinated
                                    - proportions_.vaccinated))
-

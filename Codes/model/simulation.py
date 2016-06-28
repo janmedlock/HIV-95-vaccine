@@ -17,28 +17,6 @@ from . import proportions
 from . import targets
 
 
-def transform(state):
-    '''
-    Log transform all the state variables except the last two,
-    cumulative dead and cumulative new infections.  These last two
-    can be negative if time goes backwards.
-    '''
-    state_trans = numpy.ma.hstack((numpy.ma.log(state[..., : -2]),
-                                   state[..., -2 : ]))
-    return state_trans
-
-
-def transform_inv(state_trans):
-    '''
-    Inverse log transform all the state variables except the last two,
-    cumulative dead and cumulative new infections.  These last two
-    can be negative if time goes backwards.
-    '''
-    state = numpy.hstack((numpy.exp(state_trans[..., : -2]),
-                          state_trans[..., -2 : ]))
-    return state
-
-
 class Simulation(container.Container):
     '''
     A class to hold the simulation information.
@@ -92,9 +70,7 @@ class Simulation(container.Container):
             numpy.abs(self.t_end - self.t_start) * pts_per_year + 1)
 
         if self._use_log:
-            Y0 = transform(self.parameters.initial_conditions).copy()
-            # Map 0 to exp(-20).
-            Y0 = Y0.filled(-20)
+            Y0 = ODEs.transform(self.parameters.initial_conditions.copy())
             fcn = ODEs.ODEs_log
         else:
             Y0 = self.parameters.initial_conditions.copy()
@@ -129,9 +105,10 @@ class Simulation(container.Container):
                 if not _use_log:
                     # Force to be non-negative.
                     Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
-                    solver.set_initial_value(Y.iloc[i], t_scaled[i])
+                    solver.set_initial_value(Y[i], t_scaled[i])
                 try:
                     assert solver.successful()
+                    assert not numpy.any(numpy.isnan(Y[i]))
                 except AssertionError:
                     dY = fcn_scaled(t_scaled[i - 1], Y[i - 1],
                                     self.targets, self.parameters)
@@ -150,7 +127,7 @@ class Simulation(container.Container):
                     raise
 
         if self._use_log:
-            self.state = transform_inv(Y)
+            self.state = ODEs.transform_inv(Y)
         else:
             self.state = Y
         self.t = t
