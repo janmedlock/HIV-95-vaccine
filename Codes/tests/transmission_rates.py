@@ -443,9 +443,14 @@ def EWM_factory(halflife_):
             Estimate the transmission rate.
             '''
             transmission_rates_vs_time = self.estimate_vs_time()
-            ewm = transmission_rates_vs_time.ewm(halflife = self.halflife).mean()
+            ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
+            ewm = ew.mean()
+
             # Just use the last one.
-            return ewm.iloc[-1]
+            if len(ewm) > 0:
+                return ewm.iloc[-1]
+            else:
+                return numpy.nan
 
         def set_transmission_rates(self):
             '''

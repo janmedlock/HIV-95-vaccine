@@ -3,6 +3,7 @@ Simulation of the HIV model.
 '''
 
 import copy
+import warnings
 
 import numpy
 from scipy import integrate
@@ -124,6 +125,11 @@ class Simulation(container.Container):
                                                          index = idx)))
                     raise
                 if numpy.any(numpy.isnan(Y[i])):
+                    msg = ("country = '{}': "
+                           + "NaN state values = {} at time t = {}!  "
+                           + "Are some parameter values missing?").format(
+                               self.country, Y[i], t[i])
+                    warnings.warn(msg)
                     Y[i : ] = numpy.nan
                     break
 
