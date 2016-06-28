@@ -147,7 +147,7 @@ class Simulation(container.Container):
                 if numpy.any(numpy.isnan(Y[i])):
                     msg = ("country = '{}': "
                            + "NaN state values = {} at time t = {}!").format(
-                               self.country, Y[i], t[i])
+                               self.country, Y[i], self.t[i])
                     warnings.warn(msg)
                     Y[i : ] = numpy.nan
                     break
