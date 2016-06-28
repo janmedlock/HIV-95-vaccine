@@ -19,6 +19,7 @@ datapath = os.path.join(os.path.dirname(__file__), datafile)
 
 
 country_replacements = {
+    'Bolivia (Plurinational State of)': 'Bolivia',
     'Bahamas': 'The Bahamas',
     'Congo': 'Republic of Congo',
     "Côte d'Ivoire": 'Ivory Coast',
@@ -27,7 +28,9 @@ country_replacements = {
     'Republic of Moldova': 'Moldova',
     'Timor-Leste': 'East Timor',
     # 'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    # 'United States': 'United States of America'
+    'United Republic of Tanzania': 'Tanzania',
+    # 'United States': 'United States of America',
+    'Venezuela (Bolivarian Republic of)': 'Venezuela'
 }
 
 country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
