@@ -729,12 +729,14 @@ def plot_all_estimators(country, Estimators = None, fig = None):
         e = E(country)
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
-        print('\t{}: beta = {:.2f}, beta_U = {:.2f}, beta_V = {:.2f}, beta_A = {:.2f}, R_0 = {:.2f}'.format(
-            E.__name__, e.parameter_values.transmission_rate,
-            e.parameter_values.transmission_rate_unsuppressed,
-            e.parameter_values.transmission_rate_suppressed,
-            e.parameter_values.transmission_rate_acute,
-            e.R0))
+        print(('\t{}: beta = {:.2f}, beta_U = {:.2f}, beta_V = {:.2f}, '
+               + 'beta_A = {:.2f}, R_0 = {:.2f}').format(
+                   E.__name__,
+                   e.parameter_values.transmission_rate,
+                   e.parameter_values.transmission_rate_unsuppressed,
+                   e.parameter_values.transmission_rate_suppressed,
+                   e.parameter_values.transmission_rate_acute,
+                   e.R0))
     return fig
 
 
