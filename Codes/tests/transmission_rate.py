@@ -102,10 +102,14 @@ class Estimator(metaclass = abc.ABCMeta):
         ###################
         S, Q, A, U, D, T, V, W, Z, R = self.parameter_values.initial_conditions
         I = A + U + D + T + V + W
-        self.parameter_values.transmission_rate_unsuppressed \
-            = (self.parameter_values.transmission_rate * I
-               / (U + D + T + relative_rate_acute * A
-                  + relative_rate_suppressed * V))
+        if I > 0:
+            self.parameter_values.transmission_rate_unsuppressed \
+                = (self.parameter_values.transmission_rate * I
+                   / (U + D + T + relative_rate_acute * A
+                      + relative_rate_suppressed * V))
+        else:
+            self.parameter_values.transmission_rate_unsuppressed \
+                = self.parameter_values.transmission_rate
         self.parameter_values.transmission_rate_suppressed \
                = (relative_rate_suppressed
                   * self.parameter_values.transmission_rate_unsuppressed)
@@ -368,12 +372,25 @@ class Rakai(Estimator):
     country-specific prevalence and incidence.
     '''
     def estimate(self):
+        '''
+        Invert the process used in :meth:`set_transmission_rate`.
+        '''
         p = self.parameters.mode()
-        # props = model.proportions.Proportions(p.initial_conditions)
-        # proportion_suppressed = props.suppressed
-        # return (p.transmission_rate_unsuppressed * (1 - proportion_suppressed)
-        #         + p.transmission_rate_suppressed * proportion_suppressed)
-        return p.transmission_rate_unsuppressed
+        tr = p.transmission_rate_unsuppressed
+
+        relative_rate_suppressed = (p.transmission_rate_suppressed
+                                    / p.transmission_rate_unsuppressed)
+        relative_rate_acute = (p.transmission_rate_acute
+                               / p.transmission_rate_unsuppressed)
+        S, Q, A, U, D, T, V, W, Z, R = p.initial_conditions
+        I = A + U + D + T + V + W
+        if I > 0:
+            return (p.transmission_rate_unsuppressed
+                    * (U + D + T
+                       + relative_rate_acute * A
+                       + relative_rate_suppressed * V) / I)
+        else:
+            return p.transmission_rate_unsuppressed
 
     def plot_estimate(self, ax, **kwargs):
         ax.axhline(self.parameter_values.transmission_rate,
