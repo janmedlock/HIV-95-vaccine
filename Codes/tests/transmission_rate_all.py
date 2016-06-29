@@ -34,26 +34,33 @@ def plot_transmission_rate(Estimator, quantile_level = 0.01, scale = 0.8):
     n = len(countries)
     colors = seaborn.color_palette('husl', n)
     for (i, country) in enumerate(countries):
+        # Plot from top instead of bottom.
+        j = n - 1 - i
         print(country)
         e = Estimator(country)
         tr = e.parameters.transmission_rate
         # Catch tr = NaN.
         try:
             a, b = tr.ppf([quantile_level / 2, 1 - quantile_level / 2])
+        except AttributeError:
+            pass
+        else:
             x = numpy.linspace(a, b, 101)
             y = tr.pdf(x) / n * scale
-            j = n - 1 - i
             ax.fill_between(x, j + y, j - y,
                             linewidth = 0,
                             facecolor = colors[i],
                             alpha = 0.7)
-            ax.scatter(tr.mode, j,
+        try:
+            pts = tr.mode
+        except AttributeError:
+            pts = tr
+        finally:
+            ax.scatter(pts, j,
                        marker = '|', s = 30, linewidth = 1,
                        color = 'black')
-        except AttributeError:
-            pass
     ax.set_xlabel('Transmission rate (per year)')
-    ax.set_xlim(0, 1)
+    ax.set_xlim(left = 0)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
