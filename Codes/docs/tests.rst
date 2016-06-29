@@ -29,10 +29,10 @@ simulation
 ----------
 .. automodule:: tests.simulation
 
-transmission_rates
-------------------
-.. automodule:: tests.transmission_rates
+transmission_rate
+-----------------
+.. automodule:: tests.transmission_rate
 
-transmission_rates_all
-----------------------
-.. automodule:: tests.transmission_rates_all
+transmission_rate_all
+---------------------
+.. automodule:: tests.transmission_rate_all

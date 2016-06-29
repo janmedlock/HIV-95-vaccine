@@ -281,13 +281,10 @@ class _ParameterSuper:
                                + self.death_rate_AIDS
                                / self.progression_rate_unsuppressed))
 
-        ics = self.initial_conditions.copy()
+        ics = self.initial_conditions.copy().astype(float)
         newAIDS = proportionAIDS * ics['D']
         ics['W'] = newAIDS
         ics['D'] -= newAIDS
-
-        # Convert to numpy object for speed.
-        self.initial_conditions = ics.values.astype(float)
 
     @property
     def R0(self):

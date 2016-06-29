@@ -73,11 +73,11 @@ class Simulation(container.Container):
     def simulate(self):
         from . import ODEs
 
+        Y0 = self.parameters.initial_conditions.copy().values
         if self._use_log:
-            Y0 = ODEs.transform(self.parameters.initial_conditions.copy())
+            Y0 = ODEs.transform(Y0)
             fcn = ODEs.ODEs_log
         else:
-            Y0 = self.parameters.initial_conditions.copy()
             fcn = ODEs.ODEs
 
         # Scale time to start at 0 to avoid some solver warnings.
@@ -100,8 +100,7 @@ class Simulation(container.Container):
             msg += "  There are probably NaN parameter values!"
             msg += "  Skipping solver."
             warnings.warn(msg)
-            Y = numpy.nan * numpy.ones(
-                (len(self.t), len(self.parameters.initial_conditions)))
+            Y = numpy.nan * numpy.ones((len(self.t), len(Y0)))
         elif self.integrator == 'odeint':
             def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
                 return fcn_scaled(t_scaled, Y, targets_, parameters)

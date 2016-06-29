@@ -47,12 +47,71 @@ class Estimator(metaclass = abc.ABCMeta):
         Estimate the transmission rate.
         '''
 
-    @abc.abstractmethod
     def set_transmission_rates(self):
-        '''
+        r'''
         Set the transmission rates in the .parameters object for future
         use (e.g. in simulation).
+
+        The force of infection is
+
+        .. math:: \lambda =
+                  \frac{\beta_A A + \beta_U (U + D + T) + \beta_V V
+                  + 0 \cdot W}{N}
+                  = \frac{\beta I}{N},
+
+        where :math:`\beta` is the estimated aggregate transmission rate and
+        :math:`I = A + U + D + T + V + W` is PLHIV.
+        Then
+
+        .. math:: \begin{align}
+                  \beta I
+                  &= \beta_A A
+                  + \beta_U (U + D + T)
+                  + \beta_V V
+                  + 0 \cdot W \\
+                  &= \beta_U \left(U + D + T
+                  + \frac{\beta_A}{\beta_U} A
+                  + \frac{\beta_V}{\beta_U} V\right),
+                  \end{align}
+
+        so
+
+        .. math:: \beta_U
+                  = \frac{\beta I}
+                  {U + D + T
+                  + \frac{\beta_A}{\beta_U} A
+                  + \frac{\beta_V}{\beta_U} V}.
+
+        Scale parameters.transmission_rate_* by the estimated
+        (parameter_values.transmission_rate
+        / parameter_values.transmission_rate_unsuppressed).
         '''
+        relative_rate_suppressed = (
+            self.parameter_values.transmission_rate_suppressed
+            / self.parameter_values.transmission_rate_unsuppressed)
+        relative_rate_acute = (
+            self.parameter_values.transmission_rate_acute
+            / self.parameter_values.transmission_rate_unsuppressed)
+        #################
+        # beta_U = beta #
+        #################
+        # self.parameter_values.transmission_rate_unsuppressed \
+        #     = self.parameter_values.transmission_rate
+        ###################
+        # beta_U as above #
+        ###################
+        S, Q, A, U, D, T, V, W, Z, R = self.parameter_values.initial_conditions
+        I = A + U + D + T + V + W
+        self.parameter_values.transmission_rate_unsuppressed \
+            = (self.parameter_values.transmission_rate * I
+               / (U + D + T + relative_rate_acute * A
+                  + relative_rate_suppressed * V))
+        self.parameter_values.transmission_rate_suppressed \
+               = (relative_rate_suppressed
+                  * self.parameter_values.transmission_rate_unsuppressed)
+        self.parameter_values.transmission_rate_acute \
+               = (relative_rate_acute
+                  * self.parameter_values.transmission_rate_unsuppressed)
 
     @abc.abstractmethod
     def plot_estimate(self, ax, **kwargs):
@@ -316,9 +375,6 @@ class Rakai(Estimator):
         #         + p.transmission_rate_suppressed * proportion_suppressed)
         return p.transmission_rate_unsuppressed
 
-    def set_transmission_rates(self):
-        pass
-
     def plot_estimate(self, ax, **kwargs):
         ax.axhline(self.parameter_values.transmission_rate,
                    label = self.__class__.__name__,
@@ -336,18 +392,6 @@ class GeometricMean(Estimator):
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
         return stats.gmean(transmission_rates_vs_time)
-
-    def set_transmission_rates(self):
-        '''
-        Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rate
-        / parameter_values.transmission_rate_unsuppressed).
-        '''
-        scale = (self.parameter_values.transmission_rate
-                 / self.parameter_values.transmission_rate_unsuppressed)
-        self.parameter_values.transmission_rate_unsuppressed *= scale
-        self.parameter_values.transmission_rate_suppressed *= scale
-        self.parameter_values.transmission_rate_acute *= scale
 
     def plot_estimate(self, ax, **kwargs):
         '''
@@ -382,18 +426,6 @@ class Lognormal(Estimator):
         transmission_rate.mode = gmean * numpy.exp(- sigma ** 2)
 
         return transmission_rate
-
-    def set_transmission_rates(self):
-        '''
-        Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rate
-        / parameter_values.transmission_rate_unsuppressed).
-        '''
-        scale = (self.parameter_values.transmission_rate
-                 / self.parameter_values.transmission_rate_unsuppressed)
-        self.parameter_values.transmission_rate_unsuppressed *= scale
-        self.parameter_values.transmission_rate_suppressed *= scale
-        self.parameter_values.transmission_rate_acute *= scale
 
     def plot_estimate(self, ax,
                       quantile_levels = (0, 0.5, 0.9, 0.95),
@@ -457,18 +489,6 @@ class EWMean(Estimator):
         else:
             return numpy.nan
 
-    def set_transmission_rates(self):
-        '''
-        Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rate
-        / parameter_values.transmission_rate_unsuppressed).
-        '''
-        scale = (self.parameter_values.transmission_rate
-                 / self.parameter_values.transmission_rate_unsuppressed)
-        self.parameter_values.transmission_rate_unsuppressed *= scale
-        self.parameter_values.transmission_rate_suppressed *= scale
-        self.parameter_values.transmission_rate_acute *= scale
-
     def plot_estimate(self, ax, **kwargs):
         '''
         Make a horizontal line at the value of the estimate.
@@ -510,33 +530,6 @@ class EWLognormal(Estimator):
         else:
             transmission_rate = numpy.nan
         return transmission_rate
-
-    def set_transmission_rates(self):
-        '''
-        Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rate
-        / parameter_values.transmission_rate_unsuppressed).
-        '''
-        relative_rate_suppressed = (
-            self.parameter_values.transmission_rate_suppressed
-            / self.parameter_values.transmission_rate_unsuppressed)
-        relative_rate_acute = (
-            self.parameter_values.transmission_rate_acute
-            / self.parameter_values.transmission_rate_unsuppressed)
-        # proportion_suppressed = model.proportions.Proportions(
-        #     self.parameter_values.initial_conditions).suppressed
-        # self.parameter_values.transmission_rate_unsuppressed = (
-        #     self.parameter_values.transmission_rate
-        #     / (1 - (1 - relative_rate_suppressed) * proportion_suppressed)
-        #     * 0.9)
-        self.parameter_values.transmission_rate_unsuppressed = (
-            self.parameter_values.transmission_rate)
-        self.parameter_values.transmission_rate_suppressed = (
-            relative_rate_suppressed
-            * self.parameter_values.transmission_rate_unsuppressed)
-        self.parameter_values.transmission_rate_acute = (
-            relative_rate_acute
-            * self.parameter_values.transmission_rate_unsuppressed)
 
     def plot_estimate(self, ax,
                       quantile_levels = (0, 0.5, 0.9, 0.95),
@@ -719,13 +712,17 @@ def plot_all_estimators(country, Estimators = None, fig = None):
         e = E(country)
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
-        print('\t{}: beta = {:.2f}, R_0 = {:.2f}'.format(
-            E.__name__, e.parameter_values.transmission_rate, e.R0))
+        print('\t{}: beta = {:.2f}, beta_U = {:.2f}, beta_V = {:.2f}, beta_A = {:.2f}, R_0 = {:.2f}'.format(
+            E.__name__, e.parameter_values.transmission_rate,
+            e.parameter_values.transmission_rate_unsuppressed,
+            e.parameter_values.transmission_rate_suppressed,
+            e.parameter_values.transmission_rate_acute,
+            e.R0))
     return fig
 
 
 if __name__ == '__main__':
-    country = 'Uganda'
+    country = 'South Africa'
     print(country)
     # e = EWLognormal(country)
     # print('transmission rate = {}'.format(e.transmission_rate))

@@ -39,9 +39,9 @@ class Proportions(container.Container):
         self.treated = _safe_divide(T + V + W,
                                     D + T + V + W)
 
-        # V / (T + V)
+        # V / (T + V + W)
         self.suppressed = _safe_divide(V,
-                                       T + V)
+                                       T + V + W)
 
         # Q / (S + Q)
         self.vaccinated = _safe_divide(Q,
