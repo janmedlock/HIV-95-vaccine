@@ -31,8 +31,8 @@ class Estimator(metaclass = abc.ABCMeta):
         self.country = country
         # Read the incidence, prevalence, population, etc from the datasheet.
         self.parameters = model.Parameters(country)
-        # Estimate the transmission rates.
-        self.transmission_rates = self.estimate()
+        # Estimate the transmission rate.
+        self.transmission_rate = self.estimate()
         # Use them to set up parameter values for R0, simulation, etc.
         self._set_parameter_values()
         # Attach R0 for convenience.
@@ -44,7 +44,7 @@ class Estimator(metaclass = abc.ABCMeta):
     @abc.abstractmethod
     def estimate(self):
         '''
-        Estimate transmission rates.
+        Estimate the transmission rate.
         '''
 
     @abc.abstractmethod
@@ -55,9 +55,9 @@ class Estimator(metaclass = abc.ABCMeta):
         '''
 
     @abc.abstractmethod
-    def plot_estimates(self, ax, **kwargs):
+    def plot_estimate(self, ax, **kwargs):
         '''
-        Plot the estimates of the transmission rates.
+        Plot the estimate of the transmission rate.
         '''
 
     def estimate_vs_time(self):
@@ -90,11 +90,11 @@ class Estimator(metaclass = abc.ABCMeta):
     def _set_parameter_values(self):
         '''
         Set up the .parameter_values object from the .parameters object,
-        and set the transmission rates using our estimates.
+        and set the transmission rates using our estimate.
         '''
-        # Attach .transmission_rates to .parameters,
+        # Attach .transmission_rate to .parameters,
         # in case they are scipy.stats random variables.
-        self.parameters.transmission_rates = self.transmission_rates
+        self.parameters.transmission_rate = self.transmission_rate
 
         # Convert any scipy.stats in .parameters to values
         # using maximum likelikehood (mode) or by sampling.
@@ -103,18 +103,8 @@ class Estimator(metaclass = abc.ABCMeta):
 
         self.set_transmission_rates()
 
-        # Make sure all transmission rates are finite.
-        # assert numpy.isfinite(self.parameter_values.transmission_rates).all()
-        if not numpy.isfinite(self.parameter_values.transmission_rates).all():
-            msg = ("{}: country = '{}': "
-                   + "Non-finite transmission_rates = {}!").format(
-                       self.__class__.__name__,
-                       self.country,
-                       self.parameter_values.transmission_rates)
-            warnings.warn(msg)
-
-        # Make sure all transmission rates are non-negative.
-        assert not numpy.any(self.parameter_values.transmission_rates < 0)
+        assert numpy.isfinite(self.parameter_values.transmission_rate).all()
+        assert not numpy.any(self.parameter_values.transmission_rate < 0)
 
     def simulate(self):
         '''
@@ -125,16 +115,16 @@ class Estimator(metaclass = abc.ABCMeta):
                                    baseline_targets = None)
         return results
 
-    def plot_transmission_rates(self,
-                                ax = None,
-                                plot_vs_time = True,
-                                title = True,
-                                **kwargs):
+    def plot_transmission_rate(self,
+                               ax = None,
+                               plot_vs_time = True,
+                               title = True,
+                               **kwargs):
         '''
-        Plot estimates of the transmission rates and, optionally,
+        Plot estimate of the transmission rate and, optionally,
         the transmission rates vs time.
 
-        This sets up the plot axes, legend, etc, so that plot_estimates()
+        This sets up the plot axes, legend, etc, so that plot_estimate()
         doesn't need to.
         '''
         if ax is None:
@@ -143,15 +133,15 @@ class Estimator(metaclass = abc.ABCMeta):
         if plot_vs_time:
             self.plot_transmission_rates_vs_time(ax, **kwargs)
 
-        # The plot_estimates() methods I have written use ax.axhline(),
+        # The plot_estimate() methods I have written use ax.axhline(),
         # which doesn't automatically use the axes prop_cycler.  So
         # grab the next style from the cycler and pass to
-        # plot_estimates().
+        # plot_estimate().
         style = next(ax._get_lines.prop_cycler)
         kwargs.update(style)
         # Add some alpha.
         kwargs.update(dict(alpha = 0.7))
-        self.plot_estimates(ax, **kwargs)
+        self.plot_estimate(ax, **kwargs)
 
         ax.xaxis.set_major_locator(ticker.MaxNLocator(integer = True))
         ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
@@ -259,7 +249,7 @@ class Estimator(metaclass = abc.ABCMeta):
 
     def plot(self, fig = None, plot_data = True):
         '''
-        Plot transmission rate estimates and compare simulation
+        Plot transmission rate estimate and compare simulation
         with historical data.
         '''
         results = self.simulate()
@@ -271,7 +261,7 @@ class Estimator(metaclass = abc.ABCMeta):
         # for plotting transmission rates,
         # and nsubplots axes in the right column for plotting
         # simulation vs historical data.
-        nsubplots = 4
+        nsubplots = 3
         axes = []
         ax = fig.add_subplot(1, 2, 1)
         axes.append(ax)
@@ -294,8 +284,8 @@ class Estimator(metaclass = abc.ABCMeta):
                  verticalalignment = 'top',
                  horizontalalignment = 'center')
 
-        self.plot_transmission_rates(axes[0], title = False,
-                                     plot_vs_time = plot_data)
+        self.plot_transmission_rate(axes[0], title = False,
+                                    plot_vs_time = plot_data)
 
         self._plot_sim_cell(axes[1], results, 'infected',
                             plot_data = plot_data)
@@ -306,11 +296,33 @@ class Estimator(metaclass = abc.ABCMeta):
         self._plot_sim_cell(axes[3], results, 'incidence',
                             plot_data = plot_data)
 
-        self._plot_sim_cell(axes[4], results, 'drug_coverage',
-                            plot_data = plot_data)
+        # self._plot_sim_cell(axes[4], results, 'drug_coverage',
+        #                     plot_data = plot_data)
 
         fig.tight_layout()
         return fig
+
+
+class Rakai(Estimator):
+    '''
+    Use the Rakai rates directly, without adjusting for
+    country-specific prevalence and incidence.
+    '''
+    def estimate(self):
+        p = self.parameters.mode()
+        # props = model.proportions.Proportions(p.initial_conditions)
+        # proportion_suppressed = props.suppressed
+        # return (p.transmission_rate_unsuppressed * (1 - proportion_suppressed)
+        #         + p.transmission_rate_suppressed * proportion_suppressed)
+        return p.transmission_rate_unsuppressed
+
+    def set_transmission_rates(self):
+        pass
+
+    def plot_estimate(self, ax, **kwargs):
+        ax.axhline(self.parameter_values.transmission_rate,
+                   label = self.__class__.__name__,
+                   **kwargs)
 
 
 class GeometricMean(Estimator):
@@ -328,20 +340,20 @@ class GeometricMean(Estimator):
     def set_transmission_rates(self):
         '''
         Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rates
+        (parameter_values.transmission_rate
         / parameter_values.transmission_rate_unsuppressed).
         '''
-        scale = (self.parameter_values.transmission_rates
+        scale = (self.parameter_values.transmission_rate
                  / self.parameter_values.transmission_rate_unsuppressed)
         self.parameter_values.transmission_rate_unsuppressed *= scale
         self.parameter_values.transmission_rate_suppressed *= scale
         self.parameter_values.transmission_rate_acute *= scale
 
-    def plot_estimates(self, ax, **kwargs):
+    def plot_estimate(self, ax, **kwargs):
         '''
         Make a horizontal line at the value of the estimate.
         '''
-        ax.axhline(self.transmission_rates,
+        ax.axhline(self.transmission_rate,
                    label = self.__class__.__name__,
                    **kwargs)
 
@@ -362,30 +374,30 @@ class Lognormal(Estimator):
         sigma = numpy.std(numpy.log(transmission_rates_vs_time), ddof = 1)
 
         # Note that the median of this lognormal RV is gmean.
-        transmission_rates = stats.lognorm(sigma, scale = gmean)
+        transmission_rate = stats.lognorm(sigma, scale = gmean)
 
         # scipy RVs don't define .mode (i.e. MLE),
         # so I explicitly add it so I can use it
         # as the point estimate later.
-        transmission_rates.mode = gmean * numpy.exp(- sigma ** 2)
+        transmission_rate.mode = gmean * numpy.exp(- sigma ** 2)
 
-        return transmission_rates
+        return transmission_rate
 
     def set_transmission_rates(self):
         '''
         Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rates
+        (parameter_values.transmission_rate
         / parameter_values.transmission_rate_unsuppressed).
         '''
-        scale = (self.parameter_values.transmission_rates
+        scale = (self.parameter_values.transmission_rate
                  / self.parameter_values.transmission_rate_unsuppressed)
         self.parameter_values.transmission_rate_unsuppressed *= scale
         self.parameter_values.transmission_rate_suppressed *= scale
         self.parameter_values.transmission_rate_acute *= scale
 
-    def plot_estimates(self, ax,
-                       quantile_levels = (0, 0.5, 0.9, 0.95),
-                       **kwargs):
+    def plot_estimate(self, ax,
+                      quantile_levels = (0, 0.5, 0.9, 0.95),
+                      **kwargs):
         '''
         Make horizontal lines at the median and other quantiles.
         '''
@@ -414,7 +426,7 @@ class Lognormal(Estimator):
                 else:
                     label = None
                 try:
-                    ax.axhline(self.transmission_rates.ppf(q),
+                    ax.axhline(self.transmission_rate.ppf(q),
                                label = label,
                                linestyle = linestyle,
                                **kwargs)
@@ -422,7 +434,7 @@ class Lognormal(Estimator):
                     pass
 
 
-class ExponentiallyWeightedMean(Estimator):
+class EWMean(Estimator):
     '''
     Estimate the transmission rate at each time,
     then take the exponentially weighted average over time.
@@ -448,25 +460,25 @@ class ExponentiallyWeightedMean(Estimator):
     def set_transmission_rates(self):
         '''
         Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rates
+        (parameter_values.transmission_rate
         / parameter_values.transmission_rate_unsuppressed).
         '''
-        scale = (self.parameter_values.transmission_rates
+        scale = (self.parameter_values.transmission_rate
                  / self.parameter_values.transmission_rate_unsuppressed)
         self.parameter_values.transmission_rate_unsuppressed *= scale
         self.parameter_values.transmission_rate_suppressed *= scale
         self.parameter_values.transmission_rate_acute *= scale
 
-    def plot_estimates(self, ax, **kwargs):
+    def plot_estimate(self, ax, **kwargs):
         '''
         Make a horizontal line at the value of the estimate.
         '''
-        ax.axhline(self.transmission_rates,
+        ax.axhline(self.transmission_rate,
                    label = self.__class__.__name__,
                    **kwargs)
 
 
-class ExponentiallyWeightedLognormal(Estimator):
+class EWLognormal(Estimator):
     '''
     Estimate the transmission rate at each time,
     then build a lognormal random variable using exponentially
@@ -490,30 +502,45 @@ class ExponentiallyWeightedLognormal(Estimator):
             mu = ew.mean().iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
             sigma = ew.std().iloc[-1]
-            transmission_rates = stats.lognorm(sigma, scale = numpy.exp(mu))
+            transmission_rate = stats.lognorm(sigma, scale = numpy.exp(mu))
             # scipy RVs don't define .mode (i.e. MLE),
             # so I explicitly add it so I can use it
             # as the point estimate later.
-            transmission_rates.mode = numpy.exp(mu - sigma ** 2)
+            transmission_rate.mode = numpy.exp(mu - sigma ** 2)
         else:
-            transmission_rates = numpy.nan
-        return transmission_rates
+            transmission_rate = numpy.nan
+        return transmission_rate
 
     def set_transmission_rates(self):
         '''
         Scale parameters.transmission_rate_* by the estimated
-        (parameter_values.transmission_rates
+        (parameter_values.transmission_rate
         / parameter_values.transmission_rate_unsuppressed).
         '''
-        scale = (self.parameter_values.transmission_rates
-                 / self.parameter_values.transmission_rate_unsuppressed)
-        self.parameter_values.transmission_rate_unsuppressed *= scale
-        self.parameter_values.transmission_rate_suppressed *= scale
-        self.parameter_values.transmission_rate_acute *= scale
+        relative_rate_suppressed = (
+            self.parameter_values.transmission_rate_suppressed
+            / self.parameter_values.transmission_rate_unsuppressed)
+        relative_rate_acute = (
+            self.parameter_values.transmission_rate_acute
+            / self.parameter_values.transmission_rate_unsuppressed)
+        # proportion_suppressed = model.proportions.Proportions(
+        #     self.parameter_values.initial_conditions).suppressed
+        # self.parameter_values.transmission_rate_unsuppressed = (
+        #     self.parameter_values.transmission_rate
+        #     / (1 - (1 - relative_rate_suppressed) * proportion_suppressed)
+        #     * 0.9)
+        self.parameter_values.transmission_rate_unsuppressed = (
+            self.parameter_values.transmission_rate)
+        self.parameter_values.transmission_rate_suppressed = (
+            relative_rate_suppressed
+            * self.parameter_values.transmission_rate_unsuppressed)
+        self.parameter_values.transmission_rate_acute = (
+            relative_rate_acute
+            * self.parameter_values.transmission_rate_unsuppressed)
 
-    def plot_estimates(self, ax,
-                       quantile_levels = (0, 0.5, 0.9, 0.95),
-                       **kwargs):
+    def plot_estimate(self, ax,
+                      quantile_levels = (0, 0.5, 0.9, 0.95),
+                      **kwargs):
         '''
         Make horizontal lines at the median and other quantiles.
         '''
@@ -542,7 +569,7 @@ class ExponentiallyWeightedLognormal(Estimator):
                 else:
                     label = None
                 try:
-                    ax.axhline(self.transmission_rates.ppf(q),
+                    ax.axhline(self.transmission_rate.ppf(q),
                                label = label,
                                linestyle = linestyle,
                                **kwargs)
@@ -606,7 +633,7 @@ class LeastSquares(Estimator):
     '''
     def estimate(self):
         '''
-        Estimate of the transmission rates.
+        Estimate the transmission rates.
         '''
         # Interpolate in case of any missing data.
         prevalence = self.parameters.prevalence.interpolate(method = 'index')
@@ -655,11 +682,11 @@ class LeastSquares(Estimator):
         and leave acute as is.
         '''
         self.parameter_values.transmission_rate_unsuppressed \
-            = self.transmission_rates['unsuppressed']
+            = self.transmission_rate['unsuppressed']
         self.parameter_values.transmission_rate_suppressed \
-            = self.transmission_rates['suppressed']
+            = self.transmission_rate['suppressed']
 
-    def plot_estimates(self, ax, **kwargs):
+    def plot_estimate(self, ax, **kwargs):
         '''
         Make horizontal lines at the values of the estimates.
         '''
@@ -669,7 +696,7 @@ class LeastSquares(Estimator):
         linestyles = itertools.cycle(['solid', 'dashed', 'dotted', 'dashdot'])
         # Remove linestyle from kwargs, if it's there.
         kwargs.pop('linestyle', None)
-        for (k, v) in self.transmission_rates.items():
+        for (k, v) in self.transmission_rate.items():
             ax.axhline(v,
                        label = '{} {}'.format(label_base, k),
                        linestyle = next(linestyles),
@@ -692,15 +719,16 @@ def plot_all_estimators(country, Estimators = None, fig = None):
         e = E(country)
         e.plot(fig = fig, plot_data = plot_data)
         plot_data = False
-        print('\t{}: R_0 = {:.2f}'.format(E.__name__, e.R0))
+        print('\t{}: beta = {:.2f}, R_0 = {:.2f}'.format(
+            E.__name__, e.parameter_values.transmission_rate, e.R0))
     return fig
 
 
 if __name__ == '__main__':
-    country = 'South Africa'
+    country = 'Uganda'
     print(country)
-    e = ExponentiallyWeightedLognormal(country)
-    # print('transmission rate = {}'.format(e.transmission_rates))
-    e.plot()
-    # plot_all_estimators(country)
+    # e = EWLognormal(country)
+    # print('transmission rate = {}'.format(e.transmission_rate))
+    # e.plot()
+    plot_all_estimators(country, Estimators = [Rakai, EWLognormal])
     pyplot.show()

@@ -16,7 +16,7 @@ import numpy
 import pandas
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
-import transmission_rates
+import transmission_rate
 sys.path.append('..')
 import model
 sys.path.append('../plots')
@@ -29,14 +29,14 @@ import seaborn
 countries = model.get_country_list('IncidencePrevalence')
 
 
-def plot_transmission_rates(Estimator, quantile_level = 0.01, scale = 0.8):
+def plot_transmission_rate(Estimator, quantile_level = 0.01, scale = 0.8):
     fig, ax = pyplot.subplots(figsize = (8.5, 11))
     n = len(countries)
     colors = seaborn.color_palette('husl', n)
     for (i, country) in enumerate(countries):
         print(country)
         e = Estimator(country)
-        tr = e.parameters.transmission_rates
+        tr = e.parameters.transmission_rate
         # Catch tr = NaN.
         try:
             a, b = tr.ppf([quantile_level / 2, 1 - quantile_level / 2])
@@ -60,43 +60,38 @@ def plot_transmission_rates(Estimator, quantile_level = 0.01, scale = 0.8):
     ax.set_yticklabels(reversed(countries), fontdict = dict(size = 6))
     ax.grid(False, axis = 'y')
     fig.tight_layout()
-    return fig
-
-
-def plot_all_countries(Estimator):
-    filename = '{}.pdf'.format(common.get_filebase())
-    with backend_pdf.PdfPages(filename) as pdf:
-        fig = plot_transmission_rates(Estimator)
-        pdf.savefig(fig)
-
-        for country in countries:
-            print(country)
-            fig = pyplot.figure(figsize = (11, 8.5))
-            transmission_rates.plot_all_estimators(country,
-                                                   Estimators = [Estimator],
-                                                   fig = fig)
-            pdf.savefig(fig)
-            pyplot.close(fig)
+    return fig, ax
 
 
 def plot_all_estimators(Estimators = None):
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
+        fig = None
+        for E in Estimators:
+            fig, ax = plot_transmission_rate(E)
+            ax.set_title(E.__name__)
+            pdf.savefig(fig)
+
         for country in countries:
             print(country)
             fig = pyplot.figure(figsize = (11, 8.5))
-            transmission_rates.plot_all_estimators(country,
-                                                   Estimators = Estimators,
-                                                   fig = fig)
+            transmission_rate.plot_all_estimators(country,
+                                                  Estimators = Estimators,
+                                                  fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
 
 
-if __name__ == '__main__':
-    E = transmission_rates.ExponentiallyWeightedLognormal
-    # plot_transmission_rates(E)
-    plot_all_countries(E)
+def plot_all_countries(Estimator):
+    return plot_all_estimators([Estimator])
 
-    # plot_all_estimators()
+
+if __name__ == '__main__':
+    # E = transmission_rate.EWLognormal
+    # plot_transmission_rate(E)
+    # plot_all_countries(E)
+
+    plot_all_estimators([transmission_rate.Rakai,
+                         transmission_rate.EWLognormal])
 
     # pyplot.show()
