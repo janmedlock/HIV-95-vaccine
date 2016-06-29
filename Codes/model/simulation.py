@@ -85,19 +85,23 @@ class Simulation(container.Container):
         def fcn_scaled(t_scaled, Y, targets_, parameters):
             return fcn(t_scaled + self.t[0], Y, targets_, parameters)
 
-        # If R0 is nan or fcn() is nan, then return nans without
-        # running solver.
+        # If R0 is nan or the initial conditions are all 0 or fcn() is nan,
+        # then return nans without running solver.
         if (numpy.isnan(self.parameters.R0)
+            or numpy.all(self.parameters.initial_conditions == 0)
             or numpy.any(numpy.isnan(fcn_scaled(t_scaled[0], Y0,
                                                 self.targets,
                                                 self.parameters)))):
             msg = "country = '{}': ".format(self.country)
             if numpy.isnan(self.parameters.R0):
                 msg += "R_0 = NaN!"
+                msg += "  There are probably NaN parameter values!"
+            if numpy.all(self.parameters.initial_conditions == 0):
+                msg += 'I.C.s are all 0!'
             else:
                 msg += "{}() has NaN at t[0] = {}!".format(fcn.__name__,
                                                            self.t[0])
-            msg += "  There are probably NaN parameter values!"
+                msg += "  There are probably NaN parameter values!"
             msg += "  Skipping solver."
             warnings.warn(msg)
             Y = numpy.nan * numpy.ones((len(self.t), len(Y0)))
@@ -113,9 +117,13 @@ class Simulation(container.Container):
                                  mxhnil = 1)
         else:
             solver = integrate.ode(fcn_scaled)
+            if self.integrator == 'lsoda':
+                kwds = dict(max_hnil = 1)
+            else:
+                kwds = {}
             solver.set_integrator(self.integrator,
                                   nsteps = 2000,
-                                  max_hnil = 1)
+                                  **kwds)
             solver.set_f_params(self.targets, self.parameters)
             solver.set_initial_value(Y0, t_scaled[0])
             Y = numpy.empty((len(t_scaled), len(Y0)))

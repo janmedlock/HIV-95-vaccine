@@ -113,10 +113,10 @@ class Parameters:
         # New infections.
         self.initial_conditions['R'] = 0
 
-        # Order correctly.
+        # Order correctly and convert to float.
         self.initial_conditions = self.initial_conditions.reindex(
             ('S', 'Q', 'A', 'U', 'D',
-             'T', 'V', 'W', 'Z', 'R'))
+             'T', 'V', 'W', 'Z', 'R')).astype(float)
 
         self.compute_drug_coverage()
 
@@ -281,7 +281,7 @@ class _ParameterSuper:
                                + self.death_rate_AIDS
                                / self.progression_rate_unsuppressed))
 
-        ics = self.initial_conditions.copy().astype(float)
+        ics = self.initial_conditions.copy()
         newAIDS = proportionAIDS * ics['D']
         ics['W'] = newAIDS
         ics['D'] -= newAIDS
