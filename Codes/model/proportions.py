@@ -2,6 +2,8 @@
 Compute proportions diagnosed, treated, viral suppressed, and vaccinated.
 '''
 
+import warnings
+
 import numpy
 
 from . import container
@@ -9,7 +11,14 @@ from . import ODEs
 
 
 def _safe_divide(a, b, fill_value = 0):
-    return numpy.ma.filled(numpy.ma.divide(a, b), fill_value)
+    '''
+    Return a / b,
+    unless b == a == 0, then return 0.
+    '''
+    # Ignore divide-by-zero warnings.
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        return numpy.where((a == 0) & (b == 0), 0, numpy.divide(a, b))
 
 class Proportions(container.Container):
     '''
