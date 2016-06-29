@@ -155,6 +155,7 @@ class Estimator(metaclass = abc.ABCMeta):
 
         ax.xaxis.set_major_locator(ticker.MaxNLocator(integer = True))
         ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
+        ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
         ax.set_ylabel('Transmission rate (per year)')
         if title:
             ax.set_title(self.country)
@@ -247,6 +248,8 @@ class Estimator(metaclass = abc.ABCMeta):
         # Every 10 years.
         ax.set_xticks(range(data_start_year, int(t[-1]), 10))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
+        ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
+        ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
         # One minor tick between major ticks.
         ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
         ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
