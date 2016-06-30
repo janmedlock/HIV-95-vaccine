@@ -556,35 +556,42 @@ class EWLognormal(Estimator):
         '''
         label_base = self.__class__.__name__
 
-        # Vary linestyle for the different quantile levels.
-        # Hopefully 4 is enough...
-        linestyles = itertools.cycle(['solid', 'dashed', 'dashdot', 'dotted'])
-        # Remove linestyle from kwargs, if it's there.
-        kwargs.pop('linestyle', None)
-        for level in quantile_levels:
-            if level == 0:
-                quantiles = [0.5]
-            else:
-                quantiles = [0.5 - level / 2, 0.5 + level / 2]
-            level_label_set = False
-            linestyle = next(linestyles)
-            for q in quantiles:
-                if not level_label_set:
-                    if q == 0.5:
-                        label = '{} median'.format(label_base)
-                    else:
-                        label = '{} inner {:g}%tile'.format(label_base,
-                                                            100 * level)
-                    level_label_set = True
-                else:
-                    label = None
-                try:
-                    ax.axhline(self.transmission_rate.ppf(q),
-                               label = label,
-                               linestyle = linestyle,
-                               **kwargs)
-                except AttributeError:
-                    pass
+        try:
+            ax.axhline(self.transmission_rate.mode,
+                       label = '{} mode'.format(label_base),
+                       **kwargs)
+        except AttributeError:
+            pass
+
+        # # Vary linestyle for the different quantile levels.
+        # # Hopefully 4 is enough...
+        # linestyles = itertools.cycle(['solid', 'dashed', 'dashdot', 'dotted'])
+        # # Remove linestyle from kwargs, if it's there.
+        # kwargs.pop('linestyle', None)
+        # for level in quantile_levels:
+        #     if level == 0:
+        #         quantiles = [0.5]
+        #     else:
+        #         quantiles = [0.5 - level / 2, 0.5 + level / 2]
+        #     level_label_set = False
+        #     linestyle = next(linestyles)
+        #     for q in quantiles:
+        #         if not level_label_set:
+        #             if q == 0.5:
+        #                 label = '{} median'.format(label_base)
+        #             else:
+        #                 label = '{} inner {:g}%tile'.format(label_base,
+        #                                                     100 * level)
+        #             level_label_set = True
+        #         else:
+        #             label = None
+        #         try:
+        #             ax.axhline(self.transmission_rate.ppf(q),
+        #                        label = label,
+        #                        linestyle = linestyle,
+        #                        **kwargs)
+        #         except AttributeError:
+        #             pass
 
 
 class LeastSquares(Estimator):
@@ -741,7 +748,7 @@ def plot_all_estimators(country, Estimators = None, fig = None):
 
 
 if __name__ == '__main__':
-    country = 'South Africa'
+    country = 'East Timor'
     print(country)
     # e = EWLognormal(country)
     # print('transmission rate = {}'.format(e.transmission_rate))
