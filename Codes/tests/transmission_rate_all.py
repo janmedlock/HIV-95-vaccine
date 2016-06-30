@@ -29,8 +29,11 @@ import seaborn
 countries = model.get_country_list('IncidencePrevalence')
 
 
-def plot_transmission_rate(Estimator, quantile_level = 0.01, scale = 0.8):
-    fig, ax = pyplot.subplots(figsize = (8.5, 11))
+def plot_transmission_rate(Estimator, fig = None,
+                           quantile_level = 0.01, scale = 0.8):
+    if fig is None:
+        fig = pyplot.gcf()
+    ax = fig.subplot(1, 1, 1)
     n = len(countries)
     colors = seaborn.color_palette('husl', n)
     for (i, country) in enumerate(countries):
@@ -73,15 +76,16 @@ def plot_transmission_rate(Estimator, quantile_level = 0.01, scale = 0.8):
 def plot_all_estimators(Estimators = None):
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        fig = None
         for E in Estimators:
-            fig, ax = plot_transmission_rate(E)
+            fig = pyplot.figure(figsize = (8.5, 11))
+            ax = plot_transmission_rate(E, fig = fig)
             ax.set_title(E.__name__)
             pdf.savefig(fig)
+            pyplot.close(fig)
 
         for country in countries:
             print(country)
-            fig = pyplot.figure(figsize = (8.5, 11))
+            fig = pyplot.figure(figsize = (11, 8.5))
             transmission_rate.plot_all_estimators(country,
                                                   Estimators = Estimators,
                                                   fig = fig)
@@ -98,7 +102,6 @@ if __name__ == '__main__':
     # plot_transmission_rate(E)
     # plot_all_countries(E)
 
-    plot_all_estimators([transmission_rate.Rakai,
-                         transmission_rate.EWLognormal])
+    plot_all_estimators([transmission_rate.EWLognormal])
 
     # pyplot.show()
