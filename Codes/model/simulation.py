@@ -253,5 +253,5 @@ class Simulation(container.Container):
     def R0(self):
         return self.parameters.R0
 
-    def plot(self):
-        plot.simulation(self)
+    def plot(self, *args, **kwargs):
+        plot.simulation(self, *args, **kwargs)
