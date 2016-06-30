@@ -81,7 +81,7 @@ def plot_all_estimators(Estimators = None):
 
         for country in countries:
             print(country)
-            fig = pyplot.figure(figsize = (11, 8.5))
+            fig = pyplot.figure(figsize = (8.5, 11))
             transmission_rate.plot_all_estimators(country,
                                                   Estimators = Estimators,
                                                   fig = fig)
