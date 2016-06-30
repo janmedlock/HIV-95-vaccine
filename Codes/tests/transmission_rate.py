@@ -748,7 +748,7 @@ def plot_all_estimators(country, Estimators = None, fig = None):
 
 
 if __name__ == '__main__':
-    country = 'East Timor'
+    country = 'South Africa'
     print(country)
     # e = EWLognormal(country)
     # print('transmission rate = {}'.format(e.transmission_rate))
