@@ -28,7 +28,6 @@ country_replacements = {
     'Republic of Moldova': 'Moldova',
     'Timor-Leste': 'East Timor',
     # 'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    'United Republic of Tanzania': 'Tanzania',
     # 'United States': 'United States of America',
     'Venezuela (Bolivarian Republic of)': 'Venezuela'
 }
