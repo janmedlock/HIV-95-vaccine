@@ -2,6 +2,10 @@ model
 =====
 .. automodule:: model
 
+container
+---------
+.. automodule:: model.container
+
 control_rates
 -------------
 .. automodule:: model.control_rates

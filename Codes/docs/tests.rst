@@ -9,6 +9,10 @@ global_
 -------
 .. automodule:: tests.global_
 
+initial_prevalence_map
+----------------------
+.. automodule:: tests.initial_prevalence_map
+
 logmodel
 --------
 .. automodule:: tests.logmodel

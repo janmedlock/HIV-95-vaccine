@@ -5,13 +5,13 @@ common
 ------
 .. automodule:: plots.common
 
-effectiveness
--------------
-.. automodule:: plots.effectiveness
-
 differences
 -----------
 .. automodule:: plots.differences
+
+effectiveness
+-------------
+.. automodule:: plots.effectiveness
 
 infections_averted_map
 ----------------------
