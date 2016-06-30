@@ -72,7 +72,8 @@ class Simulation(container.Container):
 
     def simulate(self):
         '''
-        ... todo:: Why is the solver failing part way through some simulations?
+        .. todo:: Why is the solver failing part way through some simulations?
+
         '''
         from . import ODEs
 
