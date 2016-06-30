@@ -36,7 +36,6 @@ class MultiSim(_MultiSimSuper):
     '''
     A class to hold the multi-simulation information.
     '''
-
     def __init__(self, samples, targets, **kwargs):
         with joblib.Parallel(n_jobs = -1, verbose = 5) as parallel:
             self.simulations = parallel(

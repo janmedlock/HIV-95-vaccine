@@ -46,6 +46,14 @@ optimization
 ------------
 .. automodule:: model.optimization
 
+optimization.effectiveness
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: model.optimization.effectiveness
+
+optimization.net_benefit
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. automodule:: model.optimization.net_benefit
+
 parameters
 ----------
 .. automodule:: model.parameters

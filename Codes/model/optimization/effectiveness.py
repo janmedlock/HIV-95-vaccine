@@ -9,5 +9,5 @@ thresholds.
 Perhaps an upper bound for cost is
 DALYs_basecase * 3 * GDP per capita per DALYs.
 
-.. todo: Not implemented.
+.. todo:: Not implemented.
 '''

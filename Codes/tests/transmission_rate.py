@@ -513,14 +513,10 @@ class EWMean(Estimator):
         Estimate the transmission rate.
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
-        ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
-        ewm = ew.mean()
-
         # Just use the last one.
-        if len(ewm) > 0:
-            return ewm.iloc[-1]
-        else:
-            return numpy.nan
+        # ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
+        # return ew.mean().iloc[-1]
+        return pandas.ewma(transmission_rates_vs_time).iloc[-1]
 
     def plot_estimate(self, ax, **kwargs):
         '''
@@ -551,10 +547,12 @@ class EWLognormal(Estimator):
             # mu and sigma are the mean and stdev of
             # log(transmission_rates_vs_time).
             trt_log = transmission_rates_vs_time.apply(numpy.log)
-            ew = trt_log.ewm(halflife = self.halflife)
-            mu = ew.mean().iloc[-1]
+            # ew = trt_log.ewm(halflife = self.halflife)
+            # mu = ew.mean().iloc[-1]
+            mu = pandas.ewma(trt_log).iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
-            sigma = ew.std().iloc[-1]
+            # sigma = ew.std().iloc[-1]
+            sigma = pandas.ewmstd(trt_log).iloc[-1]
             transmission_rate = stats.lognorm(sigma, scale = numpy.exp(mu))
             # scipy RVs don't define .mode (i.e. MLE),
             # so I explicitly add it so I can use it
@@ -764,10 +762,10 @@ def plot_all_estimators(country, Estimators = None, fig = None):
 
 
 if __name__ == '__main__':
-    country = 'South Africa'
+    country = 'Barbados'
+    # country = 'South Africa'
     print(country)
-    # e = EWLognormal(country)
-    # print('transmission rate = {}'.format(e.transmission_rate))
-    # e.plot()
-    plot_all_estimators(country, Estimators = [Rakai, EWLognormal])
+    e = EWLognormal(country)
+    e.plot()
+    # plot_all_estimators(country, Estimators = [Rakai, EWLognormal])
     pyplot.show()

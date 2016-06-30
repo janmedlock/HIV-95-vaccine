@@ -118,22 +118,6 @@ class Parameters:
             ('S', 'Q', 'A', 'U', 'D',
              'T', 'V', 'W', 'Z', 'R')).astype(float)
 
-        self.compute_drug_coverage()
-
-    def compute_drug_coverage(self):
-        drug_coverage = self.treated / self.prevalence / self.population
-        if any((self.treated > 0) & (self.treated <= 1)):
-            # warnings.warn(
-            #     "country = '{}':  ".format(self.country)
-            #     + 'Some ARV treated data appear to be proportion treated.  '
-            #     + 'These are tricky to interpret.  '
-            #     + 'My guess may not be correct!')
-            # If 0 <= treated <= 1, use that directly as drug_coverage.
-            # Otherwise, use above definition.
-            drug_coverage = self.treated.where(self.treated <= 1,
-                                               drug_coverage)
-        self.drug_coverage = drug_coverage.dropna()
-
     def sample(self, nsamples = 1):
         if nsamples == 1:
             return ParameterSample(self)
@@ -213,33 +197,33 @@ class _ParameterSuper:
         self.vaccine_efficacy = 0.5
 
         # One-time cost of new diagnosis.
-        self.cost_of_testing_onetime_increasing = self.cost_test
+        # self.cost_of_testing_onetime_increasing = self.cost_test
 
         # One-time cost of new treatment.
-        self.cost_of_treatment_onetime_constant = (self.cost_CD4
-                                                   + self.cost_viral_load)
+        # self.cost_of_treatment_onetime_constant = (self.cost_CD4
+        #                                            + self.cost_viral_load)
 
         ###############################################
         # Note: No cost for the nonadherence control! #
         ###############################################
         # Recurring cost of nonadherence.
-        self.cost_nonadherence_recurring_increasing = 0
+        # self.cost_nonadherence_recurring_increasing = 0
 
         # Recurring cost of treatment.
         # Treatment is ART + 1 viral load test per year
         # + 2 CD4 tests per year.
-        self.cost_treatment_recurring_increasing = (self.cost_ART_annual
-                                                    + self.cost_viral_load
-                                                    + 2 * self.cost_CD4)
+        # self.cost_treatment_recurring_increasing = (self.cost_ART_annual
+        #                                             + self.cost_viral_load
+        #                                             + 2 * self.cost_CD4)
 
         # Recurring cost of AIDS.
         #
         # This is calculated as the annual cost of living with AIDS
         # (cost_AIDS_annual) plus the cost of AIDS death
         # (cost_AIDS_death * death_rate_AIDS).
-        self.cost_AIDS_recurring_constant = (self.cost_AIDS_annual
-                                             + (self.death_rate_AIDS
-                                                * self.cost_AIDS_death))
+        # self.cost_AIDS_recurring_constant = (self.cost_AIDS_annual
+        #                                      + (self.death_rate_AIDS
+        #                                         * self.cost_AIDS_death))
 
         # Disability weights, assuming 1 year in symptomatic phase.
         years_in_symptomatic = 1

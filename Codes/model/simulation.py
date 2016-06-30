@@ -26,6 +26,8 @@ class Simulation(container.Container):
     :class:`scipy.integrate.ode` integrator---``'lsoda'``,
     ``'vode'``, ``'dopri5'``, ``'dop853'``---or
     ``'odeint'`` to use :func:`scipy.integrate.odeint`.
+
+    .. todo:: Don't hold baseline inside of Simulation().
     '''
 
     _keys = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
@@ -99,9 +101,7 @@ class Simulation(container.Container):
                 msg += "  There are probably NaN parameter values!"
             else:
                 msg += 'I.C.s are all 0!'
-            msg += "  Skipping solver."
-            warnings.warn(msg)
-            Y = numpy.nan * numpy.ones((len(self.t), len(Y0)))
+            raise ValueError(msg)
         elif self.integrator == 'odeint':
             def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
                 return fcn_scaled(t_scaled, Y, targets_, parameters)
@@ -152,9 +152,16 @@ class Simulation(container.Container):
                     msg = ("country = '{}': "
                            + "At t = {}, NaN state values!").format(
                                self.country, self.t[i])
-                    warnings.warn(msg)
-                    Y[i : ] = numpy.nan
-                    break
+                    if self._use_log:
+                        msg += "  Re-running with _use_log = False."
+                    if self._use_log:
+                        warnings.warn(msg)
+                        self._use_log = False
+                        retval = self.simulate()
+                        self._use_log = True
+                        return retval
+                    else:
+                        raise ValueError(msg)
 
         if self._use_log:
             self.state = ODEs.transform_inv(Y)

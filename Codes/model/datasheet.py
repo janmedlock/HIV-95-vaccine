@@ -424,9 +424,15 @@ class TreatedSheet(AnnualSheet):
         return sheet_.astype(float)
 
 
-_sheets = (ParametersSheet, InitialConditionsSheet,
-           IncidencePrevalenceSheet, CostSheet, GDPSheet,
-           PopulationSheet, TreatedSheet)
+sheets = (
+    ParametersSheet,
+    InitialConditionsSheet,
+    IncidencePrevalenceSheet,
+    # CostSheet,
+    # GDPSheet,
+    PopulationSheet,
+    # TreatedSheet,
+)
 
 
 class CountryData:
@@ -444,7 +450,7 @@ class CountryData:
         if wb is None:
             wb = pandas.ExcelFile(datapath)
 
-        for cls in _sheets:
+        for cls in sheets:
             cls.get_country_data_and_set_attrs(self, wb = wb,
                                                allow_missing = allow_missing)
 
@@ -524,7 +530,7 @@ def get_country_list(sheet = 'Parameters', wb = None):
         # must be present (allow_missing == False).
         if wb is None:
             wb = pandas.ExcelFile(datapath)
-        lists = (cls.get_country_list(wb = wb) for cls in _sheets
+        lists = (cls.get_country_list(wb = wb) for cls in sheets
                  if not cls.allow_missing)
         sets = (set(l) for l in lists)
         intersection = set.intersection(*sets)
@@ -533,7 +539,7 @@ def get_country_list(sheet = 'Parameters', wb = None):
         # Return countries that are in *any* sheet.
         if wb is None:
             wb = pandas.ExcelFile(datapath)
-        lists = (cls.get_country_list(wb = wb) for cls in _sheets)
+        lists = (cls.get_country_list(wb = wb) for cls in sheets)
         sets = (set(l) for l in lists)
         union = set.union(*sets)
         return sorted(union)
@@ -542,7 +548,7 @@ def get_country_list(sheet = 'Parameters', wb = None):
             cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
             return cls.get_country_list(wb = wb)
         except AttributeError:
-            _valid_sheets = (s.__name__.replace('Sheet', '') for s in _sheets)
+            _valid_sheets = (s.__name__.replace('Sheet', '') for s in sheets)
             msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
                    + "Valid sheets are {}.").format(sheet, _valid_sheets)
             raise AttributeError(msg)

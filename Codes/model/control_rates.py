@@ -38,6 +38,8 @@ def ramp(x, tol = 0.0001):
 
 class ControlRates(container.Container):
     r'''
+    Calculate control rates from the current proportions diagnosed, etc.
+
     Rates for diagnosis, treatment, nonadherence, & vaccination
     are piecewise constant.
 
