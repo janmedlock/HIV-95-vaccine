@@ -514,10 +514,11 @@ class EWMean(Estimator):
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
         # Just use the last one.
-        # ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
-        # return ew.mean().iloc[-1]
         return pandas.ewma(transmission_rates_vs_time,
                            halflife = self.halflife).iloc[-1]
+        # Pandas 0.18 syntax.
+        # ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
+        # return ew.mean().iloc[-1]
 
     def plot_estimate(self, ax, **kwargs):
         '''
@@ -548,12 +549,14 @@ class EWLognormal(Estimator):
             # mu and sigma are the mean and stdev of
             # log(transmission_rates_vs_time).
             trt_log = transmission_rates_vs_time.apply(numpy.log)
-            # ew = trt_log.ewm(halflife = self.halflife)
-            # mu = ew.mean().iloc[-1]
             mu = pandas.ewma(trt_log, halflife = self.halflife).iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
-            # sigma = ew.std().iloc[-1]
             sigma = pandas.ewmstd(trt_log, halflife = self.halflife).iloc[-1]
+            # Pandas 0.18 syntax.
+            # ew = trt_log.ewm(halflife = self.halflife)
+            # mu = ew.mean().iloc[-1]
+            # The default, bias = False, seems to be ddof = 1.
+            # sigma = ew.std().iloc[-1]
             transmission_rate = stats.lognorm(sigma, scale = numpy.exp(mu))
             # scipy RVs don't define .mode (i.e. MLE),
             # so I explicitly add it so I can use it
