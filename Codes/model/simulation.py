@@ -71,6 +71,9 @@ class Simulation(container.Container):
         self.simulate()
 
     def simulate(self):
+        '''
+        ... todo:: Why is the solver failing part way through some simulations?
+        '''
         from . import ODEs
 
         Y0 = self.parameters.initial_conditions.copy().values
@@ -88,20 +91,13 @@ class Simulation(container.Container):
         # If R0 is nan or the initial conditions are all 0 or fcn() is nan,
         # then return nans without running solver.
         if (numpy.isnan(self.parameters.R0)
-            or numpy.all(self.parameters.initial_conditions == 0)
-            or numpy.any(numpy.isnan(fcn_scaled(t_scaled[0], Y0,
-                                                self.targets,
-                                                self.parameters)))):
+            or numpy.all(self.parameters.initial_conditions == 0)):
             msg = "country = '{}': ".format(self.country)
             if numpy.isnan(self.parameters.R0):
                 msg += "R_0 = NaN!"
                 msg += "  There are probably NaN parameter values!"
-            if numpy.all(self.parameters.initial_conditions == 0):
-                msg += 'I.C.s are all 0!'
             else:
-                msg += "{}() has NaN at t[0] = {}!".format(fcn.__name__,
-                                                           self.t[0])
-                msg += "  There are probably NaN parameter values!"
+                msg += 'I.C.s are all 0!'
             msg += "  Skipping solver."
             warnings.warn(msg)
             Y = numpy.nan * numpy.ones((len(self.t), len(Y0)))
@@ -153,8 +149,8 @@ class Simulation(container.Container):
                     raise
                 if numpy.any(numpy.isnan(Y[i])):
                     msg = ("country = '{}': "
-                           + "NaN state values = {} at time t = {}!").format(
-                               self.country, Y[i], self.t[i])
+                           + "At t = {}, NaN state values!").format(
+                               self.country, self.t[i])
                     warnings.warn(msg)
                     Y[i : ] = numpy.nan
                     break
