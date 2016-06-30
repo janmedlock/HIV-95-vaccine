@@ -16,7 +16,7 @@ import mapplot
 
 
 def _main():
-    data = model.InitialConditionSheet.get_all()
+    data = model.InitialConditionsSheet.get_all()
 
     countries = data.columns
 
@@ -30,10 +30,10 @@ def _main():
     # I.e. should sum to 1.       #
     ###############################
     p = pandas.DataFrame(index = countries)
-    p['undiagnosed'] = data.loc['Undiagnosed'] / nHIV
-    p['diagnosed'] = data.loc['Diagnosed but not on treatment'] / nHIV
-    p['treated'] = data.loc['Treated but not virally suppressed'] / nHIV
-    p['suppressed'] = data.loc['Virally Suppressed'] / nHIV
+    p['undiagnosed'] = data.loc[['A', 'U']].sum(0) / nHIV
+    p['diagnosed'] = data.loc['D'] / nHIV
+    p['treated'] = data.loc['T'] / nHIV
+    p['suppressed'] = data.loc['V'] / nHIV
 
 
     ##############################################################
