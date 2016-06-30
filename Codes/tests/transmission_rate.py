@@ -8,6 +8,7 @@ import itertools
 import sys
 import warnings
 
+import joblib
 from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
@@ -169,12 +170,12 @@ class Estimator(metaclass = abc.ABCMeta):
         assert numpy.isfinite(self.parameter_values.transmission_rate).all()
         assert not numpy.any(self.parameter_values.transmission_rate < 0)
 
-    def simulate(self):
+    def simulate(self, target = 'baseline'):
         '''
         Simulate the model forward in time.
         '''
         results = model.Simulation(self.parameter_values,
-                                   'baseline',
+                                   target,
                                    baseline_targets = None)
         return results
 
@@ -242,31 +243,32 @@ class Estimator(metaclass = abc.ABCMeta):
             scale = 1e6
             ylabel = 'Infected\n(M)'
             data = self.parameters.prevalence * self.parameters.population
-            t = results.t
-            val = results.infected
+            t = [r.t for r in results]
+            val = [r.infected for r in results]
         elif stat == 'prevalence':
             percent = True
             ylabel = 'Prevelance\n'
             data = self.parameters.prevalence
-            t = results.t
-            val = results.prevalence
+            t = [r.t for r in results]
+            val = [r.prevalence for r in results]
         elif stat == 'incidence':
             scale = 1e-3
             ylabel = 'Incidence\n(per 1000 per y)'
             data = self.parameters.incidence
             # Compute from simulation results.
-            t = results.t
-            ni = numpy.asarray(results.new_infections)
-            n = numpy.asarray(results.alive)
-            val = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
+            val = []
+            for r in results:
+                ni = numpy.asarray(r.new_infections)
+                n = numpy.asarray(r.alive)
+                val.append(numpy.diff(ni) / numpy.diff(r.t) / n[..., 1 :])
             # Need to drop one t value since we have differences above.
-            t = t[1 : ]
+            t = [r.t[1 : ] for r in results]
         elif stat == 'drug_coverage':
             percent = True
             ylabel = 'Drug\ncoverage'
             data = self.parameters.drug_coverage
-            t = results.t
-            val = results.proportions.treated
+            t = [r.t for r in results]
+            val = [r.proportions.treated for r in results]
         else:
             raise ValueError("Unknown stat '{}'".format(stat))
 
@@ -285,21 +287,31 @@ class Estimator(metaclass = abc.ABCMeta):
                 style = next(ax._get_lines.prop_cycler)
 
         # Plot simulation data.
-        ax.plot(t, val / scale, alpha = 0.7, zorder = 1)
-
-        # Make a dotted line connecting the end of the historical data
-        # and the begining of the simulation.
-        if len(data_) > 0:
-            x = [data_.index[-1], t[0]]
-            y = [data_.iloc[-1], val[0]]
-            ax.plot(x, numpy.asarray(y) / scale,
-                    linestyle = 'dotted', color = 'black', zorder = 1)
+        style = next(ax._get_lines.prop_cycler)
+        # Vary linestyle for the different quantile levels.
+        # Hopefully 4 is enough...
+        linestyles = itertools.cycle(['solid', 'dashed', 'dashdot', 'dotted'])
+        # Remove linestyle from style, if it's there.
+        style.pop('linestyle', None)
+        for (ti, vi) in zip(t, val):
+            ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
+                    linestyle = next(linestyles),
+                    **style)
+            # Make a dotted line connecting the end of the historical data
+            # and the begining of the simulation.
+            if len(data_) > 0:
+                x = [data_.index[-1], ti[0]]
+                y = [data_.iloc[-1], vi[0]]
+                ax.plot(x, numpy.asarray(y) / scale,
+                        linestyle = 'dotted', color = 'black',
+                        zorder = 2)
 
         data_start_year = 1990
-        ax.set_xlim(data_start_year, t[-1])
+        t_end = max(ti[-1] for ti in t)
+        ax.set_xlim(data_start_year, t_end)
         ax.grid(True, which = 'both', axis = 'both')
         # Every 10 years.
-        ax.set_xticks(range(data_start_year, int(t[-1]), 10))
+        ax.set_xticks(range(data_start_year, int(numpy.ceil(t_end)), 10))
         ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
         ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
         ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
@@ -310,13 +322,12 @@ class Estimator(metaclass = abc.ABCMeta):
             ax.yaxis.set_major_formatter(common.PercentFormatter())
         ax.set_ylabel(ylabel, size = 'medium')
 
-    def plot(self, fig = None, plot_data = True):
+    def plot(self, targets = ('baseline', '909090'),
+             fig = None, plot_data = True):
         '''
         Plot transmission rate estimate and compare simulation
         with historical data.
         '''
-        results = self.simulate()
-
         if fig is None:
             fig = pyplot.gcf()
         # Layout is 2 columns,
@@ -350,6 +361,9 @@ class Estimator(metaclass = abc.ABCMeta):
         self.plot_transmission_rate(axes[0], title = False,
                                     plot_vs_time = plot_data)
 
+        results = joblib.Parallel(n_jobs = -1)(
+            joblib.delayed(self.simulate)(target) for target in targets)
+
         self._plot_sim_cell(axes[1], results, 'infected',
                             plot_data = plot_data)
 
@@ -361,6 +375,8 @@ class Estimator(metaclass = abc.ABCMeta):
 
         # self._plot_sim_cell(axes[4], results, 'drug_coverage',
         #                     plot_data = plot_data)
+
+        plot_data = False
 
         fig.tight_layout()
         return fig
