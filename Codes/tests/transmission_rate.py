@@ -513,10 +513,13 @@ class EWMean(Estimator):
         Estimate the transmission rate.
         '''
         transmission_rates_vs_time = self.estimate_vs_time()
-        # Just use the last one.
-        return pandas.ewma(transmission_rates_vs_time,
-                           halflife = self.halflife).iloc[-1]
-        # Pandas 0.18 syntax.
+        # Catch pandas 0.18 warnings.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            # Just use the last one.
+            return pandas.ewma(transmission_rates_vs_time,
+                               halflife = self.halflife).iloc[-1]
+        # pandas 0.18 syntax.
         # ew = transmission_rates_vs_time.ewm(halflife = self.halflife)
         # return ew.mean().iloc[-1]
 
@@ -549,10 +552,16 @@ class EWLognormal(Estimator):
             # mu and sigma are the mean and stdev of
             # log(transmission_rates_vs_time).
             trt_log = transmission_rates_vs_time.apply(numpy.log)
-            mu = pandas.ewma(trt_log, halflife = self.halflife).iloc[-1]
-            # The default, bias = False, seems to be ddof = 1.
-            sigma = pandas.ewmstd(trt_log, halflife = self.halflife).iloc[-1]
-            # Pandas 0.18 syntax.
+            # Catch pandas 0.18 warnings.
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                # Just use last values.
+                mu = pandas.ewma(trt_log,
+                                 halflife = self.halflife).iloc[-1]
+                # The default, bias = False, seems to be ddof = 1.
+                sigma = pandas.ewmstd(trt_log,
+                                      halflife = self.halflife).iloc[-1]
+            # pandas 0.18 syntax.
             # ew = trt_log.ewm(halflife = self.halflife)
             # mu = ew.mean().iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
