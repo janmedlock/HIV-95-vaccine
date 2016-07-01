@@ -1,7 +1,5 @@
 '''
 Generate, save and load parameter samples.
-
-.. todo:: Do I need to generate a random quantile for transmission_rate?
 '''
 
 import os.path
