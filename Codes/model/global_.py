@@ -8,7 +8,13 @@ from . import container
 from . import parameters
 
 
-class _GlobalSuper(container.Container):
+class Global(container.Container):
+    '''
+    Class to hold global results.
+
+    The aggregated simulation results are scaled so that the model
+    current statistics match UNAIDS current estimates.
+    '''
     _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
     global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
@@ -16,12 +22,23 @@ class _GlobalSuper(container.Container):
     global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
     global_annual_AIDS_deaths = 1.2e6  # CI (0.98e6, 1.6e6), UNAIDS 2014
 
-    def __init__(self):
-        self.t = None
+    def __init__(self, data):
         self._normalized = False
 
+        self.t = None
         for k in self.keys():
             setattr(self, k, 0)
+
+        for (c, v) in data.items():
+            if self.t is None:
+                self.t = v.t
+            for k in self.keys():
+                # self.k += v.k.
+                setattr(self, k,
+                        getattr(self, k) + numpy.asarray(getattr(v, k)))
+            v.flush() # Free memory
+
+        self._normalize()
 
     def _normalize(self):
         if not self._normalized:
@@ -52,40 +69,9 @@ class _GlobalSuper(container.Container):
                                     / annual_new_infections[..., numpy.newaxis])
         self._normalized = True
 
-    def _add(self, k, v):
-        '''
-        self.k += v.k.
-        '''
-        setattr(self, k, getattr(self, k) + numpy.asarray(getattr(v, k)))
-        
     @property
     def prevalence(self):
         prev = self.infected / self.alive
         prev *= (self.global_prevalence
                  / prev[..., 0][..., numpy.newaxis])
         return prev
-
-
-class Global(_GlobalSuper):
-    '''
-    Class to hold global results.
-
-    The aggregated simulation results are scaled so that the model
-    current statistics match UNAIDS current estimates.
-    '''
-
-    def __init__(self, data):
-        super().__init__()
-
-        self.baseline = _GlobalSuper()
-                
-        for (c, v) in data.items():
-            if self.t is None:
-                self.t = self.baseline.t = v.t
-            for k in self.keys():
-                self._add(k, v)
-                self.baseline._add(k, v.baseline)
-            v.flush() # Free memory
-
-        self._normalize()
-        self.baseline._normalize()

@@ -22,14 +22,12 @@ def _main():
 
     time0 = time.time()
     simulation = model.Simulation(parameters, targets,
-                                  baseline_targets = None,
                                   _use_log = False)
     time1 = time.time()
     print('Non-log model took {} sec.'.format(time1 - time0))
 
     time0 = time.time()
     simulation_log = model.Simulation(parameters, targets,
-                                      baseline_targets = None,
                                       _use_log = True)
     time1 = time.time()
     print('Log model took {} sec.'.format(time1 - time0))

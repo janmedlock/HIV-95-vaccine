@@ -26,8 +26,6 @@ class Simulation(container.Container):
     :class:`scipy.integrate.ode` integrator---``'lsoda'``,
     ``'vode'``, ``'dopri5'``, ``'dop853'``---or
     ``'odeint'`` to use :func:`scipy.integrate.odeint`.
-
-    .. todo:: Don't hold baseline inside of Simulation().
     '''
 
     _keys = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
@@ -44,16 +42,12 @@ class Simulation(container.Container):
                  targets_kwds = {},
                  t_start = 2015,
                  t_end = 2035,
-                 baseline_targets = 'baseline',
-                 baseline_targets_kwds = {},
                  pts_per_year = 120, # = 10 per month
                  integrator = 'odeint',
                  _use_log = True,
                  **kwargs):
         self.parameters = parameters_
         self.country = self.parameters.country
-        self.baseline_targets = baseline_targets
-        self.baseline_targets_kwds = baseline_targets_kwds
         self.pts_per_year = pts_per_year
         self.integrator = integrator
         self._use_log = _use_log
@@ -141,19 +135,6 @@ class Simulation(container.Container):
         for (k, v) in zip(self.keys(), ODEs.split_state(self.state)):
             setattr(self, k, v)
 
-        if self.baseline_targets is not None:
-            self.baseline = Simulation(
-                self.parameters,
-                self.baseline_targets,
-                targets_kwds = self.baseline_targets_kwds,
-                t_start = self.t[0],
-                t_end = self.t[-1],
-                baseline_targets = None,
-                pts_per_year = self.pts_per_year,
-                integrator = self.integrator,
-                _use_log = self._use_log,
-                **self.kwargs)
-
     @property
     def proportions(self):
         return proportions.Proportions(self.state)
@@ -170,17 +151,14 @@ class Simulation(container.Container):
     def QALYs(self):
         return effectiveness.QALYs(self)
 
-    # @property
-    # def incremental_cost(self):
-    #     return self.cost - self.baseline.cost
+    # def incremental_cost(self, baseline):
+    #     return self.cost - baseline.cost
 
-    @property
-    def incremental_DALYs(self):
-        return self.baseline.DALYs - self.DALYs
+    def incremental_DALYs(self, baseline):
+        return baseline.DALYs - self.DALYs
 
-    @property
-    def incremental_QALYs(self):
-        return self.QALYs - self.baseline.QALYs
+    def incremental_QALYs(self, baseline):
+        return self.QALYs - baseline.QALYs
 
     # @property
     # def ICER_DALYs(self):
@@ -199,11 +177,12 @@ class Simulation(container.Container):
     #     return net_benefit.net_benefit(self, cost_effectiveness_threshold,
     #                                    effectiveness = effectiveness)
 
-    # def incremental_net_benefit(self, cost_effectiveness_threshold,
+    # def incremental_net_benefit(self, baseline,
+    #                             cost_effectiveness_threshold,
     #                             effectiveness = 'DALYs'):
     #     return (self.net_benefit(cost_effectiveness_threshold,
     #                              effectiveness = effectiveness)
-    #             - self.baseline.net_benefit(cost_effectiveness_threshold,
+    #             - baseline.net_benefit(cost_effectiveness_threshold,
     #                                         effectiveness = effectiveness))
 
     @property
