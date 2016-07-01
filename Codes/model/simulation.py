@@ -9,9 +9,9 @@ import numpy
 from scipy import integrate
 
 from . import container
-from . import cost
+# from . import cost
 from . import effectiveness
-from . import net_benefit
+# from . import net_benefit
 from . import parameters
 from . import plot
 from . import proportions
@@ -47,7 +47,7 @@ class Simulation(container.Container):
                  baseline_targets = 'baseline',
                  baseline_targets_kwds = {},
                  pts_per_year = 120, # = 10 per month
-                 integrator = 'lsoda',
+                 integrator = 'odeint',
                  _use_log = True,
                  **kwargs):
         self.parameters = parameters_
@@ -75,7 +75,6 @@ class Simulation(container.Container):
     def simulate(self):
         '''
         .. todo:: Why is the solver failing part way through some simulations?
-
         '''
         from . import ODEs
 
@@ -91,18 +90,10 @@ class Simulation(container.Container):
         def fcn_scaled(t_scaled, Y, targets_, parameters):
             return fcn(t_scaled + self.t[0], Y, targets_, parameters)
 
-        # If R0 is nan or the initial conditions are all 0 or fcn() is nan,
-        # then return nans without running solver.
-        if (numpy.isnan(self.parameters.R0)
-            or numpy.all(self.parameters.initial_conditions == 0)):
-            msg = "country = '{}': ".format(self.country)
-            if numpy.isnan(self.parameters.R0):
-                msg += "R_0 = NaN!"
-                msg += "  There are probably NaN parameter values!"
-            else:
-                msg += 'I.C.s are all 0!'
-            raise ValueError(msg)
-        elif self.integrator == 'odeint':
+        assert numpy.isfinite(self.parameters.R0)
+        assert not numpy.all(self.parameters.initial_conditions == 0)
+
+        if self.integrator == 'odeint':
             def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
                 return fcn_scaled(t_scaled, Y, targets_, parameters)
             Y = integrate.odeint(fcn_scaled_swap_Yt,
@@ -131,37 +122,19 @@ class Simulation(container.Container):
                     # Force to be non-negative.
                     Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
                     solver.set_initial_value(Y[i], t_scaled[i])
-                try:
-                    assert solver.successful()
-                except AssertionError:
-                    dY = fcn_scaled(t_scaled[i - 1], Y[i - 1],
-                                    self.targets, self.parameters)
-                    print('t = {}'.format(t_scaled[i - 1]))
-                    import pandas
-                    idx = ['S', 'Q', 'A', 'U', 'D',
-                           'T', 'V', 'W', 'Z', 'R']
-                    if self._use_log:
-                        for i in ODEs.vars_log:
-                            idx[i] += '_log'
-                    print('Y = {}'.format(pandas.Series(Y[i - 1],
-                                                        index = idx)))
-                    print('dY = {}'.format(pandas.Series(dY,
-                                                         index = idx)))
-                    raise
-                if numpy.any(numpy.isnan(Y[i])):
-                    msg = ("country = '{}': "
-                           + "At t = {}, NaN state values!").format(
-                               self.country, self.t[i])
-                    if self._use_log:
-                        msg += "  Re-running with _use_log = False."
-                    if self._use_log:
-                        warnings.warn(msg)
-                        self._use_log = False
-                        retval = self.simulate()
-                        self._use_log = True
-                        return retval
-                    else:
-                        raise ValueError(msg)
+                assert solver.successful()
+
+        if numpy.any(numpy.isnan(Y)):
+            msg = ("country = '{}': NaN in solution!").format(self.country)
+            if self._use_log:
+                msg += "  Re-running with _use_log = False."
+                warnings.warn(msg)
+                self._use_log = False
+                retval = self.simulate()
+                self._use_log = True
+                return retval
+            else:
+                raise ValueError(msg)
 
         if self._use_log:
             self.state = ODEs.transform_inv(Y)
@@ -188,9 +161,9 @@ class Simulation(container.Container):
     def proportions(self):
         return proportions.Proportions(self.state)
 
-    @property
-    def cost(self):
-        return cost.cost(self)
+    # @property
+    # def cost(self):
+    #     return cost.cost(self)
     
     @property
     def DALYs(self):
@@ -200,9 +173,9 @@ class Simulation(container.Container):
     def QALYs(self):
         return effectiveness.QALYs(self)
 
-    @property
-    def incremental_cost(self):
-        return self.cost - self.baseline.cost
+    # @property
+    # def incremental_cost(self):
+    #     return self.cost - self.baseline.cost
 
     @property
     def incremental_DALYs(self):
@@ -212,29 +185,29 @@ class Simulation(container.Container):
     def incremental_QALYs(self):
         return self.QALYs - self.baseline.QALYs
 
-    @property
-    def ICER_DALYs(self):
-        return (self.incremental_cost
-                / self.incremental_DALYs
-                / self.parameters.GDP_per_capita)
+    # @property
+    # def ICER_DALYs(self):
+    #     return (self.incremental_cost
+    #             / self.incremental_DALYs
+    #             / self.parameters.GDP_per_capita)
 
-    @property
-    def ICER_QALYs(self):
-        return (self.incremental_cost
-                / self.incremental_QALYs
-                / self.parameters.GDP_per_capita)
+    # @property
+    # def ICER_QALYs(self):
+    #     return (self.incremental_cost
+    #             / self.incremental_QALYs
+    #             / self.parameters.GDP_per_capita)
 
-    def net_benefit(self, cost_effectiveness_threshold,
-                    effectiveness = 'DALYs'):
-        return net_benefit.net_benefit(self, cost_effectiveness_threshold,
-                                       effectiveness = effectiveness)
+    # def net_benefit(self, cost_effectiveness_threshold,
+    #                 effectiveness = 'DALYs'):
+    #     return net_benefit.net_benefit(self, cost_effectiveness_threshold,
+    #                                    effectiveness = effectiveness)
 
-    def incremental_net_benefit(self, cost_effectiveness_threshold,
-                                effectiveness = 'DALYs'):
-        return (self.net_benefit(cost_effectiveness_threshold,
-                                 effectiveness = effectiveness)
-                - self.baseline.net_benefit(cost_effectiveness_threshold,
-                                            effectiveness = effectiveness))
+    # def incremental_net_benefit(self, cost_effectiveness_threshold,
+    #                             effectiveness = 'DALYs'):
+    #     return (self.net_benefit(cost_effectiveness_threshold,
+    #                              effectiveness = effectiveness)
+    #             - self.baseline.net_benefit(cost_effectiveness_threshold,
+    #                                         effectiveness = effectiveness))
 
     @property
     def target_values(self):

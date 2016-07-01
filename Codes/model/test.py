@@ -6,7 +6,7 @@ import unittest
 
 # Import tests from other modules.
 # These get automatically run without any further code.
-from .cost import TestRelativeCostOfEffort
+# from .cost import TestRelativeCostOfEffort
 from .effectiveness import TestDALYsQALYs
 
 
@@ -17,10 +17,10 @@ class TestCE(unittest.TestCase):
     '''
     country = 'Nigeria'
     # Precomputed values.
-    stats = dict(cost = 44373373515.342896,
+    stats = dict(# cost = 44373373515.342896,
                  DALYs = 25118516.824676983,
                  QALYs = 2201334748.7090836,
-                 incremental_cost = 32324197633.36628,
+                 # incremental_cost = 32324197633.36628,
                  incremental_DALYs = 23269279.560440436,
                  incremental_QALYs = 27464382.193239689,
                  ICER_DALYs = 0.43365824620362664,

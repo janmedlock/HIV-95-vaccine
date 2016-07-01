@@ -18,7 +18,7 @@ class ControlRatesMax:
     vaccination = 1
 
 
-def ramp(x, tol = 0.0001):
+def ramp(x, tol = 0.001):
     r'''
     Piecewise linear
 
