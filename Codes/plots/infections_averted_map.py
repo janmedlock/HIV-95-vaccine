@@ -22,8 +22,6 @@ sys.path.append('..')
 import model
 
 
-k909090 = ('909090', 0)
-kbaseline = ('baseline', 0)
 cmap = 'viridis'
 label_coords = (-120, -20)
 ticks = ticker.MultipleLocator(10)

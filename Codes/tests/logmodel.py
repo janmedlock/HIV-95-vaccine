@@ -16,7 +16,7 @@ import model
 
 def _main():
     country = 'South Africa'
-    targets = '909090'
+    targets = model.Targets909090
     
     parameters = model.Parameters(country).mode()
 

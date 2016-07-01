@@ -12,21 +12,11 @@ import model
 
 def _main():
     country = 'South Africa'
-
+    targets = model.Targets909090
     print(country)
-
     parameters = model.Parameters(country).mode()
-
-    simulation = model.Simulation(
-        parameters,
-        '909090')
-    # simulation = model.Simulation(
-    #     parameters,
-    #     '909090',
-    #     targets_kwds = dict(vaccine_target = model.Target(0.5, 2020, 2025)))
-
+    simulation = model.Simulation(parameters, targets)
     simulation.plot()
-
     return simulation
 
 

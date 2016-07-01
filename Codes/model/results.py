@@ -29,6 +29,8 @@ def dump(country, results):
 class Results:
     '''
     Class to load the data on demand, with getfield cached for speed.
+
+    .. todo:: Fix `_getfield_cached` use of `.baseline`.
     '''
     def __init__(self, country):
         self._country = country

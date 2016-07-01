@@ -3,8 +3,6 @@ Get the current target values for diagnosis, treatment, viral suppression,
 and vaccination from the overall target goals.
 '''
 
-import functools
-
 import numpy
 
 from . import container
@@ -12,147 +10,140 @@ from . import control_rates
 from . import proportions
 
 
-class Target:
+def target_zero(initial_proportion, t):
     '''
-    Simple container for a single target.
+    Fixed at 0.
     '''
-    def __init__(self, target, time_to_start, time_to_full_implementation):
-        self.target = target
-        self.time_to_start = time_to_start
-        self.time_to_full_implementation = time_to_full_implementation
+    return numpy.zeros_like(t, dtype = float)
 
-    def __repr__(self):
-        cls = self.__class__
-        retval = '<{}.{}: target = {:g}'.format(cls.__module__,
-                                                cls.__name__,
-                                                self.target)
-        if self.target > 0:
-            retval += (', time_to_start = {:g}'.format(self.time_to_start)
-                       + ', time_to_full_implementation = {:g}'.format(
-                           self.time_to_full_implementation))
-        retval += '>'
-        return retval
+
+def target_status_quo(initial_proportion, t):
+    '''
+    Fixed at the initial proportion.
+    '''
+    return initial_proportion * numpy.ones_like(t, dtype = float)
+
+
+def target_linear(target_value, time_to_start, time_to_target):
+    '''
+    Linearly go from the initial proportion to
+    max(target_value, initial_proportion) between time_to_start and
+    time_to_target.  Stay fixed at initial proportion before
+    time_to_start and fixed at target_value after time_to_target.
+    '''
+    def f(initial_proportion, t):
+        target_value_ = max(target_value, initial_proportion)
+        amount_implemented = numpy.where(
+            t < time_to_start, 0,
+            numpy.where(
+                t < time_to_target,
+                (t - time_to_start) / (time_to_target - time_to_start),
+                1))
+        return (initial_proportion
+                + (target_value_ - initial_proportion) * amount_implemented)
+    return f
+
+
+'''
+Linearly go from the initial proportion to the target value =
+max(90%, initial_proportion) between 2015 and
+2020.  Stay fixed at initial proportion before
+2015 and fixed at the target value after 2020.
+'''
+target90 = target_linear(0.9, 2015, 2020)
+
+
+def target95(initial_proportion, t):
+    '''
+    Linearly go from the initial proportion to
+    target_value_0 = max(90%, initial_proportion) between 2015 and
+    2020, then linearly go to
+    target_value_1 = max(95%, initial_proportion) between 2020 and 2030.
+    Stay fixed at initial proportion before 2015 and fixed at
+    target_value_1 after 2030.
+    '''
+    time_0 = 2015
+    time_1 = 2020
+    time_2 = 2030
+    target_value_0 = max(0.9, initial_proportion)
+    target_value_1 = max(0.95, initial_proportion)
+    amount_implemented_0 = numpy.where(
+        t < time_0, 0,
+        numpy.where(
+            t < time_1,
+            (t - time_0) / (time_1 - time_0),
+            1))
+    amount_implemented_1 = numpy.where(
+        t < time_1, 0,
+        numpy.where(
+            t < time_2,
+            (t - time_1) / (time_2 - time_1),
+            1))
+    return (initial_proportion
+            + (target_value_0 - initial_proportion) * amount_implemented_0
+            + (target_value_1 - target_value_0) * amount_implemented_1)
 
 
 class Targets(container.Container):
     '''
-    Targets.
-
-    From the initial proportions read from
-    :attr:`model.datasheet.Parameters.initial_conditions`,
-    the target values go linearly from the initial proportions to `targets`
-    in `time_to_full_implementation` years, then stay constant at
-    `targets` after that.
-
-    `targets` can be a 3-tuple of levels for diagnosis, treatment,
-    and viral suppression, or it can be one of the following
-    strings:
-
-    * ``'909090'``: 90–90–90 with no vaccine.
-      Set levels to 90% in 5 years.  If a current level
-      is above 90%, keep it there instead.
-    * ``'baseline'``: Keep the current levels constant going forward.
+    Base type for targets for diagnosis, treatment, viral suppression,
+    and vaccination.
     '''
-
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
-    def __init__(self, targets,
-                 vaccine_target = None,
-                 times_to_start = 2015,
-                 times_to_full_implementation = 2020):
-        self.targets = targets
-
-        # Convert to arrays.
-        if numpy.isscalar(times_to_start):
-            times_to_start *= numpy.ones(len(self._keys) - 1)
-        else:
-            times_to_start = numpy.asarray(times_to_start)
-
-        if numpy.isscalar(times_to_full_implementation):
-            times_to_full_implementation *= numpy.ones(len(self._keys) - 1)
-        else:
-            times_to_full_implementation = numpy.asarray(
-                times_to_full_implementation)
-
-        if vaccine_target is None:
-            self.vaccine_target = Target(0,
-                                         times_to_start[0],
-                                         times_to_full_implementation[0])
-        else:
-            self.vaccine_target = vaccine_target
-
-        times_to_start = numpy.hstack((times_to_start,
-                                       self.vaccine_target.time_to_start))
-
-        times_to_full_implementation = numpy.hstack((
-            times_to_full_implementation,
-            self.vaccine_target.time_to_full_implementation))
-
-        # Use names.
-        self.times_to_start = numpy.rec.fromarrays(
-            times_to_start,
-            names = ','.join(self._keys))
-        self.times_to_full_implementation = numpy.rec.fromarrays(
-            times_to_full_implementation,
-            names = ','.join(self._keys))
-
-    def __call__(self, parameters, t):
-        return TargetValues(self.targets, self.vaccine_target,
-                            self.times_to_start,
-                            self.times_to_full_implementation,
-                            parameters, t)
-
-
-class TargetValues(container.Container):
-    '''
-    Target values over time.
-    '''
-    _keys = Targets._keys
-
-    def __init__(self, targets, vaccine_target,
-                 times_to_start, times_to_full_implementation,
-                 parameters, t):
+    def __init__(self, parameters, t):
         self.parameters = parameters
-        self.t = t
-        
+        self.t = numpy.asarray(t)
         initial_proportions = proportions.Proportions(
             self.parameters.initial_conditions)
-
-        # Convert special strings to numerical values.
-        if isinstance(targets, str):
-            if targets == '909090':
-                # Max of 90% and current the current level.
-                targets = [numpy.clip(v, 0.9, None)
-                           for v in initial_proportions.values()]
-                targets = targets[: len(self._keys) - 1]
-            elif targets == 'baseline':
-                # Fixed at initial values.
-                targets = list(initial_proportions.values())
-                targets = targets[: len(self._keys) - 1]
-            else:
-                raise ValueError("Unknown targets '{}'!".format(targets))
-
-        targets = numpy.hstack((targets, vaccine_target.target))
-        # Use names for entries.
-        targets = numpy.rec.fromarrays(targets,
-                                       names = ','.join(self._keys))
-
         for k in self.keys():
-            initial_proportion = getattr(initial_proportions, k)
-            target = getattr(targets, k)
-            time_to_start = getattr(times_to_start, k)
-            time_to_full_implementation = getattr(times_to_full_implementation,
-                                                  k)
-            amount_implemented = numpy.where(
-                t < time_to_start, 0,
-                numpy.where(t < time_to_full_implementation,
-                            ((t - time_to_start)
-                             / (time_to_full_implementation - time_to_start)),
-                            1))
-
-            v = (initial_proportion
-                 + (target - initial_proportion) * amount_implemented)
-            setattr(self, k, v)
+            target = getattr(self, '{}_target'.format(k))
+            ip = getattr(initial_proportions, k)
+            setattr(self, k, target(ip, self.t))
 
     def control_rates(self, state):
+        '''
+        Get the control rates given the current state.
+        '''
         return control_rates.ControlRates(self.t, state, self, self.parameters) 
+
+
+class TargetsStatusQuo(Targets):
+    '''
+    Fixed at the initial proportion with no vaccination.
+    '''
+    diagnosed_target = staticmethod(target_status_quo)
+    treated_target = staticmethod(target_status_quo)
+    suppressed_target = staticmethod(target_status_quo)
+    vaccinated_target = staticmethod(target_zero)
+
+
+class Targets909090(Targets):
+    '''
+    90-90-90 targets with no vaccination.
+    '''
+    diagnosed_target = staticmethod(target90)
+    treated_target = staticmethod(target90)
+    suppressed_target = staticmethod(target90)
+    vaccinated_target = staticmethod(target_zero)
+
+
+class Targets959595(Targets):
+    '''
+    95-95-95 targets with no vaccination.
+    '''
+    diagnosed_target = staticmethod(target95)
+    treated_target = staticmethod(target95)
+    suppressed_target = staticmethod(target95)
+    vaccinated_target = staticmethod(target_zero)
+
+
+class TargetsVaccine(Targets):
+    '''
+    95-95-95 targets with vaccination.
+    '''
+    diagnosed_target = staticmethod(target95)
+    treated_target = staticmethod(target95)
+    suppressed_target = staticmethod(target95)
+    # From 0% in 2020 to 50% coverage in 2030.
+    vaccinated_target = staticmethod(target_linear(0.5, 2020, 2030))

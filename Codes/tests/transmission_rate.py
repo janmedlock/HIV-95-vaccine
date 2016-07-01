@@ -23,10 +23,7 @@ import common
 import seaborn
 
 
-countries = model.get_country_list('IncidencePrevalence')
-
-
-def plot_transmission_rates(fig = None,
+def plot_transmission_rates(countries, fig = None,
                             quantile_level = 0.01,
                             scale = 0.8):
     if fig is None:
@@ -146,7 +143,9 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     ax.set_ylabel(ylabel, size = 'medium')
 
 
-def plot_country(country, targets = ('baseline', '909090'),
+def plot_country(country,
+                 targets = (model.TargetsStatusQuo,
+                            model.Targets909090),
                  fig = None):
     '''
     Plot transmission rate estimate and compare simulation
@@ -220,6 +219,7 @@ def plot_country(country, targets = ('baseline', '909090'),
 
 
 def plot_all_countries():
+    countries = model.get_country_list('IncidencePrevalence')
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         fig = pyplot.figure(figsize = (8.5, 11))
@@ -236,7 +236,8 @@ def plot_all_countries():
 
 
 if __name__ == '__main__':
-    # plot_transmission_rates()
+    # countries = model.get_country_list('IncidencePrevalence')
+    # plot_transmission_rates(countries)
     # pyplot.show()
 
     plot_all_countries()

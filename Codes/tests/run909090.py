@@ -14,8 +14,10 @@ def _main(parallel = True):
     parameters = model.Parameters(country).mode()
 
     results = {}
-    for k in ('baseline', '909090'):
-        results[k] = model.Simulation(parameters, k)
+    targets = {'Status Quo': model.TargetsStatusQuo,
+               '90-90-90': model.Targets909090},
+    for (k, v) in targets.items():
+        results[k] = model.Simulation(parameters, v)
         print('{}: {:g} DALYs'.format(k, results[k].DALYs))
 
 

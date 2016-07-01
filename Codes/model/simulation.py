@@ -12,10 +12,8 @@ from . import container
 # from . import cost
 from . import effectiveness
 # from . import net_benefit
-from . import parameters
 from . import plot
 from . import proportions
-from . import targets
 
 
 class Simulation(container.Container):
@@ -38,16 +36,15 @@ class Simulation(container.Container):
     _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
                  'viral_suppression', 'AIDS')
 
-    def __init__(self, parameters_, targets_,
-                 targets_kwds = {},
-                 t_start = 2015,
-                 t_end = 2035,
+    def __init__(self, parameters, targets,
+                 t_start = 2015, t_end = 2035,
                  pts_per_year = 120, # = 10 per month
                  integrator = 'odeint',
                  _use_log = True,
                  **kwargs):
-        self.parameters = parameters_
+        self.parameters = parameters
         self.country = self.parameters.country
+        self.targets = targets
         self.pts_per_year = pts_per_year
         self.integrator = integrator
         self._use_log = _use_log
@@ -57,8 +54,6 @@ class Simulation(container.Container):
             self.parameters = copy.copy(self.parameters)
             for (k, v) in self.kwargs.items():
                 setattr(self.parameters, k, v)
-
-        self.targets = targets.Targets(targets_, **targets_kwds)
 
         self.t = numpy.linspace(
             t_start, t_end,
@@ -78,15 +73,15 @@ class Simulation(container.Container):
 
         # Scale time to start at 0 to avoid some solver warnings.
         t_scaled = self.t - self.t[0]
-        def fcn_scaled(t_scaled, Y, targets_, parameters):
-            return fcn(t_scaled + self.t[0], Y, targets_, parameters)
+        def fcn_scaled(t_scaled, Y, targets, parameters):
+            return fcn(t_scaled + self.t[0], Y, targets, parameters)
 
         assert numpy.isfinite(self.parameters.R0)
         assert not numpy.all(self.parameters.initial_conditions == 0)
 
         if self.integrator == 'odeint':
-            def fcn_scaled_swap_Yt(Y, t_scaled, targets_, parameters):
-                return fcn_scaled(t_scaled, Y, targets_, parameters)
+            def fcn_scaled_swap_Yt(Y, t_scaled, targets, parameters):
+                return fcn_scaled(t_scaled, Y, targets, parameters)
             Y = integrate.odeint(fcn_scaled_swap_Yt,
                                  Y0,
                                  t_scaled,
