@@ -12,6 +12,7 @@ from scipy import optimize
 from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
+from . import transmission_rate
 
 
 def uniform(minimum, maximum):
@@ -87,6 +88,9 @@ class Parameters:
     transmission_per_coital_act_reduction_by_suppression = beta(0.08,
                                                                 0.002,
                                                                 0.57)
+
+    # Quantile used to get sample from estimated transmission_rate.
+    transmission_rate_quantile = uniform(0, 1)
 
     # From Wawer et al, 2005.
     # 9ish per month.
@@ -177,22 +181,12 @@ class _ParameterSuper:
         self.progression_rate_suppressed = (1 / time_in_suppression
                                             - self.death_rate)
 
-        self.transmission_rate_acute = (
-            1 -
-            (1 - self.transmission_per_coital_act_acute)
-            ** self.coital_acts_per_year)
-
-        self.transmission_rate_unsuppressed = (
-            1 -
-            (1 - self.transmission_per_coital_act_unsuppressed)
-            ** self.coital_acts_per_year)
-
-        self.transmission_rate_suppressed = (
-            1 -
-            (1 -
-             self.transmission_per_coital_act_reduction_by_suppression
-             * self.transmission_per_coital_act_unsuppressed)
-            ** self.coital_acts_per_year)
+        # Random variable.
+        transmission_rate_rv = transmission_rate.estimate(self)
+        # Sample using the quantile.
+        self.transmission_rate = transmission_rate_rv.ppf(
+            self.transmission_rate_quantile)
+        transmission_rate.set_rates(self)
 
         self.vaccine_efficacy = 0.5
 

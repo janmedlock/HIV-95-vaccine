@@ -73,9 +73,6 @@ class Simulation(container.Container):
         self.simulate()
 
     def simulate(self):
-        '''
-        .. todo:: Why is the solver failing part way through some simulations?
-        '''
         from . import ODEs
 
         Y0 = self.parameters.initial_conditions.copy().values

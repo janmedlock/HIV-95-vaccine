@@ -6,6 +6,7 @@ import warnings
 
 import numpy
 from scipy import stats
+import pandas
 
 
 def estimate_vs_time(parameters):
@@ -29,8 +30,8 @@ def estimate_vs_time(parameters):
     .. math:: \beta(t) = \frac{i(t)}{p(t) (1 - p(t))}.
     '''
     # Interpolate in case of any missing data.
-    prevalence = self.parameters.prevalence.interpolate(method = 'index')
-    incidence = self.parameters.incidence.interpolate(method = 'index')
+    prevalence = parameters.prevalence.interpolate(method = 'index')
+    incidence = parameters.incidence.interpolate(method = 'index')
     transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
     # Remove nan entries.
     return transmission_rates_vs_time.dropna()
@@ -52,11 +53,9 @@ def estimate(parameters, halflife = 1):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
             # Just use last values.
-            mu = pandas.ewma(trt_log,
-                             halflife = self.halflife).iloc[-1]
+            mu = pandas.ewma(trt_log, halflife = halflife).iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
-            sigma = pandas.ewmstd(trt_log,
-                                  halflife = self.halflife).iloc[-1]
+            sigma = pandas.ewmstd(trt_log, halflife = halflife).iloc[-1]
         # pandas 0.18 syntax.
         # ew = trt_log.ewm(halflife = self.halflife)
         # mu = ew.mean().iloc[-1]
@@ -72,10 +71,9 @@ def estimate(parameters, halflife = 1):
     return transmission_rate
 
 
-def set_transmission_rates(parameters):
+def set_rates(parameters):
     r'''
-    Set the transmission rates in the .parameters object for future
-    use (e.g. in simulation).
+    Set the transmission rates in the parameters object.
 
     The force of infection is
 
@@ -106,40 +104,31 @@ def set_transmission_rates(parameters):
               {U + D + T
               + \frac{\beta_A}{\beta_U} A
               + \frac{\beta_V}{\beta_U} V}.
-
-    Scale parameters.transmission_rate_* by the estimated
-    (parameter_values.transmission_rate
-    / parameter_values.transmission_rate_unsuppressed).
     '''
-    relative_rate_suppressed = (
-        parameters.transmission_rate_suppressed
-        / parameters.transmission_rate_unsuppressed)
-    relative_rate_acute = (
-        parameters.transmission_rate_acute
-        / parameters.transmission_rate_unsuppressed)
-    #################
-    # beta_U = beta #
-    #################
-    # parameters.transmission_rate_unsuppressed \
-    #     = parameters.transmission_rate
-    ###################
-    # beta_U as above #
-    ###################
+    assert numpy.isfinite(parameters.transmission_rate)
+    assert (parameters.transmission_rate >= 0)
+
+    # From Rakai study (Wawer, Grey, et al).
+    n = parameters.coital_acts_per_year
+    p = parameters.transmission_per_coital_act_acute
+    rakai_acute = 1 - (1 - p) ** n
+    p = parameters.transmission_per_coital_act_unsuppressed
+    rakai_unsuppressed = 1 - (1 - p) ** n
+    p = (parameters.transmission_per_coital_act_reduction_by_suppression
+         * parameters.transmission_per_coital_act_unsuppressed)
+    rakai_suppressed = 1 - (1 - p) ** n
+
+    relative_rate_suppressed = rakai_suppressed / rakai_unsuppressed
+    relative_rate_acute = rakai_acute / rakai_unsuppressed
+
     S, Q, A, U, D, T, V, W, Z, R = parameters.initial_conditions
     I = A + U + D + T + V + W
-    if I > 0:
-        parameters.transmission_rate_unsuppressed \
-            = (parameters.transmission_rate * I
-               / (U + D + T + relative_rate_acute * A
-                  + relative_rate_suppressed * V))
-    else:
-        parameters.transmission_rate_unsuppressed \
-            = parameters.transmission_rate
-    parameters.transmission_rate_suppressed \
-           = (relative_rate_suppressed
-              * parameters.transmission_rate_unsuppressed)
-    parameters.transmission_rate_acute \
-           = (relative_rate_acute
-              * parameters.transmission_rate_unsuppressed)
-    assert numpy.isfinite(parameters.transmission_rate).all()
-    assert not numpy.any(parameters.transmission_rate < 0)
+    assert (I > 0)
+
+    parameters.transmission_rate_unsuppressed = (
+        parameters.transmission_rate * I
+        / (U + D + T + relative_rate_acute * A + relative_rate_suppressed * V))
+    parameters.transmission_rate_suppressed = (
+        relative_rate_suppressed * parameters.transmission_rate_unsuppressed)
+    parameters.transmission_rate_acute = (
+        relative_rate_acute * parameters.transmission_rate_unsuppressed)
