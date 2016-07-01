@@ -11,7 +11,7 @@ import model
 
 
 if __name__ == '__main__':
-    country = 'Nigeria'
+    country = 'South Africa'
     nsamples = 2
 
     print(country)

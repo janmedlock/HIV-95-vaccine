@@ -775,8 +775,7 @@ def plot_all_estimators(country, Estimators = None, fig = None):
 
 
 if __name__ == '__main__':
-    country = 'Barbados'
-    # country = 'South Africa'
+    country = 'South Africa'
     print(country)
     e = EWLognormal(country)
     e.plot()

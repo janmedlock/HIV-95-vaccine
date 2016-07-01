@@ -10,7 +10,7 @@ import model
 
 
 def _main(parallel = True, debug = True, **kwargs):
-    country = 'Nigeria'
+    country = 'South Africa'
 
     parameters = model.Parameters(country).mode()
 

@@ -11,7 +11,7 @@ import model
 
 
 def _main():
-    country = 'Nigeria'
+    country = 'South Africa'
 
     print(country)
 
