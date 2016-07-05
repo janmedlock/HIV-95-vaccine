@@ -114,9 +114,9 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     style = next(ax._get_lines.prop_cycler)
 
     # Plot simulation data.
-    for (ti, vi, li) in zip(t, val, targets):
+    for (ti, vi, targeti) in zip(t, val, targets):
         ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
-                label = li)
+                label = targeti.__name__)
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:
@@ -145,7 +145,9 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
 
 def plot_country(country,
                  targets = (model.TargetsStatusQuo,
-                            model.Targets909090),
+                            model.Targets909090,
+                            model.Targets959595,
+                            model.TargetsVaccine),
                  fig = None):
     '''
     Plot transmission rate estimate and compare simulation
@@ -223,7 +225,7 @@ def plot_all_countries():
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         fig = pyplot.figure(figsize = (8.5, 11))
-        _, ax = plot_transmission_rates(fig = fig)
+        _, ax = plot_transmission_rates(countries, fig = fig)
         pdf.savefig(fig)
         pyplot.close(fig)
 
@@ -236,6 +238,7 @@ def plot_all_countries():
 
 
 if __name__ == '__main__':
+    # plot_country('South Africa')
     # countries = model.get_country_list('IncidencePrevalence')
     # plot_transmission_rates(countries)
     # pyplot.show()
