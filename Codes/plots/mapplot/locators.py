@@ -4,11 +4,11 @@ Locators to get the coordinates of a country.
 
 import numpy
 
-# Silence warnings from matplotlib trigged by cartopy.
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import cartopy
+# import cartopy
+import os.path
+import sys
+sys.path.append(os.path.dirname(__file__))  # For Sphinx
+import cartopy_quiet as cartopy
 
 
 class _Locator:

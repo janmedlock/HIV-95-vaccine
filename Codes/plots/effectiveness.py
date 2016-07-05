@@ -17,11 +17,10 @@ import numpy
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
+# import seaborn
+import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
-
-# Here because code to suppress warnings is in common.
-import seaborn
 
 
 alpha = 0.5

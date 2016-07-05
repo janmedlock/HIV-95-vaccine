@@ -14,11 +14,10 @@ import numpy
 
 sys.path.append('..')
 import common
+# import seaborn
+import seaborn_quiet as seaborn
 sys.path.append('../..')
 import model
-
-# Here because code to suppress warnings is in common.
-import seaborn
 
 
 countries_to_plot = (

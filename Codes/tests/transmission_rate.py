@@ -19,8 +19,8 @@ from model import transmission_rate
 sys.path.append('../plots')
 import common
 
-# Here because code to suppress warnings is in common.
-import seaborn
+# import seaborn
+import seaborn_quiet as seaborn
 
 
 def plot_transmission_rates(countries, fig = None,

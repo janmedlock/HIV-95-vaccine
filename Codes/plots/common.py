@@ -11,11 +11,10 @@ from matplotlib import colors
 from matplotlib import ticker
 import numpy
 
-# Silence warnings from matplotlib trigged by seaborn.
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import seaborn
+# import seaborn
+import sys
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
+import seaborn_quiet as seaborn
 
 
 countries_to_plot = (

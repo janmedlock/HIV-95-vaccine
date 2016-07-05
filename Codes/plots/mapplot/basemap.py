@@ -5,6 +5,7 @@ Make nice graphs on maps.
 from collections import abc
 import itertools
 import os.path
+import sys
 
 import numpy
 from matplotlib import animation
@@ -12,12 +13,13 @@ from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 
-# Silence warnings from matplotlib trigged by seaborn and cartopy.
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import seaborn
-    import cartopy
+# import cartopy
+sys.path.append(os.path.dirname(__file__))  # For Sphinx
+import cartopy_quiet as cartopy
+
+sys.path.append('..')
+# import seaborn
+import seaborn_quiet as seaborn
 
 from . import locators
 

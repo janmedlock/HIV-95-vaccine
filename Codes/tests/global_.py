@@ -12,11 +12,9 @@ from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 
-# Silence warnings from matplotlib trigged by seaborn.
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import seaborn
+# import seaborn
+sys.path.append('../plots')
+import seaborn_quiet as seaborn
 
 sys.path.append('..')
 import model

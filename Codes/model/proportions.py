@@ -17,7 +17,10 @@ def _safe_divide(a, b, fill_value = 0):
     '''
     # Ignore divide-by-zero warnings.
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
+        warnings.filterwarnings('ignore',
+                                module = 'numpy',
+                                message = ('divide by zero encountered in '
+                                           'true_divide'))
         return numpy.where((a == 0) & (b == 0), 0, numpy.divide(a, b))
 
 class Proportions(container.Container):

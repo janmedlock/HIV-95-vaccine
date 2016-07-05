@@ -2,8 +2,6 @@
 Estimate the gross transmission rate from incidence and prevalence data.
 '''
 
-import warnings
-
 import numpy
 from scipy import stats
 import pandas
@@ -49,18 +47,21 @@ def estimate(parameters, halflife = 1):
         # mu and sigma are the mean and stdev of
         # log(transmission_rates_vs_time).
         trt_log = transmission_rates_vs_time.apply(numpy.log)
-        # Catch pandas 0.18 warnings.
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            # Just use last values.
+
+        # Get the exponentially weighted mean and stdev at the last
+        # time point.
+        try:
+            # pandas 0.18 syntax.
+            ew = trt_log.ewm(halflife = halflife)
+            mu = ew.mean().iloc[-1]
+            # The default, bias = False, seems to be ddof = 1.
+            sigma = ew.std().iloc[-1]
+        except AttributeError:
+            # pandas 0.17 syntax.
             mu = pandas.ewma(trt_log, halflife = halflife).iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
             sigma = pandas.ewmstd(trt_log, halflife = halflife).iloc[-1]
-        # pandas 0.18 syntax.
-        # ew = trt_log.ewm(halflife = self.halflife)
-        # mu = ew.mean().iloc[-1]
-        # The default, bias = False, seems to be ddof = 1.
-        # sigma = ew.std().iloc[-1]
+
         transmission_rate = stats.lognorm(sigma, scale = numpy.exp(mu))
         # scipy RVs don't define .mode (i.e. MLE),
         # so I explicitly add it so I can use it

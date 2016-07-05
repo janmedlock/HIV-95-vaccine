@@ -5,11 +5,10 @@ Make plots.
 from matplotlib import pyplot
 from matplotlib import ticker
 
-# Silence warnings from matplotlib trigged by seaborn.
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import seaborn
+# import seaborn
+import sys
+sys.path.append('../plots')
+import seaborn_quiet as seaborn
 
 
 def simulation(sim, show = True):

@@ -2,8 +2,6 @@
 Parameter data.
 '''
 
-import warnings
-
 import numpy
 import pandas
 from scipy import stats
@@ -96,6 +94,8 @@ class Parameters:
     # 9ish per month.
     coital_acts_per_year = uniform(8 * 12, 9 * 12)
 
+    vaccine_efficacy = 0.5
+
     def __init__(self, country):
         self.country = country
 
@@ -187,8 +187,6 @@ class _ParameterSuper:
         self.transmission_rate = transmission_rate_rv.ppf(
             self.transmission_rate_quantile)
         transmission_rate.set_rates(self)
-
-        self.vaccine_efficacy = 0.5
 
         # One-time cost of new diagnosis.
         # self.cost_of_testing_onetime_increasing = self.cost_test

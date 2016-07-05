@@ -19,9 +19,6 @@ import common
 sys.path.append('..')
 import model
 
-# Here because code to suppress warnings is in common.
-import seaborn
-
 
 def plotcell(ax, tx,
              xlabel = None, ylabel = None, title = None):

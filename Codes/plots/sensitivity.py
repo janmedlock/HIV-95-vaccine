@@ -12,13 +12,12 @@ import numpy
 from scipy import interpolate
 
 sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
-sys.path.append('..')
 import common
-import model
 import stats
-
-# Here because code to suppress warnings is in common.
-import seaborn
+# import seaborn
+import seaborn_quiet as seaborn
+sys.path.append('..')
+import model
 
 
 parameter_name = dict(

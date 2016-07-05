@@ -11,13 +11,12 @@ from matplotlib import cm
 from matplotlib import pyplot
 import numpy
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append('..')
 import common
 import mapplot
 import mapplot.cmap
-
-# Here because code to suppress warnings is in common.
-import seaborn
+# import seaborn
+import seaborn_quiet as seaborn
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
