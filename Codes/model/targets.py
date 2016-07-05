@@ -10,14 +10,14 @@ from . import control_rates
 from . import proportions
 
 
-def target_zero(initial_proportion, t):
+def target_zero(self, initial_proportion, t):
     '''
     Fixed at 0.
     '''
     return numpy.zeros_like(t, dtype = float)
 
 
-def target_status_quo(initial_proportion, t):
+def target_status_quo(self, initial_proportion, t):
     '''
     Fixed at the initial proportion.
     '''
@@ -31,7 +31,7 @@ def target_linear(target_value, time_to_start, time_to_target):
     time_to_target.  Stay fixed at initial proportion before
     time_to_start and fixed at target_value after time_to_target.
     '''
-    def f(initial_proportion, t):
+    def f(self, initial_proportion, t):
         target_value_ = max(target_value, initial_proportion)
         amount_implemented = numpy.where(
             t < time_to_start, 0,
@@ -53,7 +53,7 @@ max(90%, initial_proportion) between 2015 and
 target90 = target_linear(0.9, 2015, 2020)
 
 
-def target95(initial_proportion, t):
+def target95(self, initial_proportion, t):
     '''
     Linearly go from the initial proportion to
     target_value_0 = max(90%, initial_proportion) between 2015 and
@@ -91,6 +91,8 @@ class Targets(container.Container):
     '''
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
+    vaccine_efficacy = 0
+
     def __init__(self, parameters, t):
         self.parameters = parameters
         self.t = numpy.asarray(t)
@@ -108,42 +110,60 @@ class Targets(container.Container):
         return control_rates.ControlRates(self.t, state, self, self.parameters) 
 
 
+class TargetsZero(Targets):
+    '''
+    All zero.
+    '''
+    diagnosed_target = target_zero
+    treated_target = target_zero
+    suppressed_target = target_zero
+    vaccinated_target = target_zero
+
+
 class TargetsStatusQuo(Targets):
     '''
     Fixed at the initial proportion with no vaccination.
     '''
-    diagnosed_target = staticmethod(target_status_quo)
-    treated_target = staticmethod(target_status_quo)
-    suppressed_target = staticmethod(target_status_quo)
-    vaccinated_target = staticmethod(target_zero)
+    diagnosed_target = target_status_quo
+    treated_target = target_status_quo
+    suppressed_target = target_status_quo
+    vaccinated_target = target_zero
 
 
 class Targets909090(Targets):
     '''
     90-90-90 targets with no vaccination.
     '''
-    diagnosed_target = staticmethod(target90)
-    treated_target = staticmethod(target90)
-    suppressed_target = staticmethod(target90)
-    vaccinated_target = staticmethod(target_zero)
+    diagnosed_target = target90
+    treated_target = target90
+    suppressed_target = target90
+    vaccinated_target = target_zero
 
 
 class Targets959595(Targets):
     '''
     95-95-95 targets with no vaccination.
     '''
-    diagnosed_target = staticmethod(target95)
-    treated_target = staticmethod(target95)
-    suppressed_target = staticmethod(target95)
-    vaccinated_target = staticmethod(target_zero)
+    diagnosed_target = target95
+    treated_target = target95
+    suppressed_target = target95
+    vaccinated_target = target_zero
 
 
-class TargetsVaccine(Targets):
+def TargetsVaccine(TargetsTreatment = Targets959595,
+                   time_to_start = 2020,
+                   time_to_fifty_percent = 2,
+                   coverage = 0.7,
+                   vaccine_efficacy_ = 0.7):
     '''
-    95-95-95 targets with vaccination.
+    Factory to set vaccine parameters.
     '''
-    diagnosed_target = staticmethod(target95)
-    treated_target = staticmethod(target95)
-    suppressed_target = staticmethod(target95)
-    # From 0% in 2020 to 50% coverage in 2030.
-    vaccinated_target = staticmethod(target_linear(0.5, 2020, 2030))
+    time_to_target = coverage / 0.5 * time_to_fifty_percent + time_to_start
+
+    class TargetsVaccine_(TargetsTreatment):
+        vaccine_efficacy = vaccine_efficacy_
+        vaccinated_target = target_linear(coverage,
+                                          time_to_start,
+                                          time_to_target)
+
+    return TargetsVaccine_

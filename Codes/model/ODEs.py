@@ -47,7 +47,7 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-def ODEs(t, state, targets_, parameters):
+def ODEs(t, state, targets, parameters):
     # Force the state variables to be non-negative.
     # The last two state variables, dead from AIDS and new infections,
     # are cumulative numbers that are set to 0 at t = 0: these
@@ -59,7 +59,7 @@ def ODEs(t, state, targets_, parameters):
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
 
-    control_rates = targets_(parameters, t).control_rates(state)
+    control_rates = targets(parameters, t).control_rates(state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -72,11 +72,11 @@ def ODEs(t, state, targets_, parameters):
           - parameters.death_rate * S)
 
     dQ = (control_rates.vaccination * S
-          - (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          - (1 - targets.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
     
     dA = (force_of_infection * S
-          + (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          + (1 - targets.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
           - parameters.death_rate * A)
 
@@ -113,7 +113,7 @@ def ODEs(t, state, targets_, parameters):
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def ODEs_log(t, state_trans, targets_, parameters):
+def ODEs_log(t, state_trans, targets, parameters):
     state = transform_inv(state_trans)
     S, Q, A, U, D, T, V, W, Z, R = state
     (S_log, U_log, D_log, T_log, V_log, W_log) = state_trans[vars_log]
@@ -122,7 +122,7 @@ def ODEs_log(t, state_trans, targets_, parameters):
     N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
-    control_rates = targets_(parameters, t).control_rates(state)
+    control_rates = targets(parameters, t).control_rates(state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A / N
@@ -138,11 +138,11 @@ def ODEs_log(t, state_trans, targets_, parameters):
               - parameters.death_rate)
 
     dQ = (control_rates.vaccination * numpy.exp(S_log)
-          - (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          - (1 - targets.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
 
     dA = (force_of_infection * numpy.exp(S_log)
-          + (1 - parameters.vaccine_efficacy) * force_of_infection * Q
+          + (1 - targets.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
           - parameters.death_rate * A)
 

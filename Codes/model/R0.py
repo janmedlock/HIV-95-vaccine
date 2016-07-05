@@ -7,9 +7,9 @@ import numpy
 
 def R0(parameters):
     diagnosis_rate = treatment_rate = nonadherence_rate = vaccine_coverage = 0
+    vaccine_efficacy = 0
 
-    z0 = ((1 - vaccine_coverage)
-          + vaccine_coverage * parameters.vaccine_efficacy)
+    z0 = (1 - vaccine_coverage) + vaccine_coverage * vaccine_efficacy
 
     F = numpy.zeros((6, 6))
     F[0] = [parameters.transmission_rate_acute * z0,

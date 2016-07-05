@@ -15,10 +15,10 @@ def print_container(c):
 
 if __name__ == '__main__':
     parameters = model.Parameters('South Africa')
-    Targets = model.targets.TargetsVaccine
-    targets = Targets(parameters,
-                      [2015, 2020, 2025, 2030])
+    Targets = model.targets.TargetsVaccine()
+    times = [2015, 2020, 2021, 2022, 2023, 2025, 2030]
+    targets = Targets(parameters, times)
     print_container(targets)
-    state = numpy.vstack(4 * (parameters.mode().initial_conditions, ))
+    state = numpy.vstack(len(times) * (parameters.mode().initial_conditions, ))
     control_rates = targets.control_rates(state)
     print_container(control_rates)

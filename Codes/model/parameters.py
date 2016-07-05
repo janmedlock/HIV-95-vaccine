@@ -94,8 +94,6 @@ class Parameters:
     # 9ish per month.
     coital_acts_per_year = uniform(8 * 12, 9 * 12)
 
-    vaccine_efficacy = 0.5
-
     def __init__(self, country):
         self.country = country
 
