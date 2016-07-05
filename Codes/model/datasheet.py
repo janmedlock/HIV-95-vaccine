@@ -176,6 +176,15 @@ class InitialConditionsSheet(Sheet):
     def set_attrs(country_data, data):
         setattr(country_data, data.name, data)
 
+    @classmethod
+    def clean(cls, sheet):
+        '''
+        Drop junk columns and rows at end of sheet.
+        '''
+        sheet_ = super().clean(sheet)
+        goodcols = [c for c in sheet_.columns if not c.startswith('Unnamed: ')]
+        return sheet_[goodcols]
+
 
 class CostSheet(Sheet):
     sheetname = 'Costs'
