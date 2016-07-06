@@ -191,7 +191,7 @@ def plot_all_countries(targets):
 if __name__ == '__main__':
     targets = [model.Targets959595()] + model.AllVaccineTargets
 
-    plot_country('South Africa', targets)
-    pyplot.show()
+    # plot_country('South Africa', targets)
+    # pyplot.show()
 
-    # plot_all_countries(targets)
+    plot_all_countries(targets)
