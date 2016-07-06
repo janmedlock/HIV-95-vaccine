@@ -29,6 +29,10 @@ prcc
 ----
 .. automodule:: plots.prcc
 
+seaborn_quiet
+-------------
+.. automodule:: plots.seaborn_quiet
+
 sensitivity
 -----------
 .. automodule:: plots.sensitivity
