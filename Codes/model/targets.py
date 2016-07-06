@@ -100,11 +100,24 @@ class Target95:
                 + (target_value_1_ - target_value_0_) * amount_implemented_1)
 
 
+class Targets(container.Container):
+    '''
+    Base type for targets for diagnosis, treatment, viral suppression,
+    and vaccination.
+    '''
+    _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
+
+    vaccine_efficacy = 0
+
+    def __call__(self, parameters, t):
+        return _TargetValues(self, parameters, t)
+
+
 class _TargetValues(container.Container):
     '''
     Hold numerical values for the targets at different points in time.
     '''
-    _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
+    _keys = Targets._keys
 
     def __init__(self, targets, parameters, t):
         self.t = numpy.asarray(t)
@@ -112,7 +125,7 @@ class _TargetValues(container.Container):
         initial_proportions = proportions.Proportions(
             self.parameters.initial_conditions)
         for k in self.keys():
-            target = getattr(targets, '{}_target'.format(k))
+            target = getattr(targets, k)
             ip = getattr(initial_proportions, k)
             setattr(self, k, target(ip, self.t))
 
@@ -123,55 +136,44 @@ class _TargetValues(container.Container):
         return control_rates.ControlRates(self.t, state, self, self.parameters)
 
 
-class Targets:
-    '''
-    Base type for targets for diagnosis, treatment, viral suppression,
-    and vaccination.
-    '''
-    vaccine_efficacy = 0
-
-    def __call__(self, parameters, t):
-        return _TargetValues(self, parameters, t)
-
-
 class TargetsZero(Targets):
     '''
     All zero.
     '''
-    diagnosed_target = TargetZero()
-    treated_target = TargetZero()
-    suppressed_target = TargetZero()
-    vaccinated_target = TargetZero()
+    diagnosed = TargetZero()
+    treated = TargetZero()
+    suppressed = TargetZero()
+    vaccinated = TargetZero()
 
 
 class TargetsStatusQuo(Targets):
     '''
     Fixed at the initial proportion with no vaccination.
     '''
-    diagnosed_target = TargetStatusQuo()
-    treated_target = TargetStatusQuo()
-    suppressed_target = TargetStatusQuo()
-    vaccinated_target = TargetZero()
+    diagnosed = TargetStatusQuo()
+    treated = TargetStatusQuo()
+    suppressed = TargetStatusQuo()
+    vaccinated = TargetZero()
 
 
 class Targets909090(Targets):
     '''
     90-90-90 targets with no vaccination.
     '''
-    diagnosed_target = Target90()
-    treated_target = Target90()
-    suppressed_target = Target90()
-    vaccinated_target = TargetZero()
+    diagnosed = Target90()
+    treated = Target90()
+    suppressed = Target90()
+    vaccinated = TargetZero()
 
 
 class Targets959595(Targets):
     '''
     95-95-95 targets with no vaccination.
     '''
-    diagnosed_target = Target95()
-    treated_target = Target95()
-    suppressed_target = Target95()
-    vaccinated_target = TargetZero()
+    diagnosed = Target95()
+    treated = Target95()
+    suppressed = Target95()
+    vaccinated = TargetZero()
 
 
 class TargetsVaccine(Targets):
@@ -187,18 +189,18 @@ class TargetsVaccine(Targets):
         self.TargetsTreatment = TargetsTreatment
 
         # Set non-vaccine targets from TargetsTretament
-        self.diagnosed_target = self.TargetsTreatment.diagnosed_target
-        self.treated_target = self.TargetsTreatment.treated_target
-        self.suppressed_target = self.TargetsTreatment.suppressed_target
+        self.diagnosed = self.TargetsTreatment.diagnosed
+        self.treated = self.TargetsTreatment.treated
+        self.suppressed = self.TargetsTreatment.suppressed
 
         self.vaccine_efficacy = efficacy
 
         time_to_target = (coverage / 0.5 * time_to_fifty_percent
                           + time_to_start)
 
-        self.vaccinated_target = TargetLinear(coverage,
-                                              time_to_start,
-                                              time_to_target)
+        self.vaccinated = TargetLinear(coverage,
+                                       time_to_start,
+                                       time_to_target)
 
 
 AllVaccineTargets = [TargetsVaccine(),
