@@ -6,8 +6,9 @@ from matplotlib import pyplot
 from matplotlib import ticker
 
 # import seaborn
+import os.path
 import sys
-sys.path.append('../plots')
+sys.path.append(os.path.join(os.path.dirname(__file__), '../plots'))
 import seaborn_quiet as seaborn
 
 
