@@ -10,50 +10,62 @@ from . import control_rates
 from . import proportions
 
 
-def target_zero(self, initial_proportion, t):
+class TargetZero:
     '''
     Fixed at 0.
     '''
-    return numpy.zeros_like(t, dtype = float)
+    def __call__(self, initial_proportion, t):
+        return numpy.zeros_like(t, dtype = float)
 
 
-def target_status_quo(self, initial_proportion, t):
+class TargetStatusQuo:
     '''
     Fixed at the initial proportion.
     '''
-    return initial_proportion * numpy.ones_like(t, dtype = float)
+    def __call__(self, initial_proportion, t):
+        return initial_proportion * numpy.ones_like(t, dtype = float)
 
 
-def target_linear(target_value, time_to_start, time_to_target):
+class TargetLinear:
     '''
     Linearly go from the initial proportion to
     max(target_value, initial_proportion) between time_to_start and
     time_to_target.  Stay fixed at initial proportion before
     time_to_start and fixed at target_value after time_to_target.
     '''
-    def f(self, initial_proportion, t):
-        target_value_ = max(target_value, initial_proportion)
+    def __init__(self, target_value, time_to_start, time_to_target):
+        self.target_value = target_value
+        self.time_to_start = time_to_start
+        self.time_to_target = time_to_target
+
+    def __call__(self, initial_proportion, t):
+        target_value_ = max(self.target_value, initial_proportion)
         amount_implemented = numpy.where(
-            t < time_to_start, 0,
+            t < self.time_to_start, 0,
             numpy.where(
-                t < time_to_target,
-                (t - time_to_start) / (time_to_target - time_to_start),
+                t < self.time_to_target,
+                (t - self.time_to_start)
+                / (self.time_to_target - self.time_to_start),
                 1))
         return (initial_proportion
                 + (target_value_ - initial_proportion) * amount_implemented)
-    return f
+
+class Target90(TargetLinear):
+    '''
+    Linearly go from the initial proportion to the target value =
+    max(90%, initial_proportion) between 2015 and
+    2020.  Stay fixed at initial proportion before
+    2015 and fixed at the target value after 2020.
+    '''
+    target_value = 0.9
+    time_to_start = 2015
+    time_to_target = 2020
+
+    def __init__(self):
+        pass
 
 
-'''
-Linearly go from the initial proportion to the target value =
-max(90%, initial_proportion) between 2015 and
-2020.  Stay fixed at initial proportion before
-2015 and fixed at the target value after 2020.
-'''
-target90 = target_linear(0.9, 2015, 2020)
-
-
-def target95(self, initial_proportion, t):
+class Target95:
     '''
     Linearly go from the initial proportion to
     target_value_0 = max(90%, initial_proportion) between 2015 and
@@ -62,44 +74,45 @@ def target95(self, initial_proportion, t):
     Stay fixed at initial proportion before 2015 and fixed at
     target_value_1 after 2030.
     '''
+    target_value_0 = 0.9
+    target_value_1 = 0.95
     time_0 = 2015
     time_1 = 2020
     time_2 = 2030
-    target_value_0 = max(0.9, initial_proportion)
-    target_value_1 = max(0.95, initial_proportion)
-    amount_implemented_0 = numpy.where(
-        t < time_0, 0,
-        numpy.where(
-            t < time_1,
-            (t - time_0) / (time_1 - time_0),
-            1))
-    amount_implemented_1 = numpy.where(
-        t < time_1, 0,
-        numpy.where(
-            t < time_2,
-            (t - time_1) / (time_2 - time_1),
-            1))
-    return (initial_proportion
-            + (target_value_0 - initial_proportion) * amount_implemented_0
-            + (target_value_1 - target_value_0) * amount_implemented_1)
+
+    def __call__(self, initial_proportion, t):
+        target_value_0_ = max(self.target_value_0, initial_proportion)
+        target_value_1_ = max(self.target_value_1, initial_proportion)
+        amount_implemented_0 = numpy.where(
+            t < self.time_0, 0,
+            numpy.where(
+                t < self.time_1,
+                (t - self.time_0) / (self.time_1 - self.time_0),
+                1))
+        amount_implemented_1 = numpy.where(
+            t < self.time_1, 0,
+            numpy.where(
+                t < self.time_2,
+                (t - self.time_1) / (self.time_2 - self.time_1),
+                1))
+        return (initial_proportion
+                + (target_value_0_ - initial_proportion) * amount_implemented_0
+                + (target_value_1_ - target_value_0_) * amount_implemented_1)
 
 
-class Targets(container.Container):
+class _TargetValues(container.Container):
     '''
-    Base type for targets for diagnosis, treatment, viral suppression,
-    and vaccination.
+    Hold numerical values for the targets at different points in time.
     '''
     _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
 
-    vaccine_efficacy = 0
-
-    def __init__(self, parameters, t):
-        self.parameters = parameters
+    def __init__(self, targets, parameters, t):
         self.t = numpy.asarray(t)
+        self.parameters = parameters
         initial_proportions = proportions.Proportions(
             self.parameters.initial_conditions)
         for k in self.keys():
-            target = getattr(self, '{}_target'.format(k))
+            target = getattr(targets, '{}_target'.format(k))
             ip = getattr(initial_proportions, k)
             setattr(self, k, target(ip, self.t))
 
@@ -107,63 +120,90 @@ class Targets(container.Container):
         '''
         Get the control rates given the current state.
         '''
-        return control_rates.ControlRates(self.t, state, self, self.parameters) 
+        return control_rates.ControlRates(self.t, state, self, self.parameters)
+
+
+class Targets:
+    '''
+    Base type for targets for diagnosis, treatment, viral suppression,
+    and vaccination.
+    '''
+    vaccine_efficacy = 0
+
+    def __call__(self, parameters, t):
+        return _TargetValues(self, parameters, t)
 
 
 class TargetsZero(Targets):
     '''
     All zero.
     '''
-    diagnosed_target = target_zero
-    treated_target = target_zero
-    suppressed_target = target_zero
-    vaccinated_target = target_zero
+    diagnosed_target = TargetZero()
+    treated_target = TargetZero()
+    suppressed_target = TargetZero()
+    vaccinated_target = TargetZero()
 
 
 class TargetsStatusQuo(Targets):
     '''
     Fixed at the initial proportion with no vaccination.
     '''
-    diagnosed_target = target_status_quo
-    treated_target = target_status_quo
-    suppressed_target = target_status_quo
-    vaccinated_target = target_zero
+    diagnosed_target = TargetStatusQuo()
+    treated_target = TargetStatusQuo()
+    suppressed_target = TargetStatusQuo()
+    vaccinated_target = TargetZero()
 
 
 class Targets909090(Targets):
     '''
     90-90-90 targets with no vaccination.
     '''
-    diagnosed_target = target90
-    treated_target = target90
-    suppressed_target = target90
-    vaccinated_target = target_zero
+    diagnosed_target = Target90()
+    treated_target = Target90()
+    suppressed_target = Target90()
+    vaccinated_target = TargetZero()
 
 
 class Targets959595(Targets):
     '''
     95-95-95 targets with no vaccination.
     '''
-    diagnosed_target = target95
-    treated_target = target95
-    suppressed_target = target95
-    vaccinated_target = target_zero
+    diagnosed_target = Target95()
+    treated_target = Target95()
+    suppressed_target = Target95()
+    vaccinated_target = TargetZero()
 
 
-def TargetsVaccine(TargetsTreatment = Targets959595,
-                   time_to_start = 2020,
-                   time_to_fifty_percent = 2,
-                   coverage = 0.7,
-                   vaccine_efficacy_ = 0.7):
+class TargetsVaccine(Targets):
     '''
-    Factory to set vaccine parameters.
+    95-95-95 plus vaccine.
     '''
-    time_to_target = coverage / 0.5 * time_to_fifty_percent + time_to_start
+    def __init__(self,
+                 efficacy = 0.7,
+                 coverage = 0.7,
+                 time_to_start = 2020,
+                 time_to_fifty_percent = 2,
+                 TargetsTreatment = Targets959595):
+        self.TargetsTreatment = TargetsTreatment
 
-    class TargetsVaccine_(TargetsTreatment):
-        vaccine_efficacy = vaccine_efficacy_
-        vaccinated_target = target_linear(coverage,
-                                          time_to_start,
-                                          time_to_target)
+        # Set non-vaccine targets from TargetsTretament
+        self.diagnosed_target = self.TargetsTreatment.diagnosed_target
+        self.treated_target = self.TargetsTreatment.treated_target
+        self.suppressed_target = self.TargetsTreatment.suppressed_target
 
-    return TargetsVaccine_
+        self.vaccine_efficacy = efficacy
+
+        time_to_target = (coverage / 0.5 * time_to_fifty_percent
+                          + time_to_start)
+
+        self.vaccinated_target = TargetLinear(coverage,
+                                              time_to_start,
+                                              time_to_target)
+
+
+AllVaccineTargets = [TargetsVaccine(),
+                     TargetsVaccine(efficacy = 0.5),
+                     TargetsVaccine(coverage = 0.5),
+                     TargetsVaccine(coverage = 0.9),
+                     TargetsVaccine(time_to_start = 2025),
+                     TargetsVaccine(time_to_fifty_percent = 5)]
