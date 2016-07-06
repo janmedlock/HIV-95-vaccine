@@ -23,22 +23,6 @@ import common
 import seaborn_quiet as seaborn
 
 
-def _getlabel(targets):
-    label = targets.__class__.__name__.replace('Targets', '')
-    if isinstance(targets, model.TargetsVaccine):
-        tv = targets.vaccinated_target
-        time_to_fifty_percent = ((tv.time_to_target - tv.time_to_start)
-                                 * 0.5 / tv.target_value)
-        label += (': efficacy {:g}%, coverage {:g}%, start {:g}, '
-                  'time to 50% coverage {:g} y').format(
-                      100 * targets.vaccine_efficacy,
-                      100 * tv.target_value,
-                      tv.time_to_start,
-                      time_to_fifty_percent)
-    return label
-
-
-
 def _plot_sim_cell(ax, parameters, targets, results, stat):
     '''
     Plot one axes of simulation and historical data figure.
@@ -48,34 +32,26 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
         scale = 1e6
         ylabel = 'Infected\n(M)'
         data = parameters.prevalence * parameters.population
-        t = [r.t for r in results]
         val = [r.infected for r in results]
     elif stat == 'prevalence':
         percent = True
         ylabel = 'Prevelance\n'
         data = parameters.prevalence
-        t = [r.t for r in results]
         val = [r.prevalence for r in results]
     elif stat == 'incidence':
         scale = 1e-3
         ylabel = 'Incidence\n(per 1000 per y)'
         data = parameters.incidence
         # Compute from simulation results.
-        val = []
-        for r in results:
-            ni = numpy.asarray(r.new_infections)
-            n = numpy.asarray(r.alive)
-            val.append(numpy.diff(ni) / numpy.diff(r.t) / n[..., 1 :])
-        # Need to drop one t value since we have differences above.
-        t = [r.t[1 : ] for r in results]
+        val = [r.incidence_per_capita for r in results]
     elif stat == 'drug_coverage':
         percent = True
         ylabel = 'Drug\ncoverage'
         data = parameters.drug_coverage
-        t = [r.t for r in results]
         val = [r.proportions.treated for r in results]
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
+    t = [r.t for r in results]
 
     if percent:
         scale = 1 / 100
@@ -98,7 +74,7 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     for (ti, vi, targeti) in zip(t, val, targets):
         ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
                 color = next(colors),
-                label = _getlabel(targeti))
+                label = str(targeti))
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:

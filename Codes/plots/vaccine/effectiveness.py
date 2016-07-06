@@ -71,22 +71,7 @@ def getfield(results, field):
     retval = {}
     for (k, v) in results.items():
         t = v.t
-        if field == 'incidence':
-            ni = numpy.asarray(v.new_infections)
-            retval[k] = numpy.diff(ni) / numpy.diff(t)
-        elif field == 'incidence_per_capita':
-            ni = numpy.asarray(v.new_infections)
-            n = numpy.asarray(v.alive)
-            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[..., 1 :]
-        elif field.endswith('_per_capita'):
-            field_ = field.replace('_per_capita', '')
-            x = numpy.asarray(getattr(v, field_))
-            n = numpy.asarray(v.alive)
-            retval[k] = x / n
-        else:
-            retval[k] = getattr(v, field)
-    if field.startswith('incidence'):
-        t = t[1 : ]
+        retval[k] = getattr(v, field)
     return (t, retval)
 
 

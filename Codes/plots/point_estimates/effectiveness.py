@@ -82,25 +82,7 @@ def baseplot(ax, t, data, ylabel = None, scale = 1,
 
 
 def getattr_(data, attrname, t = None):
-    if attrname == 'incidence':
-        retval = {}
-        for k in (kbaseline, k909090):
-            ni = getattr(data[k], 'new_infections')
-            retval[k] = numpy.diff(ni) / numpy.diff(t)
-        return retval
-    elif attrname == 'incidence_per_capita':
-        retval = {}
-        for k in (kbaseline, k909090):
-            ni = getattr(data[k], 'new_infections')
-            n = getattr(data[k], 'alive')
-            retval[k] = numpy.diff(ni) / numpy.diff(t) / n[1 :]
-        return retval
-    elif attrname.endswith('_per_capita'):
-        attrname_ = attrname.replace('_per_capita', '')
-        return {k: getattr(data[k], attrname_) / getattr(data[k], 'alive')
-                for k in (kbaseline, k909090)}
-    else:
-        return {k: getattr(data[k], attrname) for k in (kbaseline, k909090)}
+    return {k: getattr(data[k], attrname) for k in (kbaseline, k909090)}
 
 
 def counts(data, attrname, t = None):

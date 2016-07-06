@@ -112,6 +112,13 @@ class Targets(container.Container):
     def __call__(self, parameters, t):
         return _TargetValues(self, parameters, t)
 
+    def __str__(self):
+        return self.__class__.__name__.replace('Targets', '')
+
+    def __repr__(self):
+        return '{}.{}()'.format(self.__class__.__module__,
+                                self.__class__.__name__)
+
 
 class _TargetValues(container.Container):
     '''
@@ -165,6 +172,9 @@ class Targets909090(Targets):
     suppressed = Target90()
     vaccinated = TargetZero()
 
+    def __str__(self):
+        return '90–90–90'
+
 
 class Targets959595(Targets):
     '''
@@ -175,6 +185,9 @@ class Targets959595(Targets):
     suppressed = Target95()
     vaccinated = TargetZero()
 
+    def __str__(self):
+        return '95–95–95'
+
 
 class TargetsVaccine(Targets):
     '''
@@ -184,23 +197,46 @@ class TargetsVaccine(Targets):
                  efficacy = 0.7,
                  coverage = 0.7,
                  time_to_start = 2020,
-                 time_to_fifty_percent = 2,
-                 TargetsTreatment = Targets959595):
-        self.TargetsTreatment = TargetsTreatment
+                 time_to_fifty_percent = 2):
+        self._efficacy = efficacy
+        self._coverage = coverage
+        self._time_to_start = time_to_start
+        self._time_to_fifty_percent = time_to_fifty_percent
 
-        # Set non-vaccine targets from TargetsTretament
-        self.diagnosed = self.TargetsTreatment.diagnosed
-        self.treated = self.TargetsTreatment.treated
-        self.suppressed = self.TargetsTreatment.suppressed
+        # 95-95-95 treatment targets.
+        TargetsTreatment = Targets959595
+        self.diagnosed = TargetsTreatment.diagnosed
+        self.treated = TargetsTreatment.treated
+        self.suppressed = TargetsTreatment.suppressed
 
-        self.vaccine_efficacy = efficacy
+        # Set vaccine efficacy
+        self.vaccine_efficacy = self._efficacy
 
-        time_to_target = (coverage / 0.5 * time_to_fifty_percent
-                          + time_to_start)
-
-        self.vaccinated = TargetLinear(coverage,
-                                       time_to_start,
+        time_to_target = (self._coverage / 0.5 * self._time_to_fifty_percent
+                          + self._time_to_start)
+        self.vaccinated = TargetLinear(self._coverage,
+                                       self._time_to_start,
                                        time_to_target)
+        self.vaccinated.time_to_fifty_percent = self._time_to_fifty_percent
+
+    def __repr__(self):
+        params = ['efficacy={}'.format(self._efficacy),
+                  'coverage={}'.format(self._coverage),
+                  'time_to_start={}'.format(self._time_to_start),
+                  'time_to_fifty_percent={}'.format(
+                      self._time_to_fifty_percent)]
+        return '{}.{}({})'.format(self.__class__.__module__,
+                                  self.__class__.__name__,
+                                  ', '.join(params))
+
+    def __str__(self):
+        params = ['efficacy={}'.format(self._efficacy),
+                  'coverage={}'.format(self._coverage),
+                  'time_to_start={}'.format(self._time_to_start),
+                  'time_to_fifty_percent={}'.format(
+                      self._time_to_fifty_percent)]
+        return '{}({})'.format(super().__str__(),
+                               ', '.join(params))
 
 
 AllVaccineTargets = [TargetsVaccine(),

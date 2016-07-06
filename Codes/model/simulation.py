@@ -201,6 +201,17 @@ class Simulation(container.Container):
         return self.infected / self.alive
 
     @property
+    def incidence(self):
+        # Put a NaN in front to make it align with t.
+        return numpy.hstack((numpy.nan,
+                             (numpy.diff(numpy.asarray(self.new_infections))
+                              / numpy.diff(self.t))))
+
+    @property
+    def incidence_per_capita(self):
+        return self.incidence / numpy.asarray(self.alive)
+
+    @property
     def R0(self):
         return self.parameters.R0
 

@@ -20,10 +20,11 @@ for c in countries_to_plot:
     countries.remove(c)
 countries = countries_to_plot + countries
 
-target = '909090'
+
+targets = [model.Targets959595()] + model.AllVaccineTargets
 
 
-def _run_country(country, samples):
+def _run_country(country, target, samples):
     print('Running {}.'.format(country))
 
     parameters = model.Parameters(country)
@@ -39,9 +40,10 @@ def _main():
     samples = model.samples.load()
 
     for country in countries:
-        if not model.results.exists(country):
-            results = _run_country(country, samples)
-            model.results.dump(country, results)
+        for target in targets:
+            if not model.results.exists(country, target):
+                results = _run_country(country, target, samples)
+                model.results.dump(country, target, results)
 
 
 if __name__ == '__main__':
