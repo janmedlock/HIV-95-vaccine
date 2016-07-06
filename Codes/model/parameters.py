@@ -181,9 +181,13 @@ class _ParameterSuper:
 
         # Random variable.
         transmission_rate_rv = transmission_rate.estimate(self)
-        # Sample using the quantile.
-        self.transmission_rate = transmission_rate_rv.ppf(
-            self.transmission_rate_quantile)
+        try:
+            # Sample using the quantile.
+            self.transmission_rate = transmission_rate_rv.ppf(
+                self.transmission_rate_quantile)
+        except AttributeError:
+            # It's probably NaN.
+            self.transmission_rate = transmission_rate_rv
         transmission_rate.set_rates(self)
 
         # One-time cost of new diagnosis.
