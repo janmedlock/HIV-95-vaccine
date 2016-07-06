@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Test :mod:`model.simulation`.
+Profile :mod:`model.simulation`.
 '''
 
 

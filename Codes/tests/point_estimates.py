@@ -109,11 +109,12 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
                     zorder = 2)
 
     data_start_year = 1990
-    t_end = max(ti[-1] for ti in t)
-    ax.set_xlim(data_start_year, t_end)
+    if len(t) > 0:
+        t_end = max(ti[-1] for ti in t)
+        ax.set_xlim(data_start_year, t_end)
+        # Every 10 years.
+        ax.set_xticks(range(data_start_year, int(numpy.ceil(t_end)), 10))
     ax.grid(True, which = 'both', axis = 'both')
-    # Every 10 years.
-    ax.set_xticks(range(data_start_year, int(numpy.ceil(t_end)), 10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
@@ -130,7 +131,6 @@ def plot_country(country, targets, fig = None):
     Compare simulation with historical data.
     '''
     parameters = model.Parameters(country)
-    parameter_values = parameters.mode()
 
     if fig is None:
         fig = pyplot.gcf()
@@ -155,16 +155,24 @@ def plot_country(country, targets, fig = None):
              verticalalignment = 'top',
              horizontalalignment = 'center')
 
-    results = joblib.Parallel(n_jobs = -1)(
-        joblib.delayed(model.Simulation)(parameter_values, target)
-        for target in targets)
+    try:
+        parameter_values = parameters.mode()
+    except AssertionError:
+        results = []
+    else:
+        results = joblib.Parallel(n_jobs = -1)(
+            joblib.delayed(model.Simulation)(parameter_values, target)
+            for target in targets)
+
     _plot_sim_cell(axes[0], parameters, targets, results, 'infected')
     _plot_sim_cell(axes[1], parameters, targets, results, 'prevalence')
     _plot_sim_cell(axes[2], parameters, targets, results, 'incidence')
     # _plot_sim_cell(axes[3], parameters, targets, results, 'drug_coverage')
+
     axes[0].legend(loc = 'upper left', frameon = False)
 
     fig.tight_layout()
+
     return fig
 
 
@@ -183,7 +191,7 @@ def plot_all_countries(targets):
 if __name__ == '__main__':
     targets = [model.Targets959595()] + model.AllVaccineTargets
 
-    # plot_country('South Africa', targets)
-    # pyplot.show()
+    plot_country('South Africa', targets)
+    pyplot.show()
 
-    plot_all_countries(targets)
+    # plot_all_countries(targets)
