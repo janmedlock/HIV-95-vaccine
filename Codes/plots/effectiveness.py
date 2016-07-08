@@ -22,53 +22,84 @@ import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
+import warnings
+warnings.simplefilter('error')
 
-alpha = 0.5
 
-keys_ordered = ('Status Quo', '90–90–90')
+alpha = 0.1
+
+targets = (model.Targets959595, model.TargetsVaccine())
+labels = ('95–95–95', '95–95–95 + Vaccine')
 
 cp = seaborn.color_palette('colorblind')
-colors = {'Status Quo': cp[2],
-          '90–90–90': cp[0]}
+colors = (cp[2], cp[0])
 # cp = seaborn.color_palette('Dark2')
-# colors = {'Status Quo': cp[1],
-#           '90–90–90': cp[0]}
+# colors = (cp[1], cp[0])
 
-def plotcell(ax, tx,
-             scale = 1, percent = False,
-             xlabel = None, ylabel = None, title = None, legend = True):
-    t, x = tx
+country_label_replacements = {
+    'United States of America': 'United States'
+}
+
+
+def plotcell(ax, country, attr,
+             country_label = None, attr_label = None, legend = False):
+    scale = 1
+    percent = False
+    if attr == 'infected':
+        attr_str = 'People Living with HIV\n(M)'
+        scale = 1e6
+    elif attr == 'AIDS':
+        attr_str = 'People with AIDS\n(1000s)'
+        scale = 1e3
+    elif attr == 'incidence_per_capita':
+        attr_str = 'HIV Incidence\n(per M people per y)'
+        scale = 1e-6
+    elif attr == 'prevalence':
+        attr_str = 'HIV Prevelance\n'
+        percent = True
+    else:
+        raise ValueError("Unknown attr '{}'!".format(attr))
 
     if percent:
         scale = 1 / 100
-    elif scale == 'auto':
-        if max(max(x) for x in stats.values()) > 1e6:
-            scale = 1e6
-        else:
-            scale = 1e3
 
-    for k in keys_ordered:
-        v = x[k]
+    country_str = country_label_replacements.get(country, country)
+
+    for (i, target) in enumerate(targets):
+        t = model.results.data[(country, target, 't')]
+        v = model.results.data[(country, target, attr)]
+
         avg, CI = common.getstats(v, alpha = alpha)
-        ax.plot(t, avg / scale, color = colors[k], label = k,
+        ax.plot(t, avg / scale, color = colors[i], label = target,
                 zorder = 2)
         ax.fill_between(t, CI[0] / scale, CI[1] / scale,
-                        color = colors[k],
+                        color = colors[i],
                         alpha = 0.3)
 
     ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
     # Every 10 years.
-    ax.set_xticks(range(data_start_year, int(t[-1]), 10))
+    a = t[0]
+    b = t[-1]
+    xticks = list(range(int(t[0]), int(t[-1]), 10))
+    if ((b - a) % 10) == 0:
+        xticks.append(b)
+    ax.set_xticks(xticks)
+    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(common.PercentFormatter())
-    if xlabel is not None:
-        ax.set_xlabel(xlabel)
-    if ylabel is not None:
-        ax.set_ylabel(ylabel, size = 'medium')
-    if title is not None:
-        ax.set_title(title, size = 'medium')
+
+    if country_label == 'ylabel':
+        ax.set_ylabel(country_str, size = 'medium')
+    elif country_label == 'title':
+        ax.set_title(country_str, size = 'medium')
+
+    if attr_label == 'ylabel':
+        ax.set_ylabel(attr_str, size = 'medium')
+    elif attr_label == 'title':
+        ax.set_title(attr_str, size = 'medium')
+
     if legend:
         ax.legend(loc = 'upper left')
 
@@ -82,55 +113,38 @@ def plot_selected():
         height_ratios = ((1, ) * len(common.countries_to_plot) + (0.1, )))
 
     for (i, country) in enumerate(common.countries_to_plot):
-        with model.results.Results(country) as results:
-            if country == 'United States of America':
-                ylabel = 'United States'
-            else:
-                ylabel = country
+        attr_label = 'title' if (i == 0) else None
 
-            axis = fig.add_subplot(gs[i, 0])
-            plotcell(axis,
-                     results.getfield('infected'),
-                     scale = 1e6,
-                     ylabel = ylabel,
-                     legend = False,
-                     title = ('People Living with HIV\n(M)'
-                              if (i == 0) else None))
+        plotcell(fig.add_subplot(gs[i, 0]),
+                 country,
+                 'infected',
+                 country_label = 'ylabel',
+                 attr_label = attr_label)
 
-            axis = fig.add_subplot(gs[i, 1])
-            plotcell(axis,
-                     results.getfield('AIDS'),
-                     scale = 1e3,
-                     legend = False,
-                     title = ('People with AIDS\n(1000s)'
-                              if (i == 0) else None))
+        plotcell(fig.add_subplot(gs[i, 1]),
+                 country,
+                 'AIDS',
+                 attr_label = attr_label)
 
-            axis = fig.add_subplot(gs[i, 2])
-            plotcell(axis,
-                     results.getfield('incidence_per_capita'),
-                     scale = 1e-6,
-                     legend = False,
-                     title = ('HIV Incidence\n(per M people per y)'
-                              if (i == 0) else None))
+        plotcell(fig.add_subplot(gs[i, 2]),
+                 country,
+                 'incidence_per_capita',
+                 attr_label = attr_label)
 
-            axis = fig.add_subplot(gs[i, 3])
-            plotcell(axis,
-                     results.getfield('prevalence'),
-                     percent = True,
-                     legend = False,
-                     title = ('HIV Prevelance\n'
-                              if (i == 0) else None))
+        plotcell(fig.add_subplot(gs[i, 3]),
+                 country,
+                 'prevalence',
+                 attr_label = attr_label)
 
-    lines_ = [lines.Line2D([0], [0], color = colors[k])
-              for k in keys_ordered]
-    labels = keys_ordered
+    lines_ = [lines.Line2D([0], [0], color = colors[i])
+              for i in range(len(targets))]
     axis = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
     axis.tick_params(labelbottom = False, labelleft = False)
     axis.grid(False)
     axis.legend(lines_, labels,
                 loc = 'center',
                 ncol = len(labels),
-                frameon = True,
+                frameon = False,
                 fontsize = 'medium')
 
     fig.tight_layout()
@@ -191,8 +205,11 @@ def plot_all():
 
 
 if __name__ == '__main__':
+    common.countries_to_plot = list(common.countries_to_plot)
+    common.countries_to_plot.remove('Global')
+
     plot_selected()
 
-    plot_all()
+    # plot_all()
 
     pyplot.show()

@@ -45,7 +45,8 @@ class Results:
         pass
 
     def _load_data(self):
-        print('Loading data for {} {}...'.format(self._country, self._target))
+        # print('Loading data for {} {}...'.format(self._country,
+        #                                          self._target))
         if self._country == 'Global':
             self._build_global()
         else:
@@ -83,29 +84,26 @@ class ResultsShelf(collections.abc.MutableMapping):
     '''
     Disk cache for Results for speed.
     '''
-    class ShelfItem:
-        def __init__(self, value):
-            self.value = value
-            self.set_mtime()
-
-        def set_mtime(self):
-            self.mtime = time.time()
-
-    def __init__(self):
+    def __init__(self, debug = False):
+        self.debug = debug
         self._shelfpath = os.path.join(resultsdir, '_cache.pkl')
         # Delay opening shelf.
         # self._open_shelf()
-        self._results = collections.defaultdict(dict)
 
     def _open_shelf(self):
+        if self.debug:
+            print('Opening shelf.')
         assert not hasattr(self, '_shelf')
         try:
-            self._shelf = pickle.load(open(self._shelfpath, 'rb'))
+            with open(self._shelfpath, 'rb') as fd:
+                self._shelf = pickle.load(fd)
         except FileNotFoundError:
             # The shelf is a three-deep dict:
             # _shelf[country][target][key]
             self._shelf = collections.defaultdict(
                 functools.partial(collections.defaultdict, dict))
+        if self.debug:
+            print('Opened shelf.')
         self._shelf_updated = False
         atexit.register(self._write_shelf)
 
@@ -114,41 +112,67 @@ class ResultsShelf(collections.abc.MutableMapping):
             self._open_shelf()
 
     def _write_shelf(self):
+        if self.debug:
+            print('In _write_shelf, _shelf_updated = {}.'.format(
+                self._shelf_updated))
         if self._shelf_updated:
-            pickle.dump(self._shelf, open(self._shelfpath, 'wb'))
+            with open(self._shelfpath, 'wb') as fd:
+                pickle.dump(self._shelf, fd)
+
+    class ShelfItem:
+        def __init__(self, value):
+            self.value = value
+            self.set_mtime()
+
+        def set_mtime(self):
+            self.mtime = time.time()
 
     def _is_current(self, key):
         country, target, attr = key
-        if (attr not in self._shelf[country][target]):
+        if (attr not in self._shelf[country][str(target)]):
+            if self.debug:
+                print("key = '{}' not in shelf.".format(key))
             return False
         else:
-            mtime_shelf = self._shelf[country][target][attr].mtime
+            mtime_shelf = self._shelf[country][str(target)][attr].mtime
             resultsfile = Results.get_path(country, target)
             mtime_data = os.path.getmtime(resultsfile)
+            if self.debug:
+                if (mtime_data <= mtime_shelf):
+                    print("key = '{}' shelf up to date.".format(key))
+                else:
+                    print("key = '{}' shelf expired.".format(key))
             return (mtime_data <= mtime_shelf)
 
     def __getitem__(self, key):
         country, target, attr = key
         self._open_shelf_if_needed()
         if not self._is_current(key):
-            if target not in self._results[country]:
-                self._results[country][target] = Results(country, target)
-            self.__setitem__(key, getattr(self._results[country][target],
-                                          attr))
-        return self._shelf[country][target][attr].value
+            if self.debug:
+                print("Loading '{}' from Results({}, {}).".format(attr,
+                                                                  country,
+                                                                  target))
+            with Results(country, target) as results:
+                val = getattr(results, attr)
+            self.__setitem__(key, val)
+        return self._shelf[country][str(target)][attr].value
 
     def __setitem__(self, key, value):
+        if self.debug:
+            print("In __setitem__ for key = '{}'.".format(key))
         country, target, attr = key
         self._open_shelf_if_needed()
-        self._shelf[country][target][attr] = self.ShelfItem(value)
+        self._shelf[country][str(target)][attr] = self.ShelfItem(value)
         self._shelf_updated = True
 
     def __delitem__(self, key):
+        if self.debug:
+            print("In __delitem__ for key = '{}'.".format(key))
         country, target, attr = key
         self._open_shelf_if_needed()
-        del self._shelf[country][target][attr]
-        if len(self._shelf[country][target]) == 0:
-            del self._shelf[country][target]
+        del self._shelf[country][str(target)][attr]
+        if len(self._shelf[country][str(target)]) == 0:
+            del self._shelf[country][str(target)]
             if len(self._shelf[country]) == 0:
                 del self._shelf[country]
         self._shelf_updated = True
@@ -162,4 +186,4 @@ class ResultsShelf(collections.abc.MutableMapping):
         return iter(self._shelf)
 
 
-results_data = ResultsShelf()
+data = ResultsShelf()
