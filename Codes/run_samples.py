@@ -21,11 +21,12 @@ for c in countries_to_plot:
 countries = countries_to_plot + countries
 
 
-targets = [model.Targets959595()] + model.AllVaccineTargets
+# targets = [model.Targets959595()] + model.AllVaccineTargets
+targets = [model.Targets959595(), model.TargetsVaccine()]
 
 
 def _run_country(country, target, samples):
-    print('Running {}.'.format(country))
+    print('Running {}, {!s}.'.format(country, target))
 
     parameters = model.Parameters(country)
 
