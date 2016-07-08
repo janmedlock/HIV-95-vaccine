@@ -39,13 +39,24 @@ def get_filebase():
 
 
 def getstats(x, alpha = 0.05):
-    avg = numpy.median(x, axis = 0)
-    CI = numpy.percentile(x,
+    y = numpy.asarray(x).copy()
+
+    # Set columns with NaNs to 0.
+    ix = numpy.any(numpy.isnan(y), axis = 0)
+    y[..., ix] = 0
+
+    avg = numpy.median(y, axis = 0)
+    CI = numpy.percentile(y,
                           [100 * alpha / 2, 100 * (1 - alpha / 2)],
                           axis = 0)
-    # avg = numpy.mean(x, axis = 0)
-    # std = numpy.std(x, axis = 0, ddof = 1)
-    # CI = [avg + std, avg - std]
+    # avg = numpy.mean(y, axis = 0)
+    # std = numpy.std(y, axis = 0, ddof = 1)
+    # CI = numpy.vstack((avg - std, avg + std))
+
+    # Set the columns where y has NaNs to NaN.
+    avg[..., ix] = numpy.nan
+    CI[..., ix] = numpy.nan
+
     return (avg, CI)
 
 
