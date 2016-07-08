@@ -485,7 +485,7 @@ class CountryDataShelf(collections.abc.Mapping):
         root, _ = os.path.splitext(datapath)
         self._shelfpath = '{}.pkl'.format(root)
         # Delay opening shelf.
-        # self._open()
+        # self._open_shelf()
 
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
