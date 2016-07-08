@@ -2,11 +2,12 @@
 Store and retrieve simulation results.
 '''
 
+import atexit
+import collections
+import functools
 import os
 import pickle
-
-import joblib
-import numpy
+import time
 
 from . import global_
 
@@ -30,7 +31,7 @@ def dump(country, target, results):
 
 class Results:
     '''
-    Class to load the data on demand, with getfield cached for speed.
+    Class to load the data on demand.
     '''
     def __init__(self, country, target):
         self._country = country
@@ -65,14 +66,6 @@ class Results:
             self._load_data()
         return getattr(self._data, key)
 
-    def getfield(self, field, force_call = False):
-        if force_call:
-            # Don't use the value in the cache.
-            return _getfield_cached.call(self._country, self._target,
-                                         field, self)
-        else:
-            return _getfield_cached(self._country, self._target, field, self)
-
     def flush(self):
         del self._data
         self._data = None
@@ -86,13 +79,87 @@ class Results:
         return path
 
 
-_cachedir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         '_joblib')
-_mem = joblib.Memory(cachedir = _cachedir)
-@_mem.cache(ignore = ['results'])
-def _getfield_cached(country, target, field, results):
-    return getattr(results, field)
+class ResultsShelf(collections.abc.MutableMapping):
+    '''
+    Disk cache for Results for speed.
+    '''
+    class ShelfItem:
+        def __init__(self, value):
+            self.value = value
+            self.set_mtime()
+
+        def set_mtime(self):
+            self.mtime = time.time()
+
+    def __init__(self):
+        self._shelfpath = os.path.join(resultsdir, '_cache.pkl')
+        # Delay opening shelf.
+        # self._open_shelf()
+        self._results = collections.defaultdict(dict)
+
+    def _open_shelf(self):
+        assert not hasattr(self, '_shelf')
+        try:
+            self._shelf = pickle.load(open(self._shelfpath, 'rb'))
+        except FileNotFoundError:
+            # The shelf is a three-deep dict:
+            # _shelf[country][target][key]
+            self._shelf = collections.defaultdict(
+                functools.partial(collections.defaultdict, dict))
+        self._shelf_updated = False
+        atexit.register(self._write_shelf)
+
+    def _open_shelf_if_needed(self):
+        if not hasattr(self, '_shelf'):
+            self._open_shelf()
+
+    def _write_shelf(self):
+        if self._shelf_updated:
+            pickle.dump(self._shelf, open(self._shelfpath, 'wb'))
+
+    def _is_current(self, key):
+        country, target, attr = key
+        if (attr not in self._shelf[country][target]):
+            return False
+        else:
+            mtime_shelf = self._shelf[country][target][attr].mtime
+            resultsfile = Results.get_path(country, target)
+            mtime_data = os.path.getmtime(resultsfile)
+            return (mtime_data <= mtime_shelf)
+
+    def __getitem__(self, key):
+        country, target, attr = key
+        self._open_shelf_if_needed()
+        if not self._is_current(key):
+            if target not in self._results[country]:
+                self._results[country][target] = Results(country, target)
+            self.__setitem__(key, getattr(self._results[country][target],
+                                          attr))
+        return self._shelf[country][target][attr].value
+
+    def __setitem__(self, key, value):
+        country, target, attr = key
+        self._open_shelf_if_needed()
+        self._shelf[country][target][attr] = self.ShelfItem(value)
+        self._shelf_updated = True
+
+    def __delitem__(self, key):
+        country, target, attr = key
+        self._open_shelf_if_needed()
+        del self._shelf[country][target][attr]
+        if len(self._shelf[country][target]) == 0:
+            del self._shelf[country][target]
+            if len(self._shelf[country]) == 0:
+                del self._shelf[country]
+        self._shelf_updated = True
+
+    def __len__(self):
+        self._open_shelf_if_needed()
+        return len(self._shelf)
+
+    def __iter__(self):
+        self._open_shelf_if_needed()
+        return iter(self._shelf)
 
 
-def _clear_cache():
-    _mem.clear()
+results_data = ResultsShelf()
