@@ -97,12 +97,10 @@ class Sheet:
     @classmethod
     def get_data_name(cls):
         '''
-        The class name with the ending 'Sheet' removed,
-        then lower cased, and with any inner capital letters
+        The class name lower cased, and with any inner capital letters
         replaced by '_' followed by the lower-cased letter.
         '''
-        # Start with the 
-        name = cls.__name__.replace('Sheet', '')
+        name = cls.__name__
         if len(name) > 0:
             name = name[0].lower() + name[1 : ]
             i = 1
@@ -163,12 +161,12 @@ class Sheet:
         return list(sheet.columns[hasdata])
 
 
-class ParametersSheet(Sheet):
+class Parameters(Sheet):
     sheetname = 'Parameters'
     parameter_names = ('birth_rate', 'death_rate')
 
 
-class InitialConditionsSheet(Sheet):
+class InitialConditions(Sheet):
     sheetname = 'Initial Conditions'
     parameter_names = ('S', 'A', 'U', 'D', 'T', 'V')
 
@@ -186,7 +184,7 @@ class InitialConditionsSheet(Sheet):
         return sheet_[goodcols]
 
 
-class CostSheet(Sheet):
+class Cost(Sheet):
     sheetname = 'Costs'
     parameter_names = ('cost_test', 'cost_CD4', 'cost_viral_load',
                        'cost_ART_annual', 'cost_AIDS_annual',
@@ -194,13 +192,13 @@ class CostSheet(Sheet):
     allow_missing = True
 
 
-class GDPSheet(Sheet):
+class GDP(Sheet):
     sheetname = 'GDP'
     parameter_names = ('GDP_per_capita', 'GDP_PPP_per_capita')
     allow_missing = True
 
 
-class IncidencePrevalenceSheet(Sheet):
+class IncidencePrevalence(Sheet):
     sheetname = 'IncidencePrevalence'
 
     _incidence_start_string = 'INCIDENCE (15-49)'
@@ -393,11 +391,11 @@ class AnnualSheet(Sheet):
         return pandas.Series()
 
 
-class PopulationSheet(AnnualSheet):
+class Population(AnnualSheet):
     sheetname = 'Population (15-49)'
 
 
-class TreatedSheet(AnnualSheet):
+class Treated(AnnualSheet):
     sheetname = 'ARV'
 
     @classmethod
@@ -434,13 +432,13 @@ class TreatedSheet(AnnualSheet):
 
 
 sheets = (
-    ParametersSheet,
-    InitialConditionsSheet,
-    IncidencePrevalenceSheet,
-    # CostSheet,
-    # GDPSheet,
-    PopulationSheet,
-    # TreatedSheet,
+    Parameters,
+    InitialConditions,
+    IncidencePrevalence,
+    # Cost,
+    # GDP,
+    Population,
+    # Treated,
 )
 
 
@@ -530,10 +528,10 @@ class CountryDataShelf(collections.abc.Mapping):
         return iter(self._shelf)
 
 
-country_data = CountryDataShelf()
+data = CountryDataShelf()
 
 
-def get_country_list(sheet = 'Parameters', wb = None):
+def get_country_list(sheet = 'InitialConditions', wb = None):
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
@@ -554,10 +552,9 @@ def get_country_list(sheet = 'Parameters', wb = None):
         return sorted(union)
     else:
         try:
-            cls = getattr(sys.modules[__name__], '{}Sheet'.format(sheet))
+            cls = getattr(sys.modules[__name__], sheet)
             return cls.get_country_list(wb = wb)
         except AttributeError:
-            _valid_sheets = (s.__name__.replace('Sheet', '') for s in sheets)
             msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
-                   + "Valid sheets are {}.").format(sheet, _valid_sheets)
+                   + "Valid sheets are {}.").format(sheet, sheets)
             raise AttributeError(msg)

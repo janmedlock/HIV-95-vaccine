@@ -65,7 +65,7 @@ def _run_one(key, parameters, targets_, **kwargs):
 
 
 def _run_country(country, parallel = True):
-    parameters = model.ParameterMode.from_country(country)
+    parameters = model.parameters.Mode.from_country(country)
     # parameters.progression_rate_suppressed \
     #     = parameters.progression_rate_unsuppressed
     # Need converted country name.

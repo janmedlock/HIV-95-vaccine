@@ -19,7 +19,7 @@ import mapplot
 
 
 def _main():
-    data = model.InitialConditionsSheet.get_all()
+    data = model.datasheet.InitialConditions.get_all()
 
     countries = data.columns
 

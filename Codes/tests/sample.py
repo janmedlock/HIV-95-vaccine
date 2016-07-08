@@ -16,8 +16,9 @@ if __name__ == '__main__':
 
     print(country)
 
-    parameters = model.Parameters(country)
+    parameters = model.parameters.Parameters(country)
+    targets = model.targets.UNAIDS90()
 
     samples = parameters.sample(nsamples)
 
-    multisim = model.MultiSim(samples, '909090')
+    multisim = model.multisim.MultiSim(samples, targets)

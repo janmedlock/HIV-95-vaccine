@@ -13,9 +13,9 @@ import model
 
 def _main():
     country = 'South Africa'
-    targets = model.TargetsVaccine()
-    parameters = model.Parameters(country).mode()
-    simulation = model.Simulation(parameters, targets)
+    targets = model.targets.Vaccine()
+    parameters = model.parameters.Parameters(country).mode()
+    simulation = model.simulation.Simulation(parameters, targets)
     return simulation
 
 

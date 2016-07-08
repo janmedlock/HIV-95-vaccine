@@ -8,7 +8,7 @@ import numpy
 import model
 
 
-countries = model.get_country_list()
+countries = model.datasheet.get_country_list()
 # Move these to the front.
 countries_to_plot = ['United States of America',
                      'South Africa',
@@ -21,18 +21,23 @@ for c in countries_to_plot:
 countries = countries_to_plot + countries
 
 
-# targets = [model.Targets959595()] + model.AllVaccineTargets
-targets = [model.Targets959595(), model.TargetsVaccine()]
+# Run each of these and each of these + vaccine.
+targets_baseline = [model.targets.StatusQuo(),
+                    model.targets.UNAIDS90(),
+                    model.targets.UNAIDS95()]
+targets = []
+for target in targets_baseline:
+    targets.extend([target,
+                    model.targets.Vaccine(treatment_targets = target)])
 
 
 def _run_country(country, target, samples):
     print('Running {}, {!s}.'.format(country, target))
 
-    parameters = model.Parameters(country)
+    parametersamples = model.parameters.Sample.from_samples(country,
+                                                            samples)
 
-    parametersamples = model.ParameterSample.from_samples(country, samples)
-
-    multisim = model.MultiSim(parametersamples, target)
+    multisim = model.multisim.MultiSim(parametersamples, target)
 
     return multisim
 

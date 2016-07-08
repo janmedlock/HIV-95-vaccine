@@ -2,12 +2,12 @@
 HIV 90-90-90 & optimization model.
 '''
 
-from .datasheet import *
-from .global_ import *
-from .multisim import *
-from .parameters import *
-from .results import *
-from .samples import *
-from .simulation import *
-from .targets import *
-# from .optimization import *
+from . import datasheet
+from . import global_
+from . import multisim
+# from . import optimization
+from . import parameters
+from . import results
+from . import samples
+from . import simulation
+from . import targets

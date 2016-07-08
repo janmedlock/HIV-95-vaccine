@@ -1,6 +1,10 @@
 tests
 =====
 
+compare
+-------
+.. automodule:: tests.compare
+
 datasheet
 ---------
 .. automodule:: tests.datasheet
@@ -25,17 +29,13 @@ point_estimates
 ---------------
 .. automodule:: tests.point_estimates
 
-profile
--------
-.. automodule:: tests.profile
+profile_
+--------
+.. automodule:: tests.profile_
 
 R0
 --
 .. automodule:: tests.R0
-
-run909090
----------
-.. automodule:: tests.run909090
 
 sample
 ------

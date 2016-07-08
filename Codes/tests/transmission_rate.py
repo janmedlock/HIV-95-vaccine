@@ -35,7 +35,7 @@ def plot_transmission_rates(countries, fig = None,
         # Plot from top instead of bottom.
         j = n - 1 - i
         print(country)
-        parameters = model.Parameters(country)
+        parameters = model.parameters.Parameters(country)
         rv = transmission_rate.estimate(parameters)
         a, b = rv.ppf([quantile_level / 2, 1 - quantile_level / 2])
         x = numpy.linspace(a, b, 101)
@@ -108,7 +108,7 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     # Plot simulation data.
     for (ti, vi, targeti) in zip(t, val, targets):
         ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
-                label = targeti.__name__)
+                label = str(targeti))
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:
@@ -136,16 +136,16 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
 
 
 def plot_country(country,
-                 targets = (model.TargetsStatusQuo,
-                            model.Targets909090,
-                            model.Targets959595,
-                            model.TargetsVaccine()),
+                 targets = (model.targets.StatusQuo(),
+                            model.targets.UNAIDS90(),
+                            model.targets.UNAIDS95(),
+                            model.targets.Vaccine()),
                  fig = None):
     '''
     Plot transmission rate estimate and compare simulation
     with historical data.
     '''
-    parameters = model.Parameters(country)
+    parameters = model.parameters.Parameters(country)
     parameter_values = parameters.mode()
     transmission_rates_vs_time = transmission_rate.estimate_vs_time(parameters)
     rv = transmission_rate.estimate(parameters)
@@ -200,7 +200,7 @@ def plot_country(country,
     axes[0].legend(loc = 'upper right', frameon = False)
 
     results = joblib.Parallel(n_jobs = -1)(
-        joblib.delayed(model.Simulation)(parameter_values, target)
+        joblib.delayed(model.simulation.Simulation)(parameter_values, target)
         for target in targets)
     _plot_sim_cell(axes[1], parameters, targets, results, 'infected')
     _plot_sim_cell(axes[2], parameters, targets, results, 'prevalence')
@@ -213,7 +213,7 @@ def plot_country(country,
 
 
 def plot_all_countries():
-    countries = model.get_country_list('IncidencePrevalence')
+    countries = model.datasheet.get_country_list()
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         fig = pyplot.figure(figsize = (8.5, 11))
@@ -231,8 +231,8 @@ def plot_all_countries():
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    # countries = model.get_country_list('IncidencePrevalence')
-    # plot_transmission_rates(countries)
-    # pyplot.show()
+    countries = model.datasheet.get_country_list('IncidencePrevalence')
+    plot_transmission_rates(countries)
+    pyplot.show()
 
-    plot_all_countries()
+    # plot_all_countries()

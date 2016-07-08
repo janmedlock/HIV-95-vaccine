@@ -13,7 +13,7 @@ def test_one(country):
     '''
     Test loading one country's data from the datasheet.
     '''
-    parameters = model.Parameters(country).mode()
+    parameters = model.parameters.Parameters(country).mode()
 
     print(parameters)
 
@@ -22,9 +22,9 @@ def test_all():
     '''
     Test loading all data from the datasheet.
     '''
-    for country in model.get_country_list():
+    for country in model.datasheet.get_country_list():
         print(country)
-        model.Parameters(country)
+        model.parameters.Parameters(country)
 
 
 def _main():

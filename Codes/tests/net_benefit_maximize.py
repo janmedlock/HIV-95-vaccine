@@ -12,7 +12,7 @@ import model
 def _main(parallel = True, debug = True, **kwargs):
     country = 'South Africa'
 
-    parameters = model.Parameters(country).mode()
+    parameters = model.parameters.Parameters(country).mode()
 
     # 0 is just cost.
     # inf is just DALYs.

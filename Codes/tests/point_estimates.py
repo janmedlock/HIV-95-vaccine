@@ -56,7 +56,8 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     if percent:
         scale = 1 / 100
 
-    colors = iter(seaborn.color_palette('husl', len(targets)))
+    # colors = iter(seaborn.color_palette('husl', len(targets)))
+    colors = iter(seaborn.color_palette('Paired', len(targets)))
 
     # Plot historical data.
     data_ = data.dropna()
@@ -106,7 +107,7 @@ def plot_country(country, targets, fig = None):
     '''
     Compare simulation with historical data.
     '''
-    parameters = model.Parameters(country)
+    parameters = model.parameters.Parameters(country)
 
     if fig is None:
         fig = pyplot.gcf()
@@ -137,7 +138,8 @@ def plot_country(country, targets, fig = None):
         results = []
     else:
         results = joblib.Parallel(n_jobs = -1)(
-            joblib.delayed(model.Simulation)(parameter_values, target)
+            joblib.delayed(model.simulation.Simulation)(parameter_values,
+                                                        target)
             for target in targets)
 
     _plot_sim_cell(axes[0], parameters, targets, results, 'infected')
@@ -153,7 +155,7 @@ def plot_country(country, targets, fig = None):
 
 
 def plot_all_countries(targets):
-    countries = model.get_country_list()
+    countries = model.datasheet.get_country_list()
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         for country in countries:
@@ -165,7 +167,14 @@ def plot_all_countries(targets):
 
 
 if __name__ == '__main__':
-    targets = [model.Targets959595()] + model.AllVaccineTargets
+    # Run each of these and each of these + vaccine.
+    targets_baseline = [model.targets.StatusQuo(),
+                        model.targets.UNAIDS90(),
+                        model.targets.UNAIDS95()]
+    targets = []
+    for target in targets_baseline:
+        targets.extend([target,
+                        model.targets.Vaccine(treatment_targets = target)])
 
     # plot_country('South Africa', targets)
     # pyplot.show()

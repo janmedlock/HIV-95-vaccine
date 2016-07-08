@@ -122,12 +122,12 @@ class Parameters:
 
     def sample(self, nsamples = 1):
         if nsamples == 1:
-            return ParameterSample(self)
+            return Sample(self)
         else:
-            return [ParameterSample(self) for i in range(nsamples)]
+            return [Sample(self) for i in range(nsamples)]
 
     def mode(self):
-        return ParameterMode(self)
+        return Mode(self)
 
     @classmethod
     def generate_samples(cls, nsamples):
@@ -163,7 +163,7 @@ class Parameters:
         return retval
 
 
-class _ParameterSuper:
+class _Super:
     def __init__(self, parameters):
         self.country = parameters.country
 
@@ -285,7 +285,7 @@ class _ParameterSuper:
         return retval
 
 
-class ParameterSample(_ParameterSuper):
+class Sample(_Super):
     def __init__(self, parameters, values = None):
         if values is not None:
             values = list(values)
@@ -313,7 +313,7 @@ class ParameterSample(_ParameterSuper):
             yield cls(parameters, s)
 
 
-class ParameterMode(_ParameterSuper):
+class Mode(_Super):
     def __init__(self, parameters):
         # Import attributes from parameters into self,
         # but use mode of rvs.

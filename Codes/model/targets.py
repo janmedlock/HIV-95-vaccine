@@ -112,8 +112,9 @@ class Targets(container.Container):
     def __call__(self, parameters, t):
         return _TargetValues(self, parameters, t)
 
-    def __str__(self):
-        return self.__class__.__name__.replace('Targets', '')
+    @classmethod
+    def __str__(cls):
+        return cls.__name__
 
     def __repr__(self):
         return '{}.{}()'.format(self.__class__.__module__,
@@ -143,7 +144,7 @@ class _TargetValues(container.Container):
         return control_rates.ControlRates(self.t, state, self, self.parameters)
 
 
-class TargetsZero(Targets):
+class Zero(Targets):
     '''
     All zero.
     '''
@@ -152,8 +153,12 @@ class TargetsZero(Targets):
     suppressed = TargetZero()
     vaccinated = TargetZero()
 
+    @staticmethod
+    def __str__():
+        return 'All Zeroes'
 
-class TargetsStatusQuo(Targets):
+
+class StatusQuo(Targets):
     '''
     Fixed at the initial proportion with no vaccination.
     '''
@@ -162,8 +167,12 @@ class TargetsStatusQuo(Targets):
     suppressed = TargetStatusQuo()
     vaccinated = TargetZero()
 
+    @staticmethod
+    def __str__():
+        return 'Status Quo'
 
-class Targets909090(Targets):
+
+class UNAIDS90(Targets):
     '''
     90-90-90 targets with no vaccination.
     '''
@@ -172,11 +181,12 @@ class Targets909090(Targets):
     suppressed = Target90()
     vaccinated = TargetZero()
 
-    def __str__(self):
+    @staticmethod
+    def __str__():
         return '90–90–90'
 
 
-class Targets959595(Targets):
+class UNAIDS95(Targets):
     '''
     95-95-95 targets with no vaccination.
     '''
@@ -185,29 +195,30 @@ class Targets959595(Targets):
     suppressed = Target95()
     vaccinated = TargetZero()
 
-    def __str__(self):
+    @staticmethod
+    def __str__():
         return '95–95–95'
 
 
-class TargetsVaccine(Targets):
+class Vaccine(Targets):
     '''
-    95-95-95 plus vaccine.
+    Vaccine plus the treatment targets in `treatment_targets`.
     '''
     def __init__(self,
                  efficacy = 0.7,
                  coverage = 0.7,
                  time_to_start = 2020,
-                 time_to_fifty_percent = 2):
+                 time_to_fifty_percent = 2,
+                 treatment_targets = UNAIDS95):
         self._efficacy = efficacy
         self._coverage = coverage
         self._time_to_start = time_to_start
         self._time_to_fifty_percent = time_to_fifty_percent
+        self._treatment_targets = treatment_targets
 
-        # 95-95-95 treatment targets.
-        TargetsTreatment = Targets959595
-        self.diagnosed = TargetsTreatment.diagnosed
-        self.treated = TargetsTreatment.treated
-        self.suppressed = TargetsTreatment.suppressed
+        self.diagnosed = self._treatment_targets.diagnosed
+        self.treated = self._treatment_targets.treated
+        self.suppressed = self._treatment_targets.suppressed
 
         # Set vaccine efficacy
         self.vaccine_efficacy = self._efficacy
@@ -220,28 +231,47 @@ class TargetsVaccine(Targets):
         self.vaccinated.time_to_fifty_percent = self._time_to_fifty_percent
 
     def __repr__(self):
-        params = ['efficacy={}'.format(self._efficacy),
-                  'coverage={}'.format(self._coverage),
-                  'time_to_start={}'.format(self._time_to_start),
-                  'time_to_fifty_percent={}'.format(
-                      self._time_to_fifty_percent)]
+        if isinstance(self._treatment_targets, Targets):
+            treatment_str = repr(self._treatment_targets)
+        elif issubclass(self._treatment_targets, Targets):
+            treatment_str = '{}.{}'.format(self._treatment_targets.__module__,
+                                           self._treatment_targets.__name__)
+        else:
+            raise ValueError
+
+        params = [
+            'efficacy={}'.format(self._efficacy),
+            'coverage={}'.format(self._coverage),
+            'time_to_start={}'.format(self._time_to_start),
+            'time_to_fifty_percent={}'.format(self._time_to_fifty_percent),
+            'treatment_targets={}'.format(treatment_str)]
+
         return '{}.{}({})'.format(self.__class__.__module__,
                                   self.__class__.__name__,
                                   ', '.join(params))
 
     def __str__(self):
-        params = ['efficacy={}'.format(self._efficacy),
-                  'coverage={}'.format(self._coverage),
-                  'time_to_start={}'.format(self._time_to_start),
-                  'time_to_fifty_percent={}'.format(
-                      self._time_to_fifty_percent)]
-        return '{}({})'.format(super().__str__(),
-                               ', '.join(params))
+        if isinstance(self._treatment_targets, Targets):
+            treatment_str = str(self._treatment_targets)
+        elif issubclass(self._treatment_targets, Targets):
+            treatment_str = self._treatment_targets.__str__()
+        else:
+            raise ValueError
+            
+        params = [
+            'efficacy={:g}%'.format(100 * self._efficacy),
+            'coverage={:g}%'.format(100 * self._coverage),
+            'time_to_start={}'.format(self._time_to_start),
+            'time_to_fifty_percent={}y'.format(self._time_to_fifty_percent)]
+
+        return '{} + {}({})'.format(treatment_str,
+                                    super().__str__(),
+                                    ', '.join(params))
 
 
-AllVaccineTargets = [TargetsVaccine(),
-                     TargetsVaccine(efficacy = 0.5),
-                     TargetsVaccine(coverage = 0.5),
-                     TargetsVaccine(coverage = 0.9),
-                     TargetsVaccine(time_to_start = 2025),
-                     TargetsVaccine(time_to_fifty_percent = 5)]
+AllVaccineTargets = [Vaccine(),
+                     Vaccine(efficacy = 0.5),
+                     Vaccine(coverage = 0.5),
+                     Vaccine(coverage = 0.9),
+                     Vaccine(time_to_start = 2025),
+                     Vaccine(time_to_fifty_percent = 5)]
