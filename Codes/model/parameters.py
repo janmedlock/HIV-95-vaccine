@@ -97,7 +97,7 @@ class Parameters:
     def __init__(self, country):
         self.country = country
 
-        data = datasheet.country_data[country]
+        data = datasheet.data[country]
         # Import attributes from cd into self.
         for k in dir(data):
             a = getattr(data, k)
