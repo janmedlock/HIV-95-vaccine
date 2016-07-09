@@ -1,6 +1,5 @@
 __pycache__/
 *.pkl
-/Codes/model/_joblib/
 /Codes/old/
 /Codes/results/
 /Codes/docs/_build/
@@ -27,4 +26,3 @@ __pycache__/
 /Documents/Latex/*.snm
 /Documents/Latex/*.toc
 /Documents/Latex/*.synctex.gz
-/Documents/Office/
