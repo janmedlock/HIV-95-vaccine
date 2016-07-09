@@ -44,7 +44,3 @@ simulation
 targets
 -------
 .. automodule:: tests.targets
-
-transmission_rate
------------------
-.. automodule:: tests.transmission_rate

@@ -4,6 +4,7 @@ Make a PDF with a page of transmission plots for each country.
 '''
 
 import itertools
+import os.path
 import sys
 
 import joblib
@@ -13,11 +14,11 @@ from matplotlib import ticker
 import numpy
 import pandas
 
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
+import common
 sys.path.append('..')
 import model
 from model import transmission_rate
-sys.path.append('../plots')
-import common
 
 # import seaborn
 import seaborn_quiet as seaborn
@@ -34,7 +35,6 @@ def plot_transmission_rates(countries, fig = None,
     for (i, country) in enumerate(countries):
         # Plot from top instead of bottom.
         j = n - 1 - i
-        print(country)
         parameters = model.parameters.Parameters(country)
         rv = transmission_rate.estimate(parameters)
         a, b = rv.ppf([quantile_level / 2, 1 - quantile_level / 2])
@@ -48,7 +48,7 @@ def plot_transmission_rates(countries, fig = None,
                    marker = '|', s = 30, linewidth = 1,
                    color = 'black')
     ax.set_xlabel('Transmission rate (per year)')
-    ax.set_xlim(left = 0)
+    ax.set_xlim(0, 0.5)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))

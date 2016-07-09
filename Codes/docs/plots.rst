@@ -23,7 +23,7 @@ initial_proportions_map
 
 point_estimates
 ---------------
-.. automodule:: tests.point_estimates
+.. automodule:: plots.point_estimates
 
 prcc
 ----
@@ -56,6 +56,10 @@ table_format
 table_incidence
 ---------------
 .. automodule:: plots.table_incidence
+
+transmission_rate
+-----------------
+.. automodule:: plots.transmission_rate
 
 
 .. include:: mapplot.rst_
