@@ -216,7 +216,6 @@ def plot_all():
 if __name__ == '__main__':
     common.countries_to_plot = list(common.countries_to_plot)
     common.countries_to_plot.remove('Global')
-    common.countries_to_plot = ['United States of America']
 
     plot_selected()
 
