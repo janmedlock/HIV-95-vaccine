@@ -11,11 +11,11 @@ from matplotlib import ticker
 import numpy
 import pandas
 
-sys.path.append('..')
-import model
-sys.path.append('../plots')
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 import mapplot
+sys.path.append('..')
+import model
 
 
 def _main():

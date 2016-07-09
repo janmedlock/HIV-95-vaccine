@@ -17,13 +17,17 @@ infections_averted_map
 ----------------------
 .. automodule:: plots.infections_averted_map
 
+initial_prevalence_map
+----------------------
+.. automodule:: plots.initial_prevalence_map
+
 initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
 
-point_estimates
----------------
-.. automodule:: plots.point_estimates
+point_estimates_
+----------------
+.. automodule:: plots.point_estimates_
 
 prcc
 ----
