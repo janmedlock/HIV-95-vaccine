@@ -7,6 +7,7 @@ import itertools
 import sys
 
 import joblib
+import matplotlib
 from matplotlib.backends import backend_pdf
 from matplotlib import pyplot
 from matplotlib import ticker
@@ -56,26 +57,28 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     if percent:
         scale = 1 / 100
 
-    # colors = iter(seaborn.color_palette('husl', len(targets)))
-    colors = iter(seaborn.color_palette('Paired', len(targets)))
+    # colors = seaborn.color_palette('husl', len(targets))
+    # colors = seaborn.color_palette('Paired', len(targets))
+    colors = seaborn.color_palette('Dark2', len(targets) // 2)
+    linestyles = ['dashed', 'solid']
+    styles = itertools.cycle(matplotlib.cycler(color = colors)
+                             * matplotlib.cycler(linestyle = linestyles))
 
     # Plot historical data.
     data_ = data.dropna()
     if len(data_) > 0:
         ax.plot(data_.index, data_ / scale,
                 marker = '.', markersize = 10,
+                alpha = 0.8,
                 zorder = 2,
                 color = 'black',
                 label = 'data')
-    else:
-        # Pop a style for consistency with other plots.
-        style = next(ax._get_lines.prop_cycler)
 
     # Plot simulation data.
     for (ti, vi, targeti) in zip(t, val, targets):
-        ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
-                color = next(colors),
-                label = str(targeti))
+        ax.plot(ti, vi / scale, alpha = 0.8, zorder = 1,
+                label = str(targeti),
+                **next(styles))
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:
@@ -176,7 +179,7 @@ if __name__ == '__main__':
         targets.extend([target,
                         model.targets.Vaccine(treatment_targets = target)])
 
-    # plot_country('South Africa', targets)
-    # pyplot.show()
+    plot_country('South Africa', targets)
+    pyplot.show()
 
-    plot_all_countries(targets)
+    # plot_all_countries(targets)
