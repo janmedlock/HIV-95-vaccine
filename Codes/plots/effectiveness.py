@@ -25,12 +25,20 @@ import model
 
 alpha = 0.1
 
-targets = (model.targets.UNAIDS95, model.targets.Vaccine())
+# Run each of these and each of these + vaccine.
+targets_baseline = [model.targets.StatusQuo(),
+                    model.targets.UNAIDS90(),
+                    model.targets.UNAIDS95()]
+targets = []
+for target in targets_baseline:
+    targets.extend([target,
+                    model.targets.Vaccine(treatment_targets = target)])
 
-cp = seaborn.color_palette('colorblind')
-colors = (cp[2], cp[0])
+# cp = seaborn.color_palette('colorblind')
+# colors = (cp[2], cp[0])
 # cp = seaborn.color_palette('Dark2')
 # colors = (cp[1], cp[0])
+colors = seaborn.color_palette('Paired', len(targets))
 
 country_label_replacements = {
     'United States of America': 'United States'
@@ -137,9 +145,14 @@ def plot_selected():
     axis = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
     axis.tick_params(labelbottom = False, labelleft = False)
     axis.grid(False)
-    axis.legend(lines_, map(str, targets),
+    labels = list(map(str, targets))
+    # Re-order.
+    lines_ = lines_[0 : : 2] + lines_[1 : : 2]
+    labels = labels[0 : : 2] + labels[1 : : 2]
+    axis.legend(lines_, labels,
                 loc = 'center',
-                ncol = len(targets),
+                # ncol = len(targets),
+                ncol = 2,
                 frameon = False,
                 fontsize = 'medium')
 
@@ -203,6 +216,7 @@ def plot_all():
 if __name__ == '__main__':
     common.countries_to_plot = list(common.countries_to_plot)
     common.countries_to_plot.remove('Global')
+    common.countries_to_plot = ['United States of America']
 
     plot_selected()
 
