@@ -84,8 +84,10 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:
-            x = [data_.index[-1], ti[0]]
-            y = [data_.iloc[-1], vi[0]]
+            ti0 = numpy.compress(numpy.isfinite(vi), ti)
+            vi0 = numpy.compress(numpy.isfinite(vi), vi)
+            x = [data_.index[-1], ti0[0]]
+            y = [data_.iloc[-1], vi0[0]]
             ax.plot(x, numpy.asarray(y) / scale,
                     linestyle = 'dotted', color = 'black',
                     alpha = 0.7,
