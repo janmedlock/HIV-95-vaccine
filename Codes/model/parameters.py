@@ -260,9 +260,10 @@ class _Super:
                                / self.progression_rate_unsuppressed))
 
         ics = self.initial_conditions.copy()
-        newAIDS = proportionAIDS * self.initial_conditions['D']
-        self.initial_conditions['W'] = newAIDS
-        self.initial_conditions['D'] -= newAIDS
+        newAIDS = proportionAIDS * ics['D']
+        ics['W'] = newAIDS
+        ics['D'] -= newAIDS
+        self.initial_conditions = ics
 
     @property
     def R0(self):
