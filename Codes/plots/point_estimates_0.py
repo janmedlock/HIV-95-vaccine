@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Make a PDF with a page of simulation plots for each country.
+
+.. todo:: Merge with :mod:`point_estimates/effectiveness.py`.
 '''
 
 import itertools

@@ -25,9 +25,9 @@ initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
 
-point_estimates_
-----------------
-.. automodule:: plots.point_estimates_
+point_estimates_0
+-----------------
+.. automodule:: plots.point_estimates_0
 
 prcc
 ----

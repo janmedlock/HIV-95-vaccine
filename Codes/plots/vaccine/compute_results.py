@@ -16,7 +16,7 @@ import model
 
 
 # countries = effectiveness.countries_to_plot
-countries = model.get_country_list()
+countries = model.datasheet.get_country_list()
 
 targets = ('baseline', '909090')
 

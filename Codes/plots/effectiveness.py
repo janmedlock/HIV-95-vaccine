@@ -25,8 +25,7 @@ import model
 
 alpha = 0.1
 
-targets = (model.Targets959595, model.TargetsVaccine())
-labels = ('95–95–95', '95–95–95 + Vaccine')
+targets = (model.targets.UNAIDS95, model.targets.Vaccine())
 
 cp = seaborn.color_palette('colorblind')
 colors = (cp[2], cp[0])
@@ -67,7 +66,7 @@ def plotcell(ax, country, attr,
         v = model.results.data[(country, target, attr)]
 
         avg, CI = common.getstats(v, alpha = alpha)
-        ax.plot(t, avg / scale, color = colors[i], label = target,
+        ax.plot(t, avg / scale, color = colors[i], label = str(target),
                 zorder = 2)
         ax.fill_between(t, CI[0] / scale, CI[1] / scale,
                         color = colors[i],
@@ -138,9 +137,9 @@ def plot_selected():
     axis = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
     axis.tick_params(labelbottom = False, labelleft = False)
     axis.grid(False)
-    axis.legend(lines_, labels,
+    axis.legend(lines_, map(str, targets),
                 loc = 'center',
-                ncol = len(labels),
+                ncol = len(targets),
                 frameon = False,
                 fontsize = 'medium')
 
