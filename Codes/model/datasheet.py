@@ -531,7 +531,7 @@ class CountryDataShelf(collections.abc.Mapping):
 data = CountryDataShelf()
 
 
-def get_country_list(sheet = 'InitialConditions', wb = None):
+def get_country_list(sheet = 'all', wb = None):
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
