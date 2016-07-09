@@ -69,14 +69,14 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     if len(data_) > 0:
         ax.plot(data_.index, data_ / scale,
                 marker = '.', markersize = 10,
-                alpha = 0.8,
+                alpha = 0.7,
                 zorder = 2,
                 color = 'black',
                 label = 'data')
 
     # Plot simulation data.
     for (ti, vi, targeti) in zip(t, val, targets):
-        ax.plot(ti, vi / scale, alpha = 0.8, zorder = 1,
+        ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
                 label = str(targeti),
                 **next(styles))
         # Make a dotted line connecting the end of the historical data
@@ -86,6 +86,7 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
             y = [data_.iloc[-1], vi[0]]
             ax.plot(x, numpy.asarray(y) / scale,
                     linestyle = 'dotted', color = 'black',
+                    alpha = 0.7,
                     zorder = 2)
 
     data_start_year = 1990
@@ -179,7 +180,7 @@ if __name__ == '__main__':
         targets.extend([target,
                         model.targets.Vaccine(treatment_targets = target)])
 
-    plot_country('South Africa', targets)
-    pyplot.show()
+    # plot_country('South Africa', targets)
+    # pyplot.show()
 
-    # plot_all_countries(targets)
+    plot_all_countries(targets)
