@@ -19,10 +19,7 @@ class MultiSim:
                 for s in samples)
 
     def keys(self):
-        try:
-            return self.simulations[0].keys()
-        except IndexError:
-            pass
+        return simulation.Simulation._keys
 
     @property
     def t(self):

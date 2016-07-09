@@ -50,13 +50,13 @@ def estimate(parameters, halflife = 1):
 
         # Get the exponentially weighted mean and stdev at the last
         # time point.
-        try:
+        if hasattr(trt_log, 'ewm'):
             # pandas 0.18 syntax.
             ew = trt_log.ewm(halflife = halflife)
             mu = ew.mean().iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
             sigma = ew.std().iloc[-1]
-        except AttributeError:
+        else:
             # pandas 0.17 syntax.
             mu = pandas.ewma(trt_log, halflife = halflife).iloc[-1]
             # The default, bias = False, seems to be ddof = 1.
