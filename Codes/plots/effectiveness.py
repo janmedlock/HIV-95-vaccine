@@ -22,9 +22,6 @@ import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
-import warnings
-warnings.simplefilter('error')
-
 
 alpha = 0.1
 
