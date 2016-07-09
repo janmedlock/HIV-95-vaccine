@@ -25,10 +25,6 @@ net_benefit_maximize
 --------------------
 .. automodule:: tests.net_benefit_maximize
 
-point_estimates
----------------
-.. automodule:: tests.point_estimates
-
 profile_
 --------
 .. automodule:: tests.profile_

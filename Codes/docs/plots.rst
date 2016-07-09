@@ -21,13 +21,17 @@ initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
 
-relative_differences
---------------------
-.. automodule:: plots.relative_differences
+point_estimates
+---------------
+.. automodule:: tests.point_estimates
 
 prcc
 ----
 .. automodule:: plots.prcc
+
+relative_differences
+--------------------
+.. automodule:: plots.relative_differences
 
 seaborn_quiet
 -------------

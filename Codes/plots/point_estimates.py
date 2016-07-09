@@ -4,6 +4,7 @@ Make a PDF with a page of simulation plots for each country.
 '''
 
 import itertools
+import os.path
 import sys
 
 import joblib
@@ -14,11 +15,10 @@ from matplotlib import ticker
 import numpy
 import pandas
 
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
+import common
 sys.path.append('..')
 import model
-from model import transmission_rate
-sys.path.append('../plots')
-import common
 
 # import seaborn
 import seaborn_quiet as seaborn
