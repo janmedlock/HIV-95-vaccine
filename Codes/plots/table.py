@@ -4,7 +4,6 @@ Make a table from the 90-90-90 runs.
 '''
 
 import os
-import pickle
 import sys
 
 import numpy

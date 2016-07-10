@@ -6,7 +6,6 @@ Make maps of the infections averted at different times.
 '''
 
 import os.path
-import pickle
 import sys
 
 from matplotlib import colors as mcolors
