@@ -93,3 +93,7 @@ test
 transmission_rate
 -----------------
 .. automodule:: model.transmission_rate
+
+xzpickle
+--------
+.. automodule:: model.xzpickle
