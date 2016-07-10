@@ -5,7 +5,6 @@ Plot new infections.
 
 import collections
 import itertools
-import pickle
 import sys
 
 from matplotlib import pyplot
@@ -17,6 +16,7 @@ sys.path.append('..')
 import seaborn_quiet as seaborn
 sys.path.append('../..')
 import model
+from model import xzpickle
 
 
 def getlabel(k):
@@ -116,7 +116,7 @@ def _main():
                          'Haiti',
                          'Global')
 
-    results = pickle.load(open('../909090.pkl', 'rb'))
+    results = xzpickle.load('../909090.pkl.xz')
 
     countries = list(results.keys())
     levels = list(results[countries[0]].keys())

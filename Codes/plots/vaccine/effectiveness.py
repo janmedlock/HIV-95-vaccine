@@ -3,7 +3,6 @@
 Plot new infections.
 '''
 
-import pickle
 import sys
 
 from matplotlib import gridspec
@@ -18,6 +17,7 @@ import common
 import seaborn_quiet as seaborn
 sys.path.append('../..')
 import model
+from model import xzpickle
 
 
 countries_to_plot = (
@@ -198,7 +198,7 @@ def plot_selected(results):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('results.pkl', 'rb'))
+    results = xzpickle.load('results.pkl.xz')
 
     plot_selected(results)
 

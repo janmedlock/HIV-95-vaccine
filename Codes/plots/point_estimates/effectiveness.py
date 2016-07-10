@@ -5,7 +5,6 @@ Make 2-d plots of incidence, prevalence, etc.
 
 import collections
 import itertools
-import pickle
 import sys
 
 from matplotlib import pyplot
@@ -15,6 +14,7 @@ import numpy
 
 sys.path.append('../..')
 import model
+from model import xzpickle
 
 
 countries_to_plot = ('Global',
@@ -212,7 +212,7 @@ def plot_all(results):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('../909090.pkl', 'rb'))
+    results = xzpickle.load('../909090.pkl.xz')
 
     plot_selected(results)
     plot_all(results)

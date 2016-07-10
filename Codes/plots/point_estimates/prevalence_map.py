@@ -4,7 +4,6 @@ Make maps of the prevalence at different times.
 '''
 
 import os.path
-import pickle
 import sys
 
 from matplotlib import colors as mcolors
@@ -15,6 +14,8 @@ import pandas
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import mapplot
+sys.path.append('../..')
+from model import xzpickle
 
 
 k909090 = ('909090', 0)
@@ -125,7 +126,7 @@ def plot(prevalence, vmin, vmax, norm):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('../909090.pkl', 'rb'))
+    results = xzpickle.load('../909090.pkl.xz')
 
     countries = list(results.keys())
     t = results[countries[0]][k909090].t

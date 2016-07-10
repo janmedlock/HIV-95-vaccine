@@ -5,7 +5,6 @@ Run the 90-90-90 policies for all the countries.
 
 import collections
 import itertools
-import pickle
 import sys
 
 import joblib
@@ -13,6 +12,7 @@ import joblib
 import effectiveness
 sys.path.append('../..')
 import model
+from model import xzpickle
 
 
 # countries = effectiveness.countries_to_plot
@@ -100,7 +100,7 @@ def _main(parallel = True):
     for country in countries:
         country_, results_ = _run_country(country, parallel = parallel)
         results[country_] = results_
-    pickle.dump(results, open('results.pkl', 'wb'))
+    xzpickle.dump(results, 'results.pkl.xz')
 
 
 if __name__ == '__main__':

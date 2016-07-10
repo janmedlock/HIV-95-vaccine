@@ -4,7 +4,6 @@ Map the 90-90-90 results.
 '''
 
 import os.path
-import pickle
 import sys
 
 from matplotlib import cm
@@ -17,6 +16,8 @@ import mapplot
 import mapplot.cmap
 # import seaborn
 import seaborn_quiet as seaborn
+sys.path.append('../..')
+from model import xzpickle
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -172,7 +173,7 @@ def _main():
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
-    results = pickle.load(open('909090.pkl', 'rb'))
+    results = xzpickle.load('909090.pkl.xz')
 
     countries = list(results.keys())
     effectiveness = []
