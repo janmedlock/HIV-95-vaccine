@@ -534,6 +534,9 @@ data = CountryDataShelf()
 
 
 def get_country_list(sheet = 'all', wb = None):
+    '''
+    .. todo:: Use .data instead of reading sheets directly.
+    '''
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
