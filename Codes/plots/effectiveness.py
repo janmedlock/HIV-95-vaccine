@@ -45,6 +45,14 @@ country_label_replacements = {
 }
 
 
+def getlabel(target):
+    retval = str(target)
+    i = retval.find('(')
+    if i != -1:
+        retval = retval[ : i]
+    return retval
+
+
 def plotcell(ax, country, attr,
              country_label = None, attr_label = None, legend = False):
     scale = 1
@@ -74,7 +82,7 @@ def plotcell(ax, country, attr,
         v = model.results.data[(country, target, attr)]
 
         avg, CI = common.getstats(v, alpha = alpha)
-        ax.plot(t, avg / scale, color = colors[i], label = str(target),
+        ax.plot(t, avg / scale, color = colors[i], label = getlabel(target),
                 zorder = 2)
         ax.fill_between(t, CI[0] / scale, CI[1] / scale,
                         color = colors[i],
@@ -145,14 +153,10 @@ def plot_selected():
     axis = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
     axis.tick_params(labelbottom = False, labelleft = False)
     axis.grid(False)
-    labels = list(map(str, targets))
-    # Re-order.
-    lines_ = lines_[0 : : 2] + lines_[1 : : 2]
-    labels = labels[0 : : 2] + labels[1 : : 2]
+    labels = list(map(getlabel, targets))
     axis.legend(lines_, labels,
                 loc = 'center',
-                # ncol = len(targets),
-                ncol = 2,
+                ncol = len(targets) // 2,
                 frameon = False,
                 fontsize = 'medium')
 
