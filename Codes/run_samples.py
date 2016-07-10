@@ -1,10 +1,5 @@
 #!/usr/bin/python3
 
-import os.path
-import pickle
-
-import numpy
-
 import model
 
 
