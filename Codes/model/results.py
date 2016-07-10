@@ -6,10 +6,10 @@ import atexit
 import collections
 import functools
 import os
-import pickle
 import time
 
 from . import global_
+from . import xzpickle
 
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -25,8 +25,7 @@ def dump(country, target, results):
     resultsfile = Results.get_path(country, target)
     if not os.path.exists(os.path.join(resultsdir, country)):
         os.mkdir(os.path.join(resultsdir, country))
-    with open(resultsfile, 'wb') as fd:
-        pickle.dump(results, fd)
+    xzpickle.dump(results, resultsfile)
 
 
 class Results:
@@ -51,8 +50,7 @@ class Results:
             self._build_global()
         else:
             path = self.get_path(self._country, self._target)
-            with open(path, 'rb') as fd:
-                self._data = pickle.load(fd)
+            self._data = xzpickle.load(path)
 
     def _build_global(self):
         data = {}
@@ -76,7 +74,7 @@ class Results:
         if isinstance(target, type):
             # It's a class.
             target = target()
-        path = os.path.join(resultsdir, country, '{!s}.pkl'.format(target))
+        path = os.path.join(resultsdir, country, '{!s}.pkl.xz'.format(target))
         return path
 
 
@@ -86,7 +84,7 @@ class ResultsShelf(collections.abc.MutableMapping):
     '''
     def __init__(self, debug = False):
         self.debug = debug
-        self._shelfpath = os.path.join(resultsdir, '_cache.pkl')
+        self._shelfpath = os.path.join(resultsdir, '_cache.pkl.xz')
         # Delay opening shelf.
         # self._open_shelf()
 
@@ -95,8 +93,7 @@ class ResultsShelf(collections.abc.MutableMapping):
             print('Opening shelf.')
         assert not hasattr(self, '_shelf')
         try:
-            with open(self._shelfpath, 'rb') as fd:
-                self._shelf = pickle.load(fd)
+            self._shelf = xzpickle.load(self._shelfpath)
         except FileNotFoundError:
             # The shelf is a three-deep dict:
             # _shelf[country][target][key]
@@ -116,8 +113,7 @@ class ResultsShelf(collections.abc.MutableMapping):
             print('In _write_shelf, _shelf_updated = {}.'.format(
                 self._shelf_updated))
         if self._shelf_updated:
-            with open(self._shelfpath, 'wb') as fd:
-                pickle.dump(self._shelf, fd)
+            xzpickle.dump(self._shelf, self._shelfpath)
 
     class ShelfItem:
         def __init__(self, value):

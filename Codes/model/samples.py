@@ -6,15 +6,15 @@ import os.path
 import pickle
 
 from . import parameters
+from . import xzpickle
 
 
 samplesfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           '../samples.pkl')
+                           '../samples.pkl.xz')
 
 
 def load():
-    with open(samplesfile, 'rb') as fd:
-        samples = pickle.load(fd)
+    samples = xzpickle.load(samplesfile)
     print('Loaded {} samples.'.format(len(samples)))
     return samples
 
@@ -22,6 +22,5 @@ def load():
 def generate(nsamples):
     samples = parameters.Parameters.generate_samples(nsamples)
     print('Generated {} samples.'.format(len(samples)))
-    with open(samplesfile, 'wb') as fd:
-        pickle.dump(samples, fd)
+    xzpickle.dump(samples, samplesfile)
     return samples
