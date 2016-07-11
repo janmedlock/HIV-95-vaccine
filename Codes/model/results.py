@@ -5,6 +5,7 @@ Store and retrieve simulation results.
 import atexit
 import collections
 import functools
+import itertools
 import os
 import time
 
@@ -175,11 +176,25 @@ class ResultsShelf(collections.abc.MutableMapping):
 
     def __len__(self):
         self._open_shelf_if_needed()
-        return len(self._shelf)
+        # Sum over the 3 dict levels.
+        return sum(sum(len(v1) for v1 in v0.values())
+                   for v0 in self._shelf.values())
 
     def __iter__(self):
         self._open_shelf_if_needed()
-        return iter(self._shelf)
+        # First key level: country
+        keys0 = self._shelf.keys()
+        # First 2 key levels: country, target.
+        keys1 = itertools.chain.from_iterable(
+            (((country, target)
+              for target in self._shelf[country].keys())
+             for country in keys0))
+        # 3 key levels: country, target, attr.
+        keys2 = itertools.chain.from_iterable(
+            (((country, target, attr)
+              for attr in self._shelf[country][target].keys())
+             for (country, target) in keys1))
+        return keys2
 
 
 data = ResultsShelf()
