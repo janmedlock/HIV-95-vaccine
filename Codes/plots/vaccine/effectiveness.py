@@ -17,7 +17,7 @@ import common
 import seaborn_quiet as seaborn
 sys.path.append('../..')
 import model
-from model import xzpickle
+from model import picklefile
 
 
 countries_to_plot = (
@@ -198,7 +198,7 @@ def plot_selected(results):
 
 
 if __name__ == '__main__':
-    results = xzpickle.load('results.pkl.xz')
+    results = picklefile.load('results.pkl')
 
     plot_selected(results)
 

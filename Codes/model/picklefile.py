@@ -1,16 +1,15 @@
 '''
-Pickle with xz compression.
+A pickle interface using files instead of descriptors.
 '''
 
-import lzma
 import pickle
 
 
 def load(filename):
-    with lzma.open(filename, 'rb') as fd:
+    with open(filename, 'rb') as fd:
         return pickle.load(fd)
 
 
 def dump(obj, filename):
-    with lzma.open(filename, 'wb') as fd:
+    with open(filename, 'wb') as fd:
         return pickle.dump(obj, fd)

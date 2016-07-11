@@ -16,7 +16,7 @@ sys.path.append('..')
 import seaborn_quiet as seaborn
 sys.path.append('../..')
 import model
-from model import xzpickle
+from model import picklefile
 
 
 def getlabel(k):
@@ -116,7 +116,7 @@ def _main():
                          'Haiti',
                          'Global')
 
-    results = xzpickle.load('../909090.pkl.xz')
+    results = picklefile.load('../909090.pkl')
 
     countries = list(results.keys())
     levels = list(results[countries[0]].keys())

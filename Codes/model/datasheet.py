@@ -10,7 +10,7 @@ import sys
 import numpy
 import pandas
 
-from . import xzpickle
+from . import picklefile
 
 datafile = '../DataSheet.xlsx'
 # It's relative to this module file,
@@ -481,14 +481,14 @@ class CountryDataShelf(collections.abc.Mapping):
     '''
     def __init__(self):
         root, _ = os.path.splitext(datapath)
-        self._shelfpath = '{}.pkl.xz'.format(root)
+        self._shelfpath = '{}.pkl'.format(root)
         # Delay opening shelf.
         # self._open_shelf()
 
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = xzpickle.load(self._shelfpath)
+            self._shelf = picklefile.load(self._shelfpath)
         else:
             self._build_all()
 
@@ -504,7 +504,7 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 wb = wb,
                                                 allow_missing = True)
                            for country in countries}
-            xzpickle.dump(self._shelf, self._shelfpath)
+            picklefile.dump(self._shelf, self._shelfpath)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)

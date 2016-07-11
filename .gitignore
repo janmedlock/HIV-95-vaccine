@@ -1,5 +1,5 @@
 __pycache__/
-*.pkl.xz
+*.pkl
 /Codes/old/
 /Codes/results/
 /Codes/docs/_build/

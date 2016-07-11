@@ -12,7 +12,7 @@ import joblib
 import effectiveness
 sys.path.append('../..')
 import model
-from model import xzpickle
+from model import picklefile
 
 
 # countries = effectiveness.countries_to_plot
@@ -100,7 +100,7 @@ def _main(parallel = True):
     for country in countries:
         country_, results_ = _run_country(country, parallel = parallel)
         results[country_] = results_
-    xzpickle.dump(results, 'results.pkl.xz')
+    picklefile.dump(results, 'results.pkl')
 
 
 if __name__ == '__main__':

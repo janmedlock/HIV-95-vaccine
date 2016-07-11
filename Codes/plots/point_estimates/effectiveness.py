@@ -14,7 +14,7 @@ import numpy
 
 sys.path.append('../..')
 import model
-from model import xzpickle
+from model import picklefile
 
 
 countries_to_plot = ('Global',
@@ -212,7 +212,7 @@ def plot_all(results):
 
 
 if __name__ == '__main__':
-    results = xzpickle.load('../909090.pkl.xz')
+    results = picklefile.load('../909090.pkl')
 
     plot_selected(results)
     plot_all(results)

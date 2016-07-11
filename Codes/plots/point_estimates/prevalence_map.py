@@ -15,7 +15,7 @@ import pandas
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import mapplot
 sys.path.append('../..')
-from model import xzpickle
+from model import picklefile
 
 
 k909090 = ('909090', 0)
@@ -126,7 +126,7 @@ def plot(prevalence, vmin, vmax, norm):
 
 
 if __name__ == '__main__':
-    results = xzpickle.load('../909090.pkl.xz')
+    results = picklefile.load('../909090.pkl')
 
     countries = list(results.keys())
     t = results[countries[0]][k909090].t

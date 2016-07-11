@@ -17,7 +17,7 @@ import mapplot.cmap
 # import seaborn
 import seaborn_quiet as seaborn
 sys.path.append('../..')
-from model import xzpickle
+from model import picklefile
 
 
 def plot_effectiveness(countries, effectiveness, effectiveness_base):
@@ -173,7 +173,7 @@ def _main():
     k909090 = ('909090', 0)
     kbaseline = ('baseline', 0)
 
-    results = xzpickle.load('909090.pkl.xz')
+    results = picklefile.load('909090.pkl')
 
     countries = list(results.keys())
     effectiveness = []
