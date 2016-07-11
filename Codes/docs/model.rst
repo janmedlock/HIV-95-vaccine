@@ -58,6 +58,10 @@ parameters
 ----------
 .. automodule:: model.parameters
 
+picklefile
+----------
+.. automodule:: model.picklefile
+
 plot
 ----
 .. automodule:: model.plot
@@ -93,7 +97,3 @@ test
 transmission_rate
 -----------------
 .. automodule:: model.transmission_rate
-
-xzpickle
---------
-.. automodule:: model.xzpickle
