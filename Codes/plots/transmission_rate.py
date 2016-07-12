@@ -136,10 +136,6 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
 
 
 def plot_country(country,
-                 targets = (model.targets.StatusQuo(),
-                            model.targets.UNAIDS90(),
-                            model.targets.UNAIDS95(),
-                            model.targets.Vaccine()),
                  fig = None):
     '''
     Plot transmission rate estimate and compare simulation
@@ -149,6 +145,7 @@ def plot_country(country,
     parameter_values = parameters.mode()
     transmission_rates_vs_time = transmission_rate.estimate_vs_time(parameters)
     rv = transmission_rate.estimate(parameters)
+    targets = model.targets.all_
 
     if fig is None:
         fig = pyplot.gcf()
