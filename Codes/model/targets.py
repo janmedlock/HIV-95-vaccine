@@ -205,7 +205,7 @@ class Vaccine(Targets):
     Vaccine plus the treatment targets in `treatment_targets`.
     '''
     def __init__(self,
-                 efficacy = 0.7,
+                 efficacy = 0.5,
                  coverage = 0.7,
                  time_to_start = 2020,
                  time_to_fifty_percent = 2,
@@ -269,9 +269,20 @@ class Vaccine(Targets):
                                     ', '.join(params))
 
 
-AllVaccineTargets = [Vaccine(),
-                     Vaccine(efficacy = 0.5),
-                     Vaccine(coverage = 0.5),
-                     Vaccine(coverage = 0.9),
-                     Vaccine(time_to_start = 2025),
-                     Vaccine(time_to_fifty_percent = 5)]
+# Build each of these and each of these + vaccine.
+_baseline = [StatusQuo(),
+             UNAIDS90(),
+             UNAIDS95()]
+all_ = []
+for target in _baseline:
+    all_.extend([target,
+                 Vaccine(treatment_targets = target)])
+
+
+vaccine_sensitivity_all = [Vaccine(),
+                           Vaccine(efficacy = 0.3),
+                           Vaccine(efficacy = 0.7),
+                           Vaccine(coverage = 0.5),
+                           Vaccine(coverage = 0.9),
+                           Vaccine(time_to_start = 2025),
+                           Vaccine(time_to_fifty_percent = 5)]
