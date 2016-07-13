@@ -236,8 +236,8 @@ def plot_somecountries_pairedtargets(targets = None,
         figs.append(fig)
         filebase_suffix = str(targets_[0]).replace(' ', '_')
         filebase_ = '{}_{}'.format(filebase, filebase_suffix)
-        fig.savefig('{}.pdf'.format(filebase))
-        fig.savefig('{}.png'.format(filebase))
+        fig.savefig('{}.pdf'.format(filebase_))
+        fig.savefig('{}.png'.format(filebase_))
 
     return figs
 
@@ -305,22 +305,14 @@ if __name__ == '__main__':
 
     plot_somecountries_alltargets()
 
-    # ix = [0, 4, 5]  # StatusQuo, UNAIDS95, Vaccine(UNAIDS95)
-    # targets_ = [model.targets.all_[i] for i in ix]
+    # ixt = [0, 4, 5]  # StatusQuo, UNAIDS95, Vaccine(UNAIDS95)
     # cp = seaborn.color_palette('colorblind')
-    # ix = [2, 5, 1]
-    # colors = [cp[i] for i in ix]
-    # plot_somecountries_alltargets(targets_,
-    #                               confidence_level = 0.5,
-    #                               ncol = len(targets),
-    #                               colors = colors)
-
-    # StatusQuo, Vaccine(StatusQuo), UNAIDS95, Vaccine(UNAIDS95)
-    # ix = [0, 1, 4, 5]
-    # targets_ = [model.targets.all_[i] for i in ix]
+    # ixc = [2, 5, 1]
+    # ixt = [0, 1, 4, 5]  # StatusQuo, Vaccine(StatusQuo), UNAIDS95, Vaccine(UNAIDS95)
     # cp = seaborn.color_palette('Paired', 8)
-    # ix = [4, 5, 0, 1, 2, 3, 6, 7]
-    # colors = [cp[i] for i in ix]
+    # ixc = [4, 5, 0, 1, 2, 3, 6, 7]
+    # targets_ = [model.targets.all_[i] for i in ixt]
+    # colors = [cp[i] for i in ixc]
     # plot_somecountries_alltargets(targets_,
     #                               confidence_level = 0.5,
     #                               colors = colors,
