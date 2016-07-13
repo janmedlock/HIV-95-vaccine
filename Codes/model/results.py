@@ -115,6 +115,7 @@ class ResultsShelf(collections.abc.MutableMapping):
                 self._shelf_updated))
         if self._shelf_updated:
             picklefile.dump(self._shelf, self._shelfpath)
+            self._shelf_updated = False
 
     class ShelfItem:
         def __init__(self, value):
