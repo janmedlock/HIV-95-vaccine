@@ -326,7 +326,7 @@ if __name__ == '__main__':
     #                               colors = colors,
     #                               transpose_legend = True)
 
-    # plot_somecountries_pairedtargets(confidence_level = confidence_level)
+    plot_somecountries_pairedtargets(confidence_level = confidence_level)
 
     # plot_allcountries(confidence_level = confidence_level)
 
