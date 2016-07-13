@@ -2,6 +2,8 @@
 '''
 Make a PDF with a page of simulation plots for each country.
 
+.. todo:: Add 'Global' to plot_all_countries().
+
 .. todo:: Merge with :mod:`point_estimates/effectiveness.py`.
 '''
 
@@ -59,12 +61,10 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     if percent:
         scale = 1 / 100
 
-    # colors = seaborn.color_palette('husl', len(targets))
-    # colors = seaborn.color_palette('Paired', len(targets))
-    colors = seaborn.color_palette('Dark2', len(targets) // 2)
-    linestyles = ['dashed', 'solid']
-    styles = itertools.cycle(matplotlib.cycler(color = colors)
-                             * matplotlib.cycler(linestyle = linestyles))
+    cp = seaborn.color_palette('Paired', 8)
+    ix = [4, 5, 0, 1, 2, 3]
+    colors = [cp[i] for i in ix]
+    styles = itertools.cycle(matplotlib.cycler(color = colors))
 
     # Plot historical data.
     data_ = data.dropna()

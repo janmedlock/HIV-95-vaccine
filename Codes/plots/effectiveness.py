@@ -164,21 +164,13 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
         # [0, 2, 4, 1, 3, 5].
         def transpose(x, ncol):
             x = list(x)
-            nrow = len(x) // ncol
-            y = []
-            for i in range(nrow):
-                y.extend(x[i : : nrow])
-            return []
-        nrow = len(targets) // ncol
-        props = [next(axes._get_lines.prop_cycler)
-                 for _ in range(len(targets))]
-        targets_ = itertools.chain.from_iterables(
-            zip(*([next(targets) for _ in range(nrow)]
-                  for __ in range(ncol))))
-        props_ = []
-        for i in range(nrow):
-            props_.extend(props[i : : nrow])
-        prop_cycler = iter(props_)
+            nrow = int(numpy.ceil(len(x) / ncol))
+            y = (x[i : : nrow] for i in range(nrow))
+            return itertools.chain.from_iterable(y)
+        targets_ = transpose(targets, ncol)
+        props = (next(axes._get_lines.prop_cycler)
+                 for _ in range(len(targets)))
+        prop_cycler = transpose(props, ncol)
     else:
         targets_ = targets
         prop_cycler = axes._get_lines.prop_cycler
@@ -211,7 +203,7 @@ def plot_somecountries_alltargets(targets = None,
         ncol = len(targets) // 2
     if colors is None:
         cp = seaborn.color_palette('Paired', 8)
-        ix = [6, 7, 0, 1, 2, 3]
+        ix = [4, 5, 0, 1, 2, 3, 6, 7]
         colors = [cp[i] for i in ix]
     with seaborn.color_palette(colors, len(targets)):
         fig = plot_somecountries(targets,
@@ -326,7 +318,7 @@ if __name__ == '__main__':
     # ix = [0, 1, 4, 5]
     # targets_ = [model.targets.all_[i] for i in ix]
     # cp = seaborn.color_palette('Paired', 8)
-    # ix = [6, 7, 0, 1]
+    # ix = [4, 5, 0, 1, 2, 3, 6, 7]
     # colors = [cp[i] for i in ix]
     # plot_somecountries_alltargets(targets_,
     #                               confidence_level = 0.5,
