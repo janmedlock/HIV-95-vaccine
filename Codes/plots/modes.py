@@ -2,6 +2,8 @@
 '''
 Make a PDF with a page of simulation plots for each country.
 
+.. todo:: Add 'Global' to plot_all_countries().
+
 .. todo:: Merge with :mod:`point_estimates/effectiveness.py`.
 '''
 
@@ -59,12 +61,10 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     if percent:
         scale = 1 / 100
 
-    # colors = seaborn.color_palette('husl', len(targets))
-    # colors = seaborn.color_palette('Paired', len(targets))
-    colors = seaborn.color_palette('Dark2', len(targets) // 2)
-    linestyles = ['dashed', 'solid']
-    styles = itertools.cycle(matplotlib.cycler(color = colors)
-                             * matplotlib.cycler(linestyle = linestyles))
+    cp = seaborn.color_palette('Paired', 8)
+    ix = [4, 5, 0, 1, 2, 3]
+    colors = [cp[i] for i in ix]
+    styles = itertools.cycle(matplotlib.cycler(color = colors))
 
     # Plot historical data.
     data_ = data.dropna()
@@ -111,11 +111,12 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     ax.set_ylabel(ylabel, size = 'medium')
 
 
-def plot_country(country, targets, fig = None):
+def plot_country(country, fig = None):
     '''
     Compare simulation with historical data.
     '''
     parameters = model.parameters.Parameters(country)
+    targets = model.targets.all_
 
     if fig is None:
         fig = pyplot.gcf()
@@ -162,29 +163,20 @@ def plot_country(country, targets, fig = None):
     return fig
 
 
-def plot_all_countries(targets):
+def plot_all_countries():
     countries = model.datasheet.get_country_list()
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         for country in countries:
             print(country)
             fig = pyplot.figure(figsize = (8.5, 11))
-            plot_country(country, targets, fig = fig)
+            plot_country(country, fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
 
 
 if __name__ == '__main__':
-    # Run each of these and each of these + vaccine.
-    targets_baseline = [model.targets.StatusQuo(),
-                        model.targets.UNAIDS90(),
-                        model.targets.UNAIDS95()]
-    targets = []
-    for target in targets_baseline:
-        targets.extend([target,
-                        model.targets.Vaccine(treatment_targets = target)])
+    plot_country('South Africa')
+    pyplot.show()
 
-    # plot_country('South Africa', targets)
-    # pyplot.show()
-
-    plot_all_countries(targets)
+    # plot_all_countries()

@@ -5,6 +5,7 @@ Plot the effectiveness of interventions.
 .. todo:: Add historical incidence and prevalence to plots.
 '''
 
+import itertools
 import os.path
 import sys
 
@@ -66,7 +67,8 @@ def plotcell(ax, country, targets, attr,
         v = model.results.data[(country, target, attr)]
 
         avg, CI = common.getstats(v, alpha = 1 - confidence_level)
-        lines = ax.plot(t, avg / scale, label = getlabel(target),
+        lines = ax.plot(t, avg / scale,
+                        label = getlabel(target),
                         zorder = 2)
         if confidence_level > 0:
             color = lines[0].get_color()
@@ -102,17 +104,18 @@ def plotcell(ax, country, targets, attr,
         ax.legend(loc = 'upper left')
 
 
-def plot_somecountries(targets, ncol = None, **kwargs):
+def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
+                       **kwargs):
+    if targets is None:
+        targets = model.targets.all_
     if ncol is None:
         ncol = len(targets)
 
     fig = pyplot.figure(figsize = (8.5, 11))
-
     # Legend in tiny bottom row
     gs = gridspec.GridSpec(
         len(common.countries_to_plot) + 1, 4,
         height_ratios = ((1, ) * len(common.countries_to_plot) + (0.1, )))
-
     for (i, country) in enumerate(common.countries_to_plot):
         attr_label = 'title' if (i == 0) else None
 
@@ -149,9 +152,34 @@ def plot_somecountries(targets, ncol = None, **kwargs):
     axes = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
     axes.tick_params(labelbottom = False, labelleft = False)
     axes.grid(False)
+
+    if transpose_legend:
+        # Instead of the legend
+        # e.g. with len(targets) = 6 and ncol = 3,
+        # [[0, 1, 2],
+        #  [3, 4, 5]]
+        # we want the legend
+        # [[0, 2, 4],
+        #  [1, 3, 5]]
+        # so we reorder both targets and prop_cycler to
+        # [0, 2, 4, 1, 3, 5].
+        def transpose(x, ncol):
+            x = list(x)
+            nrow = int(numpy.ceil(len(x) / ncol))
+            y = (x[i : : nrow] for i in range(nrow))
+            return itertools.chain.from_iterable(y)
+        targets_ = transpose(targets, ncol)
+        props = (next(axes._get_lines.prop_cycler)
+                 for _ in range(len(targets)))
+        prop_cycler = transpose(props, ncol)
+    else:
+        targets_ = targets
+        prop_cycler = axes._get_lines.prop_cycler
+
     # Dummy invisible lines.
-    for target in targets:
-        axes.plot(0, 0, label = getlabel(target), visible = False)
+    for target in targets_:
+        axes.plot(0, 0, label = getlabel(target), visible = False,
+                  **next(prop_cycler))
     legend = axes.legend(loc = 'center',
                          ncol = ncol,
                          frameon = False,
@@ -165,12 +193,22 @@ def plot_somecountries(targets, ncol = None, **kwargs):
     return fig
 
 
-def plot_somecountries_alltargets(targets,
+def plot_somecountries_alltargets(targets = None,
                                   confidence_level = 0,
+                                  ncol = None,
+                                  colors = None,
                                   **kwargs):
-    with seaborn.color_palette('Paired', len(targets)):
+    if targets is None:
+        targets = model.targets.all_
+    if ncol is None:
+        ncol = len(targets) // 2
+    if colors is None:
+        cp = seaborn.color_palette('Paired', 8)
+        ix = [4, 5, 0, 1, 2, 3, 6, 7]
+        colors = [cp[i] for i in ix]
+    with seaborn.color_palette(colors, len(targets)):
         fig = plot_somecountries(targets,
-                                 ncol = len(targets) // 2,
+                                 ncol = ncol,
                                  confidence_level = confidence_level,
                                  **kwargs)
     fig.savefig('{}.pdf'.format(common.get_filebase()))
@@ -178,12 +216,16 @@ def plot_somecountries_alltargets(targets,
     return fig
 
 
-def plot_somecountries_pairedtargets(targets,
+def plot_somecountries_pairedtargets(targets = None,
                                      **kwargs):
+    if targets is None:
+        targets = model.targets.all_
+
     cp = seaborn.color_palette('colorblind')
-    colors = [cp[2], cp[0], cp[3], cp[1], cp[4], cp[5]]
+    ix = [2, 0, 3, 1, 4, 5]
     # cp = seaborn.color_palette('Dark2')
-    # colors = [cp[1], cp[0], cp[3], cp[2], cp[5], cp[4]]
+    # ix = [1, 0, 3, 2, 5, 4]
+    colors = [cp[i] for i in ix]
 
     filebase = common.get_filebase()
     figs = []
@@ -200,7 +242,10 @@ def plot_somecountries_pairedtargets(targets,
     return figs
 
 
-def plot_allcountries(targets, **kwargs):
+def plot_allcountries(targets = None, **kwargs):
+    if targets is None:
+        targets = model.targets.all_
+
     countries = ['Global'] + sorted(model.get_country_list())
 
     filename = '{}_all.pdf'.format(common.get_filebase())
@@ -251,27 +296,38 @@ def plot_allcountries(targets, **kwargs):
 
 
 if __name__ == '__main__':
-    # Each of these and each of these + vaccine.
-    targets_baseline = [model.targets.StatusQuo(),
-                        model.targets.UNAIDS90(),
-                        model.targets.UNAIDS95()]
-    targets = []
-    for target in targets_baseline:
-        targets.extend([target,
-                        model.targets.Vaccine(treatment_targets = target)])
-
     confidence_level = 0.9
 
     # Remove 'Global' for now.
     common.countries_to_plot = list(common.countries_to_plot)
-    common.countries_to_plot.remove('Global')
+    if 'Global' in common.countries_to_plot:
+        common.countries_to_plot.remove('Global')
 
-    plot_somecountries_alltargets(targets)
+    plot_somecountries_alltargets()
 
-    plot_somecountries_pairedtargets(targets,
-                                     confidence_level = confidence_level)
+    # ix = [0, 4, 5]  # StatusQuo, UNAIDS95, Vaccine(UNAIDS95)
+    # targets_ = [model.targets.all_[i] for i in ix]
+    # cp = seaborn.color_palette('colorblind')
+    # ix = [2, 5, 1]
+    # colors = [cp[i] for i in ix]
+    # plot_somecountries_alltargets(targets_,
+    #                               confidence_level = 0.5,
+    #                               ncol = len(targets),
+    #                               colors = colors)
 
-    # plot_allcountries(targets,
-    #                   confidence_level = confidence_level)
+    # StatusQuo, Vaccine(StatusQuo), UNAIDS95, Vaccine(UNAIDS95)
+    # ix = [0, 1, 4, 5]
+    # targets_ = [model.targets.all_[i] for i in ix]
+    # cp = seaborn.color_palette('Paired', 8)
+    # ix = [4, 5, 0, 1, 2, 3, 6, 7]
+    # colors = [cp[i] for i in ix]
+    # plot_somecountries_alltargets(targets_,
+    #                               confidence_level = 0.5,
+    #                               colors = colors,
+    #                               transpose_legend = True)
+
+    # plot_somecountries_pairedtargets(confidence_level = confidence_level)
+
+    # plot_allcountries(confidence_level = confidence_level)
 
     pyplot.show()

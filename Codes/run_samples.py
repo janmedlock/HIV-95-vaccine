@@ -16,16 +16,6 @@ for c in countries_to_plot:
 countries = countries_to_plot + countries
 
 
-# Run each of these and each of these + vaccine.
-targets_baseline = [model.targets.StatusQuo(),
-                    model.targets.UNAIDS90(),
-                    model.targets.UNAIDS95()]
-targets = []
-for target in targets_baseline:
-    targets.extend([target,
-                    model.targets.Vaccine(treatment_targets = target)])
-
-
 def _run_country(country, target, samples):
     print('Running {}, {!s}.'.format(country, target))
 
@@ -41,7 +31,7 @@ def _main():
     samples = model.samples.load()
 
     for country in countries:
-        for target in targets:
+        for target in model.targets.all_:
             if not model.results.exists(country, target):
                 results = _run_country(country, target, samples)
                 model.results.dump(country, target, results)
