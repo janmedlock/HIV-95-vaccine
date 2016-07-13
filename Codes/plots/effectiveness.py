@@ -67,7 +67,8 @@ def plotcell(ax, country, targets, attr,
         v = model.results.data[(country, target, attr)]
 
         avg, CI = common.getstats(v, alpha = 1 - confidence_level)
-        lines = ax.plot(t, avg / scale, label = getlabel(target),
+        lines = ax.plot(t, avg / scale,
+                        label = getlabel(target),
                         zorder = 2)
         if confidence_level > 0:
             color = lines[0].get_color()
