@@ -499,7 +499,7 @@ class CountryDataShelf(collections.abc.Mapping):
     def _build_all(self):
         print('Rebuilding cache of {}.'.format(os.path.relpath(datapath)))
         with pandas.ExcelFile(datapath) as wb:
-            countries = get_country_list('any', wb = wb)
+            countries = _get_country_list('all', wb = wb)
             self._shelf = {country: CountryData(country,
                                                 wb = wb,
                                                 allow_missing = True)
@@ -531,10 +531,7 @@ class CountryDataShelf(collections.abc.Mapping):
 data = CountryDataShelf()
 
 
-def get_country_list(sheet = 'all', wb = None):
-    '''
-    .. todo:: Use .data instead of reading sheets directly.
-    '''
+def _get_country_list(sheet = 'all', wb = None):
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
@@ -561,3 +558,10 @@ def get_country_list(sheet = 'all', wb = None):
             msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
                    + "Valid sheets are {}.").format(sheet, sheets)
             raise AttributeError(msg)
+
+
+def get_country_list(sheet = 'all', wb = None):
+    if sheet == 'all':
+        return sorted(data.keys())
+    else:
+        return _get_country_list(sheet = sheet, wb = wb)
