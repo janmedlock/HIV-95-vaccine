@@ -5,7 +5,7 @@ Calculate R0.
 import numpy
 
 
-def R0(parameters):
+def compute(parameters):
     diagnosis_rate = treatment_rate = nonadherence_rate = vaccine_coverage = 0
     vaccine_efficacy = 0
 

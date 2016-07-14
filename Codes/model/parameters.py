@@ -268,7 +268,7 @@ class _Super:
     @property
     def R0(self):
         try:
-            return R0.R0(self)
+            return R0.compute(self)
         except AttributeError:
             return None
 
