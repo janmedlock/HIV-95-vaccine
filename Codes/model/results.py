@@ -16,6 +16,8 @@ from . import picklefile
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
 
+modesfile = os.path.join(resultsdir, 'modes.pkl')
+
 
 def exists(country, target):
     resultsfile = Results.get_path(country, target)
@@ -27,6 +29,14 @@ def dump(country, target, results):
     if not os.path.exists(os.path.join(resultsdir, country)):
         os.mkdir(os.path.join(resultsdir, country))
     picklefile.dump(results, resultsfile)
+
+
+def dump_modes(results):
+    picklefile.dump(results, modesfile)
+
+
+def load_modes():
+    return picklefile.load(modesfile)
 
 
 class Results:
