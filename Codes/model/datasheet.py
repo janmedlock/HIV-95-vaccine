@@ -207,7 +207,7 @@ class IncidencePrevalence(Sheet):
     @classmethod
     def _clean_entry(cls, x):
         '''
-        Strip trailing *'s etc.
+        Strip trailing '*' etc.
         '''
         # Strip trailing '*'
         if x.endswith('*'):
@@ -233,8 +233,8 @@ class IncidencePrevalence(Sheet):
     def parse_entry(cls, x):
         '''
         First, strip any trailing '*' etc.
-        Next, map any ranges 'a - b' to the mean of a and b.
-        Next, replace '<x' with x / 2.
+        Next, map any ranges '`a` - `b`' to the mean of `a` and `b`.
+        Next, replace '<`x`' with `x / 2`.
         Finally, divide everything by 100 because data use percent.
         '''
         if isinstance(x, str):
@@ -401,7 +401,7 @@ class Treated(AnnualSheet):
     @classmethod
     def parse_entry(cls, x):
         '''
-        Strip trailing (x)'s etc.
+        Strip trailing '(`x`)' etc.
         '''
         if isinstance(x, str):
             if ('(' in x) and (')' in x):
@@ -477,7 +477,7 @@ class CountryData:
 
 class CountryDataShelf(collections.abc.Mapping):
     '''
-    Disk cache for CountryData for speed.
+    Disk cache for :class:`CountryData` for speed.
     '''
     def __init__(self):
         root, _ = os.path.splitext(datapath)

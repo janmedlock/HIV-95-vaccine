@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Run the 90-90-90 policies for all the countries.
+Run the 90--90--90 policies for all the countries.
 '''
 
 import collections

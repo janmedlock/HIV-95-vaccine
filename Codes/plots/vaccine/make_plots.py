@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Plot new infections.
+Plot efficacy plots.
 '''
 
 import collections

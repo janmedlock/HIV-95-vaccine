@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+'''
+Make a LaTeX-formatted table from the simulation output.
+'''
 
 import locale
 import sys
@@ -15,7 +18,7 @@ replacements = {'United States of America': 'United States',
 keys_ordered = ['Status Quo', '90–90–90']
 
 
-def format_number(x):
+def _format_number(x):
     return locale.format('%d', x, grouping = True)
     
 
@@ -69,7 +72,7 @@ if __name__ == '__main__':
 
                 for j in range(len(v) // 3):
                     fd.write(' & {} & {} & {}'.format(
-                        *map(format_number, v[3 * j : 3 * j + 3])))
+                        *map(_format_number, v[3 * j : 3 * j + 3])))
                 fd.write('\n')
                 fd.write('\\\\\n')
 

@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+'''
+Run simulations with parameter samples.
+'''
 
 import model
 

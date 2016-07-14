@@ -1,5 +1,5 @@
 '''
-Silence warnings from matplotlib that are triggered by cartopy.
+Silence warnings from :mod:`matplotlib` that are triggered by :mod:`cartopy`.
 '''
 
 import warnings

@@ -15,7 +15,6 @@ from . import picklefile
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
-
 modesfile = os.path.join(resultsdir, 'modes.pkl')
 
 
@@ -91,7 +90,7 @@ class Results:
 
 class ResultsShelf(collections.abc.MutableMapping):
     '''
-    Disk cache for Results for speed.
+    Disk cache for :class:`Results` for speed.
     '''
     def __init__(self, debug = False):
         self.debug = debug

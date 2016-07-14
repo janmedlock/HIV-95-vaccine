@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Test :meth:`model.parameter.Parameter.sample`.
+Test :meth:`model.parameters.Parameters.sample`.
 '''
 
 

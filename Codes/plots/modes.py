@@ -4,8 +4,6 @@ Using the modes of the parameter distributions,
 make simulation plots.
 
 .. todo:: Add 'Global' historical data.
-
-.. todo:: Merge with :mod:`point_estimates/effectiveness.py`.
 '''
 
 import collections

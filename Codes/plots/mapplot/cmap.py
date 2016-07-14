@@ -1,5 +1,5 @@
 '''
-Helper functions for dealing with maplotlib colormaps.
+Helper functions for dealing with :mod:`matplotlib.cm` colormaps.
 '''
 
 import collections

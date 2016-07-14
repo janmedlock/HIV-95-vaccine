@@ -1,5 +1,5 @@
 '''
-Silence warnings from matplotlib that are triggered by seaborn.
+Silence warnings from :mod:`matplotlib` that are triggered by :mod:`seaborn`.
 '''
 
 import warnings

@@ -20,7 +20,7 @@ class TargetZero:
 
 class TargetStatusQuo:
     '''
-    Fixed at the initial proportion.
+    Fixed at the `initial_proportion`.
     '''
     def __call__(self, initial_proportion, t):
         return initial_proportion * numpy.ones_like(t, dtype = float)
@@ -28,10 +28,10 @@ class TargetStatusQuo:
 
 class TargetLinear:
     '''
-    Linearly go from the initial proportion to
-    max(target_value, initial_proportion) between time_to_start and
-    time_to_target.  Stay fixed at initial proportion before
-    time_to_start and fixed at target_value after time_to_target.
+    Linearly go from the `initial_proportion` to
+    `max(target_value, initial_proportion)` between `time_to_start` and
+    `time_to_target`.  Stay fixed at initial proportion before
+    `time_to_start` and fixed at `target_value` after `time_to_target`.
     '''
     def __init__(self, target_value, time_to_start, time_to_target):
         self.target_value = target_value
@@ -52,10 +52,10 @@ class TargetLinear:
 
 class Target90(TargetLinear):
     '''
-    Linearly go from the initial proportion to the target value =
-    max(90%, initial_proportion) between 2015 and
-    2020.  Stay fixed at initial proportion before
-    2015 and fixed at the target value after 2020.
+    Linearly go from the `initial_proportion` to the
+    `target_value = max(90%, initial_proportion)` between 2015 and
+    2020.  Stay fixed at `initial_proportion` before
+    2015 and fixed at the `target_value` after 2020.
     '''
     target_value = 0.9
     time_to_start = 2015
@@ -67,12 +67,12 @@ class Target90(TargetLinear):
 
 class Target95:
     '''
-    Linearly go from the initial proportion to
-    target_value_0 = max(90%, initial_proportion) between 2015 and
+    Linearly go from the `initial_proportion` to
+    `target_value_0 = max(90%, initial_proportion)` between 2015 and
     2020, then linearly go to
-    target_value_1 = max(95%, initial_proportion) between 2020 and 2030.
-    Stay fixed at initial proportion before 2015 and fixed at
-    target_value_1 after 2030.
+    `target_value_1 = max(95%, initial_proportion)` between 2020 and 2030.
+    Stay fixed at `initial_proportion` before 2015 and fixed at
+    `target_value_1` after 2030.
     '''
     target_value_0 = 0.9
     target_value_1 = 0.95
@@ -174,7 +174,7 @@ class StatusQuo(Targets):
 
 class UNAIDS90(Targets):
     '''
-    90-90-90 targets with no vaccination.
+    90--90--90 targets with no vaccination.
     '''
     diagnosed = Target90()
     treated = Target90()
@@ -188,7 +188,7 @@ class UNAIDS90(Targets):
 
 class UNAIDS95(Targets):
     '''
-    95-95-95 targets with no vaccination.
+    95--95--95 targets with no vaccination.
     '''
     diagnosed = Target95()
     treated = Target95()
@@ -202,7 +202,7 @@ class UNAIDS95(Targets):
 
 class Vaccine(Targets):
     '''
-    Vaccine plus the treatment targets in `treatment_targets`.
+    Vaccine plus the `treatment_targets`.
     '''
     def __init__(self,
                  efficacy = 0.5,

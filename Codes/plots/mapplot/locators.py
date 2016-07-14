@@ -29,7 +29,7 @@ class _Locator:
 
 class GeocodeLocator(_Locator):
     '''
-    Use :mod:`geopy.geocoders.Nominatim` to get country coordinates.
+    Use :class:`geopy.geocoders.Nominatim` to get country coordinates.
     '''
 
     crs = cartopy.crs.PlateCarree()

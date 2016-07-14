@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 '''
-Make a table from the 90-90-90 runs.
+Make a table from the simulation output.
 
-.. todo:: Update with `results.Results` -> `results.data`.
-          See `infections_averted_map.py`.
+.. todo:: Update :class:`model.results.Results` to :data:`model.results.data`.
+          See :mod:`~.plots.infections_averted_map`.
 '''
 
 import os

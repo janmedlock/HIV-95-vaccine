@@ -298,8 +298,18 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'ipython': ('https://ipython.org/', None),
+    'matplotlib': ('http://matplotlib.org/', None),
+    'seaborn': ('https://web.stanford.edu/~mwaskom/software/seaborn/', None),
+    'joblib': ('https://pythonhosted.org/joblib/', None),
+    'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
+    'geopy': ('https://geopy.readthedocs.io/en/latest/', None),
+}
 
 
 autodoc_default_flags = ['members', 'undoc-members']

@@ -1,6 +1,7 @@
 class Container:
     '''
-    A simple class to hold attributed with an OrderedDict-like interface.
+    A simple class to hold attributed with an interface like
+    :class:`collections.OrderedDict`.
     '''
 
     _keys = tuple()

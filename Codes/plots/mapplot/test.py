@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Test :mod:`mapplot`.
+Test :mod:`~.plots.mapplot`.
 '''
 
 

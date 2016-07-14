@@ -1,5 +1,5 @@
 '''
-A pickle interface using files instead of descriptors.
+A :mod:`pickle` interface using files instead of descriptors.
 '''
 
 import pickle

@@ -33,7 +33,7 @@ def transform(state, _log0 = -20):
 
 def transform_inv(state_trans):
     '''
-    Inverse log transform all the state variables.
+    Inverse log transform some of the state variables.
     '''
     state = numpy.empty(numpy.shape(state_trans))
     state[..., vars_log] = numpy.exp(state_trans[..., vars_log])
