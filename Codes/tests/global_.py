@@ -45,27 +45,37 @@ class PercentFormatter(ticker.ScalarFormatter):
         else:
             self.format += '%%'
 
-cp = seaborn.color_palette('colorblind')
-colors = {'Status Quo': cp[2],
-          '90–90–90': cp[0]}
 
-def plotcell(ax, tx,
-             scale = 1, percent = False,
-             title = None, legend = True):
-    t, x = tx
+def plotcell(ax, results, attr):
+    percent = False
+    if attr == 'infected':
+        ylabel = 'People Living with HIV\n(M)'
+        scale = 1e6
+    elif attr == 'AIDS':
+        ylabel = 'People with AIDS\n(1000s)'
+        scale = 1e3
+    elif attr == 'incidence_per_capita':
+        ylabel = 'HIV Incidence\n(per M people per y)'
+        scale = 1e-6
+    elif attr == 'prevalence':
+        ylabel = 'HIV Prevelance\n'
+        percent = True
+    else:
+        raise ValueError("Unknown attr '{}'!".format(attr))
 
     if percent:
         scale = 1 / 100
 
-    for k in ('Status Quo', '90–90–90'):
-        v = x[k]
-        avg, CI = getstats(v)
-        ax.plot(t, avg / scale, color = colors[k], label = k,
-                zorder = 2)
-        ax.fill_between(t, CI[0] / scale, CI[1] / scale,
-                        color = colors[k],
-                        alpha = 0.3)
+    t = results.t
+    x = getattr(results, attr)
+    avg, CI = getstats(x)
+    lines = ax.plot(t, avg / scale, label = target,
+                    zorder = 2)
+    ax.fill_between(t, CI[0] / scale, CI[1] / scale,
+                    color = lines[0].get_color(),
+                    alpha = 0.3)
 
+    ax.set_ylabel(ylabel)
     ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
     # Every 10 years.
@@ -73,44 +83,19 @@ def plotcell(ax, tx,
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     if percent:
         ax.yaxis.set_major_formatter(PercentFormatter())
-    if title is not None:
-        ax.set_title(title, size = 'medium')
-    if legend:
-        ax.legend(loc = 'best')
 
 
 if __name__ == '__main__':
+    target = model.targets.StatusQuo()
+
+    results = model.results.Results('Global', str(target))
+
     fig, axes = pyplot.subplots(1, 4,
                                 figsize = (8.5, 11),
-                                sharex = True,
-                                squeeze = False)
-
-    results = model.results.Results('Global')
-
-    plotcell(axes[0, 0],
-             results.getfield('infected'),
-             scale = 1e6,
-             legend = True,
-             title = 'People Living with HIV\n(M)')
-
-    plotcell(axes[0, 1],
-             results.getfield('AIDS'),
-             scale = 1e3,
-             legend = False,
-             title = 'People with AIDS\n(1000s)')
-
-    plotcell(axes[0, 2],
-             results.getfield('incidence_per_capita'),
-             scale = 1e-6,
-             legend = False,
-             title = 'HIV Incidence\n(per M people per y)')
-
-    plotcell(axes[0, 3],
-             results.getfield('prevalence'),
-             percent = True,
-             legend = False,
-             title = 'HIV Prevelance\n')
-
+                                sharex = True)
+    plotcell(axes[0], results, 'infected')
+    plotcell(axes[1], results, 'AIDS')
+    plotcell(axes[2], results, 'incidence_per_capita')
+    plotcell(axes[3], results, 'prevalence')
     fig.tight_layout()
-
     pyplot.show()
