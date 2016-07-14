@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Plot differences for samples from uncertainty analysis.
+
+.. todo:: Update with `results.Results` -> `results.data`.
 '''
 
 import os.path

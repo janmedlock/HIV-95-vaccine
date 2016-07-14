@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Calculate PRCCs.
+
+.. todo:: Update with `results.Results` -> `results.data`.
 '''
 
 import os.path

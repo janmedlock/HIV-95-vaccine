@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 '''
 Make a table from the 90-90-90 runs.
+
+.. todo:: Update with `results.Results` -> `results.data`.
+          See `infections_averted_map.py`.
 '''
 
 import os

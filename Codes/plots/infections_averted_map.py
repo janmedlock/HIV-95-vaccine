@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections averted at different times.
-
-.. todo:: Should read years from simulation output.
 '''
 
 import os.path
@@ -111,23 +109,26 @@ def plot(results, vmin, vmax):
 
 
 if __name__ == '__main__':
-    countries = model.get_country_list()
+    targets = (model.targets.StatusQuo(),
+               model.targets.Vaccine(
+                   treatment_targets = model.targets.StatusQuo()))
+    targets = list(map(str, targets))
 
-    t_start = 2015
-    t_end = 2035
-    pts_per_year = 120
-    t = numpy.linspace(t_start, t_end, (t_end - t_start) * pts_per_year + 1)
-    infections_averted = pandas.DataFrame(columns = countries,
-                                          index = t)
-
+    countries = model.datasheet.get_country_list()
+    # Delayed allocation to get shape (t values).
+    infections_averted = None
     for country in countries:
-        with model.results.Results(country) as results:
-            t, x = results.getfield('new_infections')
-            a = numpy.asarray(x['Status Quo'])
-            b = numpy.asarray(x['90–90–90'])
-            d = numpy.ma.divide(a - b, a)
-            m = numpy.median(d, axis = 0)
-            infections_averted[country] = m.filled(0)
+        t = model.results.data[(country, targets[0], 't')]
+        x, y = (model.results.data[(country, target, 'new_infections')]
+                for target in targets)
+
+        d = numpy.ma.divide(x - y, x)
+        m = numpy.median(d, axis = 0)
+
+        if infections_averted is None:
+            infections_averted = pandas.DataFrame(columns = countries,
+                                                  index = t)
+        infections_averted[country] = m.filled(0)
 
     vmin = min(infections_averted.min().min(), 0)
     vmax = max(infections_averted.max().max(), 0.6)

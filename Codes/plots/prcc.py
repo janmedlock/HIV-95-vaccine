@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Calculate PRCCs and make tornado plots.
+
+.. todo:: Update with `results.Results` -> `results.data`.
 '''
 
 import os.path
