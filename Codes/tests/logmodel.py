@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 '''
-Test solving the log model :func:`model.simulation.ODEs_log`
-versus the non-log model :func:`model.simulation.ODEs`
+Test solving the log model :func:`model.ODEs.rhs_log`
+versus the non-log model :func:`model.ODEs.rhs`
 for correctness and speed.
 '''
 

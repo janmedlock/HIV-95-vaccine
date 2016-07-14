@@ -4,8 +4,6 @@ ODEs representing the HIV model.
 
 import numpy
 
-from . import simulation
-
 
 # S is susceptible.
 # Q is vaccinated.
@@ -47,7 +45,7 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-def ODEs(t, state, targets, parameters):
+def rhs(t, state, targets, parameters):
     # Force the state variables to be non-negative.
     # The last two state variables, dead from AIDS and new infections,
     # are cumulative numbers that are set to 0 at t = 0: these
@@ -113,7 +111,7 @@ def ODEs(t, state, targets, parameters):
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def ODEs_log(t, state_trans, targets, parameters):
+def rhs_log(t, state_trans, targets, parameters):
     state = transform_inv(state_trans)
     S, Q, A, U, D, T, V, W, Z, R = state
     (S_log, U_log, D_log, T_log, V_log, W_log) = state_trans[vars_log]

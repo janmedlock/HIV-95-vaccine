@@ -13,6 +13,7 @@ from . import container
 from . import effectiveness
 from . import incidence
 # from . import net_benefit
+from . import ODEs
 from . import plot
 from . import proportions
 
@@ -63,14 +64,12 @@ class Simulation(container.Container):
         self.simulate()
 
     def simulate(self):
-        from . import ODEs
-
         Y0 = self.parameters.initial_conditions.copy().values
         if self._use_log:
             Y0 = ODEs.transform(Y0)
-            fcn = ODEs.ODEs_log
+            fcn = ODEs.rhs_log
         else:
-            fcn = ODEs.ODEs
+            fcn = ODEs.rhs
 
         # Scale time to start at 0 to avoid some solver warnings.
         t_scaled = self.t - self.t[0]
