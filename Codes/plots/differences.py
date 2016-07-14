@@ -3,6 +3,7 @@
 Plot differences for samples from uncertainty analysis.
 
 .. todo:: Update with `results.Results` -> `results.data`.
+          See `infections_averted_map.py`.
 '''
 
 import os.path
