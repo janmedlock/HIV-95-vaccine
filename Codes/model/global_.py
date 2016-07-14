@@ -5,6 +5,7 @@ Aggregate global results.
 import numpy
 
 from . import container
+from . import incidence
 from . import parameters
 
 
@@ -19,7 +20,7 @@ class Global(container.Container):
     global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
     global_infected = 36.9e6  # CI (34.3e6, 41.4e6), UNAIDS 2014
-    global_annual_new_infections = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
+    global_incidence = 2e6  # CI (1.9e6, 2.2e6), UNAIDS 2014
     global_annual_AIDS_deaths = 1.2e6  # CI (0.98e6, 1.6e6), UNAIDS 2014
 
     def __init__(self, data):
@@ -33,10 +34,13 @@ class Global(container.Container):
             if self.t is None:
                 self.t = v.t
             for k in self.keys():
-                # self.k += v.k.
+                # Do self.k += v.k
                 setattr(self, k,
                         getattr(self, k) + numpy.asarray(getattr(v, k)))
-            v.flush() # Free memory
+            try:
+                v.flush() # Free memory
+            except AttributeError:
+                pass
 
         self._normalize()
 
@@ -61,12 +65,11 @@ class Global(container.Container):
             self.dead *= (self.global_annual_AIDS_deaths
                           / annual_AIDS_deaths[..., numpy.newaxis])
 
-            # Compute incidence from slope.
-            annual_new_infections = ((self.new_infections[..., 1]
-                                      - self.new_infections[..., 0])
-                                     / (self.t[1] - self.t[0]))
-            self.new_infections *= (self.global_annual_new_infections
-                                    / annual_new_infections[..., numpy.newaxis])
+            # I need the second value because the first is NaN.
+            incidence0 = incidence.compute(self.t, self.new_infections)[..., 1]
+            self.new_infections *= (self.global_incidence
+                                    / incidence0[..., numpy.newaxis])
+
         self._normalized = True
 
     @property
@@ -75,3 +78,11 @@ class Global(container.Container):
         prev *= (self.global_prevalence
                  / prev[..., 0][..., numpy.newaxis])
         return prev
+
+    @property
+    def incidence(self):
+        return incidence.compute(self.t, self.new_infections)
+
+    @property
+    def incidence_per_capita(self):
+        return self.incidence / numpy.asarray(self.alive)

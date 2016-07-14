@@ -26,6 +26,10 @@ global_
 -------
 .. automodule:: model.global_
 
+incidence
+---------
+.. automodule:: model.incidence
+
 latin_hypercube_sampling
 ------------------------
 .. automodule:: model.latin_hypercube_sampling

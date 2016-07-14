@@ -11,6 +11,7 @@ from scipy import integrate
 from . import container
 # from . import cost
 from . import effectiveness
+from . import incidence
 # from . import net_benefit
 from . import plot
 from . import proportions
@@ -202,10 +203,7 @@ class Simulation(container.Container):
 
     @property
     def incidence(self):
-        # Put a NaN in front to make it align with t.
-        return numpy.hstack((numpy.nan,
-                             (numpy.diff(numpy.asarray(self.new_infections))
-                              / numpy.diff(self.t))))
+        return incidence.compute(self.t, self.new_infections)
 
     @property
     def incidence_per_capita(self):

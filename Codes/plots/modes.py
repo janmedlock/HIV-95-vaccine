@@ -32,28 +32,42 @@ def _plot_sim_cell(ax, parameters, results, stat):
     Plot one axes of simulation and historical data figure.
     '''
     percent = False
+    data_hist = None
     if stat == 'infected':
-        scale = 1e6
+        data_sim_getter = operator.attrgetter(stat)
+        try:
+            data_hist = parameters.prevalence * parameters.population
+        except AttributeError:
+            pass
         ylabel = 'Infected\n(M)'
-        data_hist = parameters.prevalence * parameters.population
-        data_sim_getter = operator.attrgetter(stat)
+        scale = 1e6
     elif stat == 'prevalence':
-        percent = True
-        ylabel = 'Prevelance\n'
-        data_hist = parameters.prevalence
         data_sim_getter = operator.attrgetter(stat)
-    elif stat == 'incidence':
-        scale = 1e-3
-        ylabel = 'Incidence\n(per 1000 per y)'
-        data_hist = parameters.incidence
-        data_sim_getter = operator.attrgetter('incidence_per_capita')
-    elif stat == 'drug_coverage':
+        try:
+            data_hist = parameters.prevalence
+        except AttributeError:
+            pass
+        ylabel = 'Prevelance\n'
         percent = True
-        ylabel = 'Drug\ncoverage'
-        data_hist = parameters.drug_coverage
+    elif stat == 'incidence':
+        data_sim_getter = operator.attrgetter('incidence_per_capita')
+        try:
+            data_hist = parameters.incidence
+        except AttributeError:
+            pass
+        ylabel = 'Incidence\n(per 1000 per y)'
+        scale = 1e-3
+    elif stat == 'drug_coverage':
         data_sim_getter = operator.attrgetter('proportions.treated')
+        try:
+            data_hist = parameters.drug_coverage
+        except AttributeError:
+            pass
+        ylabel = 'Drug\ncoverage'
+        percent = True
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
+
     data_sim = map(data_sim_getter, results.values())
     t_getter = operator.attrgetter('t')
     T = map(t_getter, results.values())
@@ -67,14 +81,15 @@ def _plot_sim_cell(ax, parameters, results, stat):
     colors = (cp[i] for i in ix)
 
     # Plot historical data.
-    data_hist = data_hist.dropna()
-    if len(data_hist) > 0:
-        ax.plot(data_hist.index, data_hist / scale,
-                marker = '.', markersize = 10,
-                alpha = 0.7,
-                zorder = 2,
-                color = 'black',
-                label = 'Historical data')
+    if data_hist is not None:
+        data_hist = data_hist.dropna()
+        if len(data_hist) > 0:
+            ax.plot(data_hist.index, data_hist / scale,
+                    marker = '.', markersize = 10,
+                    alpha = 0.7,
+                    zorder = 2,
+                    color = 'black',
+                    label = 'Historical data')
 
     # Plot simulation data.
     t_max = None
@@ -90,7 +105,7 @@ def _plot_sim_cell(ax, parameters, results, stat):
                 zorder = 1)
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
-        if len(data_hist) > 0:
+        if (data_hist is not None) and (len(data_hist) > 0):
             t_ = numpy.compress(numpy.isfinite(x), t)
             x_ = numpy.compress(numpy.isfinite(x), x)
             t_ = [data_hist.index[-1], t_[0]]
@@ -124,9 +139,14 @@ def _plot_sim_cell(ax, parameters, results, stat):
     ax.set_ylabel(ylabel, size = 'medium')
 
 
-def _plot_country(parameters, results, fig = None):
+def _plot_country(country, results, fig = None):
     if fig is None:
         fig = pyplot.gcf()
+
+    if country != 'Global':
+        parameters = model.parameters.Parameters(country)
+    else:
+        parameters = None
 
     nsubplots = 3
     axes = []
@@ -145,7 +165,7 @@ def _plot_country(parameters, results, fig = None):
                 ax.xaxis.offsetText.set_visible(False)
 
     # Set title
-    fig.text(0.5, 1, parameters.country,
+    fig.text(0.5, 1, country,
              verticalalignment = 'top',
              horizontalalignment = 'center')
 
@@ -166,38 +186,22 @@ def plot_country(country, fig = None):
     Compare simulation with historical data.
     '''
     results = model.results.load_modes()
-    parameters = model.parameters.Parameters(country)
-    return _plot_country(parameters, results[country], fig = fig)
+    return _plot_country(country, results[country], fig = fig)
 
 
-def plot_all_countries():
+def plot_all_countries(figsize = (8.5, 11)):
     results = model.results.load_modes()
-    countries = results.keys()
     filename = '{}.pdf'.format(common.get_filebase())
-    # Store results_[target][country] for building a Global version.
-    results_ = collections.OrderedDict()
     with backend_pdf.PdfPages(filename) as pdf:
-        for country in countries:
-            print(country)
-            parameters = model.parameters.Parameters(country)
-            fig = pyplot.figure(figsize = (8.5, 11))
-            _plot_country(parameters, results[country], fig = fig)
+        for country in results.keys():
+            fig = pyplot.figure(figsize = figsize)
+            _plot_country(country, results[country], fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
-            for (target, val) in results[country].items():
-                if target not in results_:
-                    results_[target] = collections.OrderedDict()
-                results_[target][country] = val
-
-    ###
-    ### Make model.global_ object with results_[target]
-    ###
-
-    return results_
 
 
 if __name__ == '__main__':
     # plot_country('South Africa')
     # pyplot.show()
 
-    results = plot_all_countries()
+    plot_all_countries()
