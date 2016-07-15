@@ -9,13 +9,15 @@ import itertools
 import os
 import time
 
+import tables
+
 from . import global_
 from . import picklefile
 
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
-modesfile = os.path.join(resultsdir, 'modes.pkl')
+modesfile = os.path.join(resultsdir, 'modes.h5')
 
 
 def exists(country, target):
@@ -34,8 +36,25 @@ def dump_modes(results):
     picklefile.dump(results, modesfile)
 
 
+class ModesSim:
+    '''
+    Dummy object to hold results from modes simulations.
+    '''
+    pass
+
+
 def load_modes():
-    return picklefile.load(modesfile)
+    h5file = tables.open_file(modesfile, 'r')
+    results = collections.OrderedDict()
+    for country_group in results.root:
+        country = country_group._v_name
+        results[country] = collections.OrderedDict()
+        for target_group in country_group:
+            target = target_group._v_name
+            results[country][target] = ModesSim()
+            for item in target_group:
+                setattr(results[country][target], item.name, item.read())
+    return results
 
 
 class Results:
