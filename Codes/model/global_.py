@@ -16,7 +16,9 @@ class Global(container.Container):
     The aggregated simulation results are scaled so that the model
     current statistics match UNAIDS current estimates.
     '''
-    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
+    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections',
+             'viral_suppression')
+
     global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
     global_infected = 36.9e6  # CI (34.3e6, 41.4e6), UNAIDS 2014
@@ -46,37 +48,39 @@ class Global(container.Container):
 
     def _normalize(self):
         if not self._normalized:
-            self.alive *= (self.global_alive
-                           / self.alive[..., 0][..., numpy.newaxis])
+            scale_alive = self.global_alive / self.alive[..., 0]
+            self.alive *= scale_alive[..., numpy.newaxis]
 
-            self.infected *= (self.global_infected
-                              / self.infected[..., 0][..., numpy.newaxis])
+            scale_infected = self.global_infected / self.infected[..., 0]
+            self.infected *= scale_infected[..., numpy.newaxis]
+            # Also scale viral_suppression by scale_infected for now.
+            self.viral_suppression *= scale_infected[..., numpy.newaxis]
 
             # Convert global annual AIDS deaths
             # to global number of people with AIDS.
             self.global_AIDS = (self.global_annual_AIDS_deaths
                                 / parameters.Parameters.death_rate_AIDS)
-            self.AIDS *= (self.global_AIDS
-                          / self.AIDS[..., 0][..., numpy.newaxis])
+            scale_AIDS = self.global_AIDS / self.AIDS[..., 0]
+            self.AIDS *= scale_AIDS[..., numpy.newaxis]
 
             # Compute death rate from slope.
             annual_AIDS_deaths = ((self.dead[..., 1] - self.dead[..., 0])
                                   / (self.t[1] - self.t[0]))
-            self.dead *= (self.global_annual_AIDS_deaths
-                          / annual_AIDS_deaths[..., numpy.newaxis])
+            scale_dead = self.global_annual_AIDS_deaths / annual_AIDS_deaths
+            self.dead *= scale_dead[..., numpy.newaxis]
 
             # I need the second value because the first is NaN.
             incidence0 = incidence.compute(self.t, self.new_infections)[..., 1]
-            self.new_infections *= (self.global_incidence
-                                    / incidence0[..., numpy.newaxis])
+            scale_new_infections = self.global_incidence / incidence0
+            self.new_infections *= scale_new_infections[..., numpy.newaxis]
 
         self._normalized = True
 
     @property
     def prevalence(self):
         prev = self.infected / self.alive
-        prev *= (self.global_prevalence
-                 / prev[..., 0][..., numpy.newaxis])
+        scale_prev = self.global_prevalence / prev[..., 0]
+        prev *= scale_prev[..., numpy.newaxis]
         return prev
 
     @property
