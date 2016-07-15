@@ -44,6 +44,7 @@ class Results:
     '''
     def __init__(self, country, target):
         self._country = country
+        # Convert to string in case its an instance.
         self._target = str(target)
         self._data = None
 
