@@ -25,6 +25,10 @@ import model
 import seaborn_quiet as seaborn
 
 
+def _viral_suppression_getter(results):
+    return results.viral_suppression / results.infected
+
+
 def _plot_sim_cell(ax, parameters, results, stat):
     '''
     Plot one axes of simulation and historical data figure.
@@ -63,6 +67,21 @@ def _plot_sim_cell(ax, parameters, results, stat):
             pass
         ylabel = 'Drug\ncoverage'
         percent = True
+    elif stat == 'AIDS':
+        data_sim_getter = operator.attrgetter(stat)
+        data_hist = None
+        ylabel = 'AIDS\n(1000s)'
+        scale = 1e3
+    elif stat == 'dead':
+        data_sim_getter = operator.attrgetter(stat)
+        data_hist = None
+        ylabel = 'Deaths\n(M)'
+        scale = 1e6
+    elif stat == 'viral_suppression':
+        data_sim_getter = _viral_suppression_getter
+        data_hist = None
+        ylabel = 'Viral\nsupression'
+        percent = True
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
 
@@ -92,36 +111,38 @@ def _plot_sim_cell(ax, parameters, results, stat):
     # Plot simulation data.
     t_max = None
     for (target, t, x) in zip(targets, T, data_sim):
-        if t_max is None:
-            t_max = max(t)
-        else:
-            t_max = max(t_max, max(t))
-        ax.plot(t, x / scale,
-                label = target,
-                color = next(colors),
-                alpha = 0.7,
-                zorder = 1)
-        # Make a dotted line connecting the end of the historical data
-        # and the begining of the simulation.
-        if (data_hist is not None) and (len(data_hist) > 0):
-            t_ = numpy.compress(numpy.isfinite(x), t)
-            x_ = numpy.compress(numpy.isfinite(x), x)
-            t_ = [data_hist.index[-1], t_[0]]
-            x_ = [data_hist.iloc[-1], x_[0]]
-            ax.plot(t_, numpy.asarray(x_) / scale,
-                    color = 'black',
-                    linestyle = 'dotted',
+        if x is not None:
+            if t_max is None:
+                t_max = max(t)
+            else:
+                t_max = max(t_max, max(t))
+            ax.plot(t, x / scale,
+                    label = target,
+                    color = next(colors),
                     alpha = 0.7,
-                    zorder = 2)
+                    zorder = 1)
+            # Make a dotted line connecting the end of the historical data
+            # and the begining of the simulation.
+            if (data_hist is not None) and (len(data_hist) > 0):
+                t_ = numpy.compress(numpy.isfinite(x), t)
+                x_ = numpy.compress(numpy.isfinite(x), x)
+                t_ = [data_hist.index[-1], t_[0]]
+                x_ = [data_hist.iloc[-1], x_[0]]
+                ax.plot(t_, numpy.asarray(x_) / scale,
+                        color = 'black',
+                        linestyle = 'dotted',
+                        alpha = 0.7,
+                        zorder = 2)
 
     if t_max is not None:
-        data_start_year = 1990
+        # data_start_year = 1990
+        data_start_year = 2005
         ax.set_xlim(data_start_year, t_max)
-        # Make ticks every 10 years.
+        tick_interval = 5
         a = data_start_year
         b = int(numpy.ceil(t_max))
-        ticks = range(a, b, 10)
-        if ((b - a) % 10) == 0:
+        ticks = range(a, b, tick_interval)
+        if ((b - a) % tick_interval) == 0:
             ticks = list(ticks) + [b]
         ax.set_xticks(ticks)
 
@@ -130,7 +151,7 @@ def _plot_sim_cell(ax, parameters, results, stat):
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     # One minor tick between major ticks.
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     if percent:
         ax.yaxis.set_major_formatter(common.PercentFormatter())
@@ -146,33 +167,26 @@ def _plot_country(country, results, fig = None):
     else:
         parameters = None
 
-    nsubplots = 3
-    axes = []
-    for i in range(nsubplots):
+    attrs = ['infected', 'incidence', 'AIDS', 'dead', 'viral_suppression']
+    sharex = None
+    for (i, attr) in enumerate(attrs):
         # Use the first axes in this column to share x-axis
         # range, labels, etc.
-        sharex = axes[0] if i > 0 else None
-        ax = fig.add_subplot(nsubplots, 1, i + 1, sharex = sharex)
-        axes.append(ax)
-    # Turn off x-axis labels on non-bottom subplots.
-    if nsubplots > 1:
-        for ax in axes:
-            if not ax.is_last_row():
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
+        ax = fig.add_subplot(len(attrs), 1, i + 1, sharex = sharex)
+        if sharex is None:
+            sharex = ax
+        _plot_sim_cell(ax, parameters, results, attr)
+        if not ax.is_last_row():
+            for l in ax.get_xticklabels():
+                l.set_visible(False)
+            ax.xaxis.offsetText.set_visible(False)
+        if ax.is_first_row():
+            ax.legend(loc = 'upper left', frameon = False)
 
     # Set title
     fig.text(0.5, 1, country,
              verticalalignment = 'top',
              horizontalalignment = 'center')
-
-    _plot_sim_cell(axes[0], parameters, results, 'infected')
-    _plot_sim_cell(axes[1], parameters, results, 'prevalence')
-    _plot_sim_cell(axes[2], parameters, results, 'incidence')
-    # _plot_sim_cell(axes[3], parameters, results, 'drug_coverage')
-
-    axes[0].legend(loc = 'upper left', frameon = False)
 
     fig.tight_layout()
 
@@ -196,7 +210,6 @@ def plot_all_countries(figsize = (8.5, 11)):
             _plot_country(country, results[country], fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
-
 
 if __name__ == '__main__':
     # plot_country('South Africa')
