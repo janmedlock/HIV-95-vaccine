@@ -12,14 +12,14 @@ import model
 def _main(parallel = True):
     country = 'South Africa'
     parameters = model.parameters.Parameters(country).mode()
-
-    targets = [model.targets.StatusQuo(),
-               model.targets.UNAIDS90()]
+    targets = [model.targets.StatusQuo(), model.targets.UNAIDS90()]
     results = {}
     for target in targets:
-        results[str(target)] = model.simulation.Simulation(parameters, target)
-        print('{}: {:g} DALYs'.format(str(target), results[str(target)].DALYs))
+        target_ = str(target)
+        results[target_] = model.simulation.Simulation(parameters, target)
+        print('{}: {:g} DALYs'.format(target_, results[target_].DALYs))
+    return results
 
 
 if __name__ == '__main__':
-    _main()
+    results = _main()

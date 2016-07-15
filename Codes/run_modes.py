@@ -22,7 +22,8 @@ def _run_one(country, targets = None):
         for target in targets)
     retval = collections.OrderedDict()
     for (target, r) in zip(targets, results):
-        retval[str(target)] = r
+        target_ = str(target)
+        retval[target_] = r
     return retval
 
 

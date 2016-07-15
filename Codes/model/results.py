@@ -44,7 +44,7 @@ class Results:
     '''
     def __init__(self, country, target):
         self._country = country
-        self._target = target
+        self._target = str(target)
         self._data = None
 
     def __enter__(self):
@@ -134,14 +134,19 @@ class ResultsShelf(collections.abc.MutableMapping):
         def set_mtime(self):
             self.mtime = time.time()
 
-    def _is_current(self, key):
+    @staticmethod
+    def _parse_key(key):
         country, target, attr = key
-        if (attr not in self._shelf[country][str(target)]):
+        return country, str(target), key
+
+    def _is_current(self, key):
+        country, target, attr = self._parse_key(key)
+        if (attr not in self._shelf[country][target]):
             if self.debug:
                 print("key = '{}' not in shelf.".format(key))
             return False
         else:
-            mtime_shelf = self._shelf[country][str(target)][attr].mtime
+            mtime_shelf = self._shelf[country][target][attr].mtime
             resultsfile = Results.get_path(country, target)
             mtime_data = os.path.getmtime(resultsfile)
             if self.debug:
@@ -152,7 +157,7 @@ class ResultsShelf(collections.abc.MutableMapping):
             return (mtime_data <= mtime_shelf)
 
     def __getitem__(self, key):
-        country, target, attr = key
+        country, target, attr = self._parse_key(key)
         self._open_shelf_if_needed()
         if not self._is_current(key):
             if self.debug:
@@ -162,24 +167,24 @@ class ResultsShelf(collections.abc.MutableMapping):
             with Results(country, target) as results:
                 val = getattr(results, attr)
             self.__setitem__(key, val)
-        return self._shelf[country][str(target)][attr].value
+        return self._shelf[country][target][attr].value
 
     def __setitem__(self, key, value):
         if self.debug:
             print("In __setitem__ for key = '{}'.".format(key))
-        country, target, attr = key
+        country, target, attr = self._parse_key(key)
         self._open_shelf_if_needed()
-        self._shelf[country][str(target)][attr] = self.ShelfItem(value)
+        self._shelf[country][target][attr] = self.ShelfItem(value)
         self._shelf_updated = True
 
     def __delitem__(self, key):
         if self.debug:
             print("In __delitem__ for key = '{}'.".format(key))
-        country, target, attr = key
+        country, target, attr = self._parse_key(key)
         self._open_shelf_if_needed()
-        del self._shelf[country][str(target)][attr]
-        if len(self._shelf[country][str(target)]) == 0:
-            del self._shelf[country][str(target)]
+        del self._shelf[country][target][attr]
+        if len(self._shelf[country][target]) == 0:
+            del self._shelf[country][target]
             if len(self._shelf[country]) == 0:
                 del self._shelf[country]
         self._shelf_updated = True
