@@ -138,7 +138,7 @@ class ResultsShelf(collections.abc.MutableMapping):
     @staticmethod
     def _parse_key(key):
         country, target, attr = key
-        return country, str(target), key
+        return country, str(target), attr
 
     def _is_current(self, key):
         country, target, attr = self._parse_key(key)
