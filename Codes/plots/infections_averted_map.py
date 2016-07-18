@@ -36,6 +36,7 @@ def animation(infections_averted, vmin, vmax,
 
     m.tighten(aspect_adjustment = 1.35)
 
+    t = infections_averted.index
     countries = infections_averted.columns
 
     freq_ = (len(t) - 1) / (t[-1] - t[0])
@@ -60,14 +61,14 @@ def animation(infections_averted, vmin, vmax,
              extra_args = ('-vcodec', 'libx264'))
 
 
-def plot(results, vmin, vmax):
-    T = [10, 20]
-
-    fig = pyplot.figure()
+def plot(infections_averted, vmin, vmax):
+    T = [2025, 2035]
 
     countries = infections_averted.columns
 
     data = infections_averted.loc[T]
+
+    fig = pyplot.figure()
 
     for i in range(len(T)):
         if i < len(T) - 1:
@@ -108,32 +109,38 @@ def plot(results, vmin, vmax):
     fig.savefig('infections_averted_map.png')
 
 
-if __name__ == '__main__':
-    targets = (model.targets.StatusQuo(),
-               model.targets.Vaccine(
-                   treatment_targets = model.targets.StatusQuo()))
-    targets = list(map(str, targets))
+def _get_infections_averted():
+    results = model.results.load_modes()
 
-    countries = model.datasheet.get_country_list()
+    target_baseline = model.targets.StatusQuo()
+
+    target_vaccine = model.targets.Vaccine(
+        treatment_targets = target_baseline)
+
+    targets = list(map(str, (target_baseline, target_vaccine)))
+
+    countries = list(results.keys())
+    countries.remove('Global')
+
     # Delayed allocation to get shape (t values).
-    infections_averted = None
+    t = results[countries[0]][targets[0]].t
+    infections_averted = pandas.DataFrame(columns = countries,
+                                          index = t)
     for country in countries:
-        t = model.results.data[(country, targets[0], 't')]
-        x, y = (model.results.data[(country, target, 'new_infections')]
-                for target in targets)
+        x, y = (results[country][target].new_infections for target in targets)
+        z = numpy.ma.divide(x - y, x)
+        infections_averted[country] = z.filled(0)
 
-        d = numpy.ma.divide(x - y, x)
-        m = numpy.median(d, axis = 0)
+    return infections_averted
 
-        if infections_averted is None:
-            infections_averted = pandas.DataFrame(columns = countries,
-                                                  index = t)
-        infections_averted[country] = m.filled(0)
+
+if __name__ == '__main__':
+    infections_averted = _get_infections_averted()
 
     vmin = min(infections_averted.min().min(), 0)
     vmax = max(infections_averted.max().max(), 0.6)
 
     plot(infections_averted, vmin, vmax)
-    animation(infections_averted, vmin, vmax)
+    # animation(infections_averted, vmin, vmax)
 
-    # pyplot.show()
+    pyplot.show()
