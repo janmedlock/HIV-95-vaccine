@@ -29,14 +29,6 @@ country_label_replacements = {
 }
 
 
-def getlabel(target):
-    retval = str(target)
-    i = retval.find('(')
-    if i != -1:
-        retval = retval[ : i]
-    return retval
-
-
 def plotcell(ax, country, targets, attr,
              confidence_level = 0.9,
              country_label = None, attr_label = None, legend = False):
@@ -68,7 +60,7 @@ def plotcell(ax, country, targets, attr,
 
         avg, CI = common.getstats(v, alpha = 1 - confidence_level)
         lines = ax.plot(t, avg / scale,
-                        label = getlabel(target),
+                        label = common.get_target_label(target),
                         zorder = 2)
         if confidence_level > 0:
             color = lines[0].get_color()
@@ -178,7 +170,9 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
 
     # Dummy invisible lines.
     for target in targets_:
-        axes.plot(0, 0, label = getlabel(target), visible = False,
+        axes.plot(0, 0,
+                  label = common.get_target_label(target),
+                  visible = False,
                   **next(prop_cycler))
     legend = axes.legend(loc = 'center',
                          ncol = ncol,
@@ -203,9 +197,7 @@ def plot_somecountries_alltargets(targets = None,
     if ncol is None:
         ncol = len(targets) // 2
     if colors is None:
-        cp = seaborn.color_palette('Paired', 8)
-        ix = [4, 5, 0, 1, 2, 3, 6, 7]
-        colors = [cp[i] for i in ix]
+        colors = common.colors_paired
     with seaborn.color_palette(colors, len(targets)):
         fig = plot_somecountries(targets,
                                  ncol = ncol,

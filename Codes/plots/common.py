@@ -97,3 +97,16 @@ def cmap_reflected(cmap_base):
 
 cmap_base = 'afmhot'
 cmap = cmap_reflected(cmap_base)
+
+
+_cp = seaborn.color_palette('Paired', 8)
+_ix = [4, 5, 0, 1, 2, 3, 6, 7]
+colors_paired = [_cp[i] for i in _ix]
+
+
+def get_target_label(target):
+    retval = str(target)
+    i = retval.find('(')
+    if i != -1:
+        retval = retval[ : i]
+    return retval
