@@ -34,6 +34,8 @@ class GeocodeLocator(_Locator):
 
     crs = cartopy.crs.PlateCarree()
 
+    translations = {'United Republic of Tanzania': 'Tanzania'}
+
     def __init__(self, *args, **kwargs):
         import geopy
 
@@ -45,6 +47,7 @@ class GeocodeLocator(_Locator):
         self.get_location = _shelve.shelved(self.get_location)
 
     def get_location(self, country):
+        country = self.translations.get(country, country)
         location = self.geolocator.geocode(dict(country = country))
         if location is None:
             raise ValueError('Couldn\'t find country "{}".'.format(country))

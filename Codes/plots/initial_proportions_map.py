@@ -16,7 +16,7 @@ import mapplot
 
 
 def _main():
-    data = model.InitialConditionsSheet.get_all()
+    data = model.datasheet.InitialConditions.get_all()
 
     countries = data.columns
 
@@ -82,6 +82,7 @@ def _main():
     m.tighten()
 
     m.savefig('{}.pdf'.format(common.get_filebase()))
+    m.savefig('{}.png'.format(common.get_filebase()))
 
     m.show()
 
