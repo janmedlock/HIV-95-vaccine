@@ -41,6 +41,10 @@ def load_modes():
 class Results:
     '''
     Class to load the data on demand.
+
+    .. todo:: Use HDF instead of pickle.  HDF can do random access instead
+              of reading the whole file, so all the complicated caching
+              I'm doing could hopefully be removed.
     '''
     def __init__(self, country, target):
         self._country = country
