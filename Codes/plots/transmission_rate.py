@@ -26,9 +26,10 @@ import seaborn_quiet as seaborn
 
 def plot_transmission_rates(countries, fig = None,
                             quantile_level = 0.01,
-                            scale = 0.8):
+                            scale = 0.8,
+                            savefig = True):
     if fig is None:
-        fig = pyplot.gcf()
+        fig = pyplot.figure(figsize = (8.5, 11))
     ax = fig.add_subplot(1, 1, 1)
     n = len(countries)
     colors = seaborn.color_palette('husl', n)
@@ -55,6 +56,9 @@ def plot_transmission_rates(countries, fig = None,
     ax.set_yticklabels(reversed(countries), fontdict = dict(size = 6))
     ax.grid(False, axis = 'y')
     fig.tight_layout()
+    if savefig:
+        fig.savefig('{}.pdf'.format(common.get_filebase()))
+        fig.savefig('{}.png'.format(common.get_filebase()))
     return fig, ax
 
 
@@ -213,8 +217,7 @@ def plot_all_countries():
     countries = model.datasheet.get_country_list()
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        fig = pyplot.figure(figsize = (8.5, 11))
-        _, ax = plot_transmission_rates(countries, fig = fig)
+        fig, ax = plot_transmission_rates(countries, savefig = False)
         pdf.savefig(fig)
         pyplot.close(fig)
 
@@ -228,7 +231,7 @@ def plot_all_countries():
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    countries = model.datasheet.get_country_list('IncidencePrevalence')
+    countries = model.datasheet.get_country_list()
     plot_transmission_rates(countries)
     pyplot.show()
 
