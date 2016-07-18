@@ -7,6 +7,7 @@ import os.path
 import sys
 
 from matplotlib import colors
+from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
@@ -35,6 +36,7 @@ def _main():
     cmap = 'YlOrRd'
     norm = colors.LogNorm
     ticks = ticker.LogLocator(10, [1, 2, 5])
+    fig = pyplot.figure()
     m = mapplot.Basemap()
     m.choropleth(countries, 100 * prevalence,
                  cmap = cmap,
@@ -42,11 +44,14 @@ def _main():
                              vmax = 100 * vmax),
                  vmin = 100 * vmin,
                  vmax = 100 * vmax)
-    cbar = m.colorbar(label = 'Prevalence',
+    cbar = m.colorbar(label = '2015 HIV Prevalence',
                       format = '%g%%',
                       ticks = ticks)
 
-    m.tighten()
+    m.tighten(aspect_adjustment = 1.35)
+
+    m.savefig('{}.pdf'.format(common.get_filebase()))
+    m.savefig('{}.png'.format(common.get_filebase()))
 
     m.show()
 
