@@ -171,7 +171,7 @@ def _plot_cell(ax, country, parameters, results, stat,
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     # One minor tick between major ticks.
-    # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     if percent:
         ax.yaxis.set_major_formatter(common.PercentFormatter())
@@ -257,7 +257,7 @@ def plot_country(country):
 def plot_some_countries():
     results = model.results.load_modes()
 
-    fig = pyplot.figure(figsize = (8.5, 11))
+    fig = pyplot.figure(figsize = (8.5, 8))
     # Legend in tiny bottom row
     gs = gridspec.GridSpec(
         len(common.countries_to_plot) + 1, len(attrs_to_plot),

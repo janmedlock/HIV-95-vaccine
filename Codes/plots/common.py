@@ -17,15 +17,11 @@ sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import seaborn_quiet as seaborn
 
 
-countries_to_plot = (
-    'Global',
-    'India',
-    'Nigeria',
-    'Rwanda',
-    'South Africa',
-    'Uganda',
-    'United States of America',
-)
+countries_to_plot = ('Global',
+                     'India',
+                     'Rwanda',
+                     'South Africa',
+                     'United States of America')
 
 
 matplotlib.rc('axes.grid', which = 'both')  # major & minor
