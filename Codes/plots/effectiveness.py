@@ -257,11 +257,12 @@ def plot_country(country):
 def plot_some_countries():
     results = model.results.load_modes()
 
-    fig = pyplot.figure(figsize = (8.5, 8))
+    fig = pyplot.figure(figsize = (8.5, 8.5))
     # Legend in tiny bottom row
-    gs = gridspec.GridSpec(
-        len(common.countries_to_plot) + 1, len(attrs_to_plot),
-        height_ratios = ((1, ) * len(common.countries_to_plot) + (0.3, )))
+    nrows = len(common.countries_to_plot) + 1
+    ncols = len(attrs_to_plot)
+    gs = gridspec.GridSpec(nrows, ncols,
+                           height_ratios = ((1, ) * (nrows - 1) + (0.3, )))
     with seaborn.color_palette(common.colors_paired):
         for (i, country) in enumerate(common.countries_to_plot):
             if country != 'Global':
