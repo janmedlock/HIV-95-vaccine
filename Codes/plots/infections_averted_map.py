@@ -19,78 +19,62 @@ sys.path.append('..')
 import model
 
 
+baseline = model.targets.StatusQuo()
+interventions = (
+    model.targets.UNAIDS95(),
+    model.targets.Vaccine(treatment_targets = model.targets.StatusQuo()),
+    model.targets.Vaccine(treatment_targets = model.targets.UNAIDS95()))
+
+baseline = str(baseline)
+interventions = list(map(str, interventions))
+
+time = 2035
+
 cmap = 'viridis'
-label_coords = (-120, -20)
+label_coords = (-150, -30)
 ticks = ticker.MultipleLocator(10)
-title = 'Reduction in New Infections (Compared to Status Quo)'
-height = 0.4
+title = 'Reduction in New Infections (Compared to {})'.format(baseline)
+height = 0.28
 pad = 0.035
 cpad = 0.05
-aspect = 1.05
+aspect = 1.45
 
 
-def animation(infections_averted, vmin, vmax,
-              frames_per_year = 12, years_per_second = 2):
-    fig = pyplot.figure()
-    m = mapplot.Basemap()
+def plot(infections_averted):
+    vmin = min(infections_averted.min().min().min(), 0)
+    vmax = infections_averted.max().max().max()
 
-    m.tighten(aspect_adjustment = 1.35)
-
-    t = infections_averted.index
-    countries = infections_averted.columns
-
-    freq_ = (len(t) - 1) / (t[-1] - t[0])
-    skip = max(int(freq_ / frames_per_year), 1)
-    data = infections_averted.iloc[: : skip].as_matrix()
-    T = infections_averted.index[: : skip]
-
-    ani = m.choropleth_animate(countries, T, 100 * data,
-                               cmap = cmap,
-                               vmin = 100 * vmin,
-                               vmax = 100 * vmax,
-                               label_coords = label_coords)
-
-    cbar = m.colorbar(
-        label = title,
-        format = '%g%%',
-        ticks = ticks)
-
-    ani.save('{}.mp4'.format(common.get_filebase()),
-             fps = frames_per_year * years_per_second,
-             dpi = 300,
-             extra_args = ('-vcodec', 'libx264'))
-
-
-def plot(infections_averted, vmin, vmax):
-    T = [2025, 2035]
-
-    countries = infections_averted.columns
-
-    data = infections_averted.loc[T]
+    norm = mcolors.Normalize(vmin = vmin, vmax = vmax)
+    countries = infections_averted.index
+    interventions = infections_averted.columns
 
     fig = pyplot.figure()
-
-    for i in range(len(T)):
-        if i < len(T) - 1:
+    nrows = len(interventions)
+    for (i, intervention) in enumerate(interventions):
+        if i <  nrows - 1:
             h = height
             b = 1 - height - (height + pad) * i
         else:
-            h = 1 - (height + pad) * (len(T) - 1)
+            h = 1 - (height + pad) * (nrows - 1)
             b = 0
 
         m = mapplot.Basemap(rect = (0, b, 1, h),
                             anchor = (0.5, 1))
 
-        mappable = m.choropleth(countries, 100 * data.iloc[i],
+        mappable = m.choropleth(countries,
+                                100 * infections_averted.loc[:, intervention],
                                 cmap = cmap,
+                                norm = norm,
                                 vmin = 100 * vmin,
                                 vmax = 100 * vmax)
 
+        label = common.get_target_label(intervention).replace('+', '\n+')
         X, Y = label_coords
-        m.text_coords(X, Y, str(int(T[i])),
+        m.text_coords(X, Y, label,
                       fontdict = dict(size = 20,
                                       weight = 'bold'),
-                      horizontalalignment = 'left')
+                      horizontalalignment = 'left',
+                      verticalalignment = 'center')
 
     cbar = fig.colorbar(mappable,
                         label = title,
@@ -112,35 +96,22 @@ def plot(infections_averted, vmin, vmax):
 def _get_infections_averted():
     results = model.results.load_modes()
 
-    target_baseline = model.targets.StatusQuo()
-
-    target_vaccine = model.targets.Vaccine(
-        treatment_targets = target_baseline)
-
-    targets = list(map(str, (target_baseline, target_vaccine)))
-
     countries = list(results.keys())
     countries.remove('Global')
 
-    # Delayed allocation to get shape (t values).
-    t = results[countries[0]][targets[0]].t
-    infections_averted = pandas.DataFrame(columns = countries,
-                                          index = t)
+    infections_averted = pandas.DataFrame(columns = interventions,
+                                          index = countries)
     for country in countries:
-        x, y = (results[country][target].new_infections for target in targets)
-        z = numpy.ma.divide(x - y, x)
-        infections_averted[country] = z.filled(0)
+        infections_baseline = results[country][baseline].new_infections
+        for intervention in interventions:
+            x = infections_baseline[time]
+            y = results[country][intervention].new_infections[time]
+            infections_averted.loc[country, intervention] = (x - y) / x
 
     return infections_averted
 
 
 if __name__ == '__main__':
     infections_averted = _get_infections_averted()
-
-    vmin = min(infections_averted.min().min(), 0)
-    vmax = max(infections_averted.max().max(), 0.6)
-
-    plot(infections_averted, vmin, vmax)
-    # animation(infections_averted, vmin, vmax)
-
+    plot(infections_averted)
     pyplot.show()
