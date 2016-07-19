@@ -13,6 +13,10 @@ effectiveness
 -------------
 .. automodule:: plots.effectiveness
 
+effectiveness_samples
+---------------------
+.. automodule:: plots.effectiveness_samples
+
 infections_averted_map
 ----------------------
 .. automodule:: plots.infections_averted_map
@@ -24,10 +28,6 @@ initial_prevalence_map
 initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
-
-modes
------
-.. automodule:: plots.modes
 
 prcc
 ----
