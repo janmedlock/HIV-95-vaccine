@@ -257,27 +257,27 @@ def plot_country(country):
 def plot_some_countries():
     results = model.results.load_modes()
 
-    fig = pyplot.figure(figsize = (8.5, 8.5))
+    fig = pyplot.figure(figsize = (8.5, 7.5))
     # Legend in tiny bottom row
-    nrows = len(common.countries_to_plot) + 1
-    ncols = len(attrs_to_plot)
+    ncols = len(common.countries_to_plot)
+    nrows = len(attrs_to_plot) + 1
     gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1) + (0.3, )))
+                           height_ratios = ((1, ) * (nrows - 1) + (0.35, )))
     with seaborn.color_palette(common.colors_paired):
-        for (i, country) in enumerate(common.countries_to_plot):
+        for (col, country) in enumerate(common.countries_to_plot):
             if country != 'Global':
                 parameters = model.parameters.Parameters(country)
             else:
                 parameters = None
-            attr_label = 'title' if (i == 0) else None
-            for (j, attr) in enumerate(attrs_to_plot):
-                ax = fig.add_subplot(gs[i, j])
-                country_label = 'ylabel' if (j == 0) else None
+            attr_label = 'ylabel' if (col == 0) else None
+            for (row, attr) in enumerate(attrs_to_plot):
+                ax = fig.add_subplot(gs[row, col])
+                country_label = 'title' if (col == 0) else None
                 _plot_cell(ax, country, parameters, results[country], attr,
                            country_label = country_label,
                            attr_label = attr_label,
                            plot_hist = False)
-                if i != len(common.countries_to_plot) - 1:
+                if col != len(common.countries_to_plot) - 1:
                     for l in ax.get_xticklabels():
                         l.set_visible(False)
                     ax.xaxis.offsetText.set_visible(False)
