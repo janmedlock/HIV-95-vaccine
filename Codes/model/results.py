@@ -16,6 +16,7 @@ from . import picklefile
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
 modesfile = os.path.join(resultsdir, 'modes.pkl')
+vaccine_sensitivity_file = os.path.join(resultsdir, 'vaccine_sensitivity.pkl')
 
 
 def exists(country, target):
@@ -36,6 +37,14 @@ def dump_modes(results):
 
 def load_modes():
     return picklefile.load(modesfile)
+
+
+def dump_vaccine_sensitivity(results):
+    picklefile.dump(results, vaccine_sensitivity_file)
+
+
+def load_vaccine_sensitivity():
+    return picklefile.load(vaccine_sensitivity_file)
 
 
 class Results:

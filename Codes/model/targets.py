@@ -279,10 +279,11 @@ for target in _baseline:
                  Vaccine(treatment_targets = target)])
 
 
-vaccine_sensitivity_all = [Vaccine(),
-                           Vaccine(efficacy = 0.3),
-                           Vaccine(efficacy = 0.7),
-                           Vaccine(coverage = 0.5),
-                           Vaccine(coverage = 0.9),
-                           Vaccine(time_to_start = 2025),
-                           Vaccine(time_to_fifty_percent = 5)]
+vaccine_sensitivity_all = [
+    Vaccine(treatment_targets = StatusQuo()),
+    Vaccine(treatment_targets = StatusQuo(), efficacy = 0.3),
+    Vaccine(treatment_targets = StatusQuo(), efficacy = 0.7),
+    Vaccine(treatment_targets = StatusQuo(), coverage = 0.5),
+    Vaccine(treatment_targets = StatusQuo(), coverage = 0.9),
+    Vaccine(treatment_targets = StatusQuo(), time_to_start = 2025),
+    Vaccine(treatment_targets = StatusQuo(), time_to_fifty_percent = 5)]

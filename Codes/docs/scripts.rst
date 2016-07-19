@@ -13,6 +13,10 @@ run_samples
 -----------
 .. automodule:: run_samples
 
+run_vaccine_scenarios
+---------------------
+.. automodule:: run_vaccine_scenarios
+
 drive_download
 --------------
 .. automodule:: drive_download
