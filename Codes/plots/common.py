@@ -7,7 +7,7 @@ import os.path
 
 import matplotlib
 from matplotlib import cm
-from matplotlib import colors
+from matplotlib import mcolors
 from matplotlib import ticker
 import numpy
 
@@ -88,15 +88,15 @@ def cmap_reflected(cmap_base):
                                cmaps_[1]._segmentdata[k](2 * (x - 0.5)))
         return f
     cdict = {k: cfunc(k) for k in ('red', 'green', 'blue')}
-    return colors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
+    return mcolors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
 
 
 cmap_base = 'afmhot'
 cmap = cmap_reflected(cmap_base)
 
 
-_cp = seaborn.color_palette('Paired', 8)
-_ix = [4, 5, 0, 1, 2, 3, 6, 7]
+_cp = seaborn.color_palette('Paired', 12)
+_ix = [4, 5, 0, 1, 2, 3, 6, 7, 8, 9, 10, 11]
 colors_paired = [_cp[i] for i in _ix]
 
 
