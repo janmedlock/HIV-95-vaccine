@@ -272,12 +272,12 @@ def plot_some_countries():
             attr_label = 'ylabel' if (col == 0) else None
             for (row, attr) in enumerate(attrs_to_plot):
                 ax = fig.add_subplot(gs[row, col])
-                country_label = 'title' if (col == 0) else None
+                country_label = 'title' if (row == 0) else None
                 _plot_cell(ax, country, parameters, results[country], attr,
                            country_label = country_label,
                            attr_label = attr_label,
                            plot_hist = False)
-                if col != len(common.countries_to_plot) - 1:
+                if row != nrows - 1:
                     for l in ax.get_xticklabels():
                         l.set_visible(False)
                     ax.xaxis.offsetText.set_visible(False)
