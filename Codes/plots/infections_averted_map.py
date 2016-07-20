@@ -32,21 +32,25 @@ time = 2035
 
 cmap = 'viridis'
 label_coords = (-150, -30)
-ticks = ticker.MultipleLocator(10)
-title = 'Reduction in New Infections (Compared to {})'.format(baseline)
+ticklocator = ticker.LogLocator(base = 10, subs = [1, 2, 5])
+tickformatter = ticker.LogFormatter(base = 10, labelOnlyBase = False)
+scale = 1e-3
+title = 'Infections per 1000 Averted (Compared to {})'.format(baseline)
 height = 0.28
 pad = 0.035
 cpad = 0.05
 aspect = 1.45
 
 
-def plot(infections_averted):
-    vmin = min(infections_averted.min().min().min(), 0)
-    vmax = infections_averted.max().max().max()
+def plot(infections_averted_per_capita):
+    # vmin = infections_averted_per_capita.min().min() / scale
+    # vmax = infections_averted_per_capita.max().max() / scale
+    vmin = 1
+    vmax = 0.5 / scale
 
-    norm = mcolors.Normalize(vmin = vmin, vmax = vmax)
-    countries = infections_averted.index
-    interventions = infections_averted.columns
+    norm = mcolors.LogNorm(vmin = vmin, vmax = vmax)
+    countries = infections_averted_per_capita.index
+    interventions = infections_averted_per_capita.columns
 
     fig = pyplot.figure()
     nrows = len(interventions)
@@ -61,12 +65,13 @@ def plot(infections_averted):
         m = mapplot.Basemap(rect = (0, b, 1, h),
                             anchor = (0.5, 1))
 
-        mappable = m.choropleth(countries,
-                                100 * infections_averted.loc[:, intervention],
-                                cmap = cmap,
-                                norm = norm,
-                                vmin = 100 * vmin,
-                                vmax = 100 * vmax)
+        mappable = m.choropleth(
+            countries,
+            infections_averted_per_capita.loc[:, intervention] / scale,
+            cmap = cmap,
+            norm = norm,
+            vmin = vmin,
+            vmax = vmax)
 
         label = common.get_target_label(intervention).replace('+', '\n+')
         X, Y = label_coords
@@ -78,13 +83,13 @@ def plot(infections_averted):
 
     cbar = fig.colorbar(mappable,
                         label = title,
-                        format = '%g%%',
                         orientation = 'horizontal',
                         fraction = 0.2,
                         pad = cpad,
                         shrink = 0.8,
                         panchor = False,
-                        ticks = ticks)
+                        ticks = ticklocator,
+                        format = tickformatter)
 
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
@@ -93,25 +98,27 @@ def plot(infections_averted):
     fig.savefig('{}.png'.format(common.get_filebase()))
 
 
-def _get_infections_averted():
+def _get_infections_per_capita(result):
+    return result.new_infections[time] / result.alive[time]
+
+
+def _get_infections_averted_per_capita():
     results = model.results.load_modes()
 
     countries = list(results.keys())
     countries.remove('Global')
 
-    infections_averted = pandas.DataFrame(columns = interventions,
-                                          index = countries)
+    inf_avert_per_capita = pandas.DataFrame(columns = interventions,
+                                            index = countries)
     for country in countries:
-        infections_baseline = results[country][baseline].new_infections
-        for intervention in interventions:
-            x = infections_baseline[time]
-            y = results[country][intervention].new_infections[time]
-            infections_averted.loc[country, intervention] = (x - y) / x
-
-    return infections_averted
+        x = _get_infections_per_capita(results[country][baseline])
+        for intv in interventions:
+            y = _get_infections_per_capita(results[country][intv])
+            inf_avert_per_capita.loc[country, intv] = x - y
+    return inf_avert_per_capita
 
 
 if __name__ == '__main__':
-    infections_averted = _get_infections_averted()
-    plot(infections_averted)
+    infections_averted_per_capita = _get_infections_averted_per_capita()
+    plot(infections_averted_per_capita)
     pyplot.show()
