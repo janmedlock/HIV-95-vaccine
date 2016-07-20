@@ -7,7 +7,7 @@ import os.path
 
 import matplotlib
 from matplotlib import cm
-from matplotlib import mcolors
+from matplotlib import colors as mcolors
 from matplotlib import ticker
 import numpy
 
