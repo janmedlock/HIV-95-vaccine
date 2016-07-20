@@ -33,8 +33,6 @@ country_label_replacements = {
 }
 
 
-# ix = [0, 1, 2, 3, 5, 7]
-# ix = [0, 1, 2, 3, 5, 9]
 ix = [2, 3, 4, 5, 9, 7]
 colors = ['black'] + [common.colors_paired[i] for i in ix]
 
@@ -43,10 +41,9 @@ def _get_args(target):
     return target[i + 1 : -1].split(', ')
 
 
-def get_target_label(target):
-    baseline = model.targets.vaccine_sensitivity_all[0]
-    baseline = str(baseline)
-    args_baseline = _get_args(baseline)
+def get_target_label(treatment_target, target):
+    baseline = model.targets.Vaccine(treatment_targets = treatment_target)
+    args_baseline = _get_args(str(baseline))
     args = _get_args(target)
     diff = []
     for i in range(len(args)):
@@ -64,7 +61,12 @@ def _viral_suppression_getter(results):
     return results.viral_suppression / results.infected
 
 
-def _get_plot_info(parameters, results, stat):
+def _get_targets(treatment_target):
+    return [str(t) for t in model.targets.vaccine_sensitivity_all
+            if str(t._treatment_targets) == str(treatment_target)]
+
+
+def _get_plot_info(treatment_target, parameters, results, stat):
     scale = 1
     percent = False
 
@@ -102,11 +104,11 @@ def _get_plot_info(parameters, results, stat):
     if percent:
         scale = 1 / 100
 
-    data_sim = map(data_sim_getter, results.values())
+    targets = _get_targets(treatment_target)
+
+    data_sim = map(data_sim_getter, (results[t] for t in targets))
 
     t = list(results.values())[0].t
-
-    targets = results.keys()
 
     return (data_sim, t, targets, label, scale, percent)
 
@@ -122,19 +124,19 @@ def _get_kwds(label):
                     linestyle = 'solid')
 
 
-def _plot_cell(ax, country, parameters, results, stat,
+def _plot_cell(ax, country, treatment_target, parameters, results, stat,
                country_label = None,
                attr_label = 'ylabel'):
     '''
     Plot one axes of  figure.
     '''
     (data_sim, t, targets, label, scale, percent) = _get_plot_info(
-        parameters, results, stat)
+        treatment_target, parameters, results, stat)
 
     # Plot simulation data.
     for (target, x) in zip(targets, data_sim):
         if x is not None:
-            tlabel = get_target_label(target)
+            tlabel = get_target_label(treatment_target, target)
             ax.plot(t, x / scale,
                     label = tlabel,
                     **_get_kwds(tlabel))
@@ -170,7 +172,7 @@ def _plot_cell(ax, country, parameters, results, stat,
         ax.set_title(label, size = 'medium')
 
 
-def _make_legend(ax, targets):
+def _make_legend(ax, treatment_target):
     ax.tick_params(labelbottom = False, labelleft = False)
     ax.grid(False)
 
@@ -178,9 +180,10 @@ def _make_legend(ax, targets):
     handles = []
     labels = []
 
+    targets = _get_targets(treatment_target)
     colors = seaborn.color_palette()
     for (t, c) in zip(targets, colors):
-        label = get_target_label(t)
+        label = get_target_label(treatment_target, t)
         handles.append(matplotlib.lines.Line2D([], [],
                                                color = c,
                                                **_get_kwds(label)))
@@ -201,7 +204,7 @@ def _make_legend(ax, targets):
                       numpoints = 1)
 
 
-def _plot_country(country, results):
+def _plot_country(country, treatment_target, results):
     fig = pyplot.figure(figsize = (8.5, 11))
 
     if country != 'Global':
@@ -216,7 +219,8 @@ def _plot_country(country, results):
         for (i, attr) in enumerate(attrs_to_plot):
             ax = fig.add_subplot(gs[i, 0])
             country_label = 'title' if (i == 0) else None
-            _plot_cell(ax, country, parameters, results, attr,
+            _plot_cell(ax, country, treatment_target,
+                       parameters, results, attr,
                        country_label = country_label)
             if i != len(attrs_to_plot) - 1:
                 for l in ax.get_xticklabels():
@@ -225,19 +229,29 @@ def _plot_country(country, results):
         # Make legend at bottom.
         ax = fig.add_subplot(gs[-1, 0], axis_bgcolor = 'none')
         targets = results.keys()
-        _make_legend(ax, targets)
+        _make_legend(ax, treatment_target)
 
     fig.tight_layout()
 
     return fig
 
 
-def plot_country(country):
+def plot_country(country, treatment_target):
     results = model.results.load_vaccine_sensitivity()
-    return _plot_country(country, results[country])
+    return _plot_country(country, treatment_target, results[country])
 
 
-def plot_some_countries():
+def plot_all_countries(treatment_target):
+    results = model.results.load_vaccine_sensitivity()
+    filename = '{}_all.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        for country in results.keys():
+            fig = _plot_country(country, treatment_target, results[country])
+            pdf.savefig(fig)
+            pyplot.close(fig)
+
+
+def plot_some_countries(treatment_target):
     results = model.results.load_vaccine_sensitivity()
 
     fig = pyplot.figure(figsize = (8.5, 7.5))
@@ -256,7 +270,8 @@ def plot_some_countries():
             for (row, attr) in enumerate(attrs_to_plot):
                 ax = fig.add_subplot(gs[row, col])
                 country_label = 'title' if (row == 0) else None
-                _plot_cell(ax, country, parameters, results[country], attr,
+                _plot_cell(ax, country, treatment_target,
+                           parameters, results[country], attr,
                            country_label = country_label,
                            attr_label = attr_label)
                 if row != nrows - 1:
@@ -266,28 +281,22 @@ def plot_some_countries():
 
         ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
         targets = results[country].keys()
-        _make_legend(ax, targets)
+        _make_legend(ax, treatment_target)
 
     fig.tight_layout()
 
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
+    suffix = str(treatment_target).replace(' ', '_')
+    fig.savefig('{}_{}.pdf'.format(common.get_filebase(), suffix))
+    fig.savefig('{}_{}.png'.format(common.get_filebase(), suffix))
     return fig
 
 
-def plot_all_countries():
-    results = model.results.load_vaccine_sensitivity()
-    filename = '{}_all.pdf'.format(common.get_filebase())
-    with backend_pdf.PdfPages(filename) as pdf:
-        for country in results.keys():
-            fig = _plot_country(country, results[country])
-            pdf.savefig(fig)
-            pyplot.close(fig)
-
-
 if __name__ == '__main__':
-    # plot_country('South Africa')
-    plot_some_countries()
+    # plot_country('South Africa',
+    #              model.targets.vaccine_sensitivity_baselines[0])
+    for treatment_target in model.targets.vaccine_sensitivity_baselines:
+        plot_some_countries(treatment_target)
+
     pyplot.show()
 
-    # plot_all_countries()
+    # plot_all_countries(model.targets.vaccine_sensitivity_baselines[0])
