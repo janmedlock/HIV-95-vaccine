@@ -279,11 +279,16 @@ for target in _baseline:
                  Vaccine(treatment_targets = target)])
 
 
-vaccine_sensitivity_all = [
-    Vaccine(treatment_targets = StatusQuo()),
-    Vaccine(treatment_targets = StatusQuo(), efficacy = 0.3),
-    Vaccine(treatment_targets = StatusQuo(), efficacy = 0.7),
-    Vaccine(treatment_targets = StatusQuo(), coverage = 0.5),
-    Vaccine(treatment_targets = StatusQuo(), coverage = 0.9),
-    Vaccine(treatment_targets = StatusQuo(), time_to_start = 2025),
-    Vaccine(treatment_targets = StatusQuo(), time_to_fifty_percent = 5)]
+vaccine_sensitivity_baselines = [StatusQuo(),
+                                 UNAIDS95()]
+vaccine_sensitivity_all = []
+for target in vaccine_sensitivity_baselines:
+    vaccine_sensitivity_all.extend([
+        target,
+        Vaccine(treatment_targets = target),
+        Vaccine(treatment_targets = target, efficacy = 0.3),
+        Vaccine(treatment_targets = target, efficacy = 0.7),
+        Vaccine(treatment_targets = target, coverage = 0.5),
+        Vaccine(treatment_targets = target, coverage = 0.9),
+        Vaccine(treatment_targets = target, time_to_start = 2025),
+        Vaccine(treatment_targets = target, time_to_fifty_percent = 5)])
