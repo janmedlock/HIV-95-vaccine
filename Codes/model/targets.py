@@ -284,7 +284,6 @@ vaccine_sensitivity_baselines = [StatusQuo(),
 vaccine_sensitivity_all = []
 for target in vaccine_sensitivity_baselines:
     vaccine_sensitivity_all.extend([
-        target,
         Vaccine(treatment_targets = target),
         Vaccine(treatment_targets = target, efficacy = 0.3),
         Vaccine(treatment_targets = target, efficacy = 0.7),
