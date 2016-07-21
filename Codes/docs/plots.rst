@@ -71,6 +71,4 @@ vaccine_sensitivity
 
 .. include:: mapplot.rst_
 
-.. include:: point_estimates.rst_
-
 .. include:: vaccine.rst_
