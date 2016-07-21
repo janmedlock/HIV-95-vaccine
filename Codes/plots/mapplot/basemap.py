@@ -46,6 +46,10 @@ def _in_east_hemis(p):
 
 
 def _wrap_line(line, direction):
+    '''
+    Move a line that has some points on one side of ±180 longitude
+    to entirely one side or the other.
+    '''
     if direction.lower() == 'east':
         shift = [360, 0]
     elif direction.lower() == 'west':
@@ -56,6 +60,10 @@ def _wrap_line(line, direction):
 
 
 def _wrap_polygon(poly, direction):
+    '''
+    Move a polygon that has some points on one side of ±180 longitude
+    to entirely one side or the other.
+    '''
     e = _wrap_line(poly.exterior, direction)
     i = list(map(_wrap_line, poly.interiors, direction))
     return shapely.geometry.Polygon(e, i)
@@ -151,6 +159,17 @@ class Basemap:
 
         self._tweak_borders()
 
+    def _tweak_borders(self):
+        # Make Russia continuous across longitude 180
+        # by mapping it all to the Eastern Hemisphere.
+        self._map_to_hemisphere('Russia', 'east')
+
+        # Make USA continuous across longitude 180
+        # by mapping it all to the Western Hemisphere.
+        self._map_to_hemisphere('United States of America', 'west')
+
+        self._tweak_antarctica()
+
     def _map_to_hemisphere(self, country, hemisphere):
         if hemisphere.lower() == 'east':
             in_other_hemis = _in_west_hemis
@@ -200,20 +219,6 @@ class Basemap:
             mp = mp.union(p)
         self.borders['Antarctica'] = cartopy.feature.ShapelyFeature(
             [mp], self.borders['Antarctica'].crs)
-
-    def _tweak_borders(self):
-        '''
-        Apologies.
-        '''
-        # Make Russia continuous across longitude 180
-        # by mapping it all to the Eastern Hemisphere.
-        self._map_to_hemisphere('Russia', 'east')
-
-        # Make USA continuous across longitude 180
-        # by mapping it all to the Western Hemisphere.
-        self._map_to_hemisphere('United States of America', 'west')
-
-        self._tweak_antarctica()
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
