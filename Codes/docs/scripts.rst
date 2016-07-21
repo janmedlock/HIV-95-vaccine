@@ -1,9 +1,17 @@
 scripts
 =======
 
+drive_download
+--------------
+.. automodule:: drive_download
+
 generate_samples
 ----------------
 .. automodule:: generate_samples
+
+module_versions
+---------------
+.. automodule:: module_versions
 
 run_modes
 ---------
@@ -16,7 +24,3 @@ run_samples
 run_vaccine_scenarios
 ---------------------
 .. automodule:: run_vaccine_scenarios
-
-drive_download
---------------
-.. automodule:: drive_download
