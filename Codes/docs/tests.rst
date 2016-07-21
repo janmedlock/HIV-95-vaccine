@@ -17,6 +17,10 @@ logmodel
 --------
 .. automodule:: tests.logmodel
 
+modes_example
+-------------
+.. automodule:: tests.modes_example
+
 net_benefit_maximize
 --------------------
 .. automodule:: tests.net_benefit_maximize
