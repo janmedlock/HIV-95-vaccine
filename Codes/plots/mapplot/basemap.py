@@ -7,11 +7,12 @@ import itertools
 import os.path
 import sys
 
-import numpy
 from matplotlib import animation
 from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
+import numpy
+import shapely.ops
 
 # import cartopy
 sys.path.append(os.path.dirname(__file__))  # For Sphinx
@@ -103,8 +104,11 @@ class Basemap:
         for record in reader.records():
             country = record.attributes[attr_for_key]
             geometry = geometries.get(country, [])
-            geometries[country] = geometry + [record.geometry]
-        return {k: cartopy.feature.ShapelyFeature(v, crs)
+            if country not in geometries:
+                geometries[country] = record.geometry
+            else:
+                geometries[country] = geometries[country].union(record.geometry)
+        return {k: cartopy.feature.ShapelyFeature([v], crs)
                 for (k, v) in geometries.items()}
 
     def _load_borders(self, disputed_add):
@@ -124,12 +128,16 @@ class Basemap:
 
         if disputed_add:
             for (country, territories) in _disputed_territories.items():
-                geometries = list(self.borders[country].geometries())
-                crs = self.borders[country].crs
-                for territory in territories:
-                    geometries += list(self.borders[territory].geometries())
+                gc = self.borders[country].geometries()
+                gt = itertools.chain.from_iterable(
+                    self.borders.pop(territory).geometries()
+                    for territory in territories)
+                g = shapely.ops.unary_union(list(itertools.chain(gc, gt)))
+                # Generate all points within distance of borders.
+                # This is to try to remove internal lines.
+                g = g.buffer(1e-12)
                 self.borders[country] = cartopy.feature.ShapelyFeature(
-                    geometries, crs)
+                    [g], self.borders[country].crs)
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
