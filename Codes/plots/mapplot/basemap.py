@@ -167,6 +167,40 @@ class Basemap:
         self.borders[country] = cartopy.feature.ShapelyFeature(
             [mp], self.borders[country].crs)
 
+    def _tweak_antarctica(self):
+        central_longitude = self.ax.projection.proj4_params['lon_0']
+        map_edge_l = central_longitude - 180
+        map_edge_r = central_longitude + 180
+        south_pole = shapely.geometry.Point((0, -90))
+        polygons = self.borders['Antarctica']._geoms[0].geoms
+        mp = shapely.geometry.MultiPolygon()
+        for p in polygons:
+            if p.intersects(south_pole):
+                # Dope dupe closing point at end.
+                x, y = numpy.asarray(p.exterior.coords)[ : -1].T
+                # Find and remove any South Poles.
+                ix = numpy.isclose(y, -90)
+                x = numpy.compress(~ix, x)
+                y = numpy.compress(~ix, y)
+                # Transform points to be on the correct side of map LR edge.
+                x = numpy.where(x < map_edge_l, x + 360, x)
+                x = numpy.where(x > map_edge_r, x - 360, x)
+                xy = numpy.column_stack((x, y))
+                # Add South Pole and edge points in the right place.
+                map_edge_y = numpy.interp(map_edge_l, x, y, period = 360)
+                i = x.argmax()
+                XY = numpy.vstack((xy[ : i + 1],
+                                   (map_edge_r, map_edge_y),
+                                   (map_edge_r, -90),
+                                   (map_edge_l, -90),
+                                   (map_edge_l, map_edge_y),
+                                   xy[i + 1 : ]))
+
+                p = shapely.geometry.Polygon(XY, list(p.interiors))
+            mp = mp.union(p)
+        self.borders['Antarctica'] = cartopy.feature.ShapelyFeature(
+            [mp], self.borders['Antarctica'].crs)
+
     def _tweak_borders(self):
         '''
         Apologies.
@@ -178,6 +212,8 @@ class Basemap:
         # Make USA continuous across longitude 180
         # by mapping it all to the Western Hemisphere.
         self._map_to_hemisphere('United States of America', 'west')
+
+        self._tweak_antarctica()
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
