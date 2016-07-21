@@ -41,6 +41,7 @@ class Basemap:
                  rect = (0, 0, 1, 1),
                  central_longitude = 11,
                  fig = None,
+                 disputed_add = False,
                  *args, **kwargs):
         '''
         Set up the basic map.
@@ -58,7 +59,7 @@ class Basemap:
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
         self._do_basemap()
-        self._load_borders()
+        self._load_borders(disputed_add)
         self._load_tiny_points()
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
@@ -106,7 +107,7 @@ class Basemap:
         return {k: cartopy.feature.ShapelyFeature(v, crs)
                 for (k, v) in geometries.items()}
 
-    def _load_borders(self):
+    def _load_borders(self, disputed_add):
         self.borders = self._load_natural_earth('sovereignt',
                                                 '110m',
                                                 'cultural',
@@ -121,14 +122,14 @@ class Basemap:
             if k not in self.borders:
                 self.borders[k] = v
 
-        # Append disputed territories to home country.
-        for (country, territories) in _disputed_territories.items():
-            geometries = list(self.borders[country].geometries())
-            crs = self.borders[country].crs
-            for territory in territories:
-                geometries += list(self.borders[territory].geometries())
-            self.borders[country] = cartopy.feature.ShapelyFeature(geometries,
-                                                                   crs)
+        if disputed_add:
+            for (country, territories) in _disputed_territories.items():
+                geometries = list(self.borders[country].geometries())
+                crs = self.borders[country].crs
+                for territory in territories:
+                    geometries += list(self.borders[territory].geometries())
+                self.borders[country] = cartopy.feature.ShapelyFeature(
+                    geometries, crs)
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
