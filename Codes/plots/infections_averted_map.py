@@ -11,6 +11,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
+from scipy import integrate
 
 sys.path.append(os.path.dirname(__file__))
 import common
@@ -30,7 +31,7 @@ interventions = list(map(str, interventions))
 
 time = 2035
 
-cmap = 'viridis'
+cmap = common.cmap_scaled('magma', vmin = 0.12)
 label_coords = (-150, -30)
 ticklocator = ticker.LogLocator(base = 10, subs = [1, 2, 5])
 tickformatter = ticker.LogFormatter(base = 10, labelOnlyBase = False)
@@ -45,7 +46,7 @@ aspect = 1.45
 def plot(infections_averted_per_capita):
     # vmin = infections_averted_per_capita.min().min() / scale
     # vmax = infections_averted_per_capita.max().max() / scale
-    vmin = 1
+    vmin = 0.001 / scale
     vmax = 0.5 / scale
 
     norm = mcolors.LogNorm(vmin = vmin, vmax = vmax)
@@ -91,6 +92,13 @@ def plot(infections_averted_per_capita):
                         ticks = ticklocator,
                         format = tickformatter)
 
+    ticklabels = cbar.ax.get_xticklabels()
+    if infections_averted_per_capita.min().min() < vmin * scale:
+        ticklabels[0].set_text('≤' + ticklabels[0].get_text())
+    if infections_averted_per_capita.max().max() > vmax * scale:
+        ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
+    cbar.ax.set_xticklabels(ticklabels)
+
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
 
@@ -98,27 +106,35 @@ def plot(infections_averted_per_capita):
     fig.savefig('{}.png'.format(common.get_filebase()))
 
 
+def _mean(x, t):
+    return integrate.trapz(x, t) / (t[-1] - t[0])
+
+
 def _get_infections_per_capita(result):
-    return result.new_infections[time] / result.alive[time]
+    '''
+    Infections per capita.
+    '''
+    alive_avg = _mean(result.alive, result.t)
+    return result.new_infections[-1] / alive_avg
 
 
-def _get_infections_averted_per_capita():
+def _get_infections_per_capita_averted():
     results = model.results.load_modes()
 
     countries = list(results.keys())
     countries.remove('Global')
 
-    inf_avert_per_capita = pandas.DataFrame(columns = interventions,
-                                            index = countries)
+    infections_per_capita_averted = pandas.DataFrame(columns = interventions,
+                                                     index = countries)
     for country in countries:
         x = _get_infections_per_capita(results[country][baseline])
         for intv in interventions:
             y = _get_infections_per_capita(results[country][intv])
-            inf_avert_per_capita.loc[country, intv] = x - y
-    return inf_avert_per_capita
+            infections_per_capita_averted.loc[country, intv] = x - y
+    return infections_per_capita_averted
 
 
 if __name__ == '__main__':
-    infections_averted_per_capita = _get_infections_averted_per_capita()
-    plot(infections_averted_per_capita)
+    infections_per_capita_averted = _get_infections_per_capita_averted()
+    plot(infections_per_capita_averted)
     pyplot.show()
