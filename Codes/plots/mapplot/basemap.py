@@ -31,6 +31,10 @@ cartopy.config['data_dir'] = os.path.join(
     '_cartopy')
 
 
+_disputed_territories = {'Morocco': ['Western Sahara'],
+                         'Somalia': ['Somaliland']}
+
+
 class Basemap:
     def __init__(self,
                  extent = (-180, 180, -60, 85),
@@ -116,6 +120,15 @@ class Basemap:
         for (k, v) in borders1.items():
             if k not in self.borders:
                 self.borders[k] = v
+
+        # Append disputed territories to home country.
+        for (country, territories) in _disputed_territories.items():
+            geometries = list(self.borders[country].geometries())
+            crs = self.borders[country].crs
+            for territory in territories:
+                geometries += list(self.borders[territory].geometries())
+            self.borders[country] = cartopy.feature.ShapelyFeature(geometries,
+                                                                   crs)
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
