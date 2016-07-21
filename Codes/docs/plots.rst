@@ -70,5 +70,3 @@ vaccine_sensitivity
 .. automodule:: plots.vaccine_sensitivity
 
 .. include:: mapplot.rst_
-
-.. include:: vaccine.rst_
