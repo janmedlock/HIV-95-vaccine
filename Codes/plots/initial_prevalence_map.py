@@ -28,14 +28,16 @@ def _main():
     n = data.sum(0)
     prevalence = nHIV / n
     for (k, v) in prevalence.items():
-        print(k, v)
+        print('{}: {:g}%'.format(k, 100 * v))
 
-    vmin = prevalence.min()
-    vmax = prevalence.max()
+    # vmin = prevalence.min()
+    # vmax = prevalence.max()
+    vmin = 0.0005
+    vmax = 0.25
 
     cmap = 'YlOrRd'
     norm = colors.LogNorm
-    ticks = ticker.LogLocator(10, [1, 2, 5])
+    ticks = ticker.LogLocator(10, [1, 2.5, 5])
     fig = pyplot.figure()
     m = mapplot.Basemap()
     m.choropleth(countries, 100 * prevalence,
@@ -47,6 +49,13 @@ def _main():
     cbar = m.colorbar(label = '2015 HIV Prevalence',
                       format = '%g%%',
                       ticks = ticks)
+
+    ticklabels = cbar.ax.get_xticklabels()
+    if prevalence.min() < vmin:
+        ticklabels[0].set_text('≤' + ticklabels[0].get_text())
+    if prevalence.max() > vmax:
+        ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
+    cbar.ax.set_xticklabels(ticklabels)
 
     m.tighten(aspect_adjustment = 1.35)
 
