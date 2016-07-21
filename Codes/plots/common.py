@@ -95,6 +95,14 @@ cmap_base = 'afmhot'
 cmap = cmap_reflected(cmap_base)
 
 
+def cmap_scaled(cmap_base, vmin = 0, vmax = 1, N = 256):
+    cmap = cm.get_cmap(cmap_base)
+    pts = numpy.linspace(vmin, vmax, N)
+    colors = cmap(pts)
+    return mcolors.LinearSegmentedColormap.from_list(cmap_base + '_scaled',
+                                                     colors)
+
+
 _cp = seaborn.color_palette('Paired', 12)
 _ix = [4, 5, 0, 1, 2, 3, 6, 7, 8, 9, 10, 11]
 colors_paired = [_cp[i] for i in _ix]
