@@ -12,6 +12,7 @@ from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 import numpy
+import shapely.geometry
 import shapely.ops
 
 # import cartopy
@@ -32,17 +33,12 @@ cartopy.config['data_dir'] = os.path.join(
     '_cartopy')
 
 
-_disputed_territories = {'Morocco': ['Western Sahara'],
-                         'Somalia': ['Somaliland']}
-
-
 class Basemap:
     def __init__(self,
                  extent = (-180, 180, -60, 85),
                  rect = (0, 0, 1, 1),
                  central_longitude = 11,
                  fig = None,
-                 disputed_add = False,
                  *args, **kwargs):
         '''
         Set up the basic map.
@@ -60,7 +56,7 @@ class Basemap:
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
         self._do_basemap()
-        self._load_borders(disputed_add)
+        self._load_borders()
         self._load_tiny_points()
         # self.locator = locators.CentroidLocator(self.borders)
         self.locator = locators.GeocodeLocator()
@@ -103,7 +99,6 @@ class Basemap:
         geometries = {}
         for record in reader.records():
             country = record.attributes[attr_for_key]
-            geometry = geometries.get(country, [])
             if country not in geometries:
                 geometries[country] = record.geometry
             else:
@@ -111,7 +106,7 @@ class Basemap:
         return {k: cartopy.feature.ShapelyFeature([v], crs)
                 for (k, v) in geometries.items()}
 
-    def _load_borders(self, disputed_add):
+    def _load_borders(self):
         self.borders = self._load_natural_earth('sovereignt',
                                                 '110m',
                                                 'cultural',
@@ -126,18 +121,48 @@ class Basemap:
             if k not in self.borders:
                 self.borders[k] = v
 
-        if disputed_add:
-            for (country, territories) in _disputed_territories.items():
-                gc = self.borders[country].geometries()
-                gt = itertools.chain.from_iterable(
-                    self.borders.pop(territory).geometries()
-                    for territory in territories)
-                g = shapely.ops.unary_union(list(itertools.chain(gc, gt)))
-                # Generate all points within distance of borders.
-                # This is to try to remove internal lines.
-                g = g.buffer(1e-12)
-                self.borders[country] = cartopy.feature.ShapelyFeature(
-                    [g], self.borders[country].crs)
+        self._fix_russia()
+
+    def _fix_russia(self):
+        '''
+        Apologies.
+        '''
+        polygons = []
+        for (j, g) in enumerate(self.borders['Russia']._geoms[0].geoms):
+            x, y = numpy.asarray(g.exterior.coords).T
+            ix = numpy.isclose(x, 180) | numpy.isclose(x, -180)
+            if ix.any():
+                # Cycle the points so that ±180 is at the begining.
+                i = numpy.argwhere(ix)[0, 0]
+                X = numpy.hstack((x[i : -1], x[0 : i]))
+                Y = numpy.hstack((y[i : -1], y[0 : i]))
+                XY = numpy.column_stack((X, Y))
+                p = shapely.geometry.Polygon(XY, g.interiors)
+            else:
+                p = g
+            polygons.append(p)
+
+        p0 = polygons.pop(2)
+        p1 = polygons.pop(8)
+        c0 = numpy.asarray(p0.exterior.coords[1 : -1]) + [360, 0]
+        c1 = numpy.asarray(p1.exterior.coords[1 : -1])
+        xy = numpy.vstack((c0, c1))
+        interiors = list(p0.interiors) + list(p1.interiors)
+        p = shapely.geometry.Polygon(xy, interiors)
+        polygons.append(p)
+
+        p0 = polygons.pop(2)
+        p1 = polygons.pop(2)
+        c0 = numpy.asarray(p0.exterior.coords[ : -1])
+        c1 = numpy.asarray(p1.exterior.coords[1 : ]) + [360, 0]
+        xy = numpy.vstack((c0, c1))
+        interiors = list(p0.interiors) + list(p1.interiors)
+        p = shapely.geometry.Polygon(xy, interiors)
+        polygons.append(p)
+
+        mp = shapely.geometry.MultiPolygon(polygons)
+        f = cartopy.feature.ShapelyFeature([mp], self.borders['Russia'].crs)
+        self.borders['Russia'] = f
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
