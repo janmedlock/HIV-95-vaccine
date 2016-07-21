@@ -127,40 +127,27 @@ class Basemap:
         '''
         Apologies.
         '''
-        polygons = []
-        for (j, g) in enumerate(self.borders['Russia']._geoms[0].geoms):
-            x, y = numpy.asarray(g.exterior.coords).T
-            ix = numpy.isclose(x, 180) | numpy.isclose(x, -180)
-            if ix.any():
-                # Cycle the points so that ±180 is at the begining.
-                i = numpy.argwhere(ix)[0, 0]
-                X = numpy.hstack((x[i : -1], x[0 : i]))
-                Y = numpy.hstack((y[i : -1], y[0 : i]))
-                XY = numpy.column_stack((X, Y))
-                p = shapely.geometry.Polygon(XY, g.interiors)
-            else:
-                p = g
-            polygons.append(p)
+        polygons = list(self.borders['Russia']._geoms[0].geoms)
 
-        p0 = polygons.pop(2)
-        p1 = polygons.pop(8)
-        c0 = numpy.asarray(p0.exterior.coords[1 : -1]) + [360, 0]
-        c1 = numpy.asarray(p1.exterior.coords[1 : -1])
-        xy = numpy.vstack((c0, c1))
-        interiors = list(p0.interiors) + list(p1.interiors)
-        p = shapely.geometry.Polygon(xy, interiors)
-        polygons.append(p)
+        to_wrap_and_combine = ((2, 9), (4, 3))
 
-        p0 = polygons.pop(2)
-        p1 = polygons.pop(2)
-        c0 = numpy.asarray(p0.exterior.coords[ : -1])
-        c1 = numpy.asarray(p1.exterior.coords[1 : ]) + [360, 0]
-        xy = numpy.vstack((c0, c1))
-        interiors = list(p0.interiors) + list(p1.interiors)
-        p = shapely.geometry.Polygon(xy, interiors)
-        polygons.append(p)
+        def _wrap(line):
+            return numpy.asarray(line.coords) + [360, 0]
 
-        mp = shapely.geometry.MultiPolygon(polygons)
+        def wrap(poly):
+            e = _wrap(poly.exterior)
+            i = list(map(_wrap, poly.interiors))
+            return shapely.geometry.Polygon(e, i)
+
+        def wrap_and_combine(p0, p1):
+            return wrap(p0).union(p1)
+
+        ix = [i for pair in to_wrap_and_combine for i in pair]
+        polygons_new = [p for (i, p) in enumerate(polygons) if i not in ix]
+        for (i, j) in to_wrap_and_combine:
+            polygons_new.append(wrap_and_combine(polygons[i], polygons[j]))
+
+        mp = shapely.geometry.MultiPolygon(polygons_new)
         f = cartopy.feature.ShapelyFeature([mp], self.borders['Russia'].crs)
         self.borders['Russia'] = f
 
