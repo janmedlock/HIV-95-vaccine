@@ -33,6 +33,34 @@ cartopy.config['data_dir'] = os.path.join(
     '_cartopy')
 
 
+_east_hemis = shapely.geometry.box(180, -90, 0, 90)
+_west_hemis = shapely.geometry.box(-180, -90, 0, 90)
+
+
+def _in_west_hemis(p):
+    return p.intersects(_west_hemis)
+
+
+def _in_east_hemis(p):
+    return p.intersects(_east_hemis)
+
+
+def _wrap_line(line, direction):
+    if direction.lower() == 'east':
+        shift = [360, 0]
+    elif direction.lower() == 'west':
+        shift = [-360, 0]
+    else:
+        raise ValueError("Unknown direction '{}'!".format(direction))
+    return numpy.asarray(line.coords) + shift
+
+
+def _wrap_polygon(poly, direction):
+    e = _wrap_line(poly.exterior, direction)
+    i = list(map(_wrap_line, poly.interiors, direction))
+    return shapely.geometry.Polygon(e, i)
+
+
 class Basemap:
     def __init__(self,
                  extent = (-180, 180, -60, 85),
@@ -121,35 +149,35 @@ class Basemap:
             if k not in self.borders:
                 self.borders[k] = v
 
-        self._fix_russia()
+        self._tweak_borders()
 
-    def _fix_russia(self):
+    def _map_to_hemisphere(self, country, hemisphere):
+        if hemisphere.lower() == 'east':
+            in_other_hemis = _in_west_hemis
+        elif hemisphere.lower() == 'west':
+            in_other_hemis = _in_east_hemis
+        else:
+            raise ValueError("Unknown hemisphere '{}'!".format(hemisphere))
+        polygons = self.borders[country]._geoms[0].geoms
+        mp = shapely.geometry.MultiPolygon()
+        for p in polygons:
+            if in_other_hemis(p):
+                p = _wrap_polygon(p, hemisphere)
+            mp = mp.union(p)
+        self.borders[country] = cartopy.feature.ShapelyFeature(
+            [mp], self.borders[country].crs)
+
+    def _tweak_borders(self):
         '''
         Apologies.
         '''
-        polygons = list(self.borders['Russia']._geoms[0].geoms)
+        # Make Russia continuous across longitude 180
+        # by mapping it all to the Eastern Hemisphere.
+        self._map_to_hemisphere('Russia', 'east')
 
-        to_wrap_and_combine = ((2, 9), (4, 3))
-
-        def _wrap(line):
-            return numpy.asarray(line.coords) + [360, 0]
-
-        def wrap(poly):
-            e = _wrap(poly.exterior)
-            i = list(map(_wrap, poly.interiors))
-            return shapely.geometry.Polygon(e, i)
-
-        def wrap_and_combine(p0, p1):
-            return wrap(p0).union(p1)
-
-        ix = [i for pair in to_wrap_and_combine for i in pair]
-        polygons_new = [p for (i, p) in enumerate(polygons) if i not in ix]
-        for (i, j) in to_wrap_and_combine:
-            polygons_new.append(wrap_and_combine(polygons[i], polygons[j]))
-
-        mp = shapely.geometry.MultiPolygon(polygons_new)
-        f = cartopy.feature.ShapelyFeature([mp], self.borders['Russia'].crs)
-        self.borders['Russia'] = f
+        # Make USA continuous across longitude 180
+        # by mapping it all to the Western Hemisphere.
+        self._map_to_hemisphere('United States of America', 'west')
 
     def _load_tiny_points(self):
         self.tiny_points = self._load_natural_earth('subunit',
