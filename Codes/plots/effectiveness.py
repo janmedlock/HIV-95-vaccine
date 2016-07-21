@@ -309,4 +309,4 @@ if __name__ == '__main__':
     plot_some_countries()
     pyplot.show()
 
-    # plot_all_countries()
+    plot_all_countries()
