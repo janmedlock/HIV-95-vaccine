@@ -26,7 +26,7 @@ import model
 import seaborn_quiet as seaborn
 
 
-attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
+attrs_to_plot = ['infected', 'prevalence', 'incidence', 'AIDS', 'dead']
 
 country_label_replacements = {
     'United States of America': 'United States'
