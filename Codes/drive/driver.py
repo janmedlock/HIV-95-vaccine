@@ -72,21 +72,22 @@ class Driver:
             filename,
             resumable = True)
 
-        fileId = self.find_fileId(filename)
+        basename = os.path.basename(filename)
+        fileId = self.find_fileId(basename)
 
         if fileId is None:
-            print('Creating {}'.format(filename))
+            print('Creating {}'.format(basename))
         
             job = self.drive_service.files().create(
-                body = dict(title = filename,
+                body = dict(title = basename,
                             parents = [self.parent]),
                 media_body = media_body)
         else:
-            print('Updating {}'.format(filename))
+            print('Updating {}'.format(basename))
 
             job = self.drive_service.files().update(
                 fileId = fileId,
-                body = dict(title = filename),
+                body = dict(title = basename),
                 media_body = media_body)
 
         return job.execute()
