@@ -160,6 +160,8 @@ class Basemap:
         self._tweak_borders()
 
     def _tweak_borders(self):
+        self._append_somaliland_to_somalia()
+
         # Make Russia continuous across longitude 180
         # by mapping it all to the Eastern Hemisphere.
         self._map_to_hemisphere('Russia', 'east')
@@ -169,6 +171,14 @@ class Basemap:
         self._map_to_hemisphere('United States of America', 'west')
 
         self._tweak_antarctica()
+
+    def _append_somaliland_to_somalia(self):
+        b_somalia = self.borders['Somalia']
+        # Remove Somaliland from dict.
+        b_somaliland = self.borders.pop('Somaliland')
+        mp = b_somalia._geoms[0].union(b_somaliland._geoms[0])
+        self.borders['Somalia'] = cartopy.feature.ShapelyFeature([mp],
+                                                                 b_somalia.crs)
 
     def _map_to_hemisphere(self, country, hemisphere):
         if hemisphere.lower() == 'east':
