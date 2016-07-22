@@ -20,16 +20,21 @@ sys.path.append('..')
 import model
 
 
-baselines = (model.targets.StatusQuo(),
-             model.targets.UNAIDS90(),
-             model.targets.UNAIDS95())
+baseline = model.targets.StatusQuo()
+interventions = (
+    model.targets.UNAIDS95(),
+    model.targets.Vaccine(treatment_targets = model.targets.StatusQuo()),
+    model.targets.Vaccine(treatment_targets = model.targets.UNAIDS95()))
+
+baseline = str(baseline)
+interventions = list(map(str, interventions))
 
 time = 2035
 
 scale = 1e-3
-title = 'Infections per 1000 Averted'
+title = 'Infections per 1000 Averted (Compared to {})'.format(baseline)
 vmin = 0.001 / scale
-vmax = 0.25 / scale
+vmax = 0.5 / scale
 norm = mcolors.LogNorm(vmin = vmin, vmax = vmax)
 cmap = common.cmap_scaled('magma', vmin = 0.12)  # Shift bottom color up.
 label_coords = (-130, -30)
@@ -39,13 +44,13 @@ cpad = 0.05
 aspect = 1.45
 
 
-def plot(infections_averted_per_capita):
-    countries = infections_averted_per_capita.index
-    baselines = infections_averted_per_capita.columns
+def plot(infections_per_capita_averted):
+    countries = infections_per_capita_averted.index
+    interventions = infections_per_capita_averted.columns
 
     fig = pyplot.figure()
-    nrows = len(baselines)
-    for (i, baseline) in enumerate(baselines):
+    nrows = len(interventions)
+    for (i, intv) in enumerate(interventions):
         if i <  nrows - 1:
             h = height
             b = 1 - height - (height + pad) * i
@@ -58,14 +63,13 @@ def plot(infections_averted_per_capita):
 
         mappable = m.choropleth(
             countries,
-            infections_averted_per_capita.loc[:, baseline] / scale,
+            infections_per_capita_averted.loc[:, intv] / scale,
             cmap = cmap,
             norm = norm,
             vmin = vmin,
             vmax = vmax)
 
-        label_base = common.get_target_label(baseline)
-        label = '{}\nBaseline'.format(label_base)
+        label = common.get_target_label(intv).replace(' ', '_')
         X, Y = label_coords
         m.text_coords(X, Y, label,
                       fontdict = dict(size = 20,
@@ -84,9 +88,9 @@ def plot(infections_averted_per_capita):
                         format = ticker.LogFormatter(labelOnlyBase = False))
 
     ticklabels = cbar.ax.get_xticklabels()
-    if infections_averted_per_capita.min().min() < vmin * scale:
+    if infections_per_capita_averted.min().min() < vmin * scale:
         ticklabels[0].set_text('≤' + ticklabels[0].get_text())
-    if infections_averted_per_capita.max().max() > vmax * scale:
+    if infections_per_capita_averted.max().max() > vmax * scale:
         ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
 
@@ -97,16 +101,11 @@ def plot(infections_averted_per_capita):
     fig.savefig('{}.png'.format(common.get_filebase()))
 
 
-def _mean(x, t):
-    return integrate.trapz(x, t) / (t[-1] - t[0])
-
-
 def _get_infections_per_capita(result):
-    '''
-    Infections per capita.
-    '''
-    alive_avg = _mean(result.alive, result.t)
-    return result.new_infections[-1] / alive_avg
+    person_years = integrate.trapz(result.alive, result.t)
+    # exposure is number of 20-person-years lived.
+    exposure = person_years / (result.t[-1] - result.t[0])
+    return result.new_infections[-1] / exposure
 
 
 def _get_infections_per_capita_averted():
@@ -115,15 +114,13 @@ def _get_infections_per_capita_averted():
     countries = list(results.keys())
     countries.remove('Global')
 
-    columns = map(str, baselines)
-    infections_per_capita_averted = pandas.DataFrame(columns = columns,
+    infections_per_capita_averted = pandas.DataFrame(columns = interventions,
                                                      index = countries)
     for country in countries:
-        for baseline in baselines:
-            intervention = model.targets.Vaccine(treatment_targets = baseline)
-            x = _get_infections_per_capita(results[country][str(baseline)])
-            y = _get_infections_per_capita(results[country][str(intervention)])
-            infections_per_capita_averted.loc[country, str(baseline)] = x - y
+        x = _get_infections_per_capita(results[country][baseline])
+        for intv in interventions:
+            y = _get_infections_per_capita(results[country][intv])
+            infections_per_capita_averted.loc[country, intv] = x - y
     return infections_per_capita_averted
 
 
