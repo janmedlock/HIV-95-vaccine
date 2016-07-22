@@ -13,10 +13,10 @@ import os.path
 import sys
 
 from matplotlib import gridspec
+from matplotlib import lines as mlines
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
-import matplotlib.lines
 import numpy
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
@@ -197,16 +197,16 @@ def _make_legend(ax, targets, plot_hist = True):
     labels = []
 
     if plot_hist:
-        handles.append(matplotlib.lines.Line2D([], [], **data_hist_style))
+        handles.append(mlines.Line2D([], [], **data_hist_style))
         labels.append('Historical data')
 
         # Blank spacer.
-        handles.append(matplotlib.lines.Line2D([], [], linewidth = 0))
+        handles.append(mlines.Line2D([], [], linewidth = 0))
         labels.append(' ')
 
     colors = seaborn.color_palette()
     for (t, c) in zip(targets, colors):
-        handles.append(matplotlib.lines.Line2D([], [], color = c))
+        handles.append(mlines.Line2D([], [], color = c))
         labels.append(common.get_target_label(t))
 
     fig = ax.get_figure()

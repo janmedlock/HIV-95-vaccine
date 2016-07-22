@@ -11,10 +11,10 @@ import os.path
 import sys
 
 from matplotlib import gridspec
+from matplotlib import lines as mlines
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
-import matplotlib.lines
 import numpy
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
@@ -184,14 +184,14 @@ def _make_legend(ax, treatment_target):
     colors = seaborn.color_palette()
     for (t, c) in zip(targets, colors):
         label = get_target_label(treatment_target, t)
-        handles.append(matplotlib.lines.Line2D([], [],
-                                               color = c,
-                                               **_get_kwds(label)))
+        handles.append(mlines.Line2D([], [],
+                                     color = c,
+                                     **_get_kwds(label)))
         labels.append(label)
         if label == 'Baseline':
             # Blank spacer.
-            handles.append(matplotlib.lines.Line2D([], [],
-                                                   linewidth = 0))
+            handles.append(mlines.Line2D([], [],
+                                         linewidth = 0))
             labels.append(' ')
 
 
