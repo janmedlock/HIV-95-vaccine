@@ -199,7 +199,7 @@ class GDP(Sheet):
 
 
 class IncidencePrevalence(Sheet):
-    sheetname = 'IncidencePrevalence'
+    sheetname = 'Incidence/Prevalence'
 
     _incidence_start_string = 'INCIDENCE (15-49)'
     _prevalence_start_string = 'PREVALENCE (15-49)'
@@ -397,6 +397,7 @@ class Population(AnnualSheet):
 
 class Treated(AnnualSheet):
     sheetname = 'ARV'
+    allow_missing = True
 
     @classmethod
     def parse_entry(cls, x):
@@ -565,3 +566,14 @@ def get_country_list(sheet = 'all', wb = None):
         return sorted(data.keys())
     else:
         return _get_country_list(sheet = sheet, wb = wb)
+
+
+def whats_missing(country, wb = None):
+    if wb is None:
+        wb = pandas.ExcelFile(datapath)
+    missing = []
+    for cls in sheets:
+        if not cls.allow_missing:
+            if country not in cls.get_country_list(wb = wb):
+                missing.append(cls.__name__)
+    return missing

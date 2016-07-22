@@ -1,0 +1,17 @@
+#!/usr/bin/python3
+
+import pandas
+
+import model.datasheet
+
+
+if __name__ == '__main__':
+    wb = pandas.ExcelFile(model.datasheet.datapath)
+
+    countries_any = model.datasheet.get_country_list('any', wb)
+    countries_all = model.datasheet.get_country_list('all', wb)
+
+    for c in countries_any:
+        if (c not in countries_all) and (c != 'Global'):
+            missing = model.datasheet.whats_missing(c, wb)
+            print('{}: {}'.format(c, ', '.join(missing)))

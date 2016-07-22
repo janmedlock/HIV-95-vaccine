@@ -28,7 +28,9 @@ def _run_one(country, targets = None):
 
 
 def _build_global(results):
-    countries = results.keys()
+    countries = list(results.keys())
+    if 'Global' in countries:
+        countries.remove('Global')
 
     # Store results_[target][country].
     results_ = collections.OrderedDict()
@@ -51,13 +53,20 @@ def _build_global(results):
 
 
 def _run_all(targets = None):
-    countries = model.datasheet.get_country_list()
-    results = collections.OrderedDict()
+    countries = model.datasheet.get_country_list('all')
+    try:
+        results = model.results.load_modes()
+    except:
+        results = collections.OrderedDict()
+    updated = False
     for country in countries:
-        print(country)
-        results[country] = _run_one(country, targets = targets)
-    results = _build_global(results)
-    model.results.dump_modes(results)
+        if country not in results:
+            print(country)
+            results[country] = _run_one(country, targets = targets)
+            updated = True
+    if updated:
+        results = _build_global(results)
+        model.results.dump_modes(results)
     return results
 
 
