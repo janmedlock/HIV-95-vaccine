@@ -69,7 +69,8 @@ def plot(infections_per_capita_averted):
             vmin = vmin,
             vmax = vmax)
 
-        label = common.get_target_label(intv).replace('_', ' ')
+        label = common.get_target_label(intv)
+        label = label.replace('_', ' ').replace('+', '\n+')
         X, Y = label_coords
         m.text_coords(X, Y, label,
                       fontdict = dict(size = 20,
