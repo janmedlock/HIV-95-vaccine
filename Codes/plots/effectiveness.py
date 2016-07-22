@@ -59,7 +59,7 @@ def _get_plot_info(parameters, results, stat):
             data_hist = parameters.prevalence * parameters.population
         except AttributeError:
             pass
-        label = 'Infected\n(M)'
+        label = 'PLHIV\n(M)'
         scale = 1e6
     elif stat == 'prevalence':
         data_sim_getter = operator.attrgetter(stat)

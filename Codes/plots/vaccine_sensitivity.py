@@ -72,7 +72,7 @@ def _get_plot_info(treatment_target, parameters, results, stat):
 
     if stat == 'infected':
         data_sim_getter = operator.attrgetter(stat)
-        label = 'Infected\n(M)'
+        label = 'PLHIV\n(M)'
         scale = 1e6
     elif stat == 'prevalence':
         data_sim_getter = operator.attrgetter(stat)
