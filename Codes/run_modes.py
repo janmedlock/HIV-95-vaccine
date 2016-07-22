@@ -53,7 +53,7 @@ def _build_global(results):
 
 
 def _run_all(targets = None):
-    countries = model.datasheet.get_country_list('all')
+    countries = model.datasheet.get_country_list()
     try:
         results = model.results.load_modes()
     except:
