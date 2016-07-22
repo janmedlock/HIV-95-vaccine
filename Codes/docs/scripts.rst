@@ -1,6 +1,10 @@
 scripts
 =======
 
+datasheet_report
+----------------
+.. automodule:: datasheet_report
+
 drive_download
 --------------
 .. automodule:: drive_download

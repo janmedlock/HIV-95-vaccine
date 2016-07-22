@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+'''
+Check the countries in the datasheet to see what data they have missing.
+'''
 
 import pandas
 
