@@ -80,11 +80,11 @@ def _get_plot_info(treatment_target, parameters, results, stat):
         percent = True
     elif stat == 'incidence':
         data_sim_getter = operator.attrgetter('incidence_per_capita')
-        label = 'Incidence\n(per 1000 per y)'
-        scale = 1e-3
+        label = 'Incidence\n(per M per y)'
+        scale = 1e-6
     elif stat == 'drug_coverage':
         data_sim_getter = operator.attrgetter('proportions.treated')
-        label = 'Drug\ncoverage'
+        label = 'ART\nCoverage'
         percent = True
     elif stat == 'AIDS':
         data_sim_getter = operator.attrgetter(stat)
@@ -96,7 +96,7 @@ def _get_plot_info(treatment_target, parameters, results, stat):
         scale = 1e6
     elif stat == 'viral_suppression':
         data_sim_getter = _viral_suppression_getter
-        label = 'Viral\nsupression'
+        label = 'Viral\nSupression'
         percent = True
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
