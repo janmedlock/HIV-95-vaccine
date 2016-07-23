@@ -92,6 +92,8 @@ def _plot_cell(ax, country, targs, stat,
         q, C = common.getpercentiles(data[:, ix])
         col = ax.pcolormesh(t[ix], q / scale, C, cmap = common.cmap,
                             shading = 'gouraud')
+        if numpy.all(q > 0):
+            ax.set_ylim(bottom = 0)
     else:
         col = None
 
