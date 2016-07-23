@@ -57,14 +57,13 @@ def getstats(x, alpha = 0.05):
 
 
 def getpercentiles(x):
-    N = 101
-    p = numpy.linspace(0, 100, N)
+    p = numpy.linspace(0, 100, 101)
     # Plot the points near 50% last, so they show up clearest.
     # This gives [0, 100, 1, 99, 2, 98, ..., 48, 52, 49, 51, 50].
-    M = N // 2
+    M = len(p) // 2
     p_ = numpy.column_stack((p[ : M], p[-1 : -(M + 1) : -1]))
     p_ = p_.flatten()
-    if N % 2 == 1:
+    if len(p) % 2 == 1:
         p_ = numpy.hstack((p_, p[M]))
     q = numpy.percentile(x, p_, axis = 0)
     C = numpy.outer(p_, numpy.ones(numpy.shape(x)[1]))
