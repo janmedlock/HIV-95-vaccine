@@ -13,6 +13,8 @@ import drive
 files = (
     '../../Documents/Latex/diagram_standalone.pdf',
     '../../Documents/Latex/diagram_standalone.png',
+    'differences.pdf',
+    'differences.png',
     'effectiveness_all.pdf',
     'effectiveness.pdf',
     'effectiveness.png',
