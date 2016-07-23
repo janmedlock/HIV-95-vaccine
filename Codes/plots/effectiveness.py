@@ -2,8 +2,6 @@
 '''
 Using the modes of the parameter distributions,
 make simulation plots.
-
-.. todo:: Add 'Global' historical data.
 '''
 
 import collections
@@ -18,6 +16,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
+import pandas
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -55,55 +54,34 @@ def _get_plot_info(parameters, results, stat):
     data_sim_getter = operator.attrgetter(stat)
 
     if stat == 'infected':
-        try:
-            data_hist = parameters.prevalence * parameters.population
-        except AttributeError:
-            pass
+        data_hist = parameters.prevalence * parameters.population
         label = 'PLHIV\n(M)'
         scale = 1e6
     elif stat == 'prevalence':
-        try:
-            data_hist = parameters.prevalence
-        except AttributeError:
-            pass
+        data_hist = parameters.prevalence
         label = 'Prevelance\n'
         percent = True
     elif stat == 'incidence':
         data_sim_getter = operator.attrgetter('incidence_per_capita')
-        try:
-            data_hist = parameters.incidence
-        except AttributeError:
-            pass
+        data_hist = parameters.incidence
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
     elif stat == 'drug_coverage':
         data_sim_getter = operator.attrgetter('proportions.treated')
-        try:
-            data_hist = parameters.drug_coverage
-        except AttributeError:
-            pass
+        data_hist = parameters.drug_coverage
         label = 'ART\nCoverage'
         percent = True
     elif stat == 'AIDS':
-        try:
-            data_hist = None
-        except AttributeError:
-            pass
+        data_hist = None
         label = 'AIDS\n(1000s)'
         scale = 1e3
     elif stat == 'dead':
-        try:
-            data_hist = None
-        except AttributeError:
-            pass
+        data_hist = None
         label = 'Deaths\n(M)'
         scale = 1e6
     elif stat == 'viral_suppression':
         data_sim_getter = _viral_suppression_getter
-        try:
-            data_hist = None
-        except AttributeError:
-            pass
+        data_hist = None
         label = 'Viral\nSupression'
         percent = True
     else:
@@ -224,13 +202,26 @@ def _make_legend(ax, targets, plot_hist = True):
                       numpoints = 1)
 
 
+class GlobalParameters:
+    def __init__(self):
+        with pandas.ExcelFile(model.datasheet.datapath) as wb:
+            pi = model.datasheet.IncidencePrevalence.get_country_data('Global',
+                                                                      wb = wb)
+            pop = model.datasheet.Population.get_country_data('Global',
+                                                              wb = wb)
+            self.prevalence = pi.prevalence
+            self.incidence = pi.incidence
+            self.population = pop
+            self.drug_coverage = None
+
+
 def _plot_country(country, results):
     fig = pyplot.figure(figsize = (8.5, 11))
 
     if country != 'Global':
         parameters = model.parameters.Parameters(country)
     else:
-        parameters = None
+        parameters = GlobalParameters()
 
     nrows = len(attrs_to_plot) + 1
     ncols = 1
@@ -279,7 +270,7 @@ def plot_some_countries():
             if country != 'Global':
                 parameters = model.parameters.Parameters(country)
             else:
-                parameters = None
+                parameters = GlobalParameters()
             attr_label = 'ylabel' if (col == 0) else None
             for (row, attr) in enumerate(attrs_to_plot):
                 ax = fig.add_subplot(gs[row, col])
@@ -317,7 +308,8 @@ def plot_all_countries():
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    plot_some_countries()
+    plot_country('Global')
+    # plot_some_countries()
     pyplot.show()
 
-    plot_all_countries()
+    # plot_all_countries()
