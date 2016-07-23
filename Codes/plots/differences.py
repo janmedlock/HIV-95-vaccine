@@ -83,6 +83,9 @@ def _plot_cell(ax, country, targs, stat,
                country_label = None,
                attr_label = None,
                skip_global = False):
+    '''
+    .. todo:: Do a better job with making the lower ylim 0.
+    '''
     data, t, label, scale, percent = _get_plot_info(country, targs, stat,
                                                     skip_global = skip_global)
 
