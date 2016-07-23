@@ -170,10 +170,10 @@ def plot_selected(skip_global = False):
                               format = '%g%%')
 
         fig.tight_layout()
-        fig.savefig('{}_{}.pdf'.format(common.get_filebase(),
-                                       baseline.replace(' ', '_')))
-        fig.savefig('{}_{}.png'.format(common.get_filebase(),
-                                       baseline.replace(' ', '_')))
+        fileroot = '{}_{}'.format(common.get_filebase(),
+                                  baseline.replace(' ', '_'))
+        fig.savefig('{}.png'.format(fileroot))
+        fig.savefig('{}.pdf'.format(fileroot))
 
 
 def plot_all():
