@@ -168,8 +168,10 @@ def plot_selected(skip_global = False):
                               format = '%g%%')
 
         fig.tight_layout()
-        fig.savefig('{}_{}.pdf'.format(common.get_filebase(), baseline))
-        fig.savefig('{}_{}.png'.format(common.get_filebase(), baseline))
+        fig.savefig('{}_{}.pdf'.format(common.get_filebase(),
+                                       baseline.replace(' ', '_')))
+        fig.savefig('{}_{}.png'.format(common.get_filebase(),
+                                       baseline.replace(' ', '_')))
 
 
 def plot_all():
@@ -178,7 +180,8 @@ def plot_all():
     for targs in targets:
         baseline = targs[0]
         print(baseline)
-        filename = '{}_{}_all.pdf'.format(common.get_filebase(), baseline)
+        filename = '{}_{}_all.pdf'.format(common.get_filebase(),
+                                          baseline.replace(' ', '_'))
         with backend_pdf.PdfPages(filename) as pdf:
             nrows = len(attrs_to_plot) + 1
             ncols = 1
