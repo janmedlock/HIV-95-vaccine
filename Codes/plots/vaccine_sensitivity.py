@@ -212,17 +212,20 @@ def _plot_country(country, treatment_target, results):
     else:
         parameters = None
 
-    gs = gridspec.GridSpec(
-        len(attrs_to_plot) + 1, 1,
-        height_ratios = ((1, ) * len(attrs_to_plot) + (0.2, )))
+    nrows = len(attrs_to_plot) + 1
+    ncols = 1
+    legend_height_ratio = 0.2
+    gs = gridspec.GridSpec(nrows, ncols,
+                           height_ratios = ((1, ) * (nrows - 1)
+                                            + (legend_height_ratio, )))
     with seaborn.color_palette(colors):
-        for (i, attr) in enumerate(attrs_to_plot):
-            ax = fig.add_subplot(gs[i, 0])
+        for (row, attr) in enumerate(attrs_to_plot):
+            ax = fig.add_subplot(gs[row, 0])
             country_label = 'title' if (i == 0) else None
             _plot_cell(ax, country, treatment_target,
                        parameters, results, attr,
                        country_label = country_label)
-            if i != len(attrs_to_plot) - 1:
+            if i != nrows - 2:
                 for l in ax.get_xticklabels():
                     l.set_visible(False)
                 ax.xaxis.offsetText.set_visible(False)
@@ -258,8 +261,10 @@ def plot_some_countries(treatment_target):
     # Legend in tiny bottom row
     ncols = len(common.countries_to_plot)
     nrows = len(attrs_to_plot) + 1
+    legend_height_ratio = 0.35
     gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1) + (0.35, )))
+                           height_ratios = ((1, ) * (nrows - 1)
+                                            + (legend_height_ratio, )))
     with seaborn.color_palette(colors):
         for (col, country) in enumerate(common.countries_to_plot):
             if country != 'Global':
@@ -274,7 +279,7 @@ def plot_some_countries(treatment_target):
                            parameters, results[country], attr,
                            country_label = country_label,
                            attr_label = attr_label)
-                if row != nrows - 1:
+                if row != nrows - 2:
                     for l in ax.get_xticklabels():
                         l.set_visible(False)
                     ax.xaxis.offsetText.set_visible(False)
