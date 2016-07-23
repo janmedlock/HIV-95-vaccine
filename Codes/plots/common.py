@@ -98,7 +98,7 @@ def cmap_reflected(cmap_base):
     return mcolors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
 
 
-_cmap_percentile_base = 'afmhot'
+_cmap_percentile_base = 'cubehelix'
 cmap_percentile = cmap_reflected(_cmap_percentile_base)
 
 

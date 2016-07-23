@@ -226,4 +226,4 @@ if __name__ == '__main__':
 
     # plot_all()
 
-    pyplot.show()
+    # pyplot.show()
