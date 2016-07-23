@@ -308,8 +308,7 @@ def plot_all_countries():
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    plot_country('Global')
-    # plot_some_countries()
+    plot_some_countries()
     pyplot.show()
 
-    # plot_all_countries()
+    plot_all_countries()
