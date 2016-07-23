@@ -52,9 +52,9 @@ def _get_plot_info(parameters, results, stat):
     data_hist = None
     scale = 1
     percent = False
+    data_sim_getter = operator.attrgetter(stat)
 
     if stat == 'infected':
-        data_sim_getter = operator.attrgetter(stat)
         try:
             data_hist = parameters.prevalence * parameters.population
         except AttributeError:
@@ -62,7 +62,6 @@ def _get_plot_info(parameters, results, stat):
         label = 'PLHIV\n(M)'
         scale = 1e6
     elif stat == 'prevalence':
-        data_sim_getter = operator.attrgetter(stat)
         try:
             data_hist = parameters.prevalence
         except AttributeError:
@@ -86,18 +85,25 @@ def _get_plot_info(parameters, results, stat):
         label = 'ART\nCoverage'
         percent = True
     elif stat == 'AIDS':
-        data_sim_getter = operator.attrgetter(stat)
-        data_hist = None
+        try:
+            data_hist = None
+        except AttributeError:
+            pass
         label = 'AIDS\n(1000s)'
         scale = 1e3
     elif stat == 'dead':
-        data_sim_getter = operator.attrgetter(stat)
-        data_hist = None
+        try:
+            data_hist = None
+        except AttributeError:
+            pass
         label = 'Deaths\n(M)'
         scale = 1e6
     elif stat == 'viral_suppression':
         data_sim_getter = _viral_suppression_getter
-        data_hist = None
+        try:
+            data_hist = None
+        except AttributeError:
+            pass
         label = 'Viral\nSupression'
         percent = True
     else:
@@ -226,16 +232,19 @@ def _plot_country(country, results):
     else:
         parameters = None
 
-    gs = gridspec.GridSpec(
-        len(attrs_to_plot) + 1, 1,
-        height_ratios = ((1, ) * len(attrs_to_plot) + (0.2, )))
+    nrows = len(attrs_to_plot) + 1
+    ncols = 1
+    legend_height_ratio = 0.2
+    gs = gridspec.GridSpec(nrows, ncols,
+                           height_ratios = ((1, ) * (nrows - 1)
+                                            + (legend_height_ratio, )))
     with seaborn.color_palette(common.colors_paired):
-        for (i, attr) in enumerate(attrs_to_plot):
-            ax = fig.add_subplot(gs[i, 0])
-            country_label = 'title' if (i == 0) else None
+        for (row, attr) in enumerate(attrs_to_plot):
+            ax = fig.add_subplot(gs[row, 0])
+            country_label = 'title' if (row == 0) else None
             _plot_cell(ax, country, parameters, results, attr,
                        country_label = country_label)
-            if i != len(attrs_to_plot) - 1:
+            if row != nrows - 2:
                 for l in ax.get_xticklabels():
                     l.set_visible(False)
                 ax.xaxis.offsetText.set_visible(False)
@@ -261,8 +270,10 @@ def plot_some_countries():
     # Legend in tiny bottom row
     ncols = len(common.countries_to_plot)
     nrows = len(attrs_to_plot) + 1
+    legend_height_ratio = 0.35
     gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1) + (0.35, )))
+                           height_ratios = ((1, ) * (nrows - 1)
+                                            + (legend_height_ratio, )))
     with seaborn.color_palette(common.colors_paired):
         for (col, country) in enumerate(common.countries_to_plot):
             if country != 'Global':
@@ -277,7 +288,7 @@ def plot_some_countries():
                            country_label = country_label,
                            attr_label = attr_label,
                            plot_hist = False)
-                if row != nrows - 1:
+                if row != nrows - 2:
                     for l in ax.get_xticklabels():
                         l.set_visible(False)
                     ax.xaxis.offsetText.set_visible(False)
