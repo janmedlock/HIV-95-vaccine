@@ -98,8 +98,8 @@ def cmap_reflected(cmap_base):
     return mcolors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
 
 
-cmap_base = 'afmhot'
-cmap = cmap_reflected(cmap_base)
+_cmap_percentile_base = 'afmhot'
+cmap_percentile = cmap_reflected(_cmap_percentile_base)
 
 
 def cmap_scaled(cmap_base, vmin = 0, vmax = 1, N = 256):

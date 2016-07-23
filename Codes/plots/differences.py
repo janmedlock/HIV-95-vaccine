@@ -90,7 +90,8 @@ def _plot_cell(ax, country, targs, stat,
         # Drop infinite data.
         ix = numpy.all(numpy.isfinite(data), axis = 0)
         q, C = common.getpercentiles(data[:, ix])
-        col = ax.pcolormesh(t[ix], q / scale, C, cmap = common.cmap,
+        col = ax.pcolormesh(t[ix], q / scale, C,
+                            cmap = common.cmap_percentile,
                             shading = 'gouraud')
         if numpy.all(q > 0):
             ax.set_ylim(bottom = 0)
@@ -163,7 +164,7 @@ def plot_selected(skip_global = False):
 
         ax = fig.add_subplot(gs[-1, :])
         colorbar.ColorbarBase(ax,
-                              cmap = common.cmap,
+                              cmap = common.cmap_percentile,
                               norm = colors.Normalize(vmin = 0, vmax = 100),
                               orientation = 'horizontal',
                               label = 'Percentile',
