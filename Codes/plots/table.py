@@ -3,7 +3,7 @@
 Make a table from the simulation output.
 
 .. todo:: Update :class:`model.results.Results` to :data:`model.results.data`.
-          See :mod:`~.plots.infections_averted_map`.
+          See :mod:`~.plots.effectiveness`.
 '''
 
 import os

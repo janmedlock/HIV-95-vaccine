@@ -3,7 +3,7 @@
 Calculate PRCCs and make tornado plots.
 
 .. todo:: Update :class:`model.results.Results` to :data:`model.results.data`.
-          See :mod:`~.plots.infections_averted_map`.
+          See :mod:`~.plots.effectiveness`.
 '''
 
 import os.path
@@ -85,8 +85,8 @@ def tornado(ax, country, outcome, t, parameter_samples, colors,
 
 def tornados():
     country = 'Global'
-    outcome = 'prevalence'
-    times = (10, 20)
+    outcome = 'new_infections' # ?? Infections averted ??
+    times = (2025, 2035)
 
     figsize = (8, 6)
     palette = 'Dark2'

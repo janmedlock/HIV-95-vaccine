@@ -37,10 +37,6 @@ prcc
 ----
 .. automodule:: plots.prcc
 
-relative_differences
---------------------
-.. automodule:: plots.relative_differences
-
 seaborn_quiet
 -------------
 .. automodule:: plots.seaborn_quiet
