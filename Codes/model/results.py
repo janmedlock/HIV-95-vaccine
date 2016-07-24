@@ -8,6 +8,9 @@ import functools
 import itertools
 import os
 import time
+import warnings
+
+import tables
 
 from . import global_
 from . import picklefile
@@ -15,8 +18,8 @@ from . import picklefile
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
-modesfile = os.path.join(resultsdir, 'modes.pkl')
-vaccine_sensitivity_file = os.path.join(resultsdir, 'vaccine_sensitivity.pkl')
+modesfile = os.path.join(resultsdir, 'modes.h5')
+vaccine_sensitivity_file = os.path.join(resultsdir, 'vaccine_sensitivity.h5')
 
 
 def exists(country, target):
@@ -31,20 +34,60 @@ def dump(country, target, results):
     picklefile.dump(results, resultsfile)
 
 
-def dump_modes(results):
-    picklefile.dump(results, modesfile)
+class ModesSim:
+    '''
+    Hold results from modes simulations.
+    '''
+    def __getattribute__(self, key):
+        val = super().__getattribute__(key)
+        if isinstance(val, tables.array.Array):
+            val = val.read()
+        return val
 
 
-def load_modes():
-    return picklefile.load(modesfile)
+def load_modes(filename = modesfile):
+    h5file = tables.open_file(filename, 'r')
+    atexit.register(h5file.close)
+    results = collections.OrderedDict()
+    for country_group in h5file.root:
+        country = country_group._v_name
+        results[country] = collections.OrderedDict()
+        for target_group in country_group:
+            target = target_group._v_name
+            results[country][target] = ModesSim()
+            for item in target_group:
+                setattr(results[country][target], item.name, item)
+    return results
 
 
-def dump_vaccine_sensitivity(results):
-    picklefile.dump(results, vaccine_sensitivity_file)
+_attrs_to_dump = list(global_.Global._keys) + ['t']
+for attr in dir(global_.Global):
+    obj = getattr(global_.Global, attr)
+    if isinstance(obj, property):
+        _attrs_to_dump.append(attr)
+
+
+def dump_modes(results, filename = modesfile):
+    with tables.open_file(filename, 'w') as h5file:
+        root = h5file.root
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',
+                                    category = tables.NaturalNameWarning)
+            for (country, country_dict) in results.items():
+                country_group = h5file.create_group(root, country)
+                for (target, sim) in country_dict.items():
+                    target_group = h5file.create_group(country_group, target)
+                    for attr in _attrs_to_dump:
+                        v = getattr(sim, attr)
+                        h5file.create_array(target_group, attr, v)
 
 
 def load_vaccine_sensitivity():
-    return picklefile.load(vaccine_sensitivity_file)
+    return load_modes(vaccine_sensitivity_file)
+
+
+def dump_vaccine_sensitivity(results):
+    dump_modes(results, vaccine_sensitivity_file)
 
 
 class Results:
@@ -105,6 +148,8 @@ class Results:
 class ResultsShelf(collections.abc.MutableMapping):
     '''
     Disk cache for :class:`Results` for speed.
+
+    .. todo:: Use HDF instead of pickle.
     '''
     def __init__(self, debug = False):
         self.debug = debug
