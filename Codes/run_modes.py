@@ -20,7 +20,7 @@ def _run_one(country, targets = None):
         joblib.delayed(model.simulation.Simulation)(parameter_values,
                                                     target)
         for target in targets)
-    retval = model.results.ModesResults.ModesCountry()
+    retval = model.results.ModesResultsCountry()
     for (target, r) in zip(targets, results):
         target_ = str(target)
         retval[target_] = r
@@ -40,7 +40,7 @@ def _build_global(results):
                 results_[target] = collections.OrderedDict()
             results_[target][country] = val
 
-    results['Global'] = model.results.ModesResults.ModesCountry()
+    results['Global'] = model.results.ModesResultsCountry()
     for (target, v) in results_.items():
         results['Global'][target] = model.global_.Global(v)
     return results

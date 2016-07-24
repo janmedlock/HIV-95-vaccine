@@ -1,4 +1,4 @@
-import collections.abc
+import collections
 
 
 class Container(collections.abc.MutableMapping):
@@ -23,3 +23,23 @@ class Container(collections.abc.MutableMapping):
 
     def __len__(self):
         return len(self._keys)
+
+
+class DefaultOrderedDict(collections.OrderedDict):
+    '''
+    The combination of :class:`collections.OrderedDict` and
+    :class:`collections.defaultdict`.
+    '''
+    def __init__(self, default_factory):
+        super().__init__()
+        self.default_factory = default_factory
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            return self.__missing__(key)
+
+    def __missing__(self, key):
+        self[key] = value = self.default_factory()
+        return value

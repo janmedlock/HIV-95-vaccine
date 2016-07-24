@@ -9,41 +9,48 @@ import warnings
 import tables
 
 from . import common
+from .. import container
 from .. import global_
 
 
-modesfile = os.path.join(common.resultsdir, 'modes.h5')
+modesfile = os.path.join(common.resultsdir,
+                         'modes.h5')
+
 vaccine_sensitivity_file = os.path.join(common.resultsdir,
                                         'vaccine_sensitivity.h5')
 
 
-class _DefaultOrderedDict(collections.OrderedDict):
-    def __init__(self, default_factory):
-        super().__init__()
-        self.default_factory = default_factory
-
-    def __getitem__(self, key):
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            return self.__missing__(key)
-
-    def __missing__(self, key):
-        self[key] = value = self.default_factory()
-        return value
+class ModesResultsCountryTarget:
+    '''
+    Store results in an object like obj.attr.
+    '''
 
 
-class ModesResults(_DefaultOrderedDict):
-    class ModesCountry(_DefaultOrderedDict):
-        class ModesSim:
-            pass
+class ModesResultsCountry(container.DefaultOrderedDict):
+    '''
+    Store results in an object like obj[target].attr.
+    '''
+    def __init__(self):
+        super().__init__(ModesResultsCountryTarget)
 
-        def __init__(self):
-            super().__init__(self.ModesSim)
+
+class ModesResults(container.DefaultOrderedDict):
+    '''
+    Store results in an object like obj[country][target].attr.
+    Back that object with a tables HDF5 store.
+    '''
+    # attrs_to_dump are the global_.Global().keys(),
+    # plus 't',
+    # plus any @properties of global_.Global()
+    # (e.g. prevalence, incidence, etc).
+    attrs_to_dump = list(global_.Global._keys) + ['t']
+    for _attr in dir(global_.Global):
+        obj = getattr(global_.Global, _attr)
+        if isinstance(obj, property):
+            attrs_to_dump.append(_attr)
 
     def __init__(self, filename = None, mode = 'r'):
-        super().__init__(self.ModesCountry)
-
+        super().__init__(ModesResultsCountry)
         if filename is None:
             self._h5file = None
         else:
@@ -57,10 +64,7 @@ class ModesResults(_DefaultOrderedDict):
 
     def close(self):
         if self._h5file is not None:
-            try:
-                self._h5file.close()
-            except AttributeError:
-                pass
+            self._h5file.close()
 
     def __del__(self):
         self.close()
@@ -70,12 +74,6 @@ class ModesResults(_DefaultOrderedDict):
 
     def __exit__(self, type_, value, traceback):
         self.close()
-
-    attrs_to_dump = list(global_.Global._keys) + ['t']
-    for _attr in dir(global_.Global):
-        obj = getattr(global_.Global, _attr)
-        if isinstance(obj, property):
-            attrs_to_dump.append(_attr)
 
     def dump(self):
         root = self._h5file.root
