@@ -50,12 +50,12 @@ optimization
 ------------
 .. automodule:: model.optimization
 
-optimization.effectiveness
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+effectiveness
+~~~~~~~~~~~~~
 .. automodule:: model.optimization.effectiveness
 
-optimization.net_benefit
-~~~~~~~~~~~~~~~~~~~~~~~~
+net_benefit
+~~~~~~~~~~~
 .. automodule:: model.optimization.net_benefit
 
 parameters
@@ -82,20 +82,20 @@ results
 -------
 .. automodule:: model.results
 
-results.common
-~~~~~~~~~~~~~~
+common
+~~~~~~
 .. automodule:: model.results.common
 
-results.modes
-~~~~~~~~~~~~~
+modes
+~~~~~
 .. automodule:: model.results.modes
 
-results.samples
-~~~~~~~~~~~~~~~
+samples
+~~~~~~~
 .. automodule:: model.results.samples
 
-results.shelf
-~~~~~~~~~~~~~
+shelf
+~~~~~
 .. automodule:: model.results.shelf
 
 samples

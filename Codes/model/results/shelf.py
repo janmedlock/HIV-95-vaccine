@@ -18,7 +18,7 @@ from .. import picklefile
 
 class ResultsShelf(collections.abc.MutableMapping):
     '''
-    Disk cache for :class:`samples.Results` for speed.
+    Disk cache for :class:`model.results.samples.Results` for speed.
     '''
     def __init__(self, debug = False):
         self.debug = debug

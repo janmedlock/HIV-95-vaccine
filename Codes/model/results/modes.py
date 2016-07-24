@@ -22,13 +22,13 @@ vaccine_sensitivity_file = os.path.join(common.resultsdir,
 
 class ModesResultsCountryTarget:
     '''
-    Store results in an object like obj.attr.
+    Store results in an object like `obj.attr`.
     '''
 
 
 class ModesResultsCountry(container.DefaultOrderedDict):
     '''
-    Store results in an object like obj[target].attr.
+    Store results in an object like `obj[target].attr`.
     '''
     def __init__(self):
         super().__init__(ModesResultsCountryTarget)
@@ -36,8 +36,8 @@ class ModesResultsCountry(container.DefaultOrderedDict):
 
 class ModesResults(container.DefaultOrderedDict):
     '''
-    Store results in an object like obj[country][target].attr.
-    Back that object with a tables HDF5 store.
+    Store results in an object like `obj[country][target].attr`.
+    Back that object with a mod:`tables` HDF5 store.
     '''
     # attrs_to_dump are the global_.Global().keys(),
     # plus 't',
