@@ -1,6 +1,6 @@
 class Container:
     '''
-    A simple class to hold attributed with an interface like
+    A simple class to hold attributes with an interface like
     :class:`collections.OrderedDict`.
     '''
 
