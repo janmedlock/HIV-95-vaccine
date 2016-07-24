@@ -1,4 +1,7 @@
-class Container:
+import collections.abc
+
+
+class Container(collections.abc.MutableMapping):
     '''
     A simple class to hold attributes with an interface like
     :class:`collections.OrderedDict`.
@@ -6,23 +9,17 @@ class Container:
 
     _keys = tuple()
 
-    def keys(self):
-        return self._keys
+    def __getitem__(self, k):
+        return getattr(self, k)
 
-    def items(self):
-        return ((k, getattr(self, k)) for k in self._keys)
+    def __setitem__(self, k, v):
+        return setattr(self, k, v)
 
-    def values(self):
-        return (getattr(self, k) for k in self._keys)
+    def __delitem__(self, k):
+        return delattr(self, k)
+
+    def __iter__(self):
+        return iter(self._keys)
 
     def __len__(self):
         return len(self._keys)
-
-    def __contains__(self, k):
-        return (k in self._keys)
-
-    def __iter__(self):
-        return self.keys()
-
-    def __getitem__(self, k):
-        return getattr(self, k)
