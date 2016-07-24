@@ -94,6 +94,10 @@ results.samples
 ~~~~~~~~~~~~~~~
 .. automodule:: model.results.samples
 
+results.shelf
+~~~~~~~~~~~~~
+.. automodule:: model.results.shelf
+
 samples
 -------
 .. automodule:: model.samples
