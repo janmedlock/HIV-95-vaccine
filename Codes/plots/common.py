@@ -121,3 +121,8 @@ def get_target_label(target):
     if i != -1:
         retval = retval[ : i]
     return retval
+
+
+def viral_suppression_getter(results):
+    return (numpy.asarray(results.viral_suppression)
+            / numpy.asarray(results.infected))

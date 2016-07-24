@@ -18,76 +18,9 @@ from . import picklefile
 
 resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
+
 modesfile = os.path.join(resultsdir, 'modes.h5')
 vaccine_sensitivity_file = os.path.join(resultsdir, 'vaccine_sensitivity.h5')
-
-
-def exists(country, target):
-    resultsfile = Results.get_path(country, target)
-    return os.path.exists(resultsfile)
-    
-
-def dump(country, target, results):
-    resultsfile = Results.get_path(country, target)
-    if not os.path.exists(os.path.join(resultsdir, country)):
-        os.mkdir(os.path.join(resultsdir, country))
-    picklefile.dump(results, resultsfile)
-
-
-class ModesSim:
-    '''
-    Hold results from modes simulations.
-    '''
-    def __getattribute__(self, key):
-        val = super().__getattribute__(key)
-        if isinstance(val, tables.array.Array):
-            val = val.read()
-        return val
-
-
-def load_modes(filename = modesfile):
-    h5file = tables.open_file(filename, 'r')
-    atexit.register(h5file.close)
-    results = collections.OrderedDict()
-    for country_group in h5file.root:
-        country = country_group._v_name
-        results[country] = collections.OrderedDict()
-        for target_group in country_group:
-            target = target_group._v_name
-            results[country][target] = ModesSim()
-            for item in target_group:
-                setattr(results[country][target], item.name, item)
-    return results
-
-
-_attrs_to_dump = list(global_.Global._keys) + ['t']
-for attr in dir(global_.Global):
-    obj = getattr(global_.Global, attr)
-    if isinstance(obj, property):
-        _attrs_to_dump.append(attr)
-
-
-def dump_modes(results, filename = modesfile):
-    with tables.open_file(filename, 'w') as h5file:
-        root = h5file.root
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore',
-                                    category = tables.NaturalNameWarning)
-            for (country, country_dict) in results.items():
-                country_group = h5file.create_group(root, country)
-                for (target, sim) in country_dict.items():
-                    target_group = h5file.create_group(country_group, target)
-                    for attr in _attrs_to_dump:
-                        v = getattr(sim, attr)
-                        h5file.create_array(target_group, attr, v)
-
-
-def load_vaccine_sensitivity():
-    return load_modes(vaccine_sensitivity_file)
-
-
-def dump_vaccine_sensitivity(results):
-    dump_modes(results, vaccine_sensitivity_file)
 
 
 class Results:
@@ -143,6 +76,18 @@ class Results:
             target = target()
         path = os.path.join(resultsdir, country, '{!s}.pkl'.format(target))
         return path
+
+
+def exists(country, target):
+    resultsfile = Results.get_path(country, target)
+    return os.path.exists(resultsfile)
+
+
+def dump(country, target, results):
+    resultsfile = Results.get_path(country, target)
+    if not os.path.exists(os.path.join(resultsdir, country)):
+        os.mkdir(os.path.join(resultsdir, country))
+    picklefile.dump(results, resultsfile)
 
 
 class ResultsShelf(collections.abc.MutableMapping):
@@ -272,3 +217,91 @@ class ResultsShelf(collections.abc.MutableMapping):
 
 
 data = ResultsShelf()
+
+
+class DefaultOrderedDict(collections.OrderedDict):
+    def __init__(self, default_factory):
+        super().__init__()
+        self.default_factory = default_factory
+
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            return self.__missing__(key)
+
+    def __missing__(self, key):
+        self[key] = value = self.default_factory()
+        return value
+
+
+class ModesResults(DefaultOrderedDict):
+    class ModesCountry(DefaultOrderedDict):
+        class ModesSim:
+            pass
+
+        def __init__(self):
+            super().__init__(self.ModesSim)
+
+    def __init__(self, filename = None, mode = 'r'):
+        super().__init__(self.ModesCountry)
+
+        if filename is None:
+            self._h5file = None
+        else:
+            self._h5file = tables.open_file(filename, mode)
+            for country_group in self._h5file.root:
+                country = country_group._v_name
+                for target_group in country_group:
+                    target = target_group._v_name
+                    for item in target_group:
+                        setattr(self[country][target], item.name, item)
+
+    def close(self):
+        if self._h5file is not None:
+            try:
+                self._h5file.close()
+            except AttributeError:
+                pass
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_, value, traceback):
+        self.close()
+
+    _attrs_to_dump = list(global_.Global._keys) + ['t']
+    for attr in dir(global_.Global):
+        obj = getattr(global_.Global, attr)
+        if isinstance(obj, property):
+            _attrs_to_dump.append(attr)
+
+    def dump(self):
+        root = self._h5file.root
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore',
+                                    category = tables.NaturalNameWarning)
+            for (country, country_dict) in self.items():
+                if country not in root:
+                    country_group = self._h5file.create_group(root, country)
+                for (target, sim) in country_dict.items():
+                    if target  not in country_group:
+                        target_group = self._h5file.create_group(country_group,
+                                                                 target)
+                    for attr in self._attrs_to_dump:
+                        if attr not in target_group:
+                            self._h5file.create_array(target_group,
+                                                      attr,
+                                                      getattr(sim, attr))
+        self._h5file.flush()
+
+
+def load_modes():
+    return ModesResults(modesfile)
+
+
+def load_vaccine_sensitivity():
+    return ModesResults(vaccine_sensitivity_file)

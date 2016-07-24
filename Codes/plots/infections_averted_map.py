@@ -110,18 +110,18 @@ def _get_infections_per_capita(result):
 
 
 def _get_infections_per_capita_averted():
-    results = model.results.load_modes()
+    with model.results.load_modes() as results:
+        countries = list(results.keys())
+        countries.remove('Global')
 
-    countries = list(results.keys())
-    countries.remove('Global')
-
-    infections_per_capita_averted = pandas.DataFrame(columns = interventions,
-                                                     index = countries)
-    for country in countries:
-        x = _get_infections_per_capita(results[country][baseline])
-        for intv in interventions:
-            y = _get_infections_per_capita(results[country][intv])
-            infections_per_capita_averted.loc[country, intv] = x - y
+        infections_per_capita_averted = pandas.DataFrame(
+            columns = interventions,
+            index = countries)
+        for country in countries:
+            x = _get_infections_per_capita(results[country][baseline])
+            for intv in interventions:
+                y = _get_infections_per_capita(results[country][intv])
+                infections_per_capita_averted.loc[country, intv] = x - y
     return infections_per_capita_averted
 
 

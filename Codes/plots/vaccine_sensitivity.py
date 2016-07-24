@@ -57,10 +57,6 @@ def get_target_label(treatment_target, target):
         return retval
 
 
-def _viral_suppression_getter(results):
-    return results.viral_suppression / results.infected
-
-
 def _get_targets(treatment_target):
     return [str(t) for t in model.targets.vaccine_sensitivity_all
             if str(t._treatment_targets) == str(treatment_target)]
@@ -95,7 +91,7 @@ def _get_plot_info(treatment_target, parameters, results, stat):
         label = 'Deaths\n(M)'
         scale = 1e6
     elif stat == 'viral_suppression':
-        data_sim_getter = _viral_suppression_getter
+        data_sim_getter = common.viral_suppression_getter
         label = 'Viral\nSupression'
         percent = True
     else:
@@ -137,7 +133,7 @@ def _plot_cell(ax, country, treatment_target, parameters, results, stat,
     for (target, x) in zip(targets, data_sim):
         if x is not None:
             tlabel = get_target_label(treatment_target, target)
-            ax.plot(t, x / scale,
+            ax.plot(t, numpy.asarray(x) / scale,
                     label = tlabel,
                     **_get_kwds(tlabel))
 
@@ -240,53 +236,54 @@ def _plot_country(country, treatment_target, results):
 
 
 def plot_country(country, treatment_target):
-    results = model.results.load_vaccine_sensitivity()
-    return _plot_country(country, treatment_target, results[country])
+    with model.results.load_vaccine_sensitivity() as results:
+        return _plot_country(country, treatment_target, results[country])
 
 
 def plot_all_countries(treatment_target):
     results = model.results.load_vaccine_sensitivity()
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        for country in results.keys():
-            fig = _plot_country(country, treatment_target, results[country])
-            pdf.savefig(fig)
-            pyplot.close(fig)
+        with model.results.load_vaccine_sensitivity() as results:
+            for country in results.keys():
+                fig = _plot_country(country, treatment_target,
+                                    results[country])
+                pdf.savefig(fig)
+                pyplot.close(fig)
 
 
 def plot_some_countries(treatment_target):
-    results = model.results.load_vaccine_sensitivity()
+    with model.results.load_vaccine_sensitivity() as results:
+        fig = pyplot.figure(figsize = (8.5, 7.5))
+        # Legend in tiny bottom row
+        ncols = len(common.countries_to_plot)
+        nrows = len(attrs_to_plot) + 1
+        legend_height_ratio = 0.35
+        gs = gridspec.GridSpec(nrows, ncols,
+                               height_ratios = ((1, ) * (nrows - 1)
+                                                + (legend_height_ratio, )))
+        with seaborn.color_palette(colors):
+            for (col, country) in enumerate(common.countries_to_plot):
+                if country != 'Global':
+                    parameters = model.parameters.Parameters(country)
+                else:
+                    parameters = None
+                attr_label = 'ylabel' if (col == 0) else None
+                for (row, attr) in enumerate(attrs_to_plot):
+                    ax = fig.add_subplot(gs[row, col])
+                    country_label = 'title' if (row == 0) else None
+                    _plot_cell(ax, country, treatment_target,
+                               parameters, results[country], attr,
+                               country_label = country_label,
+                               attr_label = attr_label)
+                    if row != nrows - 2:
+                        for l in ax.get_xticklabels():
+                            l.set_visible(False)
+                        ax.xaxis.offsetText.set_visible(False)
 
-    fig = pyplot.figure(figsize = (8.5, 7.5))
-    # Legend in tiny bottom row
-    ncols = len(common.countries_to_plot)
-    nrows = len(attrs_to_plot) + 1
-    legend_height_ratio = 0.35
-    gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1)
-                                            + (legend_height_ratio, )))
-    with seaborn.color_palette(colors):
-        for (col, country) in enumerate(common.countries_to_plot):
-            if country != 'Global':
-                parameters = model.parameters.Parameters(country)
-            else:
-                parameters = None
-            attr_label = 'ylabel' if (col == 0) else None
-            for (row, attr) in enumerate(attrs_to_plot):
-                ax = fig.add_subplot(gs[row, col])
-                country_label = 'title' if (row == 0) else None
-                _plot_cell(ax, country, treatment_target,
-                           parameters, results[country], attr,
-                           country_label = country_label,
-                           attr_label = attr_label)
-                if row != nrows - 2:
-                    for l in ax.get_xticklabels():
-                        l.set_visible(False)
-                    ax.xaxis.offsetText.set_visible(False)
-
-        ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-        targets = results[country].keys()
-        _make_legend(ax, treatment_target)
+            ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
+            targets = results[country].keys()
+            _make_legend(ax, treatment_target)
 
     fig.tight_layout()
 

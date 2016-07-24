@@ -20,7 +20,7 @@ def _run_one(country, targets = None):
         joblib.delayed(model.simulation.Simulation)(parameter_values,
                                                     target)
         for target in targets)
-    retval = collections.OrderedDict()
+    retval = model.results.ModesResults.ModesCountry()
     for (target, r) in zip(targets, results):
         target_ = str(target)
         retval[target_] = r
@@ -40,33 +40,27 @@ def _build_global(results):
                 results_[target] = collections.OrderedDict()
             results_[target][country] = val
 
-    results['Global'] = collections.OrderedDict()
+    results['Global'] = model.results.ModesResults.ModesCountry()
     for (target, v) in results_.items():
         results['Global'][target] = model.global_.Global(v)
-
-    # Put 'Global' first.
-    retval = collections.OrderedDict()
-    retval['Global'] = results['Global']
-    for country in countries:
-        retval[country] = results[country]
-    return retval
+    return results
 
 
 def _run_all(targets = None):
+    results = model.results.load_vaccine_sensitivity()
     countries = model.datasheet.get_country_list()
-    try:
-        results = model.results.load_vaccine_sensitivity()
-    except:
-        results = collections.OrderedDict()
     updated = False
+    # Put 'Global' first.
+    if 'Global' not in results:
+        results['Global']
     for country in countries:
         if country not in results:
             print(country)
             results[country] = _run_one(country, targets = targets)
             updated = True
     if updated:
-        results = _build_global(results)
-        model.results.dump_vaccine_sensitivity(results)
+        _build_global(results)
+        results.dump()
     return results
 
 

@@ -43,10 +43,6 @@ country_label_replacements = {
 }
 
 
-def _viral_suppression_getter(results):
-    return results.viral_suppression / results.infected
-
-
 def _get_plot_info(parameters, results, stat):
     data_hist = None
     scale = 1
@@ -80,7 +76,7 @@ def _get_plot_info(parameters, results, stat):
         label = 'Deaths\n(M)'
         scale = 1e6
     elif stat == 'viral_suppression':
-        data_sim_getter = _viral_suppression_getter
+        data_sim_getter = common.viral_suppression_getter
         data_hist = None
         label = 'Viral\nSupression'
         percent = True
@@ -121,7 +117,7 @@ def _plot_cell(ax, country, parameters, results, stat,
     # Plot simulation data.
     for (target, x) in zip(targets, data_sim):
         if x is not None:
-            ax.plot(t, x / scale,
+            ax.plot(t, numpy.asarray(x) / scale,
                     label = common.get_target_label(target),
                     alpha = 0.7,
                     zorder = 1)
@@ -250,44 +246,43 @@ def _plot_country(country, results):
 
 
 def plot_country(country):
-    results = model.results.load_modes()
-    return _plot_country(country, results[country])
+    with model.results.load_modes() as results:
+        return _plot_country(country, results[country])
 
 
 def plot_some_countries():
-    results = model.results.load_modes()
+    with model.results.load_modes() as results:
+        fig = pyplot.figure(figsize = (8.5, 7.5))
+        # Legend in tiny bottom row
+        ncols = len(common.countries_to_plot)
+        nrows = len(attrs_to_plot) + 1
+        legend_height_ratio = 0.35
+        gs = gridspec.GridSpec(nrows, ncols,
+                               height_ratios = ((1, ) * (nrows - 1)
+                                                + (legend_height_ratio, )))
+        with seaborn.color_palette(common.colors_paired):
+            for (col, country) in enumerate(common.countries_to_plot):
+                if country != 'Global':
+                    parameters = model.parameters.Parameters(country)
+                else:
+                    parameters = GlobalParameters()
+                attr_label = 'ylabel' if (col == 0) else None
+                for (row, attr) in enumerate(attrs_to_plot):
+                    ax = fig.add_subplot(gs[row, col])
+                    country_label = 'title' if (row == 0) else None
+                    _plot_cell(ax, country, parameters, results[country], attr,
+                               country_label = country_label,
+                               attr_label = attr_label,
+                               plot_hist = False)
+                    if row != nrows - 2:
+                        for l in ax.get_xticklabels():
+                            l.set_visible(False)
+                        ax.xaxis.offsetText.set_visible(False)
 
-    fig = pyplot.figure(figsize = (8.5, 7.5))
-    # Legend in tiny bottom row
-    ncols = len(common.countries_to_plot)
-    nrows = len(attrs_to_plot) + 1
-    legend_height_ratio = 0.35
-    gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1)
-                                            + (legend_height_ratio, )))
-    with seaborn.color_palette(common.colors_paired):
-        for (col, country) in enumerate(common.countries_to_plot):
-            if country != 'Global':
-                parameters = model.parameters.Parameters(country)
-            else:
-                parameters = GlobalParameters()
-            attr_label = 'ylabel' if (col == 0) else None
-            for (row, attr) in enumerate(attrs_to_plot):
-                ax = fig.add_subplot(gs[row, col])
-                country_label = 'title' if (row == 0) else None
-                _plot_cell(ax, country, parameters, results[country], attr,
-                           country_label = country_label,
-                           attr_label = attr_label,
-                           plot_hist = False)
-                if row != nrows - 2:
-                    for l in ax.get_xticklabels():
-                        l.set_visible(False)
-                    ax.xaxis.offsetText.set_visible(False)
-
-        ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-        targets = results[country].keys()
-        _make_legend(ax, targets,
-                     plot_hist = False)
+            ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
+            targets = results[country].keys()
+            _make_legend(ax, targets,
+                         plot_hist = False)
 
     fig.tight_layout()
 
@@ -297,13 +292,13 @@ def plot_some_countries():
 
 
 def plot_all_countries():
-    results = model.results.load_modes()
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        for country in results.keys():
-            fig = _plot_country(country, results[country])
-            pdf.savefig(fig)
-            pyplot.close(fig)
+        with model.results.load_modes() as results:
+            for country in results.keys():
+                fig = _plot_country(country, results[country])
+                pdf.savefig(fig)
+                pyplot.close(fig)
 
 
 if __name__ == '__main__':
