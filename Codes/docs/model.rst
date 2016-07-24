@@ -82,6 +82,18 @@ results
 -------
 .. automodule:: model.results
 
+results.common
+~~~~~~~~~~~~~~
+.. automodule:: model.results.common
+
+results.modes
+~~~~~~~~~~~~~
+.. automodule:: model.results.modes
+
+results.samples
+~~~~~~~~~~~~~~~
+.. automodule:: model.results.samples
+
 samples
 -------
 .. automodule:: model.samples

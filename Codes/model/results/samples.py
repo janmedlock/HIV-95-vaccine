@@ -1,5 +1,5 @@
 '''
-Store and retrieve simulation results.
+Store and retrieve results from simulations with parameter samples.
 '''
 
 import atexit
@@ -8,19 +8,10 @@ import functools
 import itertools
 import os
 import time
-import warnings
 
-import tables
-
-from . import global_
-from . import picklefile
-
-
-resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          '../results')
-
-modesfile = os.path.join(resultsdir, 'modes.h5')
-vaccine_sensitivity_file = os.path.join(resultsdir, 'vaccine_sensitivity.h5')
+from . import common
+from .. import global_
+from .. import picklefile
 
 
 class Results:
@@ -54,8 +45,8 @@ class Results:
 
     def _build_global(self):
         data = {}
-        for country in sorted(os.listdir(resultsdir)):
-            if os.path.isdir(os.path.join(resultsdir, country)):
+        for country in sorted(os.listdir(common.resultsdir)):
+            if os.path.isdir(os.path.join(common.resultsdir, country)):
                 if exists(country, self._target):
                     data[country] = Results(country, self._target)
         self._data = global_.Global(data)
@@ -74,7 +65,8 @@ class Results:
         if isinstance(target, type):
             # It's a class.
             target = target()
-        path = os.path.join(resultsdir, country, '{!s}.pkl'.format(target))
+        path = os.path.join(common.resultsdir, country,
+                            '{!s}.pkl'.format(target))
         return path
 
 
@@ -85,8 +77,8 @@ def exists(country, target):
 
 def dump(country, target, results):
     resultsfile = Results.get_path(country, target)
-    if not os.path.exists(os.path.join(resultsdir, country)):
-        os.mkdir(os.path.join(resultsdir, country))
+    if not os.path.exists(os.path.join(common.resultsdir, country)):
+        os.mkdir(os.path.join(common.resultsdir, country))
     picklefile.dump(results, resultsfile)
 
 
@@ -98,7 +90,7 @@ class ResultsShelf(collections.abc.MutableMapping):
     '''
     def __init__(self, debug = False):
         self.debug = debug
-        self._shelfpath = os.path.join(resultsdir, '_cache.pkl')
+        self._shelfpath = os.path.join(common.resultsdir, '_cache.pkl')
         # Delay opening shelf.
         # self._open_shelf()
 
@@ -217,91 +209,3 @@ class ResultsShelf(collections.abc.MutableMapping):
 
 
 data = ResultsShelf()
-
-
-class DefaultOrderedDict(collections.OrderedDict):
-    def __init__(self, default_factory):
-        super().__init__()
-        self.default_factory = default_factory
-
-    def __getitem__(self, key):
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            return self.__missing__(key)
-
-    def __missing__(self, key):
-        self[key] = value = self.default_factory()
-        return value
-
-
-class ModesResults(DefaultOrderedDict):
-    class ModesCountry(DefaultOrderedDict):
-        class ModesSim:
-            pass
-
-        def __init__(self):
-            super().__init__(self.ModesSim)
-
-    def __init__(self, filename = None, mode = 'r'):
-        super().__init__(self.ModesCountry)
-
-        if filename is None:
-            self._h5file = None
-        else:
-            self._h5file = tables.open_file(filename, mode)
-            for country_group in self._h5file.root:
-                country = country_group._v_name
-                for target_group in country_group:
-                    target = target_group._v_name
-                    for item in target_group:
-                        setattr(self[country][target], item.name, item)
-
-    def close(self):
-        if self._h5file is not None:
-            try:
-                self._h5file.close()
-            except AttributeError:
-                pass
-
-    def __del__(self):
-        self.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type_, value, traceback):
-        self.close()
-
-    _attrs_to_dump = list(global_.Global._keys) + ['t']
-    for attr in dir(global_.Global):
-        obj = getattr(global_.Global, attr)
-        if isinstance(obj, property):
-            _attrs_to_dump.append(attr)
-
-    def dump(self):
-        root = self._h5file.root
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore',
-                                    category = tables.NaturalNameWarning)
-            for (country, country_dict) in self.items():
-                if country not in root:
-                    country_group = self._h5file.create_group(root, country)
-                for (target, sim) in country_dict.items():
-                    if target  not in country_group:
-                        target_group = self._h5file.create_group(country_group,
-                                                                 target)
-                    for attr in self._attrs_to_dump:
-                        if attr not in target_group:
-                            self._h5file.create_array(target_group,
-                                                      attr,
-                                                      getattr(sim, attr))
-        self._h5file.flush()
-
-
-def load_modes():
-    return ModesResults(modesfile)
-
-
-def load_vaccine_sensitivity():
-    return ModesResults(vaccine_sensitivity_file)
