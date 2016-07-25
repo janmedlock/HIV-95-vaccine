@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 '''
 Make a table from the simulation output.
-
-.. todo:: Update :class:`model.results.Results`
-          to :data:`model.results.ResultsCache`.
-          See :mod:`~.plots.effectiveness_samples`.
 '''
 
 import os
@@ -18,57 +14,61 @@ import common
 sys.path.append('..')
 import model
 
-alpha = 0.5
+countries = ['Global'] + sorted(model.datasheet.get_country_list())
 
-keys_ordered = ('Status Quo', '90–90–90')
+baseline = model.targets.StatusQuo()
+targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+targets = list(map(str, targets))
+
+attrs = ['new_infections', 'infected', 'AIDS']
+
+attr_names = dict(new_infections = 'New HIV Infections',
+                  infected = 'PLHIV',
+                  AIDS = 'People living with AIDS')
 
 # Time points for comparison.
-years = [2025, 2035]
+times = [2025, 2035]
 
-measures = ('New HIV Infections', 'PLHIV', 'People living with AIDS')
+stats = ('median', 'CI0', 'CI1')
+alpha = 0.5
+
 
 def _main():
-    countries = ['Global'] + sorted(model.get_country_list())
-
-    stats = ('median', 'CI0', 'CI1')
-
     tuples = []
     for c in countries:
-        for k in keys_ordered:
-            tuples.append((c, k))
+        for t in targets:
+            tuples.append((c, t))
     ix = pandas.MultiIndex.from_tuples(tuples)
 
     tuples = []
-    for y in years:
-        for m in measures:
+    for t in times:
+        for a in attrs:
             for s in stats:
-                tuples.append((y, m, s))
+                tuples.append((t, attr_names[a], s))
     cix = pandas.MultiIndex.from_tuples(tuples)
 
     df = pandas.DataFrame(index = ix, columns = cix)
-    for c in countries:
-        with model.results.Results(c) as results:
-            for m in measures:
-                if m == 'New HIV Infections':
-                    tx = results.getfield('new_infections')
-                elif m == 'PLHIV':
-                    tx = results.getfield('infected')
-                elif m == 'People living with AIDS':
-                    tx = results.getfield('AIDS')
-                else:
-                    raise ValueError
-                t, x = tx
-                for k in keys_ordered:
-                    avg, CI = common.getstats(x[k], alpha = alpha)
+    with model.results.ResultsCache() as results:
+        for country in countries:
+            for attr in attrs:
+                for target in targets:
+                    try:
+                        t = results[country][target].t
+                        x = getattr(results[country][target], attr)
+                    except FileNotFoundError:
+                        pass
+                    else:
+                        avg, CI = common.getstats(x, alpha = alpha)
 
-                    for (v, s) in zip((avg, CI[0], CI[1]), stats):
-                        z = numpy.interp(years, t, v)
-                        for (i, y) in enumerate(years):
-                            df.loc[(c, k), (y, m, s)] = z[i]
+                        for (v, s) in zip((avg, CI[0], CI[1]), stats):
+                            z = numpy.interp(times, t, v)
+                            for (i, t_) in enumerate(times):
+                                df.loc[(country, target),
+                                       (t_, attr_names[attr], s)] = z[i]
 
     # Round.
     # df = df.round()
-    df = (df + 0.5).astype(int)
+    df = df.applymap(numpy.round)
 
     filename = '{}.csv'.format(common.get_filebase())
     df.to_csv(filename)
