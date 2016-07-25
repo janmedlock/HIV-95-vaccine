@@ -41,4 +41,4 @@ folderId = '0B_53qFSHU3XKNjc0d3lTV2s4cWM'
 if __name__ == '__main__':
     with drive.Driver(parent = folderId) as d:
         for f in files:
-            d.upload(f)
+            d.upload_if_newer(f)

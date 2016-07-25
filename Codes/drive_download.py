@@ -18,4 +18,4 @@ folderId = '0B5E-ra0QvBe-bjlVWGVzREgwbTg'
 if __name__ == '__main__':
     with drive.Driver(parent = folderId) as d:
         for f in files:
-            d.export(**f)
+            d.export_if_newer(**f)

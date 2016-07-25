@@ -1,3 +1,4 @@
+import dateutil.parser
 import mimetypes
 import os.path
 
@@ -67,7 +68,54 @@ class Driver:
                 "Multiple files in directory with name = '{}'!  {}".format(
                     filename, ids))
 
-    def upload(self, filename):
+    def _get_mtime_fileId(self, fileId):
+        request = self.drive_service.files().get(fileId = fileId,
+                                                 fields = 'modifiedTime')
+        response = request.execute()
+        dt = dateutil.parser.parse(response['modifiedTime'])
+        return dt.timestamp()
+
+    def get_mtime(self, filename):
+        fileId = self.find_fileId(filename)
+        return self._get_mtime_fileId(self, fileId)
+
+    def _local_is_newer_fileId(self, localfilename, drivefileId):
+        try:
+            mtime_local = os.path.getmtime(localfilename)
+        except FileNotFoundError:
+            return False
+        else:
+            mtime_drive = self._get_mtime_fileId(drivefileId)
+            return (mtime_local > mtime_drive)
+
+    def _drive_is_newer_fileId(self, localfilename, drivefileId):
+        try:
+            mtime_local = os.path.getmtime(localfilename)
+        except FileNotFoundError:
+            return False
+        else:
+            mtime_drive = self._get_mtime_fileId(drivefileId)
+            return (mtime_local < mtime_drive)
+
+    def local_is_newer(self, localfilename, drivefilename):
+        try:
+            mtime_local = os.path.getmtime(localfilename)
+        except FileNotFoundError:
+            return False
+        else:
+            mtime_drive = self.get_mtime(drivefilename)
+            return (mtime_local > mtime_drive)
+
+    def drive_is_newer(self, localfilename, drivefilename):
+        try:
+            mtime_local = os.path.getmtime(localfilename)
+        except FileNotFoundError:
+            return False
+        else:
+            mtime_drive = self.get_mtime(drivefilename)
+            return (mtime_local < mtime_drive)
+
+    def upload(self, filename, only_if_local_is_newer = False):
         media_body = apiclient.http.MediaFileUpload(
             filename,
             resumable = True)
@@ -76,51 +124,59 @@ class Driver:
         fileId = self.find_fileId(basename)
 
         if fileId is None:
-            print('Creating {}'.format(basename))
-        
+            print('{}: creating in Drive.'.format(basename))
             job = self.drive_service.files().create(
                 body = dict(name = basename,
                             parents = [self.parent]),
                 media_body = media_body)
-        else:
-            print('Updating {}'.format(basename))
-
+            return job.execute()
+        elif ((not only_if_local_is_newer)
+              or (self._local_is_newer_fileId(filename, fileId))):
+            print('{}: updating to Drive.'.format(basename))
             job = self.drive_service.files().update(
                 fileId = fileId,
                 body = dict(name = basename),
                 media_body = media_body)
+            return job.execute()
+        else:
+            print('{}: up-to-date in Drive.'.format(basename))
 
-        return job.execute()
+    def upload_if_newer(self, filename):
+        return self.upload(filename, only_if_local_is_newer = True)
 
-    def download(self, filename):
+    def download(self, filename, only_if_drive_is_newer = False):
         fileId = self.find_fileId(filename)
-
         if fileId is None:
             raise ValueError("No file '{}' in directory!".format(filename))
+        elif ((not only_if_drive_is_newer)
+              or (self._drive_is_newer_fileId(filename, fileId))):
+            print('{}: downloading from Drive.'.format(filename))
+            job = self.drive_service.files().get_media(fileId = fileId)
+            response = job.execute()
+            with open(filename, 'wb') as fd:
+                fd.write(response)
+        else:
+            print('{}: up-to-date locally.'.format(filename))
 
-        print('Downloading {}'.format(filename))
+    def download_if_newer(self, filename):
+        return self.download(filename, only_if_drive_is_newer = True)
 
-        job = self.drive_service.files().get_media(fileId = fileId)
-
-        response = job.execute()
-
-        with open(filename, 'wb') as fd:
-            fd.write(response)
-
-    def export(self, filename, mimeType):
+    def export(self, filename, mimeType, only_if_drive_is_newer = False):
         fileId = self.find_fileId(filename)
-
-        if fileId is None:
-            raise ValueError("No file '{}' in directory!".format(filename))
-
-        print('Exporting {}'.format(filename))
-
-        job = self.drive_service.files().export(
-            fileId = fileId,
-            mimeType = mimeType)
-
-        response = job.execute()
-
         exportname = filename + mimetypes.guess_extension(mimeType)
-        with open(exportname, 'wb') as fd:
-            fd.write(response)
+        if fileId is None:
+            raise ValueError("No file '{}' in directory!".format(filename))
+        elif ((not only_if_drive_is_newer)
+              or (self._drive_is_newer_fileId(exportname, fileId))):
+            print('{}: exporting from Drive.'.format(filename))
+            job = self.drive_service.files().export(
+                fileId = fileId,
+                mimeType = mimeType)
+            response = job.execute()
+            with open(exportname, 'wb') as fd:
+                fd.write(response)
+        else:
+            print('{}: up-to-date locally.'.format(exportname))
+
+    def export_if_newer(self, filename, mimeType):
+        return self.export(filename, mimeType, only_if_drive_is_newer = True)
