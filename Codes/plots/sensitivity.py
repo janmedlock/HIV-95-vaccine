@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 '''
-Calculate PRCCs.
-
-.. todo:: Update :class:`model.results.Results`
-          to :data:`model.results.ResultsCache`.
-          See :mod:`~.plots.effectiveness_samples`.
+Plot correlation between samples and outcomes.
 '''
 
 import os.path
@@ -24,30 +20,18 @@ sys.path.append('..')
 import model
 
 
-parameter_name = dict(
-    coital_acts_per_year = 'annual\nsex\nacts',
-    death_years_lost_by_suppression = 'life-years lost:\non suppression',
-    progression_rate_acute = 'acute\nprogression\nrate',
-    suppression_rate = 'suppression\nrate',
-    transmission_per_coital_act_acute = 'transmission\nper coital act:\nacute',
-    transmission_per_coital_act_unsuppressed \
-        = 'transmission\nper coital act:\nunsuppressed',
-    transmission_per_coital_act_reduction_by_suppression \
-        = 'transmission\nper coital act:\nreduction by\nsuppression'
-)
-
-
-def get_outcome_samples(country, stat, t):
-    with model.results.Results(country) as results:
-        t_, x = results.getfield('prevalence')
-    y = x['Status Quo'] - x['90–90–90']
-    interp = interpolate.interp1d(t_, y, axis = -1)
+def get_outcome_samples(results, country, targets, attr, t):
+    t_ = getattr(results[country][targets[0]], 't')
+    x, y =  (numpy.asarray(getattr(results[country][target], attr))
+             for target in targets)
+    z = x - y
+    interp = interpolate.interp1d(t_, z, axis = -1)
     outcome_samples = interp(t)
     return outcome_samples
 
 
-def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
-               colors = None):
+def plot_ranks(X, y, outcome, parameter_names = None, alpha = 0.7,
+               size = 2, colors = None):
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
@@ -79,8 +63,10 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
             ax[1].set_xlabel('residual rank\n parameter value')
 
         if i == n // 2:
-            ax[0].set_ylabel('rank\nprevalence reduction')
-            ax[1].set_ylabel('residual rank\nprevalence reduction')
+            ax[0].set_ylabel('rank reduction in\n{}'.format(
+                outcome.replace('_', ' ')))
+            ax[1].set_ylabel('residual rank reduction in\n{}'.format(
+                outcome.replace('_', ' ')))
 
         ax[1].yaxis.set_ticks_position('right')
         ax[1].yaxis.set_label_position('right')
@@ -91,7 +77,7 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
         for axis in (ax[0].xaxis, ax[0].yaxis):
             axis.set_ticks([0, 0.5, 1])
         for axis in (ax[1].xaxis, ax[1].yaxis):
-            axis.set_major_locator(ticker.MaxNLocator(nbins = 6))
+            axis.set_major_locator(ticker.MaxNLocator(nbins = 3))
 
         for ax_ in (ax[0], ax[1]):
             for axis in (ax_.xaxis, ax_.yaxis):
@@ -126,8 +112,8 @@ def plot_ranks(X, y, parameter_names = None, alpha = 0.7, size = 2,
     fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
 
 
-def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2,
-                 colors = None):
+def plot_samples(X, y, outcome, parameter_names = None, alpha = 0.7,
+                 size = 2, colors = None):
     m = numpy.shape(X)[0]
     n = numpy.shape(X)[-1]
 
@@ -155,8 +141,10 @@ def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2,
             ax[0].set_xlabel('parameter value')
             ax[1].set_xlabel('residual\nparameter value')
         if i == n // 2:
-            ax[0].set_ylabel('prevalence reduction')
-            ax[1].set_ylabel('residual\nprevalence reduction')
+            ax[0].set_ylabel('reduction in\n{}'.format(
+                outcome.replace('_', ' ')))
+            ax[1].set_ylabel('residual reduction in \n{}'.format(
+                outcome.replace('_', ' ')))
 
         ax[1].yaxis.set_ticks_position('right')
         ax[1].yaxis.set_label_position('right')
@@ -192,7 +180,7 @@ def plot_samples(X, y, parameter_names = None, alpha = 0.7, size = 2,
     fig.savefig('{}.pdf'.format(common.get_filebase()))
 
 
-def tornado(X, y, parameter_names = None, colors = None):
+def tornado(X, y, outcome, parameter_names = None, colors = None):
     n = numpy.shape(X)[-1]
 
     if parameter_names is None:
@@ -224,36 +212,40 @@ def tornado(X, y, parameter_names = None, colors = None):
 
 
 if __name__ == '__main__':
-    country = 'Global'
-    stat = 'prevalence'
-    t = 20
+    # country = 'Global'
+    country = 'South Africa'
+    outcome = 'new_infections'
+    baseline = model.targets.StatusQuo()
+    targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+    targets = list(map(str, targets))
+    time = 2035
 
     parameter_samples = model.samples.load()
-    outcome_samples = get_outcome_samples(country, stat, t)
+    # Get fancy names.
+    parameter_names = common.parameter_names
 
-    # Get names.
-    parameters = model.parameters.Parameters.get_rv_names()
-    parameter_names = [parameter_name[p] for p in parameters]
+    with model.results.ResultsCache() as results:
+        outcome_samples = get_outcome_samples(results, country, targets,
+                                              outcome, time)
 
-    # Order parameters by abs(prcc).
-    rho = stats.prcc(parameter_samples, outcome_samples)
-    ix = numpy.argsort(numpy.abs(rho))[ : : -1]
-    parameter_samples = parameter_samples[:, ix]
-    parameters = [parameters[i] for i in ix]
-    parameter_names = [parameter_names[i] for i in ix]
+        # Order parameters by abs(prcc).
+        rho = stats.prcc(parameter_samples, outcome_samples)
+        ix = numpy.argsort(numpy.abs(rho))[ : : -1]
+        parameter_samples = parameter_samples[:, ix]
+        parameter_names = [parameter_names[i] for i in ix]
 
-    colors = seaborn.color_palette('Dark2', len(parameter_names))
+        colors = seaborn.color_palette('Dark2', len(parameter_names))
 
-    plot_samples(parameter_samples, outcome_samples,
-                 parameter_names = parameter_names,
-                 colors = colors)
+        plot_samples(parameter_samples, outcome_samples, outcome,
+                     parameter_names = parameter_names,
+                     colors = colors)
 
-    plot_ranks(parameter_samples, outcome_samples,
-               parameter_names = parameter_names,
-               colors = colors)
+        plot_ranks(parameter_samples, outcome_samples, outcome,
+                   parameter_names = parameter_names,
+                   colors = colors)
 
-    # tornado(parameter_samples, outcome_samples,
-    #         parameter_names = parameter_names,
-    #         colors = colors)
+        # tornado(parameter_samples, outcome_samples, outcome,
+        #         parameter_names = parameter_names,
+        #         colors = colors)
 
     pyplot.show()

@@ -4,6 +4,7 @@ Common plotting settings etc.
 
 import inspect
 import os.path
+import sys
 
 import matplotlib
 from matplotlib import cm
@@ -11,10 +12,11 @@ from matplotlib import colors as mcolors
 from matplotlib import ticker
 import numpy
 
-# import seaborn
-import sys
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
+# import seaborn
 import seaborn_quiet as seaborn
+sys.path.append('..')
+import model
 
 
 countries_to_plot = ('Global',
@@ -25,6 +27,23 @@ countries_to_plot = ('Global',
 
 
 matplotlib.rc('axes.grid', which = 'both')  # major & minor
+
+
+_parameter_names_map = dict(
+    coital_acts_per_year = 'annual\nsex\nacts',
+    death_years_lost_by_suppression = 'life-years lost:\non suppression',
+    progression_rate_acute = 'acute\nprogression\nrate',
+    suppression_rate = 'suppression\nrate',
+    transmission_rate_quantile = 'transmission\nrate',
+    transmission_per_coital_act_acute = 'transmission\nper coital act:\nacute',
+    transmission_per_coital_act_unsuppressed \
+        = 'transmission\nper coital act:\nunsuppressed',
+    transmission_per_coital_act_reduction_by_suppression \
+        = 'transmission\nper coital act:\nreduction by\nsuppression'
+)
+
+parameter_names = [_parameter_names_map[p]
+                   for p in model.parameters.Parameters.get_rv_names()]
 
 
 def get_filebase():

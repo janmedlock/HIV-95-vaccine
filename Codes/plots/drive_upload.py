@@ -24,6 +24,8 @@ files = (
     'infections_averted_map.png',
     'initial_prevalence_map.pdf',
     'initial_prevalence_map.png',
+    'prcc.pdf',
+    'prcc.png',
     'transmission_rate.pdf',
     'transmission_rate.png',
     'vaccine_sensitivity_Status_Quo.pdf',
