@@ -6,6 +6,7 @@ Make a LaTeX-formatted table from the simulation output.
 import locale
 import sys
 
+import numpy
 import pandas
 
 
@@ -15,25 +16,31 @@ replacements = {'United States of America': 'United States',
                 'Ivory Coast': 'Côte D\'Ivoire',
                 'The Bahamas': 'Bahamas'}
 
-keys_ordered = ['Status Quo', '90–90–90']
-
 
 def _format_number(x):
-    return locale.format('%d', x, grouping = True)
-    
+    if not numpy.isnan(x):
+        return locale.format('%d', x, grouping = True)
+    else:
+        return '------'
+
+
+def _format_target(t):
+    return t.replace('%', '\%').replace('_', ' ')
+
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_NUMERIC, 'en_US.utf8')
 
     df = pandas.read_csv('table.csv',
                          index_col = [0, 1],
-                         header = [0, 1, 2],
-                         skiprows = [3])
+                         header = [0, 1, 2])
 
     names_countries = {replacements.get(c, c): c for c in df.index.levels[0]}
     names_sorted = list(names_countries.keys())
     names_sorted.remove('Global')
     names_sorted = ['Global'] + sorted(names_sorted)
+
+    targets = df.index.levels[1]
 
     with open('table_sub.tex', 'w') as fd:
         colfmt = 'r@{ [\\,}r@{, }r@{\\,] }'
@@ -61,14 +68,14 @@ if __name__ == '__main__':
             else:
                 fd.write('\\tabucline[1.5pt]{-}\n')
 
-            for (i, k) in enumerate(keys_ordered):
-                v = df.loc[(names_countries[n], k)]
+            for (i, target) in enumerate(targets):
+                v = df.loc[(names_countries[n], target)]
 
-                if i == len(keys_ordered) - 1:
+                if i == len(targets) - 1:
                     fd.write('\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '.format(n))
                 else:
                     fd.write(' & ')
-                fd.write('{}'.format(k))
+                fd.write('{}'.format(_format_target(target)))
 
                 for j in range(len(v) // 3):
                     fd.write(' & {} & {} & {}'.format(
