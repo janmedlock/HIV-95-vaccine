@@ -22,13 +22,13 @@ import model
 
 
 
-def get_outcome_samples(results, country, targets, attr, t):
-    t_ = getattr(results[country][targets[0]], 't')
+def get_outcome_samples(results, country, targets, attr, times):
+    t = results[country][targets[0]].t
     x, y =  (numpy.asarray(getattr(results[country][target], attr))
              for target in targets)
     z = x - y
-    interp = interpolate.interp1d(t_, z, axis = -1)
-    outcome_samples = interp(t)
+    interp = interpolate.interp1d(t, z, axis = -1)
+    outcome_samples = interp(times)
     return outcome_samples
 
 
