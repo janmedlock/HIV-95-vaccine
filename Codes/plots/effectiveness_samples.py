@@ -24,6 +24,9 @@ sys.path.append('..')
 import model
 
 
+attrs_to_plot = ['infected', 'AIDS', 'incidence_per_capita', 'prevalence']
+
+
 country_label_replacements = {
     'United States of America': 'United States'
 }
@@ -106,44 +109,24 @@ def plot_somecountries(results,
 
     fig = pyplot.figure(figsize = (8.5, 11))
     # Legend in tiny bottom row
-    gs = gridspec.GridSpec(
-        len(common.countries_to_plot) + 1, 4,
-        height_ratios = ((1, ) * len(common.countries_to_plot) + (0.1, )))
-    for (i, country) in enumerate(common.countries_to_plot):
-        attr_label = 'title' if (i == 0) else None
-
-        plotcell(fig.add_subplot(gs[i, 0]),
-                 results,
-                 country,
-                 targets,
-                 'infected',
-                 country_label = 'ylabel',
-                 attr_label = attr_label,
-                 **kwargs)
-
-        plotcell(fig.add_subplot(gs[i, 1]),
-                 results,
-                 country,
-                 targets,
-                 'AIDS',
-                 attr_label = attr_label,
-                 **kwargs)
-
-        plotcell(fig.add_subplot(gs[i, 2]),
-                 results,
-                 country,
-                 targets,
-                 'incidence_per_capita',
-                 attr_label = attr_label,
-                 **kwargs)
-
-        plotcell(fig.add_subplot(gs[i, 3]),
-                 results,
-                 country,
-                 targets,
-                 'prevalence',
-                 attr_label = attr_label,
-                 **kwargs)
+    nrows = len(common.countries_to_plot) + 1
+    ncols = len(attrs_to_plot)
+    legend_height_ratio = 0.1
+    gs = gridspec.GridSpec(nrows, ncols,
+                           height_ratios = ((1, ) * (nrows - 1)
+                                            + (legend_height_ratio, )))
+    for (row, country) in enumerate(common.countries_to_plot):
+        attr_label = 'title' if (row == 0) else None
+        for (col, attr) in enumerate(attrs_to_plot):
+            country_label = 'ylabel' if (col == 0) else None
+            plotcell(fig.add_subplot(gs[row, col]),
+                     results,
+                     country,
+                     targets,
+                     attr,
+                     country_label = country_label,
+                     attr_label = attr_label,
+                     **kwargs)
 
     # Make legend at bottom.
     axes = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
@@ -192,7 +175,8 @@ def plot_somecountries(results,
     return fig
 
 
-def plot_somecountries_alltargets(targets = None,
+def plot_somecountries_alltargets(results,
+                                  targets = None,
                                   confidence_level = 0,
                                   ncol = None,
                                   colors = None,
@@ -204,7 +188,8 @@ def plot_somecountries_alltargets(targets = None,
     if colors is None:
         colors = common.colors_paired
     with seaborn.color_palette(colors, len(targets)):
-        fig = plot_somecountries(targets,
+        fig = plot_somecountries(results,
+                                 targets,
                                  ncol = ncol,
                                  confidence_level = confidence_level,
                                  **kwargs)
@@ -213,8 +198,7 @@ def plot_somecountries_alltargets(targets = None,
     return fig
 
 
-def plot_somecountries_pairedtargets(targets = None,
-                                     **kwargs):
+def plot_somecountries_pairedtargets(results, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
 
@@ -229,7 +213,7 @@ def plot_somecountries_pairedtargets(targets = None,
     for i in range(len(targets) // 2):
         targets_ = targets[2 * i : 2 * i + 2]
         with seaborn.color_palette(colors):
-            fig = plot_somecountries(targets_, **kwargs)
+            fig = plot_somecountries(results, targets_, **kwargs)
         figs.append(fig)
         filebase_suffix = str(targets_[0]).replace(' ', '_')
         filebase_ = '{}_{}'.format(filebase, filebase_suffix)
@@ -254,39 +238,16 @@ def plot_allcountries(results, targets = None, **kwargs):
                                         squeeze = True)
 
             try:
-                plotcell(axes[0],
-                         results,
-                         country,
-                         targets,
-                         'infected',
-                         attr_label = 'ylabel',
-                         country_label = 'title',
-                         legend = True,
-                         **kwargs)
-
-                plotcell(axes[1],
-                         results,
-                         country,
-                         targets,
-                         'AIDS',
-                         attr_label = 'ylabel',
-                         **kwargs)
-
-                plotcell(axes[2],
-                         results,
-                         country,
-                         targets,
-                         'incidence_per_capita',
-                         attr_label = 'ylabel',
-                         **kwargs)
-
-                plotcell(axes[3],
-                         results,
-                         country,
-                         targets,
-                         'prevalence',
-                         attr_label = 'ylabel',
-                         **kwargs)
+                for (row, attr) in enumerate(attrs_to_plot):
+                    country_label = 'title' if (row == 0) else None
+                    plotcell(axes[row],
+                             results,
+                             country,
+                             targets,
+                             attr,
+                             country_label = country_label,
+                             attr_label = 'ylabel',
+                             **kwargs)
             except FileNotFoundError:
                 pass
             else:
