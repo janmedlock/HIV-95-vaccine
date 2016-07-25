@@ -60,8 +60,11 @@ class Results:
         if isinstance(target, type):
             # It's a class.
             target = target()
-        path = os.path.join(common.resultsdir, country,
-                            '{!s}.pkl'.format(target))
+        if target is not None:
+            path = os.path.join(common.resultsdir, country,
+                                '{!s}.pkl'.format(target))
+        else:
+            path = os.path.join(common.resultsdir, country)
         return path
 
 

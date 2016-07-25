@@ -94,9 +94,9 @@ samples
 ~~~~~~~
 .. automodule:: model.results.samples
 
-shelf
-~~~~~
-.. automodule:: model.results.shelf
+samples_cache
+~~~~~~~~~~~~~
+.. automodule:: model.results.samples_cache
 
 samples
 -------

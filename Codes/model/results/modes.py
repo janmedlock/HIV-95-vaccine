@@ -13,13 +13,6 @@ from .. import container
 from .. import global_
 
 
-modesfile = os.path.join(common.resultsdir,
-                         'modes.h5')
-
-vaccine_sensitivity_file = os.path.join(common.resultsdir,
-                                        'vaccine_sensitivity.h5')
-
-
 class ModesResultsCountryTarget:
     '''
     Store results in an object like `obj.attr`.
@@ -96,8 +89,10 @@ class ModesResults(container.DefaultOrderedDict):
 
 
 def load_modes():
-    return ModesResults(modesfile)
+    return ModesResults(os.path.join(common.resultsdir,
+                                     'modes.h5'))
 
 
 def load_vaccine_sensitivity():
-    return ModesResults(vaccine_sensitivity_file)
+    return ModesResults(os.path.join(common.resultsdir,
+                                     'vaccine_sensitivity.h5'))
