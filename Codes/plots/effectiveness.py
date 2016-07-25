@@ -27,7 +27,7 @@ import model
 import seaborn_quiet as seaborn
 
 
-attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead', 'viral_suppression']
+attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
 
 # data_start_year = 1990
 data_start_year = 2005
