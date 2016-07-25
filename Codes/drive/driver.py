@@ -79,7 +79,7 @@ class Driver:
             print('Creating {}'.format(basename))
         
             job = self.drive_service.files().create(
-                body = dict(title = basename,
+                body = dict(name = basename,
                             parents = [self.parent]),
                 media_body = media_body)
         else:
@@ -87,7 +87,7 @@ class Driver:
 
             job = self.drive_service.files().update(
                 fileId = fileId,
-                body = dict(title = basename),
+                body = dict(name = basename),
                 media_body = media_body)
 
         return job.execute()
