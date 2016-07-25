@@ -132,13 +132,14 @@ class ResultsCache(collections.OrderedDict):
 
     def _load(self, country, target, attr):
         with samples.Results(country, target) as results:
-                value = getattr(results, attr)
+            value = getattr(results, attr)
         h5path = '/{}/{}'.format(country, target)
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore',
                                     category = tables.NaturalNameWarning)
             array = self._h5file.create_array(h5path, attr, value,
                                               createparents = True)
+        self._h5file.flush()
         array.attrs.mtime = time.time()
         return array
 
