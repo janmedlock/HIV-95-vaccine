@@ -35,16 +35,16 @@ country_label_replacements = {
 }
 
 
-def _data_getter(country, attr):
+def _data_getter(results, country, attr):
     def f(target):
-        return numpy.asarray(model.results.data[(country, target, attr)])
+        return numpy.asarray(getattr(results[country][target], attr))
     return f
     
 
-def _get_plot_info(country, targs, stat, skip_global = False):
+def _get_plot_info(results, country, targs, stat, skip_global = False):
     scale = 1
     percent = False
-    data_getter = _data_getter(country, stat)
+    data_getter = _data_getter(results, country, stat)
 
     if stat == 'infected':
         label = 'PLHIV\n(M)'
@@ -53,7 +53,7 @@ def _get_plot_info(country, targs, stat, skip_global = False):
         label = 'Prevelance\n'
         percent = True
     elif stat == 'incidence':
-        data_getter = _data_getter(country, 'incidence_per_capita')
+        data_getter = _data_getter(results, country, 'incidence_per_capita')
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
     elif stat == 'AIDS':
@@ -69,24 +69,25 @@ def _get_plot_info(country, targs, stat, skip_global = False):
         scale = 1 / 100
 
     if (country == 'Global') and skip_global:
-        t = model.results.data[(common.countries_to_plot[-1], targs[0], 't')]
+        t = results[common.countries_to_plot[-1]][targs[0]].t
         data = None
     else:
-        t = model.results.data[(country, targs[0], 't')]
+        t = results[country][targs[0]].t
         v_base, v_intv = map(data_getter, targs)
         data = v_base - v_intv
         # data = (v_base - v_intv) / v_base
     return (data, t, label, scale, percent)
 
 
-def _plot_cell(ax, country, targs, stat,
+def _plot_cell(ax, results, country, targs, stat,
                country_label = None,
                attr_label = None,
                skip_global = False):
     '''
     .. todo:: Do a better job with making the lower ylim 0.
     '''
-    data, t, label, scale, percent = _get_plot_info(country, targs, stat,
+    data, t, label, scale, percent = _get_plot_info(results, country,
+                                                    targs, stat,
                                                     skip_global = skip_global)
 
     if not (country == 'Global' and skip_global):
@@ -134,7 +135,7 @@ def _plot_cell(ax, country, targs, stat,
     return col
 
 
-def plot_selected(skip_global = False):
+def plot_selected(results, skip_global = False):
     for targs in targets:
         baseline = targs[0]
         print(baseline)
@@ -154,6 +155,7 @@ def plot_selected(skip_global = False):
                 country_label = 'title' if (row == 0) else None
                 ax = fig.add_subplot(gs[row, col])
                 _plot_cell(ax,
+                           results,
                            country,
                            targs,
                            attr,
@@ -180,7 +182,7 @@ def plot_selected(skip_global = False):
         fig.savefig('{}.pdf'.format(fileroot))
 
 
-def plot_all():
+def plot_all(results):
     countries = ['Global'] + sorted(model.get_country_list())
 
     for targs in targets:
@@ -205,6 +207,7 @@ def plot_all():
                         country_label = 'title' if (row == 0) else None
                         ax = fig.add_subplot(gs[row, 0])
                         _plot_cell(ax,
+                                   results,
                                    country,
                                    targs,
                                    attr,
@@ -225,8 +228,8 @@ def plot_all():
 
 
 if __name__ == '__main__':
-    plot_selected(skip_global = True)
-
-    # plot_all()
+    with model.results.ResultsCache() as results:
+        plot_selected(skip_global = True)
+        # plot_all()
 
     # pyplot.show()

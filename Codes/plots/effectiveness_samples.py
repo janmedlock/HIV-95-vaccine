@@ -29,7 +29,7 @@ country_label_replacements = {
 }
 
 
-def plotcell(ax, country, targets, attr,
+def plotcell(ax, results, country, targets, attr,
              confidence_level = 0.9,
              country_label = None, attr_label = None, legend = False):
     scale = 1
@@ -55,8 +55,8 @@ def plotcell(ax, country, targets, attr,
     country_str = country_label_replacements.get(country, country)
 
     for (i, target) in enumerate(targets):
-        t = model.results.data[(country, target, 't')]
-        v = model.results.data[(country, target, attr)]
+        t = results[country][target].t
+        v = getattr(results[country][target], attr)
 
         avg, CI = common.getstats(v, alpha = 1 - confidence_level)
         lines = ax.plot(t, avg / scale,
@@ -96,7 +96,8 @@ def plotcell(ax, country, targets, attr,
         ax.legend(loc = 'upper left')
 
 
-def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
+def plot_somecountries(results,
+                       targets = None, ncol = None, transpose_legend = False,
                        **kwargs):
     if targets is None:
         targets = model.targets.all_
@@ -112,6 +113,7 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
         attr_label = 'title' if (i == 0) else None
 
         plotcell(fig.add_subplot(gs[i, 0]),
+                 results,
                  country,
                  targets,
                  'infected',
@@ -120,6 +122,7 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
                  **kwargs)
 
         plotcell(fig.add_subplot(gs[i, 1]),
+                 results,
                  country,
                  targets,
                  'AIDS',
@@ -127,6 +130,7 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
                  **kwargs)
 
         plotcell(fig.add_subplot(gs[i, 2]),
+                 results,
                  country,
                  targets,
                  'incidence_per_capita',
@@ -134,6 +138,7 @@ def plot_somecountries(targets = None, ncol = None, transpose_legend = False,
                  **kwargs)
 
         plotcell(fig.add_subplot(gs[i, 3]),
+                 results,
                  country,
                  targets,
                  'prevalence',
@@ -234,7 +239,7 @@ def plot_somecountries_pairedtargets(targets = None,
     return figs
 
 
-def plot_allcountries(targets = None, **kwargs):
+def plot_allcountries(results, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
 
@@ -250,6 +255,7 @@ def plot_allcountries(targets = None, **kwargs):
 
             try:
                 plotcell(axes[0],
+                         results,
                          country,
                          targets,
                          'infected',
@@ -259,6 +265,7 @@ def plot_allcountries(targets = None, **kwargs):
                          **kwargs)
 
                 plotcell(axes[1],
+                         results,
                          country,
                          targets,
                          'AIDS',
@@ -266,6 +273,7 @@ def plot_allcountries(targets = None, **kwargs):
                          **kwargs)
 
                 plotcell(axes[2],
+                         results,
                          country,
                          targets,
                          'incidence_per_capita',
@@ -273,6 +281,7 @@ def plot_allcountries(targets = None, **kwargs):
                          **kwargs)
 
                 plotcell(axes[3],
+                         results,
                          country,
                          targets,
                          'prevalence',
@@ -295,23 +304,12 @@ if __name__ == '__main__':
     if 'Global' in common.countries_to_plot:
         common.countries_to_plot.remove('Global')
 
-    plot_somecountries_alltargets()
+    with model.results.ResultsCache() as results:
+        plot_somecountries_alltargets(results)
 
-    # ixt = [0, 4, 5]  # StatusQuo, UNAIDS95, Vaccine(UNAIDS95)
-    # cp = seaborn.color_palette('colorblind')
-    # ixc = [2, 5, 1]
-    # ixt = [0, 1, 4, 5]  # StatusQuo, Vaccine(StatusQuo), UNAIDS95, Vaccine(UNAIDS95)
-    # cp = seaborn.color_palette('Paired', 8)
-    # ixc = [4, 5, 0, 1, 2, 3, 6, 7]
-    # targets_ = [model.targets.all_[i] for i in ixt]
-    # colors = [cp[i] for i in ixc]
-    # plot_somecountries_alltargets(targets_,
-    #                               confidence_level = 0.5,
-    #                               colors = colors,
-    #                               transpose_legend = True)
+        plot_somecountries_pairedtargets(results,
+                                         confidence_level = confidence_level)
 
-    plot_somecountries_pairedtargets(confidence_level = confidence_level)
-
-    # plot_allcountries(confidence_level = confidence_level)
+        # plot_allcountries(results, confidence_level = confidence_level)
 
     pyplot.show()

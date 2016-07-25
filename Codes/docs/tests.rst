@@ -37,6 +37,10 @@ sample
 ------
 .. automodule:: tests.sample
 
+samples_cache
+-------------
+.. automodule:: tests.samples_cache
+
 simulation
 ----------
 .. automodule:: tests.simulation

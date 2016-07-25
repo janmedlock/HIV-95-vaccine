@@ -2,8 +2,9 @@
 '''
 Calculate PRCCs.
 
-.. todo:: Update :class:`model.results.Results` to :data:`model.results.data`.
-          See :mod:`~.plots.effectiveness`.
+.. todo:: Update :class:`model.results.Results`
+          to :data:`model.results.ResultsCache`.
+          See :mod:`~.plots.effectiveness_samples`.
 '''
 
 import os.path
