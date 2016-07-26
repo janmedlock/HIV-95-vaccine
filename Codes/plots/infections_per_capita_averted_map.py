@@ -33,10 +33,10 @@ time = 2035
 
 scale = 1e-3
 title = 'Infections per 1000 Averted (Compared to {})'.format(baseline)
-vmin = 0.001 / scale
-vmax = 0.5 / scale
+vmin = 0.0025 / scale
+vmax = 0.25 / scale
 norm = mcolors.LogNorm(vmin = vmin, vmax = vmax)
-cmap = common.cmap_scaled('magma', vmin = 0.12)  # Shift bottom color up.
+cmap = common.cmap_scaled('magma_r', vmax = 0.85)
 label_coords = (-130, -30)
 height = 0.28
 pad = 0.035
