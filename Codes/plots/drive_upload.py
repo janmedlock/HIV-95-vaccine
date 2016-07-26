@@ -22,6 +22,8 @@ files = (
     'effectiveness.png',
     'infections_averted_map.pdf',
     'infections_averted_map.png',
+    'infections_per_capita_averted_map.pdf',
+    'infections_per_capita_averted_map.png',
     'initial_prevalence_map.pdf',
     'initial_prevalence_map.png',
     'prcc.pdf',
@@ -41,4 +43,7 @@ folderId = '0B_53qFSHU3XKNjc0d3lTV2s4cWM'
 if __name__ == '__main__':
     with drive.Driver(parent = folderId) as d:
         for f in files:
-            d.upload_if_newer(f)
+            try:
+                d.upload_if_newer(f)
+            except FileNotFoundError:
+                print('{}: file not found locally.'.format(f))
