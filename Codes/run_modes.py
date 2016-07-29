@@ -50,9 +50,6 @@ def _run_all(targets = None):
     results = model.results.load_modes()
     countries = model.datasheet.get_country_list()
     updated = False
-    # Put 'Global' first.
-    if 'Global' not in results:
-        results['Global']
     for country in countries:
         if country not in results:
             print(country)

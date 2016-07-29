@@ -76,10 +76,14 @@ class ModesResults(container.DefaultOrderedDict):
             for (country, country_dict) in self.items():
                 if country not in root:
                     country_group = self._h5file.create_group(root, country)
+                else:
+                    country_group = getattr(self._h5file.root, country)
                 for (target, sim) in country_dict.items():
                     if target  not in country_group:
                         target_group = self._h5file.create_group(country_group,
                                                                  target)
+                    else:
+                        target_group = getattr(country_group, target)
                     for attr in self.attrs_to_dump:
                         if attr not in target_group:
                             self._h5file.create_array(target_group,
@@ -88,11 +92,13 @@ class ModesResults(container.DefaultOrderedDict):
         self._h5file.flush()
 
 
-def load_modes():
+def load_modes(mode = 'r'):
     return ModesResults(os.path.join(common.resultsdir,
-                                     'modes.h5'))
+                                     'modes.h5'),
+                        mode = mode)
 
 
-def load_vaccine_sensitivity():
+def load_vaccine_sensitivity(mode = 'r'):
     return ModesResults(os.path.join(common.resultsdir,
-                                     'vaccine_sensitivity.h5'))
+                                     'vaccine_sensitivity.h5'),
+                        mode = mode)
