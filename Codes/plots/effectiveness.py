@@ -95,7 +95,13 @@ def _get_plot_info(parameters, results, stat):
     if percent:
         scale = 1 / 100
 
-    data_sim = [data_sim_getter(results[t]) for t in targets]
+    data_sim = []
+    for targ in targets:
+        try:
+            x = data_sim_getter(results[targ])
+        except (KeyError, AttributeError):
+            x = None
+        data_sim.append(x)
 
     t = list(results.values())[0].t
 
@@ -141,6 +147,9 @@ def _plot_cell(ax, country, parameters, results, stat,
                         label = None,
                         alpha = 0.7,
                         zorder = 2)
+        else:
+            # Pop a style.
+            next(ax._get_lines.prop_cycler)
 
     tick_interval = 10
     if plot_hist:
