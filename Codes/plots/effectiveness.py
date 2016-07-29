@@ -29,6 +29,15 @@ import seaborn_quiet as seaborn
 
 attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
 
+targets_baselines = [model.targets.StatusQuo(),
+                     model.targets.UNAIDS90(),
+                     model.targets.UNAIDS95()]
+targets = []
+for t in targets_baselines:
+    targets.extend([t, model.targets.Vaccine(treatment_targets = t)])
+targets = [str(t) for t in targets]
+
+
 # data_start_year = 1990
 data_start_year = 2005
 
@@ -86,13 +95,11 @@ def _get_plot_info(parameters, results, stat):
     if percent:
         scale = 1 / 100
 
-    data_sim = map(data_sim_getter, results.values())
+    data_sim = [data_sim_getter(results[t]) for t in targets]
 
     t = list(results.values())[0].t
 
-    targets = results.keys()
-
-    return (data_hist, data_sim, t, targets, label, scale, percent)
+    return (data_hist, data_sim, t, label, scale, percent)
 
 
 def _plot_cell(ax, country, parameters, results, stat,
@@ -102,7 +109,7 @@ def _plot_cell(ax, country, parameters, results, stat,
     '''
     Plot one axes of simulation and historical data figure.
     '''
-    (data_hist, data_sim, t, targets, label, scale, percent) = _get_plot_info(
+    (data_hist, data_sim, t, label, scale, percent) = _get_plot_info(
         parameters, results, stat)
 
     # Plot historical data.
@@ -131,6 +138,7 @@ def _plot_cell(ax, country, parameters, results, stat,
                 ax.plot(t_, numpy.asarray(x_) / scale,
                         color = 'black',
                         linestyle = 'dotted',
+                        label = None,
                         alpha = 0.7,
                         zorder = 2)
 
@@ -168,7 +176,7 @@ def _plot_cell(ax, country, parameters, results, stat,
         ax.set_title(label, size = 'medium')
 
 
-def _make_legend(ax, targets, plot_hist = True):
+def _make_legend(ax, plot_hist = True):
     ax.tick_params(labelbottom = False, labelleft = False)
     ax.grid(False)
 
@@ -237,8 +245,7 @@ def _plot_country(country, results):
                 ax.xaxis.offsetText.set_visible(False)
         # Make legend at bottom.
         ax = fig.add_subplot(gs[-1, 0], axis_bgcolor = 'none')
-        targets = results.keys()
-        _make_legend(ax, targets)
+        _make_legend(ax)
 
     fig.tight_layout()
 
@@ -280,9 +287,7 @@ def plot_some_countries():
                         ax.xaxis.offsetText.set_visible(False)
 
             ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-            targets = results[country].keys()
-            _make_legend(ax, targets,
-                         plot_hist = False)
+            _make_legend(ax, plot_hist = False)
 
     fig.tight_layout()
 
@@ -295,7 +300,11 @@ def plot_all_countries():
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         with model.results.load_modes() as results:
-            for country in results.keys():
+            countries = sorted(results.keys())
+            # Move Global to front.
+            countries.remove('Global')
+            countries = ['Global'] + countries
+            for country in countries:
                 fig = _plot_country(country, results[country])
                 pdf.savefig(fig)
                 pyplot.close(fig)
