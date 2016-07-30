@@ -100,6 +100,21 @@ class PercentFormatter(ticker.ScalarFormatter):
             self.format += '%%'
 
 
+class UnitsFormatter(ticker.ScalarFormatter):
+    def __init__(self, unit):
+        self.unit = unit
+        super().__init__()
+
+    def _set_format(self, vmin, vmax):
+        super()._set_format(vmin, vmax)
+        if self._usetex:
+            self.format = self.format[: -1] + '{}$'.format(self.unit)
+        elif self._useMathText:
+            self.format = self.format[: -2] + '{}}}$'.format(self.unit)
+        else:
+            self.format += self.unit
+
+
 def cmap_reflected(cmap_base):
     if cmap_base.endswith('_r'):
         cmap_base_r = cmap_base[ : -2]

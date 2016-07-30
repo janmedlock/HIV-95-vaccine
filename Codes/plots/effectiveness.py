@@ -54,14 +54,13 @@ country_label_replacements = {
 
 def _get_plot_info(parameters, results, stat):
     data_hist = None
-    scale = 1
+    scale = None
     percent = False
     data_sim_getter = operator.attrgetter(stat)
 
     if stat == 'infected':
         data_hist = parameters.prevalence * parameters.population
-        label = 'PLHIV\n(M)'
-        scale = 1e6
+        label = 'PLHIV'
     elif stat == 'prevalence':
         data_hist = parameters.prevalence
         label = 'Prevelance\n'
@@ -71,6 +70,7 @@ def _get_plot_info(parameters, results, stat):
         data_hist = parameters.incidence
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
+        unit = ''
     elif stat == 'drug_coverage':
         data_sim_getter = operator.attrgetter('proportions.treated')
         data_hist = parameters.drug_coverage
@@ -78,23 +78,21 @@ def _get_plot_info(parameters, results, stat):
         percent = True
     elif stat == 'AIDS':
         data_hist = None
-        label = 'AIDS\n(1000s)'
-        scale = 1e3
+        label = 'AIDS'
     elif stat == 'dead':
         data_hist = None
-        label = 'Deaths\n(M)'
-        scale = 1e6
+        label = 'HIV-Related\nDeaths'
     elif stat == 'viral_suppression':
         data_sim_getter = common.viral_suppression_getter
         data_hist = None
         label = 'Viral\nSupression'
         percent = True
+    elif stat == 'new_infections':
+        data_hist = None
+        label = 'New Infections'
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
     
-    if percent:
-        scale = 1 / 100
-
     data_sim = []
     for targ in targets:
         try:
@@ -105,7 +103,22 @@ def _get_plot_info(parameters, results, stat):
 
     t = list(results.values())[0].t
 
-    return (data_hist, data_sim, t, label, scale, percent)
+    if percent:
+        scale = 1 / 100
+        unit = '%%'
+    elif scale is None:
+        vmax = numpy.max(data_sim)
+        if vmax > 1e6:
+            scale = 1e6
+            unit = 'M'
+        elif vmax > 1e3:
+            scale = 1e3
+            unit = 'k'
+        else:
+            scale = 1
+            unit = ''
+
+    return (data_hist, data_sim, t, label, scale, unit)
 
 
 def _plot_cell(ax, country, parameters, results, stat,
@@ -115,7 +128,7 @@ def _plot_cell(ax, country, parameters, results, stat,
     '''
     Plot one axes of simulation and historical data figure.
     '''
-    (data_hist, data_sim, t, label, scale, percent) = _get_plot_info(
+    (data_hist, data_sim, t, label, scale, unit) = _get_plot_info(
         parameters, results, stat)
 
     # Plot historical data.
@@ -170,8 +183,7 @@ def _plot_cell(ax, country, parameters, results, stat,
     # One minor tick between major ticks.
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    if percent:
-        ax.yaxis.set_major_formatter(common.PercentFormatter())
+    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
 
     country_str = country_label_replacements.get(country, country)
     if country_label == 'ylabel':
