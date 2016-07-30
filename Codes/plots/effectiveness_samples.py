@@ -35,14 +35,14 @@ country_label_replacements = {
 def plotcell(ax, results, country, targets, attr,
              confidence_level = 0.9,
              country_label = None, attr_label = None, legend = False):
-    scale = 1
+    scale = None
     percent = False
+    data_sim_getter = operator.attrgetter(attr)
+
     if attr == 'infected':
-        attr_str = 'People Living with HIV\n(M)'
-        scale = 1e6
+        attr_str = 'PLHIV'
     elif attr == 'AIDS':
-        attr_str = 'People with AIDS\n(1000s)'
-        scale = 1e3
+        attr_str = 'People with\nAIDS'
     elif attr == 'incidence_per_capita':
         attr_str = 'HIV Incidence\n(per M people per y)'
         scale = 1e-6
@@ -54,6 +54,18 @@ def plotcell(ax, results, country, targets, attr,
 
     if percent:
         scale = 1 / 100
+        unit = '%%'
+    elif scale is None:
+        vmax = numpy.max(data)
+        if vmax > 1e6:
+            scale = 1e6
+            unit = 'M'
+        elif vmax > 1e3:
+            scale = 1e3
+            unit = 'k'
+        else:
+            scale = 1
+            unit = ''
 
     country_str = country_label_replacements.get(country, country)
 
@@ -82,8 +94,7 @@ def plotcell(ax, results, country, targets, attr,
     ax.set_xticks(xticks)
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
-    if percent:
-        ax.yaxis.set_major_formatter(common.PercentFormatter())
+    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
 
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')

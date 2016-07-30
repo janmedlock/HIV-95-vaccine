@@ -26,7 +26,7 @@ import model
 import seaborn_quiet as seaborn
 
 
-attrs_to_plot = ['infected', 'prevalence', 'incidence', 'AIDS', 'dead']
+attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
 
 country_label_replacements = {
     'United States of America': 'United States'
@@ -63,33 +63,28 @@ def _get_targets(treatment_target):
 
 
 def _get_plot_info(treatment_target, parameters, results, stat):
-    scale = 1
+    scale = None
     percent = False
+    data_sim_getter = operator.attrgetter(stat)
 
     if stat == 'infected':
-        data_sim_getter = operator.attrgetter(stat)
-        label = 'PLHIV\n(M)'
-        scale = 1e6
+        label = 'PLHIV'
     elif stat == 'prevalence':
-        data_sim_getter = operator.attrgetter(stat)
-        label = 'Prevelance\n'
+        label = 'Prevelance'
         percent = True
     elif stat == 'incidence':
         data_sim_getter = operator.attrgetter('incidence_per_capita')
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
+        unit = ''
     elif stat == 'drug_coverage':
         data_sim_getter = operator.attrgetter('proportions.treated')
         label = 'ART\nCoverage'
         percent = True
     elif stat == 'AIDS':
-        data_sim_getter = operator.attrgetter(stat)
-        label = 'AIDS\n(1000s)'
-        scale = 1e3
+        label = 'AIDS'
     elif stat == 'dead':
-        data_sim_getter = operator.attrgetter(stat)
-        label = 'Deaths\n(M)'
-        scale = 1e6
+        label = 'HIV-Related\nDeaths'
     elif stat == 'viral_suppression':
         data_sim_getter = common.viral_suppression_getter
         label = 'Viral\nSupression'
@@ -97,16 +92,34 @@ def _get_plot_info(treatment_target, parameters, results, stat):
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
     
-    if percent:
-        scale = 1 / 100
-
     targets = _get_targets(treatment_target)
 
-    data_sim = map(data_sim_getter, (results[t] for t in targets))
+    data_sim = []
+    for targ in targets:
+        try:
+            x = data_sim_getter(results[targ])
+        except (KeyError, AttributeError):
+            x = None
+        data_sim.append(x)
 
     t = list(results.values())[0].t
 
-    return (data_sim, t, targets, label, scale, percent)
+    if percent:
+        scale = 1 / 100
+        unit = '%%'
+    elif scale is None:
+        vmax = numpy.max(data_sim)
+        if vmax > 1e6:
+            scale = 1e6
+            unit = 'M'
+        elif vmax > 1e3:
+            scale = 1e3
+            unit = 'k'
+        else:
+            scale = 1
+            unit = ''
+
+    return (data_sim, t, targets, label, scale, unit)
 
 
 def _get_kwds(label):
@@ -126,7 +139,7 @@ def _plot_cell(ax, country, treatment_target, parameters, results, stat,
     '''
     Plot one axes of  figure.
     '''
-    (data_sim, t, targets, label, scale, percent) = _get_plot_info(
+    (data_sim, t, targets, label, scale, unit) = _get_plot_info(
         treatment_target, parameters, results, stat)
 
     # Plot simulation data.
@@ -147,14 +160,13 @@ def _plot_cell(ax, country, treatment_target, parameters, results, stat,
     ax.set_xlim(a, b)
 
     ax.grid(True, which = 'both', axis = 'both')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     # One minor tick between major ticks.
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    if percent:
-        ax.yaxis.set_major_formatter(common.PercentFormatter())
+    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
 
     country_str = country_label_replacements.get(country, country)
     if country_label == 'ylabel':

@@ -63,7 +63,7 @@ def _get_plot_info(parameters, results, stat):
         label = 'PLHIV'
     elif stat == 'prevalence':
         data_hist = parameters.prevalence
-        label = 'Prevelance\n'
+        label = 'Prevelance'
         percent = True
     elif stat == 'incidence':
         data_sim_getter = operator.attrgetter('incidence_per_capita')

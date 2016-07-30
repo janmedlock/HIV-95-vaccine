@@ -42,32 +42,28 @@ def _data_getter(results, country, attr):
     
 
 def _get_plot_info(results, country, targs, stat, skip_global = False):
-    scale = 1
+    scale = None
     percent = False
     data_getter = _data_getter(results, country, stat)
 
     if stat == 'infected':
-        label = 'PLHIV\n(M)'
+        label = 'PLHIV'
         scale = 1e6
     elif stat == 'prevalence':
-        label = 'Prevelance\n'
+        label = 'Prevelance'
         percent = True
     elif stat == 'incidence':
         data_getter = _data_getter(results, country, 'incidence_per_capita')
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
+        units = ''
     elif stat == 'AIDS':
-        label = 'AIDS\n(1000s)'
-        scale = 1e3
+        label = 'AIDS'
     elif stat == 'dead':
-        label = 'Deaths\n(M)'
-        scale = 1e6
+        label = 'HIV-Related\nDeaths'
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
     
-    if percent:
-        scale = 1 / 100
-
     if (country == 'Global') and skip_global:
         t = results[common.countries_to_plot[-1]][targs[0]].t
         data = None
@@ -76,7 +72,23 @@ def _get_plot_info(results, country, targs, stat, skip_global = False):
         v_base, v_intv = map(data_getter, targs)
         data = v_base - v_intv
         # data = (v_base - v_intv) / v_base
-    return (data, t, label, scale, percent)
+
+    if percent:
+        scale = 1 / 100
+        unit = '%%'
+    elif scale is None:
+        vmax = numpy.max(data)
+        if vmax > 1e6:
+            scale = 1e6
+            unit = 'M'
+        elif vmax > 1e3:
+            scale = 1e3
+            unit = 'k'
+        else:
+            scale = 1
+            unit = ''
+
+    return (data, t, label, scale, unit)
 
 
 def _plot_cell(ax, results, country, targs, stat,
@@ -86,9 +98,9 @@ def _plot_cell(ax, results, country, targs, stat,
     '''
     .. todo:: Do a better job with making the lower ylim 0.
     '''
-    data, t, label, scale, percent = _get_plot_info(results, country,
-                                                    targs, stat,
-                                                    skip_global = skip_global)
+    data, t, label, scale, unit = _get_plot_info(results, country,
+                                                 targs, stat,
+                                                 skip_global = skip_global)
 
     if not (country == 'Global' and skip_global):
         # Drop infinite data.
@@ -118,8 +130,7 @@ def _plot_cell(ax, results, country, targs, stat,
     # One minor tick between major ticks.
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    if percent:
-        ax.yaxis.set_major_formatter(common.PercentFormatter())
+    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
     ax.grid(True, which = 'both', axis = 'both')
 
     country_str = country_label_replacements.get(country, country)
