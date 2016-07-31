@@ -41,6 +41,10 @@ samples_cache
 -------------
 .. automodule:: tests.samples_cache
 
+samples_stats_example
+---------------------
+.. automodule:: tests.samples_stats_example
+
 simulation
 ----------
 .. automodule:: tests.simulation

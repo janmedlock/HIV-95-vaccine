@@ -11,6 +11,10 @@ from matplotlib import pyplot
 sys.path.append('..')
 import model
 
+# import seaborn
+sys.path.append('../plots')
+import seaborn_quiet as seaborn
+
 
 if __name__ == '__main__':
     with model.results.load_modes() as results:

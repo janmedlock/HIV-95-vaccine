@@ -98,6 +98,10 @@ samples_cache
 ~~~~~~~~~~~~~
 .. automodule:: model.results.samples_cache
 
+samples_stats
+~~~~~~~~~~~~~
+.. automodule:: model.results.samples_stats
+
 samples
 -------
 .. automodule:: model.samples

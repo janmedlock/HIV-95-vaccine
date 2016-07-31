@@ -4,18 +4,22 @@ Example script of accessing results from runs with the samples of
 the parameter distributions.
 '''
 
+import sys
+
 from matplotlib import pyplot
 import numpy
 import tables
 
+sys.path.append('..')
+import model
+
 # import seaborn
-import sys
 sys.path.append('../plots')
 import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with tables.open_file('../results/sample_stats.h5', mode = 'r') as stats:
+    with model.results.load_samples_stats() as stats:
         countries = [g._v_name for g in stats.root]
         print('countries =', countries)
 
