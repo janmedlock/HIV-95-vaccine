@@ -10,11 +10,11 @@ import numpy
 import pandas
 
 
-replacements = {'United States of America': 'United States',
-                'Democratic Republic of the Congo': 'DR Congo',
-                'Republic of Congo': 'Congo',
-                'Ivory Coast': 'Côte D\'Ivoire',
-                'The Bahamas': 'Bahamas'}
+country_label_replacements = {'United States of America': 'United States',
+                              'Democratic Republic of the Congo': 'DR Congo',
+                              'Republic of Congo': 'Congo',
+                              'Ivory Coast': 'Côte D\'Ivoire',
+                              'The Bahamas': 'Bahamas'}
 
 
 def _format_number(x):
@@ -35,7 +35,8 @@ if __name__ == '__main__':
                          index_col = [0, 1],
                          header = [0, 1, 2])
 
-    names_countries = {replacements.get(c, c): c for c in df.index.levels[0]}
+    names_countries = {country_label_replacements.get(c, c): c
+                       for c in df.index.levels[0]}
     names_sorted = list(names_countries.keys())
     names_sorted.remove('Global')
     names_sorted = ['Global'] + sorted(names_sorted)

@@ -26,7 +26,21 @@ countries_to_plot = ('Global',
                      'United States of America')
 
 
-matplotlib.rc('axes.grid', which = 'both')  # major & minor
+country_label_replacements = {
+    'United States of America': 'United States'
+}
+
+
+effectiveness_measures = ['infected', 'incidence', 'AIDS', 'dead']
+
+
+# historical_data_start_year = 1990
+historical_data_start_year = 2005
+
+historical_data_style = dict(marker = '.',
+                             markersize = 10,
+                             alpha = 0.7,
+                             color = 'black')
 
 
 _parameter_names_map = dict(
@@ -44,6 +58,9 @@ _parameter_names_map = dict(
 
 parameter_names = [_parameter_names_map[p]
                    for p in model.parameters.Parameters.get_rv_names()]
+
+
+matplotlib.rc('axes.grid', which = 'both')  # major & minor
 
 
 def get_filebase():

@@ -27,8 +27,6 @@ import model
 import seaborn_quiet as seaborn
 
 
-attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
-
 targets_baselines = [model.targets.StatusQuo(),
                      model.targets.UNAIDS90(),
                      model.targets.UNAIDS95()]
@@ -36,20 +34,6 @@ targets = []
 for t in targets_baselines:
     targets.extend([t, model.targets.Vaccine(treatment_targets = t)])
 targets = [str(t) for t in targets]
-
-
-# data_start_year = 1990
-data_start_year = 2005
-
-data_hist_style = dict(marker = '.',
-                       markersize = 10,
-                       alpha = 0.7,
-                       color = 'black')
-
-
-country_label_replacements = {
-    'United States of America': 'United States'
-}
 
 
 def _get_plot_info(parameters, results, stat):
@@ -138,7 +122,7 @@ def _plot_cell(ax, country, parameters, results, stat,
             ax.plot(data_hist.index, data_hist / scale,
                     label = 'Historical data',
                     zorder = 2,
-                    **data_hist_style)
+                    **common.historical_data_style)
 
     # Plot simulation data.
     for (target, x) in zip(targets, data_sim):
@@ -166,7 +150,7 @@ def _plot_cell(ax, country, parameters, results, stat,
 
     tick_interval = 10
     if plot_hist:
-        a = data_start_year
+        a = common.historical_data_start_year
     else:
         a = int(numpy.floor(t[0]))
     b = int(numpy.ceil(t[-1]))
@@ -185,7 +169,8 @@ def _plot_cell(ax, country, parameters, results, stat,
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
 
-    country_str = country_label_replacements.get(country, country)
+    country_str = common.country_label_replacements.get(country,
+                                                        country)
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')
     elif country_label == 'title':
@@ -206,7 +191,7 @@ def _make_legend(ax, plot_hist = True):
     labels = []
 
     if plot_hist:
-        handles.append(mlines.Line2D([], [], **data_hist_style))
+        handles.append(mlines.Line2D([], [], **common.historical_data_style))
         labels.append('Historical data')
 
         # Blank spacer.
@@ -248,14 +233,14 @@ def _plot_country(country, results):
     else:
         parameters = GlobalParameters()
 
-    nrows = len(attrs_to_plot) + 1
+    nrows = len(common.effectiveness_measures) + 1
     ncols = 1
     legend_height_ratio = 0.2
     gs = gridspec.GridSpec(nrows, ncols,
                            height_ratios = ((1, ) * (nrows - 1)
                                             + (legend_height_ratio, )))
     with seaborn.color_palette(common.colors_paired):
-        for (row, attr) in enumerate(attrs_to_plot):
+        for (row, attr) in enumerate(common.effectiveness_measures):
             ax = fig.add_subplot(gs[row, 0])
             country_label = 'title' if (row == 0) else None
             _plot_cell(ax, country, parameters, results, attr,
@@ -283,7 +268,7 @@ def plot_some_countries():
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
         ncols = len(common.countries_to_plot)
-        nrows = len(attrs_to_plot) + 1
+        nrows = len(common.effectiveness_measures) + 1
         legend_height_ratio = 0.35
         gs = gridspec.GridSpec(nrows, ncols,
                                height_ratios = ((1, ) * (nrows - 1)
@@ -295,7 +280,7 @@ def plot_some_countries():
                 else:
                     parameters = GlobalParameters()
                 attr_label = 'ylabel' if (col == 0) else None
-                for (row, attr) in enumerate(attrs_to_plot):
+                for (row, attr) in enumerate(common.effectiveness_measures):
                     ax = fig.add_subplot(gs[row, col])
                     country_label = 'title' if (row == 0) else None
                     _plot_cell(ax, country, parameters, results[country], attr,

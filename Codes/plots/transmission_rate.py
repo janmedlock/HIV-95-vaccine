@@ -122,12 +122,14 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
                     linestyle = 'dotted', color = 'black',
                     zorder = 2)
 
-    data_start_year = 1990
+    historical_data_start_year = 1990
     t_end = max(ti[-1] for ti in t)
-    ax.set_xlim(data_start_year, t_end)
+    ax.set_xlim(historical_data_start_year, t_end)
     ax.grid(True, which = 'both', axis = 'both')
     # Every 10 years.
-    ax.set_xticks(range(data_start_year, int(numpy.ceil(t_end)), 10))
+    ax.set_xticks(range(historical_data_start_year,
+                        int(numpy.ceil(t_end)),
+                        10))
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))

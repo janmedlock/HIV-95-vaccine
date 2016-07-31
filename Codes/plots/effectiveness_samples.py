@@ -24,14 +24,6 @@ sys.path.append('..')
 import model
 
 
-attrs_to_plot = ['infected', 'AIDS', 'incidence_per_capita', 'prevalence']
-
-
-country_label_replacements = {
-    'United States of America': 'United States'
-}
-
-
 def plotcell(ax, results, country, targets, attr,
              confidence_level = 0.9,
              country_label = None, attr_label = None, legend = False):
@@ -67,7 +59,8 @@ def plotcell(ax, results, country, targets, attr,
             scale = 1
             unit = ''
 
-    country_str = country_label_replacements.get(country, country)
+    country_str = common.country_label_replacements.get(country,
+                                                        country)
 
     for (i, target) in enumerate(targets):
         t = results[country][target].t
@@ -121,14 +114,14 @@ def plot_somecountries(results,
     fig = pyplot.figure(figsize = (8.5, 11))
     # Legend in tiny bottom row
     nrows = len(common.countries_to_plot) + 1
-    ncols = len(attrs_to_plot)
+    ncols = len(common.effectiveness_measures)
     legend_height_ratio = 0.1
     gs = gridspec.GridSpec(nrows, ncols,
                            height_ratios = ((1, ) * (nrows - 1)
                                             + (legend_height_ratio, )))
     for (row, country) in enumerate(common.countries_to_plot):
         attr_label = 'title' if (row == 0) else None
-        for (col, attr) in enumerate(attrs_to_plot):
+        for (col, attr) in enumerate(common.effectiveness_measures):
             country_label = 'ylabel' if (col == 0) else None
             plotcell(fig.add_subplot(gs[row, col]),
                      results,
@@ -249,7 +242,7 @@ def plot_allcountries(results, targets = None, **kwargs):
                                         squeeze = True)
 
             try:
-                for (row, attr) in enumerate(attrs_to_plot):
+                for (row, attr) in enumerate(common.effectiveness_measures):
                     country_label = 'title' if (row == 0) else None
                     plotcell(axes[row],
                              results,

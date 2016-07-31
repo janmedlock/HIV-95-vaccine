@@ -26,15 +26,9 @@ import model
 import seaborn_quiet as seaborn
 
 
-attrs_to_plot = ['infected', 'incidence', 'AIDS', 'dead']
-
-country_label_replacements = {
-    'United States of America': 'United States'
-}
-
-
 ix = [2, 3, 4, 5, 9, 7]
 colors = ['black'] + [common.colors_paired[i] for i in ix]
+
 
 def _get_args(target):
     i = target.find('(')
@@ -168,7 +162,8 @@ def _plot_cell(ax, country, treatment_target, parameters, results, stat,
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
 
-    country_str = country_label_replacements.get(country, country)
+    country_str = common.country_label_replacements.get(country,
+                                                        country)
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')
     elif country_label == 'title':
@@ -220,14 +215,14 @@ def _plot_country(country, treatment_target, results):
     else:
         parameters = None
 
-    nrows = len(attrs_to_plot) + 1
+    nrows = len(common.effectiveness_measures) + 1
     ncols = 1
     legend_height_ratio = 0.2
     gs = gridspec.GridSpec(nrows, ncols,
                            height_ratios = ((1, ) * (nrows - 1)
                                             + (legend_height_ratio, )))
     with seaborn.color_palette(colors):
-        for (row, attr) in enumerate(attrs_to_plot):
+        for (row, attr) in enumerate(common.effectiveness_measures):
             ax = fig.add_subplot(gs[row, 0])
             country_label = 'title' if (i == 0) else None
             _plot_cell(ax, country, treatment_target,
@@ -269,7 +264,7 @@ def plot_some_countries(treatment_target):
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
         ncols = len(common.countries_to_plot)
-        nrows = len(attrs_to_plot) + 1
+        nrows = len(common.effectiveness_measures) + 1
         legend_height_ratio = 0.35
         gs = gridspec.GridSpec(nrows, ncols,
                                height_ratios = ((1, ) * (nrows - 1)
@@ -281,7 +276,7 @@ def plot_some_countries(treatment_target):
                 else:
                     parameters = None
                 attr_label = 'ylabel' if (col == 0) else None
-                for (row, attr) in enumerate(attrs_to_plot):
+                for (row, attr) in enumerate(common.effectiveness_measures):
                     ax = fig.add_subplot(gs[row, col])
                     country_label = 'title' if (row == 0) else None
                     _plot_cell(ax, country, treatment_target,

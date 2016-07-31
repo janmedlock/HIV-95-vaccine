@@ -21,18 +21,7 @@ sys.path.append('..')
 import model
 
 
-attrs_to_plot = ['infected', 'prevalence', 'incidence', 'AIDS', 'dead']
-
-
-baselines = (model.targets.StatusQuo(),
-             model.targets.UNAIDS95())
-targets = [(str(b), str(model.targets.Vaccine(treatment_targets = b)))
-           for b in baselines]
-
-
-country_label_replacements = {
-    'United States of America': 'United States'
-}
+targets = model.targets.all_
 
 
 def _data_getter(results, country, attr):
@@ -133,7 +122,8 @@ def _plot_cell(ax, results, country, targs, stat,
     ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
     ax.grid(True, which = 'both', axis = 'both')
 
-    country_str = country_label_replacements.get(country, country)
+    country_str = common.country_label_replacements.get(country,
+                                                        country)
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')
     elif country_label == 'title':
@@ -152,7 +142,7 @@ def plot_selected(results, skip_global = False):
         print(baseline)
         fig = pyplot.figure(figsize = (8.5, 11))
         # Bottom row is colorbar.
-        nrows = len(attrs_to_plot) + 1
+        nrows = len(common.effectiveness_measures) + 1
         ncols = len(common.countries_to_plot)
         legend_height_ratio = 1 / 3
         gs = gridspec.GridSpec(nrows, ncols,
@@ -161,7 +151,7 @@ def plot_selected(results, skip_global = False):
         for (col, country) in enumerate(common.countries_to_plot):
             print('\t', country)
             attr_label = 'ylabel' if (col == 0) else None
-            for (row, attr) in enumerate(attrs_to_plot):
+            for (row, attr) in enumerate(common.effectiveness_measures):
                 print('\t\t', attr)
                 country_label = 'title' if (row == 0) else None
                 ax = fig.add_subplot(gs[row, col])
@@ -202,7 +192,7 @@ def plot_all(results):
         filename = '{}_{}_all.pdf'.format(common.get_filebase(),
                                           baseline.replace(' ', '_'))
         with backend_pdf.PdfPages(filename) as pdf:
-            nrows = len(attrs_to_plot) + 1
+            nrows = len(common.effectiveness_measures) + 1
             ncols = 1
             legend_height_ratio = 1 / 3
             gs = gridspec.GridSpec(nrows, ncols,
@@ -211,9 +201,10 @@ def plot_all(results):
             for (i, country) in enumerate(common.countries_to_plot):
                 print('\t', country)
                 fig = pyplot.figure(figsize = (8.5, 11))
-                title = country_label_replacements.get(country, country)
+                title = common.country_label_replacements.get(country,
+                                                              country)
                 try:
-                    for (row, attr) in enumerate(attrs_to_plot):
+                    for (row, attr) in enumerate(common.effectiveness_measures):
                         print('\t\t', attr)
                         country_label = 'title' if (row == 0) else None
                         ax = fig.add_subplot(gs[row, 0])
