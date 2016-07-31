@@ -18,6 +18,9 @@ class Results:
     Class to load the data on demand.
     '''
     def __init__(self, country, target):
+        if not self.exists(country, target):
+            raise FileNotFoundError("'{}', '{}' not found!".format(country,
+                                                                   target))
         self._country = country
         # Convert to string in case its an instance.
         self._target = str(target)
@@ -67,10 +70,14 @@ class Results:
             path = os.path.join(common.resultsdir, country)
         return path
 
+    @classmethod
+    def exists(cls, country, target):
+        resultsfile = cls.get_path(country, target)
+        return os.path.exists(resultsfile)
+
 
 def exists(country, target):
-    resultsfile = Results.get_path(country, target)
-    return os.path.exists(resultsfile)
+    return Results.exists(country, target)
 
 
 def dump(country, target, results):
