@@ -12,6 +12,7 @@ from matplotlib import ticker
 import numpy
 import pandas
 from scipy import integrate
+import tables
 
 sys.path.append(os.path.dirname(__file__))
 import common
@@ -102,26 +103,36 @@ def plot(infections_per_capita_averted):
     fig.savefig('{}.png'.format(common.get_filebase()))
 
 
-def _get_infections_per_capita(result):
-    person_years = integrate.trapz(result.alive, result.t)
-    # exposure is number of 20-person-years lived.
-    exposure = person_years / (result.t[-1] - result.t[0])
-    return result.new_infections[-1] / exposure
+def _get_infections_per_capita(country, target):
+    try:
+        with model.results.samples.Results(country, target) as results:
+            alive = results.alive
+            new_infections = results.new_infections
+    except FileNotFoundError:
+        return None
+    else:
+        person_years = integrate.trapz(alive, common.t)
+        # exposure is number of 20-person-years lived.
+        exposure = person_years / (common.t[-1] - common.t[0])
+        infections_per_capita = (numpy.asarray(new_infections)[:, -1]
+                                 / exposure)
+        return numpy.median(infections_per_capita)
 
 
 def _get_infections_per_capita_averted():
-    with model.results.modes.load() as results:
-        countries = list(results.keys())
-        countries.remove('Global')
-
-        infections_per_capita_averted = pandas.DataFrame(
-            columns = interventions,
-            index = countries)
-        for country in countries:
-            x = _get_infections_per_capita(results[country][baseline])
+    countries = model.datasheet.get_country_list()
+    infections_per_capita_averted = pandas.DataFrame(
+        columns = interventions,
+        index = countries)
+    for country in countries:
+        print(country)
+        try:
+            x = _get_infections_per_capita(country, baseline)
             for intv in interventions:
-                y = _get_infections_per_capita(results[country][intv])
+                y = _get_infections_per_capita(country, intv)
                 infections_per_capita_averted.loc[country, intv] = x - y
+        except FileNotFoundError:
+            print('\tfailed')
     return infections_per_capita_averted
 
 

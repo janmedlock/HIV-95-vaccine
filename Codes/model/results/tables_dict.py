@@ -37,10 +37,7 @@ def open_file(filename, mode = 'r', filters = None, **kwds):
                                  complib = 'zlib',
                                  shuffle = True,
                                  fletcher32 = True)
-    with warnings.catch_warnings():
-        warnings.filterwarnings('ignore',
-                                category = tables.NaturalNameWarning)
-        return tables.open_file(filename,
-                                mode = mode,
-                                filters = filters,
-                                **kwds)
+    return tables.open_file(filename,
+                            mode = mode,
+                            filters = filters,
+                            **kwds)

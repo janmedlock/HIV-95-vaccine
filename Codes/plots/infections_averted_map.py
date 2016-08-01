@@ -11,7 +11,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
-from scipy import integrate
+import tables
 
 sys.path.append(os.path.dirname(__file__))
 import common
@@ -103,17 +103,23 @@ def plot(infections_averted):
 
 
 def _get_infections_averted():
-    with model.results.modes.load() as results:
+    with model.results.samples.stats.load() as results:
         countries = list(results.keys())
-        countries.remove('Global')
+        try:
+            countries.remove('Global')
+        except ValueError:
+            pass
 
         infections_averted = pandas.DataFrame(columns = interventions,
                                               index = countries)
         for country in countries:
-            x = results[country][baseline].new_infections[-1]
-            for intv in interventions:
-                y = results[country][intv].new_infections[-1]
-                infections_averted.loc[country, intv] = (x - y) / x
+            try:
+                x = results[country][baseline].new_infections.median[-1]
+                for intv in interventions:
+                    y = results[country][intv].new_infections.median[-1]
+                    infections_averted.loc[country, intv] = (x - y) / x
+            except tables.exceptions.NoSuchNodeError:
+                pass
     return infections_averted
 
 

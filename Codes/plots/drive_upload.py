@@ -20,6 +20,8 @@ files = (
     'effectiveness_all.pdf',
     'effectiveness.pdf',
     'effectiveness.png',
+    'effectiveness_samples.pdf',
+    'effectiveness_samples.png',
     'infections_averted_map.pdf',
     'infections_averted_map.png',
     'infections_per_capita_averted_map.pdf',
