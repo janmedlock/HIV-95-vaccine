@@ -109,6 +109,7 @@ def _get_infections_per_capita(country, target):
             alive = results.alive
             new_infections = results.new_infections
     except FileNotFoundError:
+        print('{}, {} failed!'.format(country, target))
         return None
     else:
         person_years = integrate.trapz(alive, common.t)
@@ -126,13 +127,12 @@ def _get_infections_per_capita_averted():
         index = countries)
     for country in countries:
         print(country)
-        try:
-            x = _get_infections_per_capita(country, baseline)
+        x = _get_infections_per_capita(country, baseline)
+        if x is not None:
             for intv in interventions:
                 y = _get_infections_per_capita(country, intv)
-                infections_per_capita_averted.loc[country, intv] = x - y
-        except FileNotFoundError:
-            print('\tfailed')
+                if y is not None:
+                    infections_per_capita_averted.loc[country, intv] = x - y
     return infections_per_capita_averted
 
 

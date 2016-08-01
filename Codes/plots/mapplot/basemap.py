@@ -279,16 +279,17 @@ class Basemap:
         cmap_norm.set_clim(vmin, vmax)
         cmap_norm.set_array(values)
         for (c, v) in zip(countries, values):
-            color = cmap_norm.to_rgba(v)
-            try:
-                border = self.borders[c]
-            except KeyError:
-                    print('Country "{}" borders not in records.'.format(c))
-            else:
-                self.ax.add_feature(border,
-                                    facecolor = color,
-                                    *args,
-                                    **kwargs)
+            if numpy.isfinite(v):
+                color = cmap_norm.to_rgba(v)
+                try:
+                    border = self.borders[c]
+                except KeyError:
+                        print('Country "{}" borders not in records.'.format(c))
+                else:
+                    self.ax.add_feature(border,
+                                        facecolor = color,
+                                        *args,
+                                        **kwargs)
 
             if tiny_points_size > 0:
                 try:
