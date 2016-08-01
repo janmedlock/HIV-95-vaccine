@@ -41,8 +41,7 @@ def _get_plot_info(results, country, targs, stat, skip_global = False):
     elif stat == 'prevalence':
         label = 'Prevelance'
         percent = True
-    elif stat == 'incidence':
-        data_getter = _data_getter(results, country, 'incidence_per_capita')
+    elif stat == 'incidence_per_capita':
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
         units = ''

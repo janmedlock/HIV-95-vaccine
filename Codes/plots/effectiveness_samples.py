@@ -6,6 +6,7 @@ Plot the effectiveness of interventions.
 '''
 
 import itertools
+import operator
 import os.path
 import sys
 
@@ -15,6 +16,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
+import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -22,6 +24,9 @@ import common
 import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
+
+
+t = numpy.linspace(2015, 2035, 20 * 120 +1)
 
 
 def plotcell(ax, results, country, targets, attr,
@@ -35,46 +40,72 @@ def plotcell(ax, results, country, targets, attr,
         attr_str = 'PLHIV'
     elif attr == 'AIDS':
         attr_str = 'People with\nAIDS'
+    elif attr == 'dead':
+        attr_str = 'HIV-Related\nDeaths'
     elif attr == 'incidence_per_capita':
         attr_str = 'HIV Incidence\n(per M people per y)'
         scale = 1e-6
+        unit = ''
     elif attr == 'prevalence':
         attr_str = 'HIV Prevelance\n'
         percent = True
     else:
         raise ValueError("Unknown attr '{}'!".format(attr))
 
+    CIkey = 'CI{:g}'.format(100 * confidence_level)
+
     if percent:
         scale = 1 / 100
         unit = '%%'
     elif scale is None:
-        vmax = numpy.max(data)
-        if vmax > 1e6:
-            scale = 1e6
-            unit = 'M'
-        elif vmax > 1e3:
-            scale = 1e3
-            unit = 'k'
-        else:
-            scale = 1
-            unit = ''
+        data = []
+        for target in targets:
+            try:
+                v = getattr(results.root, '{}/{}/{}'.format(country,
+                                                            target,
+                                                            attr))
+            except tables.NoSuchNodeError:
+                pass
+            else:
+                if confidence_level > 0:
+                    data.append(getattr(v, CIkey))
+                else:
+                    data.append(v.median)
+
+        scale = 1
+        unit = ''
+        if len(data) > 0:
+            vmax = numpy.max(data)
+            if vmax > 1e6:
+                scale = 1e6
+                unit = 'M'
+            elif vmax > 1e3:
+                scale = 1e3
+                unit = 'k'
 
     country_str = common.country_label_replacements.get(country,
                                                         country)
 
     for (i, target) in enumerate(targets):
-        t = results[country][target].t
-        v = getattr(results[country][target], attr)
+        try:
+            v = getattr(results.root, '{}/{}/{}'.format(country,
+                                                        target,
+                                                        attr))
+        except tables.NoSuchNodeError:
+            pass
+        else:
+            lines = ax.plot(t, numpy.asarray(v.median) / scale,
+                            label = common.get_target_label(target),
+                            zorder = 2)
 
-        avg, CI = common.getstats(v, alpha = 1 - confidence_level)
-        lines = ax.plot(t, avg / scale,
-                        label = common.get_target_label(target),
-                        zorder = 2)
-        if confidence_level > 0:
-            color = lines[0].get_color()
-            ax.fill_between(t, CI[0] / scale, CI[1] / scale,
-                            color = color,
-                            alpha = 0.3)
+            if confidence_level > 0:
+                CI = getattr(v, CIkey)
+                color = lines[0].get_color()
+                ax.fill_between(t,
+                                numpy.asarray(CI[0]) / scale,
+                                numpy.asarray(CI[1]) / scale,
+                                color = color,
+                                alpha = 0.3)
 
     ax.set_xlim(t[0], t[-1])
     ax.grid(True, which = 'both', axis = 'both')
@@ -181,7 +212,7 @@ def plot_somecountries(results,
 
 def plot_somecountries_alltargets(results,
                                   targets = None,
-                                  confidence_level = 0,
+                                  confidence_level = 0.5,
                                   ncol = None,
                                   colors = None,
                                   **kwargs):
@@ -264,16 +295,11 @@ def plot_allcountries(results, targets = None, **kwargs):
 if __name__ == '__main__':
     confidence_level = 0.9
 
-    # Remove 'Global' for now.
-    common.countries_to_plot = list(common.countries_to_plot)
-    if 'Global' in common.countries_to_plot:
-        common.countries_to_plot.remove('Global')
-
-    with model.results.ResultsCache() as results:
+    with model.results.load_samples_stats() as results:
         plot_somecountries_alltargets(results)
 
-        plot_somecountries_pairedtargets(results,
-                                         confidence_level = confidence_level)
+        # plot_somecountries_pairedtargets(results,
+        #                                  confidence_level = confidence_level)
 
         # plot_allcountries(results, confidence_level = confidence_level)
 

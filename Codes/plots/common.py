@@ -31,7 +31,7 @@ country_label_replacements = {
 }
 
 
-effectiveness_measures = ['infected', 'incidence', 'AIDS', 'dead']
+effectiveness_measures = ['infected', 'incidence_per_capita', 'AIDS', 'dead']
 
 
 # historical_data_start_year = 1990

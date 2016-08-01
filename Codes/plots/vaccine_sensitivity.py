@@ -66,8 +66,7 @@ def _get_plot_info(treatment_target, parameters, results, stat):
     elif stat == 'prevalence':
         label = 'Prevelance'
         percent = True
-    elif stat == 'incidence':
-        data_sim_getter = operator.attrgetter('incidence_per_capita')
+    elif stat == 'incidence_per_capita':
         label = 'Incidence\n(per M per y)'
         scale = 1e-6
         unit = ''
