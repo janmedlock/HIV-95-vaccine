@@ -13,6 +13,10 @@ generate_samples
 ----------------
 .. automodule:: generate_samples
 
+get_percentiles
+---------------
+.. automodule:: get_percentiles
+
 module_versions
 ---------------
 .. automodule:: module_versions
