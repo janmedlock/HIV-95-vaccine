@@ -17,7 +17,7 @@ if __name__ == '__main__':
     target = 'Status Quo'
     attr = 'new_infections'
 
-    with model.results.ResultsCache() as cache:
+    with model.results.samples.Cache() as cache:
         ccache = cache[country]
         ctcache = ccache[target]
         val = getattr(ctcache, attr)

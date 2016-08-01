@@ -224,7 +224,7 @@ if __name__ == '__main__':
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.ResultsCache() as results:
+    with model.results.samples.Cache() as results:
         outcome_samples = get_outcome_samples(results, country, targets,
                                               outcome, time)
 

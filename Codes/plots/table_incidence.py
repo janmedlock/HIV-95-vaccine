@@ -27,7 +27,7 @@ times = [2025, 2035]
 def _main():
     d = pandas.Series(index = countries)
     d.name = 'Incidence increasing'
-    with model.results.ResultsCache() as results:
+    with model.results.samples.Cache() as results:
         for country in countries:
             try:
                 t = results[country][target].t

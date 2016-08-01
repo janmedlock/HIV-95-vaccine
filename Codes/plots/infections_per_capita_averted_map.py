@@ -110,7 +110,7 @@ def _get_infections_per_capita(result):
 
 
 def _get_infections_per_capita_averted():
-    with model.results.load_modes() as results:
+    with model.results.modes.load() as results:
         countries = list(results.keys())
         countries.remove('Global')
 

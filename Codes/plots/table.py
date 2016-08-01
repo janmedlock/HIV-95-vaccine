@@ -48,7 +48,7 @@ def _main():
     cix = pandas.MultiIndex.from_tuples(tuples)
 
     df = pandas.DataFrame(index = ix, columns = cix)
-    with model.results.ResultsCache() as results:
+    with model.results.samples.Cache() as results:
         for country in countries:
             for attr in attrs:
                 for target in targets:

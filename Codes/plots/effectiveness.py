@@ -258,12 +258,12 @@ def _plot_country(country, results):
 
 
 def plot_country(country):
-    with model.results.load_modes() as results:
+    with model.results.modes.load() as results:
         return _plot_country(country, results[country])
 
 
 def plot_some_countries():
-    with model.results.load_modes() as results:
+    with model.results.modes.load() as results:
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
         ncols = len(common.countries_to_plot)
@@ -304,7 +304,7 @@ def plot_some_countries():
 def plot_all_countries():
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        with model.results.load_modes() as results:
+        with model.results.modes.load() as results:
             countries = sorted(results.keys())
             # Move Global to front.
             countries.remove('Global')

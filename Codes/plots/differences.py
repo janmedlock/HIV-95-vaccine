@@ -229,7 +229,7 @@ def plot_all(results):
 
 
 if __name__ == '__main__':
-    with model.results.ResultsCache() as results:
+    with model.results.samples.Cache() as results:
         plot_selected(results, skip_global = True)
         # plot_all(results)
 

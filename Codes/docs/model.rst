@@ -102,6 +102,10 @@ samples_stats
 ~~~~~~~~~~~~~
 .. automodule:: model.results.samples_stats
 
+tables_dict
+~~~~~~~~~~~
+.. automodule:: model.results.tables_dict
+
 samples
 -------
 .. automodule:: model.samples

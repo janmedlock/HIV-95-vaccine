@@ -103,7 +103,7 @@ def plot(infections_averted):
 
 
 def _get_infections_averted():
-    with model.results.load_modes() as results:
+    with model.results.modes.load() as results:
         countries = list(results.keys())
         countries.remove('Global')
 

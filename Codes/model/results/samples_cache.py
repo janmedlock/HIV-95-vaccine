@@ -14,7 +14,7 @@ from . import common
 from . import samples
 
 
-class ResultsCacheCountryTarget:
+class CacheCountryTarget:
     '''
     Store results in an object like `obj.attr`.
     '''
@@ -37,7 +37,7 @@ class ResultsCacheCountryTarget:
         return value
 
 
-class ResultsCacheCountry(collections.OrderedDict):
+class CacheCountry(collections.OrderedDict):
     '''
     Store results in an object like `obj[target].attr`.
 
@@ -58,8 +58,7 @@ class ResultsCacheCountry(collections.OrderedDict):
     def __missing__(self, target):
         target = str(target)
         if self._exists(target):
-            self[target] = value = ResultsCacheCountryTarget(self,
-                                                             target)
+            self[target] = value = CacheCountryTarget(self, target)
             return value
         else:
             raise FileNotFoundError(
@@ -87,7 +86,7 @@ class ResultsCacheCountry(collections.OrderedDict):
         return self._parent()._exists(self._country, target)
 
 
-class ResultsCache(collections.OrderedDict):
+class Cache(collections.OrderedDict):
     '''
     Disk cache for :class:`model.results.samples.Results` for speed.
     Store results in an object like `obj[country][target].attr`.
@@ -111,7 +110,7 @@ class ResultsCache(collections.OrderedDict):
 
     def __missing__(self, country):
         if self._exists(country):
-            self[country] = value = ResultsCacheCountry(self, country)
+            self[country] = value = CacheCountry(self, country)
             return value
         else:
             raise FileNotFoundError(

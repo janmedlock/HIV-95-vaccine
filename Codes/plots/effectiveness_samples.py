@@ -295,7 +295,7 @@ def plot_allcountries(results, targets = None, **kwargs):
 if __name__ == '__main__':
     confidence_level = 0.9
 
-    with model.results.load_samples_stats() as results:
+    with model.results.samples.stats.load() as results:
         plot_somecountries_alltargets(results)
 
         # plot_somecountries_pairedtargets(results,

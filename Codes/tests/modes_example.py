@@ -17,7 +17,7 @@ import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with model.results.load_modes() as results:
+    with model.results.modes.load() as results:
 
         # The data look like results[country][target].attr
 

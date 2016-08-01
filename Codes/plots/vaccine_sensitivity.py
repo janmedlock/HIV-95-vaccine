@@ -242,15 +242,14 @@ def _plot_country(country, treatment_target, results):
 
 
 def plot_country(country, treatment_target):
-    with model.results.load_vaccine_sensitivity() as results:
+    with model.results.modes.load_vaccine_sensitivity() as results:
         return _plot_country(country, treatment_target, results[country])
 
 
 def plot_all_countries(treatment_target):
-    results = model.results.load_vaccine_sensitivity()
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        with model.results.load_vaccine_sensitivity() as results:
+        with model.results.modes.load_vaccine_sensitivity() as results:
             for country in results.keys():
                 fig = _plot_country(country, treatment_target,
                                     results[country])
@@ -259,7 +258,7 @@ def plot_all_countries(treatment_target):
 
 
 def plot_some_countries(treatment_target):
-    with model.results.load_vaccine_sensitivity() as results:
+    with model.results.modes.load_vaccine_sensitivity() as results:
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
         ncols = len(common.countries_to_plot)

@@ -85,7 +85,7 @@ def tornados():
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.ResultsCache() as results:
+    with model.results.samples.Cache() as results:
         # Order colors by order of prccs for 1st time.
         outcome_samples = get_outcome_samples(results, country, targets,
                                               outcome, times[0])

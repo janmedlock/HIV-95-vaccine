@@ -18,7 +18,7 @@ import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with model.results.load_samples_stats() as stats:
+    with model.results.samples.stats.load() as stats:
         countries = [g._v_name for g in stats.root]
         print('countries =', countries)
 

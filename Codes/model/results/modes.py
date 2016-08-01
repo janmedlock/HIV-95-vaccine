@@ -13,21 +13,21 @@ from .. import container
 from .. import global_
 
 
-class ModesResultsCountryTarget:
+class ResultsCountryTarget:
     '''
     Store results in an object like `obj.attr`.
     '''
 
 
-class ModesResultsCountry(container.DefaultOrderedDict):
+class ResultsCountry(container.DefaultOrderedDict):
     '''
     Store results in an object like `obj[target].attr`.
     '''
     def __init__(self):
-        super().__init__(ModesResultsCountryTarget)
+        super().__init__(ResultsCountryTarget)
 
 
-class ModesResults(container.DefaultOrderedDict):
+class Results(container.DefaultOrderedDict):
     '''
     Store results in an object like `obj[country][target].attr`.
     Back that object with a mod:`tables` HDF5 store.
@@ -43,7 +43,7 @@ class ModesResults(container.DefaultOrderedDict):
             attrs_to_dump.append(_attr)
 
     def __init__(self, filename = None, mode = 'r'):
-        super().__init__(ModesResultsCountry)
+        super().__init__(ResultsCountry)
         if filename is None:
             self._h5file = None
         else:
@@ -92,13 +92,13 @@ class ModesResults(container.DefaultOrderedDict):
         self._h5file.flush()
 
 
-def load_modes(mode = 'r'):
-    return ModesResults(os.path.join(common.resultsdir,
-                                     'modes.h5'),
-                        mode = mode)
+def load(mode = 'r'):
+    return Results(os.path.join(common.resultsdir,
+                                'modes.h5'),
+                   mode = mode)
 
 
 def load_vaccine_sensitivity(mode = 'r'):
-    return ModesResults(os.path.join(common.resultsdir,
-                                     'vaccine_sensitivity.h5'),
-                        mode = mode)
+    return Results(os.path.join(common.resultsdir,
+                                'vaccine_sensitivity.h5'),
+                   mode = mode)

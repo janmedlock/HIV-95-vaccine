@@ -4,18 +4,10 @@ Retrieve statistics from simulations with parameter distrubtions.
 
 import os.path
 
-import tables
-
 from . import common
+from . import tables_dict
 
-
-def load_samples_stats(mode = 'r'):
-    # Use compression and checksums.
-    filters = tables.Filters(complevel = 4,
-                             complib = 'zlib',
-                             shuffle = True,
-                             fletcher32 = True)
-    return tables.open_file(os.path.join(common.resultsdir,
-                                         'samples_stats.h5'),
-                            mode = mode,
-                            filters = filters)
+def load(mode = 'r'):
+    return tables_dict.open_file(os.path.join(common.resultsdir,
+                                              'samples_stats.h5'),
+                                 mode = mode)
