@@ -94,13 +94,17 @@ samples
 ~~~~~~~
 .. automodule:: model.results.samples
 
-samples_cache
-~~~~~~~~~~~~~
-.. automodule:: model.results.samples_cache
+cache
++++++
+.. automodule:: model.results.samples.cache
 
-samples_stats
-~~~~~~~~~~~~~
-.. automodule:: model.results.samples_stats
+results
++++++++
+.. automodule:: model.results.samples.results
+
+stats
++++++
+.. automodule:: model.results.samples.stats
 
 tables_dict
 ~~~~~~~~~~~

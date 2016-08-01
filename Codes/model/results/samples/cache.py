@@ -10,8 +10,8 @@ import weakref
 
 import tables
 
-from . import common
-from . import samples
+from . import results
+from .. import common
 
 
 class CacheCountryTarget:
@@ -88,7 +88,7 @@ class CacheCountry(collections.OrderedDict):
 
 class Cache(collections.OrderedDict):
     '''
-    Disk cache for :class:`model.results.samples.Results` for speed.
+    Disk cache for :class:`~model.results.samples.results.Results` for speed.
     Store results in an object like `obj[country][target].attr`.
     '''
     def __init__(self):
@@ -124,13 +124,13 @@ class Cache(collections.OrderedDict):
             return False
         else:
             cache_entry = getattr(self[country][target], attr)
-            data_file = samples.Results.get_path(country, target)
+            data_file = results.Results.get_path(country, target)
             mtime_cache = cache_entry.attrs.mtime
             mtime_data = os.path.getmtime(data_file)
             return (mtime_data <= mtime_cache)
 
     def _load(self, country, target, attr):
-        with samples.Results(country, target) as results:
+        with results.Results(country, target) as results:
             value = getattr(results, attr)
         h5path = '/{}/{}'.format(country, target)
         with warnings.catch_warnings():
@@ -143,7 +143,7 @@ class Cache(collections.OrderedDict):
         return array
 
     def _exists(self, country, target = None):
-        data_file = samples.Results.get_path(country, target)
+        data_file = results.Results.get_path(country, target)
         return os.path.exists(data_file)
 
     def __del__(self):

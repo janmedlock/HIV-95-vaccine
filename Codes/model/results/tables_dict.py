@@ -1,5 +1,5 @@
 '''
-Add a dict interface to mod:`tables` and default compression
+Add a dict interface to :mod:`tables` and default compression
 and checksum filters.
 '''
 

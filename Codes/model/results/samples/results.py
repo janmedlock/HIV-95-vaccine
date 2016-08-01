@@ -8,11 +8,9 @@ Store and retrieve results from simulations with parameter samples.
 
 import os
 
-from . import common
-from .. import global_
-from .. import picklefile
-from .samples_cache import *
-from . import samples_stats as stats
+from .. import common
+from ... import global_
+from ... import picklefile
 
 
 class Results:

@@ -309,6 +309,7 @@ intersphinx_mapping = {
     'joblib': ('https://pythonhosted.org/joblib/', None),
     'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
     'geopy': ('https://geopy.readthedocs.io/en/latest/', None),
+    'tables': ('http://www.pytables.org/', None),
 }
 
 
