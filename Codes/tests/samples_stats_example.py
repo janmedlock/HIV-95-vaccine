@@ -8,7 +8,6 @@ import sys
 
 from matplotlib import pyplot
 import numpy
-import tables
 
 sys.path.append('..')
 import model
