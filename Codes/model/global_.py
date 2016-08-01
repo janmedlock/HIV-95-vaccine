@@ -3,8 +3,10 @@ Aggregate global results.
 '''
 
 import numpy
+import pandas
 
 from . import container
+from . import datasheet
 from . import incidence
 from . import parameters
 
@@ -90,3 +92,16 @@ class Global(container.Container):
     @property
     def incidence_per_capita(self):
         return self.incidence / numpy.asarray(self.alive)
+
+
+class Parameters:
+    def __init__(self):
+        with pandas.ExcelFile(datasheet.datapath) as wb:
+            pi = datasheet.IncidencePrevalence.get_country_data('Global',
+                                                                wb = wb)
+            pop = datasheet.Population.get_country_data('Global',
+                                                        wb = wb)
+            self.prevalence = pi.prevalence
+            self.incidence_per_capita = pi.incidence_per_capita
+            self.population = pop
+            self.drug_coverage = None

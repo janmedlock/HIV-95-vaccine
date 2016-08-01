@@ -4,9 +4,6 @@ Using the modes of the parameter distributions,
 make simulation plots.
 '''
 
-import collections
-import itertools
-import operator
 import os.path
 import sys
 
@@ -16,7 +13,6 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
-import pandas
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -37,71 +33,21 @@ targets = [str(t) for t in targets]
 
 
 def _get_plot_info(parameters, results, stat):
-    data_hist = None
-    scale = None
-    percent = False
-    data_sim_getter = operator.attrgetter(stat)
+    data_hist = common.data_hist_getter[stat](parameters)
 
-    if stat == 'infected':
-        data_hist = parameters.prevalence * parameters.population
-        label = 'PLHIV'
-    elif stat == 'prevalence':
-        data_hist = parameters.prevalence
-        label = 'Prevelance'
-        percent = True
-    elif stat == 'incidence_per_capita':
-        data_hist = parameters.incidence
-        label = 'Incidence\n(per M per y)'
-        scale = 1e-6
-        unit = ''
-    elif stat == 'drug_coverage':
-        data_sim_getter = operator.attrgetter('proportions.treated')
-        data_hist = parameters.drug_coverage
-        label = 'ART\nCoverage'
-        percent = True
-    elif stat == 'AIDS':
-        data_hist = None
-        label = 'AIDS'
-    elif stat == 'dead':
-        data_hist = None
-        label = 'HIV-Related\nDeaths'
-    elif stat == 'viral_suppression':
-        data_sim_getter = common.viral_suppression_getter
-        data_hist = None
-        label = 'Viral\nSupression'
-        percent = True
-    elif stat == 'new_infections':
-        data_hist = None
-        label = 'New Infections'
-    else:
-        raise ValueError("Unknown stat '{}'".format(stat))
-    
     data_sim = []
     for targ in targets:
         try:
-            x = data_sim_getter(results[targ])
+            x = common.data_getter[stat](results[targ])
         except (KeyError, AttributeError):
             x = None
         data_sim.append(x)
 
-    t = list(results.values())[0].t
+    info = common.get_stat_info(stat)
+    if info.scale is None:
+        info.autoscale(data_sim)
 
-    if percent:
-        scale = 1 / 100
-        unit = '%%'
-    elif scale is None:
-        vmax = numpy.max(data_sim)
-        if vmax > 1e6:
-            scale = 1e6
-            unit = 'M'
-        elif vmax > 1e3:
-            scale = 1e3
-            unit = 'k'
-        else:
-            scale = 1
-            unit = ''
-
-    return (data_hist, data_sim, t, label, scale, unit)
+    return (data_hist, data_sim, info)
 
 
 def _plot_cell(ax, country, parameters, results, stat,
@@ -111,14 +57,13 @@ def _plot_cell(ax, country, parameters, results, stat,
     '''
     Plot one axes of simulation and historical data figure.
     '''
-    (data_hist, data_sim, t, label, scale, unit) = _get_plot_info(
-        parameters, results, stat)
+    (data_hist, data_sim, info) = _get_plot_info(parameters, results, stat)
 
     # Plot historical data.
     if plot_hist and (data_hist is not None):
         data_hist = data_hist.dropna()
         if len(data_hist) > 0:
-            ax.plot(data_hist.index, data_hist / scale,
+            ax.plot(data_hist.index, data_hist / info.scale,
                     label = 'Historical data',
                     zorder = 2,
                     **common.historical_data_style)
@@ -126,18 +71,18 @@ def _plot_cell(ax, country, parameters, results, stat,
     # Plot simulation data.
     for (target, x) in zip(targets, data_sim):
         if x is not None:
-            ax.plot(t, numpy.asarray(x) / scale,
+            ax.plot(common.t, numpy.asarray(x) / info.scale,
                     label = common.get_target_label(target),
                     alpha = 0.7,
                     zorder = 1)
             # Make a dotted line connecting the end of the historical data
             # and the begining of the simulation.
             if plot_hist and (data_hist is not None) and (len(data_hist) > 0):
-                t_ = numpy.compress(numpy.isfinite(x), t)
+                t_ = numpy.compress(numpy.isfinite(x), common.t)
                 x_ = numpy.compress(numpy.isfinite(x), x)
                 t_ = [data_hist.index[-1], t_[0]]
                 x_ = [data_hist.iloc[-1], x_[0]]
-                ax.plot(t_, numpy.asarray(x_) / scale,
+                ax.plot(t_, numpy.asarray(x_) / info.scale,
                         color = 'black',
                         linestyle = 'dotted',
                         label = None,
@@ -147,38 +92,8 @@ def _plot_cell(ax, country, parameters, results, stat,
             # Pop a style.
             next(ax._get_lines.prop_cycler)
 
-    tick_interval = 10
-    if plot_hist:
-        a = common.historical_data_start_year
-    else:
-        a = int(numpy.floor(t[0]))
-    b = int(numpy.ceil(t[-1]))
-    ticks = range(a, b, tick_interval)
-    if ((b - a) % tick_interval) == 0:
-        ticks = list(ticks) + [b]
-    ax.set_xticks(ticks)
-    ax.set_xlim(a, b)
-
-    ax.grid(True, which = 'both', axis = 'both')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    # One minor tick between major ticks.
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
-
-    country_str = common.country_label_replacements.get(country,
-                                                        country)
-    if country_label == 'ylabel':
-        ax.set_ylabel(country_str, size = 'medium')
-    elif country_label == 'title':
-        ax.set_title(country_str, size = 'medium')
-
-    if attr_label == 'ylabel':
-        ax.set_ylabel(label, size = 'medium')
-    elif attr_label == 'title':
-        ax.set_title(label, size = 'medium')
+    common.format_axes(ax, country, info, country_label, attr_label,
+                       plot_hist = plot_hist)
 
 
 def _make_legend(ax, plot_hist = True):
@@ -211,26 +126,10 @@ def _make_legend(ax, plot_hist = True):
                       numpoints = 1)
 
 
-class GlobalParameters:
-    def __init__(self):
-        with pandas.ExcelFile(model.datasheet.datapath) as wb:
-            pi = model.datasheet.IncidencePrevalence.get_country_data('Global',
-                                                                      wb = wb)
-            pop = model.datasheet.Population.get_country_data('Global',
-                                                              wb = wb)
-            self.prevalence = pi.prevalence
-            self.incidence = pi.incidence
-            self.population = pop
-            self.drug_coverage = None
-
-
 def _plot_country(country, results):
     fig = pyplot.figure(figsize = (8.5, 11))
 
-    if country != 'Global':
-        parameters = model.parameters.Parameters(country)
-    else:
-        parameters = GlobalParameters()
+    parameters = model.parameters.get_parameters(country)
 
     nrows = len(common.effectiveness_measures) + 1
     ncols = 1
@@ -274,10 +173,7 @@ def plot_some_countries():
                                                 + (legend_height_ratio, )))
         with seaborn.color_palette(common.colors_paired):
             for (col, country) in enumerate(common.countries_to_plot):
-                if country != 'Global':
-                    parameters = model.parameters.Parameters(country)
-                else:
-                    parameters = GlobalParameters()
+                parameters = model.parameters.get_parameters(country)
                 attr_label = 'ylabel' if (col == 0) else None
                 for (row, attr) in enumerate(common.effectiveness_measures):
                     ax = fig.add_subplot(gs[row, col])
@@ -320,4 +216,4 @@ if __name__ == '__main__':
     plot_some_countries()
     pyplot.show()
 
-    plot_all_countries()
+    # plot_all_countries()

@@ -2,7 +2,10 @@
 Common plotting settings etc.
 '''
 
+import collections
+import copy
 import inspect
+import operator
 import os.path
 import sys
 
@@ -32,6 +35,9 @@ country_label_replacements = {
 
 
 effectiveness_measures = ['infected', 'incidence_per_capita', 'AIDS', 'dead']
+
+
+t = numpy.linspace(2015, 2035, 20 * 120 +1)
 
 
 # historical_data_start_year = 1990
@@ -118,18 +124,18 @@ class PercentFormatter(ticker.ScalarFormatter):
 
 
 class UnitsFormatter(ticker.ScalarFormatter):
-    def __init__(self, unit):
-        self.unit = unit
+    def __init__(self, units):
+        self.units = units
         super().__init__()
 
     def _set_format(self, vmin, vmax):
         super()._set_format(vmin, vmax)
         if self._usetex:
-            self.format = self.format[: -1] + '{}$'.format(self.unit)
+            self.format = self.format[: -1] + '{}$'.format(self.units)
         elif self._useMathText:
-            self.format = self.format[: -2] + '{}}}$'.format(self.unit)
+            self.format = self.format[: -2] + '{}}}$'.format(self.units)
         else:
-            self.format += self.unit
+            self.format += self.units
 
 
 def cmap_reflected(cmap_base):
@@ -174,6 +180,129 @@ def get_target_label(target):
     return retval
 
 
-def viral_suppression_getter(results):
-    return (numpy.asarray(results.viral_suppression)
-            / numpy.asarray(results.infected))
+class StatInfoEntry:
+    def __init__(self, **kwargs):
+        # Defaults
+        self.percent = False
+        self.scale = None
+        self.units = ''
+        for (k, v) in kwargs.items():
+            setattr(self, k, v)
+        if self.percent:
+            self.scale = 1 / 100
+            self.units = '%%'
+        
+    def autoscale(self, data):
+        if len(data) > 0:
+            vmax = numpy.max(data)
+            if vmax > 1e6:
+                self.scale = 1e6
+                self.units = 'M'
+            elif vmax > 1e3:
+                self.scale = 1e3
+                self.units = 'k'
+            else:
+                self.scale = 1
+                self.units = ''
+        else:
+            self.scale = 1
+            self.units = ''
+        
+
+_stat_info = dict(
+    infected = StatInfoEntry(label = 'PLHIV'),
+    prevalence = StatInfoEntry(label = 'Prevalence',
+                               percent = True),
+    incidence_per_capita = StatInfoEntry(label = 'Incidence\n(per M per y)',
+                                         scale = 1e-6),
+    drug_coverage = StatInfoEntry(label = 'ART\nCoverage',
+                                  percent = True),
+    AIDS = StatInfoEntry(label = 'AIDS'),
+    dead = StatInfoEntry(label = 'HIV-Related\nDeaths'),
+    viral_suppression = StatInfoEntry(label = 'Viral\nSupression',
+                                      percent = True),
+    new_infections = StatInfoEntry(label = 'New Infections'),
+)
+
+
+def get_stat_info(stat):
+    try:
+        return copy.copy(_stat_info[stat])
+    except KeyError:
+        return StatInfoEntry(label = stat.title())
+
+
+def _none_func():
+    def f(*args, **kwargs):
+        return None
+    return f
+
+def data_infected_getter(parameters):
+    return parameters.prevalence * parameters.population
+
+# Everything not listed returns 'None', indicating no data.
+data_hist_getter = collections.defaultdict(
+    _none_func,
+    infected = data_infected_getter,
+    prevalence = operator.attrgetter('prevalence'),
+    incidence_per_capita = operator.attrgetter('incidence_per_capita'),
+    drug_coverage = operator.attrgetter('drug_coverage')
+)
+
+
+class DataGetter(dict):
+    def __init__(self):
+        self['drug_coverage'] = operator.attrgetter('proportions.treated')
+        self['viral_suppress'] = self.viral_suppression_getter
+
+    def __getitem__(self, key):
+        try:
+            super().__getitem__(key)
+        except KeyError:
+            # Default: return a attrgetter on 'key'.
+            return operator.attrgetter(key)
+
+    @staticmethod
+    def viral_suppression_getter(results):
+        return (numpy.asarray(results.viral_suppression)
+                / numpy.asarray(results.infected))
+
+data_getter = DataGetter()
+
+
+def format_axes(ax, country, info,
+                country_label, attr_label,
+                plot_hist = False, tick_interval = 10):
+    '''
+    Do common formatting.
+    '''
+    if plot_hist:
+        a = historical_data_start_year
+    else:
+        a = int(numpy.floor(t[0]))
+    b = int(numpy.ceil(t[-1]))
+    ticks = range(a, b, tick_interval)
+    if ((b - a) % tick_interval) == 0:
+        ticks = list(ticks) + [b]
+    ax.set_xticks(ticks)
+    ax.set_xlim(a, b)
+
+    ax.grid(True, which = 'both', axis = 'both')
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
+    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
+    ax.yaxis.set_major_formatter(UnitsFormatter(info.units))
+    # One minor tick between major ticks.
+    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+
+    country_str = country_label_replacements.get(country,
+                                                 country)
+    if country_label == 'ylabel':
+        ax.set_ylabel(country_str, size = 'medium')
+    elif country_label == 'title':
+        ax.set_title(country_str, size = 'medium')
+
+    if attr_label == 'ylabel':
+        ax.set_ylabel(info.label, size = 'medium')
+    elif attr_label == 'title':
+        ax.set_title(info.label, size = 'medium')

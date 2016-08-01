@@ -26,109 +26,48 @@ sys.path.append('..')
 import model
 
 
-t = numpy.linspace(2015, 2035, 20 * 120 +1)
-
-
-def plotcell(ax, results, country, targets, attr,
-             confidence_level = 0.9,
-             country_label = None, attr_label = None, legend = False):
-    scale = None
-    percent = False
-    data_sim_getter = operator.attrgetter(attr)
-
-    if attr == 'infected':
-        attr_str = 'PLHIV'
-    elif attr == 'AIDS':
-        attr_str = 'People with\nAIDS'
-    elif attr == 'dead':
-        attr_str = 'HIV-Related\nDeaths'
-    elif attr == 'incidence_per_capita':
-        attr_str = 'HIV Incidence\n(per M people per y)'
-        scale = 1e-6
-        unit = ''
-    elif attr == 'prevalence':
-        attr_str = 'HIV Prevelance\n'
-        percent = True
-    else:
-        raise ValueError("Unknown attr '{}'!".format(attr))
+def _plot_cell(ax, results, country, targets, attr,
+               confidence_level = 0.9,
+               country_label = None, attr_label = None, legend = False):
+    info = common.get_stat_info(attr)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
 
-    if percent:
-        scale = 1 / 100
-        unit = '%%'
-    elif scale is None:
+    if info.scale is None:
         data = []
         for target in targets:
             try:
-                v = getattr(results.root, '{}/{}/{}'.format(country,
-                                                            target,
-                                                            attr))
+                v = results[country][target][attr]
             except tables.NoSuchNodeError:
                 pass
             else:
                 if confidence_level > 0:
-                    data.append(getattr(v, CIkey))
+                    data.append(v[CIkey])
                 else:
-                    data.append(v.median)
-
-        scale = 1
-        unit = ''
-        if len(data) > 0:
-            vmax = numpy.max(data)
-            if vmax > 1e6:
-                scale = 1e6
-                unit = 'M'
-            elif vmax > 1e3:
-                scale = 1e3
-                unit = 'k'
-
-    country_str = common.country_label_replacements.get(country,
-                                                        country)
+                    data.append(v['median'])
+        info.autoscale(data)
 
     for (i, target) in enumerate(targets):
         try:
-            v = getattr(results.root, '{}/{}/{}'.format(country,
-                                                        target,
-                                                        attr))
+            v = results[country][target][attr]
         except tables.NoSuchNodeError:
             pass
         else:
-            lines = ax.plot(t, numpy.asarray(v.median) / scale,
+            lines = ax.plot(common.t,
+                            numpy.asarray(v['median']) / info.scale,
                             label = common.get_target_label(target),
                             zorder = 2)
 
             if confidence_level > 0:
-                CI = getattr(v, CIkey)
+                CI = v[CIkey]
                 color = lines[0].get_color()
-                ax.fill_between(t,
-                                numpy.asarray(CI[0]) / scale,
-                                numpy.asarray(CI[1]) / scale,
+                ax.fill_between(common.t,
+                                numpy.asarray(CI[0]) / info.scale,
+                                numpy.asarray(CI[1]) / info.scale,
                                 color = color,
                                 alpha = 0.3)
 
-    ax.set_xlim(t[0], t[-1])
-    ax.grid(True, which = 'both', axis = 'both')
-    # Every 10 years.
-    a = t[0]
-    b = t[-1]
-    xticks = list(range(int(t[0]), int(t[-1]), 10))
-    if ((b - a) % 10) == 0:
-        xticks.append(b)
-    ax.set_xticks(xticks)
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
-    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
-
-    if country_label == 'ylabel':
-        ax.set_ylabel(country_str, size = 'medium')
-    elif country_label == 'title':
-        ax.set_title(country_str, size = 'medium')
-
-    if attr_label == 'ylabel':
-        ax.set_ylabel(attr_str, size = 'medium')
-    elif attr_label == 'title':
-        ax.set_title(attr_str, size = 'medium')
+    common.format_axes(ax, country, info, country_label, attr_label)
 
     if legend:
         ax.legend(loc = 'upper left')
@@ -139,29 +78,31 @@ def plot_somecountries(results,
                        **kwargs):
     if targets is None:
         targets = model.targets.all_
+    targets = list(map(str, targets))
     if ncol is None:
         ncol = len(targets)
 
-    fig = pyplot.figure(figsize = (8.5, 11))
+    fig = pyplot.figure(figsize = (8.5, 7.5))
     # Legend in tiny bottom row
-    nrows = len(common.countries_to_plot) + 1
-    ncols = len(common.effectiveness_measures)
+    ncols = len(common.countries_to_plot)
+    nrows = len(common.effectiveness_measures) + 1
     legend_height_ratio = 0.1
     gs = gridspec.GridSpec(nrows, ncols,
                            height_ratios = ((1, ) * (nrows - 1)
                                             + (legend_height_ratio, )))
-    for (row, country) in enumerate(common.countries_to_plot):
-        attr_label = 'title' if (row == 0) else None
-        for (col, attr) in enumerate(common.effectiveness_measures):
-            country_label = 'ylabel' if (col == 0) else None
-            plotcell(fig.add_subplot(gs[row, col]),
-                     results,
-                     country,
-                     targets,
-                     attr,
-                     country_label = country_label,
-                     attr_label = attr_label,
-                     **kwargs)
+    for (col, country) in enumerate(common.countries_to_plot):
+        attr_label = 'ylabel' if (col == 0) else None
+        for (row, attr) in enumerate(common.effectiveness_measures):
+            ax = fig.add_subplot(gs[row, col])
+            country_label = 'title' if (row == 0) else None
+            _plot_cell(ax, results, country, targets, attr,
+                       country_label = country_label,
+                       attr_label = attr_label,
+                       **kwargs)
+            if row != nrows - 2:
+                for l in ax.get_xticklabels():
+                    l.set_visible(False)
+                ax.xaxis.offsetText.set_visible(False)
 
     # Make legend at bottom.
     axes = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
@@ -268,21 +209,21 @@ def plot_allcountries(results, targets = None, **kwargs):
     with backend_pdf.PdfPages(filename) as pdf:
         for (i, country) in enumerate(countries):
             fig, axes = pyplot.subplots(4,
-                                        figsize = (11, 8.5),
+                                        figsize = (8,5, 11),
                                         sharex = True,
                                         squeeze = True)
 
             try:
                 for (row, attr) in enumerate(common.effectiveness_measures):
                     country_label = 'title' if (row == 0) else None
-                    plotcell(axes[row],
-                             results,
-                             country,
-                             targets,
-                             attr,
-                             country_label = country_label,
-                             attr_label = 'ylabel',
-                             **kwargs)
+                    _plot_cell(axes[row],
+                               results,
+                               country,
+                               targets,
+                               attr,
+                               country_label = country_label,
+                               attr_label = 'ylabel',
+                               **kwargs)
             except FileNotFoundError:
                 pass
             else:

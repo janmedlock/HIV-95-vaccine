@@ -8,6 +8,7 @@ from scipy import stats
 from scipy import optimize
 
 from . import datasheet
+from . import global_
 from . import latin_hypercube_sampling
 from . import R0
 from . import transmission_rate
@@ -49,9 +50,10 @@ def beta(mode, minimum, maximum, lambda_ = 4):
 
 
 class Parameters:
-    r'''
+    '''
     Convert parameter data in datafile into object for use in simulations.
     '''
+
     # Hollingsworth et al, 2008.
     # 2.9 month duration of acute stage.
     progression_rate_acute = triangular(12 / 2.9, 2, 9.6)
@@ -284,6 +286,16 @@ class _Super:
                                 and (not callable(getattr(self, k)))))
         retval += '>'
         return retval
+
+
+def get_parameters(country):
+    '''
+    Little factory function to load 'Global' parameters if needed.
+    '''
+    if country == 'Global':
+        return global_.Parameters()
+    else:
+        return Parameters(country)
 
 
 class Sample(_Super):

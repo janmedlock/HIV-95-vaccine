@@ -267,7 +267,7 @@ class IncidencePrevalence(Sheet):
         indata = False
         for (i, v) in enumerate(sheet.index):
             if v == cls._incidence_start_string:
-                datatype = 'incidence'
+                datatype = 'incidence_per_capita'
                 indata = True
             elif v == cls._prevalence_start_string:
                 datatype = 'prevalence'
@@ -325,7 +325,8 @@ class IncidencePrevalence(Sheet):
 
     @staticmethod
     def get_empty():
-        return pandas.DataFrame(columns = ['prevalence', 'incidence'])
+        return pandas.DataFrame(columns = ['prevalence',
+                                           'incidence_per_capita'])
 
     @staticmethod
     def set_attrs(country_data, data):
