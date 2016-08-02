@@ -23,7 +23,8 @@ import model
 
 
 def _plot_cell(ax, results, country, targets, attr,
-               confidence_level = 0.9,
+               confidence_level,
+               scale = None, units = None,
                country_label = None, attr_label = None,
                colors = None, alpha = 0.35):
     if colors is None:
@@ -32,6 +33,12 @@ def _plot_cell(ax, results, country, targets, attr,
     info = common.get_stat_info(attr)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
+
+    if scale is not None:
+        info.scale = scale
+        if units is None:
+            units = ''
+        info.units = units
 
     if info.scale is None:
         data = []
@@ -70,7 +77,8 @@ def _plot_cell(ax, results, country, targets, attr,
     common.format_axes(ax, country, info, country_label, attr_label)
 
 
-def plot_somecountries(results, targets = None, **kwargs):
+def plot_somecountries(results, targets = None, confidence_level = 0.95,
+                       **kwargs):
     if targets is None:
         targets = model.targets.all_
 
@@ -87,6 +95,7 @@ def plot_somecountries(results, targets = None, **kwargs):
             country_label = 'title' if ax.is_first_row() else None
 
             _plot_cell(ax, results, country, targets, attr,
+                       confidence_level,
                        country_label = country_label,
                        attr_label = attr_label,
                        **kwargs)
@@ -155,7 +164,9 @@ def _make_legend(fig, targets):
                       numpoints = 1)
 
 
-def plot_country(results, country, targets = None, **kwargs):
+def plot_country(results, country, targets = None,
+                 confidence_level = 0.95,
+                 **kwargs):
     if targets is None:
         targets = model.targets.all_
 
@@ -170,6 +181,23 @@ def plot_country(results, country, targets = None, **kwargs):
 
     colors = common.colors_paired
     for (row, attr) in enumerate(common.effectiveness_measures):
+        # Get common scale for row.
+        info = common.get_stat_info(attr)
+        if info.scale is None:
+            data = []
+            for target in targets:
+                try:
+                    v = results[country][str(target)][attr]
+                except tables.NoSuchNodeError:
+                    pass
+                else:
+                    if confidence_level > 0:
+                        CIkey = 'CI{:g}'.format(100 * confidence_level)
+                        data.append(v[CIkey])
+                    else:
+                        data.append(v['median'])
+            info.autoscale(data)
+
         for col in range(ncols):
             ax = axes[row, col]
             targs = targets[2 * col : 2 * (col + 1)]
@@ -181,8 +209,10 @@ def plot_country(results, country, targets = None, **kwargs):
                 attr_label = None
 
             _plot_cell(ax, results, country, targs, attr,
+                       confidence_level,
                        attr_label = attr_label,
                        colors = colors_,
+                       scale = info.scale, units = info.units,
                        **kwargs)
 
             if ax.is_last_col():
@@ -217,17 +247,13 @@ def plot_allcountries(results, **kwargs):
 
 
 if __name__ == '__main__':
-    confidence_level = 0.95
-
     with model.results.samples.stats.load() as results:
-        # plot_country(results, 'South Africa',
-        #              confidence_level = confidence_level)
+        # plot_country(results, 'South Africa')
 
         plot_somecountries_alltargets(results)
 
-        # plot_somecountries_pairedtargets(results,
-        #                                  confidence_level = confidence_level)
+        # plot_somecountries_pairedtargets(results)
 
         pyplot.show()
 
-        plot_allcountries(results, confidence_level = confidence_level)
+        plot_allcountries(results)
