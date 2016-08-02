@@ -17,9 +17,9 @@ effectiveness
 -------------
 .. automodule:: plots.effectiveness
 
-effectiveness_samples
----------------------
-.. automodule:: plots.effectiveness_samples
+effectiveness_modes
+-------------------
+.. automodule:: plots.effectiveness_modes
 
 infections_averted_map
 ----------------------

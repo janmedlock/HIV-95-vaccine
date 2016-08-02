@@ -1,114 +1,152 @@
 #!/usr/bin/python3
 '''
-Using the modes of the parameter distributions,
-make simulation plots.
+Plot the effectiveness of interventions.
+
+.. todo:: Add historical incidence and prevalence to plots.
 '''
 
 import os.path
 import sys
 
-from matplotlib import gridspec
 from matplotlib import lines
 from matplotlib import pyplot
-from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
+import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
+# import seaborn
+import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
-# import seaborn
-import seaborn_quiet as seaborn
 
+def _plot_cell(ax, results, country, targets, attr,
+               confidence_level = 0.9,
+               country_label = None, attr_label = None,
+               colors = None, alpha = 0.35):
+    if colors is None:
+        colors = seaborn.color_palette()
 
-def _get_plot_info(parameters, results, stat):
-    data_hist = common.data_hist_getter[stat](parameters)
+    info = common.get_stat_info(attr)
 
-    data_sim = []
-    for target in model.targets.all_:
-        try:
-            x = common.data_getter[stat](results[str(target)])
-        except (KeyError, AttributeError):
-            x = None
-        data_sim.append(x)
+    CIkey = 'CI{:g}'.format(100 * confidence_level)
 
-    info = common.get_stat_info(stat)
     if info.scale is None:
-        info.autoscale(data_sim)
+        data = []
+        for target in targets:
+            try:
+                v = results[country][str(target)][attr]
+            except tables.NoSuchNodeError:
+                pass
+            else:
+                if confidence_level > 0:
+                    data.append(v[CIkey])
+                else:
+                    data.append(v['median'])
+        info.autoscale(data)
 
-    return (data_hist, data_sim, info)
-
-
-def _plot_cell(ax, country, parameters, results, stat,
-               plot_hist = True,
-               country_label = None,
-               attr_label = 'ylabel'):
-    '''
-    Plot one axes of simulation and historical data figure.
-    '''
-    (data_hist, data_sim, info) = _get_plot_info(parameters, results, stat)
-
-    # Plot historical data.
-    if plot_hist and (data_hist is not None):
-        data_hist = data_hist.dropna()
-        if len(data_hist) > 0:
-            ax.plot(data_hist.index, data_hist / info.scale,
-                    label = 'Historical data',
-                    zorder = 2,
-                    **common.historical_data_style)
-
-    # Plot simulation data.
-    for (target, x) in zip(model.targets.all_, data_sim):
-        if x is not None:
-            ax.plot(common.t, numpy.asarray(x) / info.scale,
-                    label = common.get_target_label(target),
-                    alpha = 0.7,
-                    zorder = 1)
-            # Make a dotted line connecting the end of the historical data
-            # and the begining of the simulation.
-            if plot_hist and (data_hist is not None) and (len(data_hist) > 0):
-                t_ = numpy.compress(numpy.isfinite(x), common.t)
-                x_ = numpy.compress(numpy.isfinite(x), x)
-                t_ = [data_hist.index[-1], t_[0]]
-                x_ = [data_hist.iloc[-1], x_[0]]
-                ax.plot(t_, numpy.asarray(x_) / info.scale,
-                        color = 'black',
-                        linestyle = 'dotted',
-                        label = None,
-                        alpha = 0.7,
-                        zorder = 2)
+    for (i, target) in enumerate(targets):
+        try:
+            v = results[country][str(target)][attr]
+        except tables.NoSuchNodeError:
+            pass
         else:
-            # Pop a style.
-            next(ax._get_lines.prop_cycler)
+            lines = ax.plot(common.t,
+                            numpy.asarray(v['median']) / info.scale,
+                            label = common.get_target_label(target),
+                            color = colors[i],
+                            zorder = 2)
 
-    common.format_axes(ax, country, info, country_label, attr_label,
-                       plot_hist = plot_hist)
+            if confidence_level > 0:
+                CI = v[CIkey]
+                ax.fill_between(common.t,
+                                numpy.asarray(CI[0]) / info.scale,
+                                numpy.asarray(CI[1]) / info.scale,
+                                color = colors[i],
+                                alpha = alpha)
+
+    common.format_axes(ax, country, info, country_label, attr_label)
 
 
-def _make_legend(ax, plot_hist = True):
-    ax.tick_params(labelbottom = False, labelleft = False)
-    ax.grid(False)
+def plot_somecountries(results, targets = None, **kwargs):
+    if targets is None:
+        targets = model.targets.all_
 
-    # Make legend at bottom.
+    ncols = len(common.countries_to_plot)
+    nrows = len(common.effectiveness_measures)
+    fig, axes = pyplot.subplots(nrows, ncols,
+                                figsize = (8.5, 7.5),
+                                sharex = 'all', sharey = 'none')
+    for (col, country) in enumerate(common.countries_to_plot):
+        for (row, attr) in enumerate(common.effectiveness_measures):
+            ax = axes[row, col]
+
+            attr_label = 'ylabel' if ax.is_first_col() else None
+            country_label = 'title' if ax.is_first_row() else None
+
+            _plot_cell(ax, results, country, targets, attr,
+                       country_label = country_label,
+                       attr_label = attr_label,
+                       **kwargs)
+
+    _make_legend(fig, targets)
+
+    fig.tight_layout(rect = (0, 0.07, 1, 1))
+
+    return fig
+
+
+def plot_somecountries_alltargets(results, targets = None,
+                                  confidence_level = 0, colors = None,
+                                  **kwargs):
+    if targets is None:
+        targets = model.targets.all_
+    if colors is None:
+        colors = common.colors_paired
+    with seaborn.color_palette(colors, len(targets)):
+        fig = plot_somecountries(results,
+                                 targets,
+                                 confidence_level = confidence_level,
+                                 **kwargs)
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    fig.savefig('{}.png'.format(common.get_filebase()))
+    return fig
+
+
+def plot_somecountries_pairedtargets(results, targets = None, **kwargs):
+    if targets is None:
+        targets = model.targets.all_
+
+    cp = seaborn.color_palette('colorblind')
+    ix = [2, 0, 3, 1, 4, 5]
+    # cp = seaborn.color_palette('Dark2')
+    # ix = [1, 0, 3, 2, 5, 4]
+    colors = [cp[i] for i in ix]
+
+    filebase = common.get_filebase()
+    figs = []
+    for i in range(len(targets) // 2):
+        targets_ = targets[2 * i : 2 * i + 2]
+        with seaborn.color_palette(colors):
+            fig = plot_somecountries(results, targets_, **kwargs)
+        figs.append(fig)
+        filebase_suffix = str(targets_[0]).replace(' ', '_')
+        filebase_ = '{}_{}'.format(filebase, filebase_suffix)
+        fig.savefig('{}.pdf'.format(filebase_))
+        fig.savefig('{}.png'.format(filebase_))
+
+    return figs
+
+
+def _make_legend(fig, targets):
+    colors = seaborn.color_palette()
     handles = []
     labels = []
-
-    if plot_hist:
-        handles.append(lines.Line2D([], [], **common.historical_data_style))
-        labels.append('Historical data')
-
-        # Blank spacer.
-        handles.append(lines.Line2D([], [], linewidth = 0))
-        labels.append(' ')
-
-    colors = seaborn.color_palette()
-    for (t, c) in zip(model.targets.all_, colors):
+    for (t, c) in zip(targets, colors):
         handles.append(lines.Line2D([], [], color = c))
         labels.append(common.get_target_label(t))
-
-    fig = ax.get_figure()
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = len(labels) // 2,
@@ -117,94 +155,79 @@ def _make_legend(ax, plot_hist = True):
                       numpoints = 1)
 
 
-def _plot_country(country, results):
-    fig = pyplot.figure(figsize = (8.5, 11))
+def plot_country(results, country, targets = None, **kwargs):
+    if targets is None:
+        targets = model.targets.all_
 
-    parameters = model.parameters.get_parameters(country)
+    nrows = len(common.effectiveness_measures)
+    ncols = int(numpy.ceil(len(targets) / 2))
+    fig, axes = pyplot.subplots(nrows, ncols,
+                                figsize = (8.5, 11),
+                                sharex = 'all', sharey = 'row')
 
-    nrows = len(common.effectiveness_measures) + 1
-    ncols = 1
-    legend_height_ratio = 0.2
-    gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1)
-                                            + (legend_height_ratio, )))
-    with seaborn.color_palette(common.colors_paired):
-        for (row, attr) in enumerate(common.effectiveness_measures):
-            ax = fig.add_subplot(gs[row, 0])
-            country_label = 'title' if (row == 0) else None
-            _plot_cell(ax, country, parameters, results, attr,
-                       country_label = country_label)
-            if row != nrows - 2:
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
-        # Make legend at bottom.
-        ax = fig.add_subplot(gs[-1, 0], axis_bgcolor = 'none')
-        _make_legend(ax)
+    country_str = common.country_label_replacements.get(country, country)
+    fig.suptitle(country_str, size = 'large', va = 'center')
 
-    fig.tight_layout()
+    colors = common.colors_paired
+    for (row, attr) in enumerate(common.effectiveness_measures):
+        for col in range(ncols):
+            ax = axes[row, col]
+            targs = targets[2 * col : 2 * (col + 1)]
+            colors_ = colors[2 * col : 2 * (col + 1)]
+
+            if (ax.is_first_col() or ax.is_last_col()):
+                attr_label = 'ylabel'
+            else:
+                attr_label = None
+
+            _plot_cell(ax, results, country, targs, attr,
+                       attr_label = attr_label,
+                       colors = colors_,
+                       **kwargs)
+
+            if ax.is_last_col():
+                ax.yaxis.set_ticks_position('right')
+                ax.yaxis.set_label_position('right')
+                ax.yaxis.get_label().set_rotation(270)
+
+    # Make legend at bottom.
+    with seaborn.color_palette(colors):
+        _make_legend(fig, targets)
+
+    fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
     return fig
 
 
-def plot_country(country):
-    with model.results.modes.load() as results:
-        return _plot_country(country, results[country])
-
-
-def plot_somecountries():
-    with model.results.modes.load() as results:
-        fig = pyplot.figure(figsize = (8.5, 7.5))
-        # Legend in tiny bottom row
-        ncols = len(common.countries_to_plot)
-        nrows = len(common.effectiveness_measures) + 1
-        legend_height_ratio = 0.35
-        gs = gridspec.GridSpec(nrows, ncols,
-                               height_ratios = ((1, ) * (nrows - 1)
-                                                + (legend_height_ratio, )))
-        with seaborn.color_palette(common.colors_paired):
-            for (col, country) in enumerate(common.countries_to_plot):
-                parameters = model.parameters.get_parameters(country)
-                attr_label = 'ylabel' if (col == 0) else None
-                for (row, attr) in enumerate(common.effectiveness_measures):
-                    ax = fig.add_subplot(gs[row, col])
-                    country_label = 'title' if (row == 0) else None
-                    _plot_cell(ax, country, parameters, results[country], attr,
-                               country_label = country_label,
-                               attr_label = attr_label,
-                               plot_hist = False)
-                    if row != nrows - 2:
-                        for l in ax.get_xticklabels():
-                            l.set_visible(False)
-                        ax.xaxis.offsetText.set_visible(False)
-
-            ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-            _make_legend(ax, plot_hist = False)
-
-    fig.tight_layout()
-
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
-    return fig
-
-
-def plot_all_countries():
+def plot_allcountries(results, **kwargs):
+    # countries = ['Global'] + sorted(model.datasheet.get_country_list())
+    countries = sorted(model.datasheet.get_country_list())
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        with model.results.modes.load() as results:
-            countries = sorted(results.keys())
-            # Move Global to front.
-            countries.remove('Global')
-            countries = ['Global'] + countries
-            for country in countries:
-                fig = _plot_country(country, results[country])
+        for country in countries:
+            print(country)
+            try:
+                fig = plot_country(results, country, **kwargs)
+            except FileNotFoundError:
+                print('\tfailed')
+            else:
                 pdf.savefig(fig)
+            finally:
                 pyplot.close(fig)
 
 
 if __name__ == '__main__':
-    # plot_country('South Africa')
-    plot_somecountries()
-    pyplot.show()
+    confidence_level = 0.95
 
-    # plot_all_countries()
+    with model.results.samples.stats.load() as results:
+        # plot_country(results, 'South Africa',
+        #              confidence_level = confidence_level)
+
+        plot_somecountries_alltargets(results)
+
+        # plot_somecountries_pairedtargets(results,
+        #                                  confidence_level = confidence_level)
+
+        pyplot.show()
+
+        plot_allcountries(results, confidence_level = confidence_level)
