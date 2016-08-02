@@ -228,6 +228,6 @@ if __name__ == '__main__':
         # plot_somecountries_pairedtargets(results,
         #                                  confidence_level = confidence_level)
 
-        plot_allcountries(results, confidence_level = confidence_level)
+        pyplot.show()
 
-    pyplot.show()
+        plot_allcountries(results, confidence_level = confidence_level)
