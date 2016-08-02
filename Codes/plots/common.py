@@ -295,8 +295,7 @@ def format_axes(ax, country, info,
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    country_str = country_label_replacements.get(country,
-                                                 country)
+    country_str = country_label_replacements.get(country, country)
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')
     elif country_label == 'title':
