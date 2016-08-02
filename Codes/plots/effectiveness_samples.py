@@ -5,15 +5,11 @@ Plot the effectiveness of interventions.
 .. todo:: Add historical incidence and prevalence to plots.
 '''
 
-import itertools
-import operator
 import os.path
 import sys
 
-from matplotlib import gridspec
 from matplotlib import lines
 from matplotlib import pyplot
-from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 import tables
@@ -28,7 +24,11 @@ import model
 
 def _plot_cell(ax, results, country, targets, attr,
                confidence_level = 0.9,
-               country_label = None, attr_label = None):
+               country_label = None, attr_label = None,
+               colors = None, alpha = 0.35):
+    if colors is None:
+        colors = seaborn.color_palette()
+
     info = common.get_stat_info(attr)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
@@ -56,16 +56,16 @@ def _plot_cell(ax, results, country, targets, attr,
             lines = ax.plot(common.t,
                             numpy.asarray(v['median']) / info.scale,
                             label = common.get_target_label(target),
+                            color = colors[i],
                             zorder = 2)
 
             if confidence_level > 0:
                 CI = v[CIkey]
-                color = lines[0].get_color()
                 ax.fill_between(common.t,
                                 numpy.asarray(CI[0]) / info.scale,
                                 numpy.asarray(CI[1]) / info.scale,
-                                color = color,
-                                alpha = 0.4)
+                                color = colors[i],
+                                alpha = alpha)
 
     common.format_axes(ax, country, info, country_label, attr_label)
 
@@ -74,41 +74,32 @@ def plot_somecountries(results, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
 
-    fig = pyplot.figure(figsize = (8.5, 7.5))
-    # Legend in tiny bottom row
     ncols = len(common.countries_to_plot)
-    nrows = len(common.effectiveness_measures) + 1
-    legend_height_ratio = 0.3
-    gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((1, ) * (nrows - 1)
-                                            + (legend_height_ratio, )))
+    nrows = len(common.effectiveness_measures)
+    fig, axes = pyplot.subplots(nrows, ncols,
+                                figsize = (8.5, 7.5),
+                                sharex = 'all', sharey = 'none')
     for (col, country) in enumerate(common.countries_to_plot):
-        attr_label = 'ylabel' if (col == 0) else None
         for (row, attr) in enumerate(common.effectiveness_measures):
-            ax = fig.add_subplot(gs[row, col])
-            country_label = 'title' if (row == 0) else None
+            ax = axes[row, col]
+
+            attr_label = 'ylabel' if ax.is_first_col() else None
+            country_label = 'title' if ax.is_first_row() else None
+
             _plot_cell(ax, results, country, targets, attr,
                        country_label = country_label,
                        attr_label = attr_label,
                        **kwargs)
-            if row != nrows - 2:
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
 
-    # Make legend at bottom.
-    ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-    _make_legend(ax, targets, usefigure = True)
+    _make_legend(fig, targets)
 
-    fig.tight_layout()
+    fig.tight_layout(rect = (0, 0.07, 1, 1))
 
     return fig
 
 
-def plot_somecountries_alltargets(results,
-                                  targets = None,
-                                  confidence_level = 0,
-                                  colors = None,
+def plot_somecountries_alltargets(results, targets = None,
+                                  confidence_level = 0, colors = None,
                                   **kwargs):
     if targets is None:
         targets = model.targets.all_
@@ -149,28 +140,15 @@ def plot_somecountries_pairedtargets(results, targets = None, **kwargs):
     return figs
 
 
-def _make_legend(ax, targets, usefigure = False):
-    ax.tick_params(labelbottom = False, labelleft = False)
-    ax.grid(False)
-
-    # Make legend at bottom.
+def _make_legend(fig, targets):
+    colors = seaborn.color_palette()
     handles = []
     labels = []
-
-    colors = seaborn.color_palette()
     for (t, c) in zip(targets, colors):
         handles.append(lines.Line2D([], [], color = c))
         labels.append(common.get_target_label(t))
-
-    if usefigure:
-        obj = ax.get_figure()
-        loc = 'lower center'
-    else:
-        obj = ax
-        loc = 'center'
-
-    return obj.legend(handles, labels,
-                      loc = loc,
+    return fig.legend(handles, labels,
+                      loc = 'lower center',
                       ncol = len(labels) // 2,
                       frameon = False,
                       fontsize = 11,
@@ -181,50 +159,42 @@ def plot_country(results, country, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
 
-    fig = pyplot.figure(figsize = (8.5, 11))
-    country_str = common.country_label_replacements.get(country, country)
-    fig.suptitle(country_str, size = 'medium')
-
-    nrows = len(common.effectiveness_measures) + 2
+    nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(targets) / 2))
-    title_height_ratio = 0.02
-    legend_height_ratio = 0.2
-    gs = gridspec.GridSpec(nrows, ncols,
-                           height_ratios = ((title_height_ratio, )
-                                            + (1, ) * (nrows - 2)
-                                            + (legend_height_ratio, )))
+    fig, axes = pyplot.subplots(nrows, ncols,
+                                figsize = (8.5, 11),
+                                sharex = 'all', sharey = 'row')
+
+    country_str = common.country_label_replacements.get(country, country)
+    fig.suptitle(country_str, size = 'large', va = 'center')
 
     colors = common.colors_paired
     for (row, attr) in enumerate(common.effectiveness_measures):
-        sharey = None
-        for (col, ind) in enumerate(range(0, 2 * ncols, 2)):
-            targs = targets[ind : ind + 2]
-            colors_ = colors[ind : ind + 2]
-            attr_label = 'ylabel' if (col == 0) else None
-            with seaborn.color_palette(colors_):
-                ax = fig.add_subplot(gs[row + 1, col], sharey = sharey)
-                sharey = ax
-                _plot_cell(ax, results, country, targs, attr,
-                           attr_label = attr_label,
-                           **kwargs)
-            if row != nrows - 3:
-                for l in ax.get_xticklabels():
-                    l.set_visible(False)
-                ax.xaxis.offsetText.set_visible(False)
-            if col != 0:
-                for l in ax.get_yticklabels():
-                    l.set_visible(False)
-                ax.yaxis.offsetText.set_visible(False)
+        for col in range(ncols):
+            ax = axes[row, col]
+            targs = targets[2 * col : 2 * (col + 1)]
+            colors_ = colors[2 * col : 2 * (col + 1)]
+
+            if (ax.is_first_col() or ax.is_last_col()):
+                attr_label = 'ylabel'
+            else:
+                attr_label = None
+
+            _plot_cell(ax, results, country, targs, attr,
+                       attr_label = attr_label,
+                       colors = colors_,
+                       **kwargs)
+
+            if ax.is_last_col():
+                ax.yaxis.set_ticks_position('right')
+                ax.yaxis.set_label_position('right')
+                ax.yaxis.get_label().set_rotation(270)
 
     # Make legend at bottom.
-    for (col, ind) in enumerate(range(0, 2 * ncols, 2)):
-        targs = targets[ind : ind + 2]
-        colors_ = colors[ind : ind + 2]
-        with seaborn.color_palette(colors_):
-            ax = fig.add_subplot(gs[-1, col], axis_bgcolor = 'none')
-            _make_legend(ax, targs)
+    with seaborn.color_palette(colors):
+        _make_legend(fig, targets)
 
-    fig.tight_layout()
+    fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
     return fig
 
@@ -253,11 +223,11 @@ if __name__ == '__main__':
         # plot_country(results, 'South Africa',
         #              confidence_level = confidence_level)
 
-        plot_somecountries_alltargets(results, confidence_level = 0.5)
+        plot_somecountries_alltargets(results)
 
         # plot_somecountries_pairedtargets(results,
         #                                  confidence_level = confidence_level)
 
-        # plot_allcountries(results, confidence_level = confidence_level)
+        plot_allcountries(results, confidence_level = confidence_level)
 
     pyplot.show()

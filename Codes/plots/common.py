@@ -297,12 +297,24 @@ def format_axes(ax, country, info,
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
     country_str = country_label_replacements.get(country, country)
-    if country_label == 'ylabel':
-        ax.set_ylabel(country_str, size = 'medium')
-    elif country_label == 'title':
-        ax.set_title(country_str, size = 'medium')
 
+    ylabel = None
+    title = None
+    if country_label == 'ylabel':
+        ylabel = country_str
+    elif country_label == 'title':
+        title = country_str
     if attr_label == 'ylabel':
-        ax.set_ylabel(info.label, size = 'medium')
+        ylabel = info.label
     elif attr_label == 'title':
-        ax.set_title(info.label, size = 'medium')
+        title = info.label
+
+    if ylabel is not None:
+        ax.set_ylabel(ylabel, size = 'medium',
+                      va = 'top', ha = 'center',
+                      labelpad = 25)
+
+    if title is not None:
+        ax.set_title(title, size = 'medium',
+                     va = 'bottom', ha = 'center')
+
