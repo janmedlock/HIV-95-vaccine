@@ -29,7 +29,7 @@ def _get_plot_info(parameters, results, stat):
     data_sim = []
     for target in model.targets.all_:
         try:
-            x = common.data_getter[stat](results[target])
+            x = common.data_getter[stat](results[str(target)])
         except (KeyError, AttributeError):
             x = None
         data_sim.append(x)

@@ -37,7 +37,7 @@ def _plot_cell(ax, results, country, targets, attr,
         data = []
         for target in targets:
             try:
-                v = results[country][target][attr]
+                v = results[country][str(target)][attr]
             except tables.NoSuchNodeError:
                 pass
             else:
@@ -49,7 +49,7 @@ def _plot_cell(ax, results, country, targets, attr,
 
     for (i, target) in enumerate(targets):
         try:
-            v = results[country][target][attr]
+            v = results[country][str(target)][attr]
         except tables.NoSuchNodeError:
             pass
         else:
@@ -65,7 +65,7 @@ def _plot_cell(ax, results, country, targets, attr,
                                 numpy.asarray(CI[0]) / info.scale,
                                 numpy.asarray(CI[1]) / info.scale,
                                 color = color,
-                                alpha = 0.3)
+                                alpha = 0.4)
 
     common.format_axes(ax, country, info, country_label, attr_label)
 
@@ -184,7 +184,7 @@ def plot_country(results, country, targets = None, **kwargs):
     fig = pyplot.figure(figsize = (8.5, 11))
     country_str = common.country_label_replacements.get(country, country)
     fig.suptitle(country_str, size = 'medium')
-    
+
     nrows = len(common.effectiveness_measures) + 2
     ncols = int(numpy.ceil(len(targets) / 2))
     title_height_ratio = 0.02
@@ -244,16 +244,16 @@ def plot_allcountries(results, **kwargs):
                 pdf.savefig(fig)
             finally:
                 pyplot.close(fig)
-            
+
 
 if __name__ == '__main__':
     confidence_level = 0.95
 
     with model.results.samples.stats.load() as results:
-        plot_country(results, 'South Africa',
-                     confidence_level = confidence_level)
+        # plot_country(results, 'South Africa',
+        #              confidence_level = confidence_level)
 
-        # plot_somecountries_alltargets(results, confidence_level = 0.5)
+        plot_somecountries_alltargets(results, confidence_level = 0.5)
 
         # plot_somecountries_pairedtargets(results,
         #                                  confidence_level = confidence_level)
