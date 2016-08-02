@@ -7,6 +7,7 @@ import itertools
 import warnings
 
 import numpy
+import tables
 
 import model
 
@@ -16,6 +17,7 @@ stats_to_save = ['infected', 'incidence', 'prevalence',
                  'new_infections', 'alive']
 
 CI_levels = ['median', 50, 80, 90, 95, 99]
+
 
 def _main():
     with model.results.samples.stats.load(mode = 'a') as h5file:
