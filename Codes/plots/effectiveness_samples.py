@@ -28,7 +28,7 @@ import model
 
 def _plot_cell(ax, results, country, targets, attr,
                confidence_level = 0.9,
-               country_label = None, attr_label = None, legend = False):
+               country_label = None, attr_label = None):
     info = common.get_stat_info(attr)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
@@ -69,24 +69,16 @@ def _plot_cell(ax, results, country, targets, attr,
 
     common.format_axes(ax, country, info, country_label, attr_label)
 
-    if legend:
-        ax.legend(loc = 'upper left')
 
-
-def plot_somecountries(results,
-                       targets = None, ncol = None, transpose_legend = False,
-                       **kwargs):
+def plot_somecountries(results, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
-    targets = list(map(str, targets))
-    if ncol is None:
-        ncol = len(targets)
 
     fig = pyplot.figure(figsize = (8.5, 7.5))
     # Legend in tiny bottom row
     ncols = len(common.countries_to_plot)
     nrows = len(common.effectiveness_measures) + 1
-    legend_height_ratio = 0.1
+    legend_height_ratio = 0.3
     gs = gridspec.GridSpec(nrows, ncols,
                            height_ratios = ((1, ) * (nrows - 1)
                                             + (legend_height_ratio, )))
@@ -105,46 +97,8 @@ def plot_somecountries(results,
                 ax.xaxis.offsetText.set_visible(False)
 
     # Make legend at bottom.
-    axes = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
-    axes.tick_params(labelbottom = False, labelleft = False)
-    axes.grid(False)
-
-    if transpose_legend:
-        # Instead of the legend
-        # e.g. with len(targets) = 6 and ncol = 3,
-        # [[0, 1, 2],
-        #  [3, 4, 5]]
-        # we want the legend
-        # [[0, 2, 4],
-        #  [1, 3, 5]]
-        # so we reorder both targets and prop_cycler to
-        # [0, 2, 4, 1, 3, 5].
-        def transpose(x, ncol):
-            x = list(x)
-            nrow = int(numpy.ceil(len(x) / ncol))
-            y = (x[i : : nrow] for i in range(nrow))
-            return itertools.chain.from_iterable(y)
-        targets_ = transpose(targets, ncol)
-        props = (next(axes._get_lines.prop_cycler)
-                 for _ in range(len(targets)))
-        prop_cycler = transpose(props, ncol)
-    else:
-        targets_ = targets
-        prop_cycler = axes._get_lines.prop_cycler
-
-    # Dummy invisible lines.
-    for target in targets_:
-        axes.plot(0, 0,
-                  label = common.get_target_label(target),
-                  visible = False,
-                  **next(prop_cycler))
-    legend = axes.legend(loc = 'center',
-                         ncol = ncol,
-                         frameon = False,
-                         fontsize = 'medium')
-    # Make legend lines visible.
-    for line in legend.get_lines():
-        line.set_visible(True)
+    ax = fig.add_subplot(gs[-1, :], axis_bgcolor = 'none')
+    _make_legend(ax, targets, usefigure = True)
 
     fig.tight_layout()
 
@@ -153,20 +107,16 @@ def plot_somecountries(results,
 
 def plot_somecountries_alltargets(results,
                                   targets = None,
-                                  confidence_level = 0.5,
-                                  ncol = None,
+                                  confidence_level = 0,
                                   colors = None,
                                   **kwargs):
     if targets is None:
         targets = model.targets.all_
-    if ncol is None:
-        ncol = len(targets) // 2
     if colors is None:
         colors = common.colors_paired
     with seaborn.color_palette(colors, len(targets)):
         fig = plot_somecountries(results,
                                  targets,
-                                 ncol = ncol,
                                  confidence_level = confidence_level,
                                  **kwargs)
     fig.savefig('{}.pdf'.format(common.get_filebase()))
@@ -199,45 +149,111 @@ def plot_somecountries_pairedtargets(results, targets = None, **kwargs):
     return figs
 
 
-def plot_allcountries(results, targets = None, **kwargs):
+def _make_legend(ax, targets, usefigure = False):
+    ax.tick_params(labelbottom = False, labelleft = False)
+    ax.grid(False)
+
+    # Make legend at bottom.
+    handles = []
+    labels = []
+
+    colors = seaborn.color_palette()
+    for (t, c) in zip(targets, colors):
+        handles.append(lines.Line2D([], [], color = c))
+        labels.append(common.get_target_label(t))
+
+    if usefigure:
+        obj = ax.get_figure()
+        loc = 'lower center'
+    else:
+        obj = ax
+        loc = 'center'
+
+    return obj.legend(handles, labels,
+                      loc = loc,
+                      ncol = len(labels) // 2,
+                      frameon = False,
+                      fontsize = 11,
+                      numpoints = 1)
+
+
+def plot_country(results, country, targets = None, **kwargs):
     if targets is None:
         targets = model.targets.all_
 
-    countries = ['Global'] + sorted(model.get_country_list())
+    fig = pyplot.figure(figsize = (8.5, 11))
+    country_str = common.country_label_replacements.get(country, country)
+    fig.suptitle(country_str, size = 'medium')
+    
+    nrows = len(common.effectiveness_measures) + 2
+    ncols = int(numpy.ceil(len(targets) / 2))
+    title_height_ratio = 0.02
+    legend_height_ratio = 0.2
+    gs = gridspec.GridSpec(nrows, ncols,
+                           height_ratios = ((title_height_ratio, )
+                                            + (1, ) * (nrows - 2)
+                                            + (legend_height_ratio, )))
 
+    colors = common.colors_paired
+    for (row, attr) in enumerate(common.effectiveness_measures):
+        sharey = None
+        for (col, ind) in enumerate(range(0, 2 * ncols, 2)):
+            targs = targets[ind : ind + 2]
+            colors_ = colors[ind : ind + 2]
+            attr_label = 'ylabel' if (col == 0) else None
+            with seaborn.color_palette(colors_):
+                ax = fig.add_subplot(gs[row + 1, col], sharey = sharey)
+                sharey = ax
+                _plot_cell(ax, results, country, targs, attr,
+                           attr_label = attr_label,
+                           **kwargs)
+            if row != nrows - 3:
+                for l in ax.get_xticklabels():
+                    l.set_visible(False)
+                ax.xaxis.offsetText.set_visible(False)
+            if col != 0:
+                for l in ax.get_yticklabels():
+                    l.set_visible(False)
+                ax.yaxis.offsetText.set_visible(False)
+
+    # Make legend at bottom.
+    for (col, ind) in enumerate(range(0, 2 * ncols, 2)):
+        targs = targets[ind : ind + 2]
+        colors_ = colors[ind : ind + 2]
+        with seaborn.color_palette(colors_):
+            ax = fig.add_subplot(gs[-1, col], axis_bgcolor = 'none')
+            _make_legend(ax, targs)
+
+    fig.tight_layout()
+
+    return fig
+
+
+def plot_allcountries(results, **kwargs):
+    # countries = ['Global'] + sorted(model.datasheet.get_country_list())
+    countries = sorted(model.datasheet.get_country_list())
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
-        for (i, country) in enumerate(countries):
-            fig, axes = pyplot.subplots(4,
-                                        figsize = (8,5, 11),
-                                        sharex = True,
-                                        squeeze = True)
-
+        for country in countries:
+            print(country)
             try:
-                for (row, attr) in enumerate(common.effectiveness_measures):
-                    country_label = 'title' if (row == 0) else None
-                    _plot_cell(axes[row],
-                               results,
-                               country,
-                               targets,
-                               attr,
-                               country_label = country_label,
-                               attr_label = 'ylabel',
-                               **kwargs)
+                fig = plot_country(results, country, **kwargs)
             except FileNotFoundError:
-                pass
+                print('\tfailed')
             else:
-                fig.tight_layout()
                 pdf.savefig(fig)
             finally:
                 pyplot.close(fig)
-
+            
 
 if __name__ == '__main__':
-    confidence_level = 0.9
+    confidence_level = 0.95
 
     with model.results.samples.stats.load() as results:
-        plot_somecountries_alltargets(results)
+        plot_country(results, 'South Africa',
+                     confidence_level = confidence_level)
+
+        # plot_somecountries_alltargets(results, confidence_level = 0.5)
 
         # plot_somecountries_pairedtargets(results,
         #                                  confidence_level = confidence_level)

@@ -8,7 +8,7 @@ import os.path
 import sys
 
 from matplotlib import gridspec
-from matplotlib import lines as mlines
+from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
@@ -23,22 +23,13 @@ import model
 import seaborn_quiet as seaborn
 
 
-targets_baselines = [model.targets.StatusQuo(),
-                     model.targets.UNAIDS90(),
-                     model.targets.UNAIDS95()]
-targets = []
-for t in targets_baselines:
-    targets.extend([t, model.targets.Vaccine(treatment_targets = t)])
-targets = [str(t) for t in targets]
-
-
 def _get_plot_info(parameters, results, stat):
     data_hist = common.data_hist_getter[stat](parameters)
 
     data_sim = []
-    for targ in targets:
+    for target in model.targets.all_:
         try:
-            x = common.data_getter[stat](results[targ])
+            x = common.data_getter[stat](results[target])
         except (KeyError, AttributeError):
             x = None
         data_sim.append(x)
@@ -69,7 +60,7 @@ def _plot_cell(ax, country, parameters, results, stat,
                     **common.historical_data_style)
 
     # Plot simulation data.
-    for (target, x) in zip(targets, data_sim):
+    for (target, x) in zip(model.targets.all_, data_sim):
         if x is not None:
             ax.plot(common.t, numpy.asarray(x) / info.scale,
                     label = common.get_target_label(target),
@@ -105,16 +96,16 @@ def _make_legend(ax, plot_hist = True):
     labels = []
 
     if plot_hist:
-        handles.append(mlines.Line2D([], [], **common.historical_data_style))
+        handles.append(lines.Line2D([], [], **common.historical_data_style))
         labels.append('Historical data')
 
         # Blank spacer.
-        handles.append(mlines.Line2D([], [], linewidth = 0))
+        handles.append(lines.Line2D([], [], linewidth = 0))
         labels.append(' ')
 
     colors = seaborn.color_palette()
-    for (t, c) in zip(targets, colors):
-        handles.append(mlines.Line2D([], [], color = c))
+    for (t, c) in zip(model.targets.all_, colors):
+        handles.append(lines.Line2D([], [], color = c))
         labels.append(common.get_target_label(t))
 
     fig = ax.get_figure()
@@ -161,7 +152,7 @@ def plot_country(country):
         return _plot_country(country, results[country])
 
 
-def plot_some_countries():
+def plot_somecountries():
     with model.results.modes.load() as results:
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
@@ -213,7 +204,7 @@ def plot_all_countries():
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    plot_some_countries()
+    plot_somecountries()
     pyplot.show()
 
     # plot_all_countries()

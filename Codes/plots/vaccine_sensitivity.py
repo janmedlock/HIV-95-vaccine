@@ -11,7 +11,7 @@ import os.path
 import sys
 
 from matplotlib import gridspec
-from matplotlib import lines as mlines
+from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
@@ -52,7 +52,7 @@ def get_target_label(treatment_target, target):
 
 
 def _get_targets(treatment_target):
-    return [str(t) for t in model.targets.vaccine_sensitivity_all
+    return [str(t) for t in model.targets.vaccine_sensitivity
             if str(t._treatment_targets) == str(treatment_target)]
 
 
@@ -186,14 +186,14 @@ def _make_legend(ax, treatment_target):
     colors = seaborn.color_palette()
     for (t, c) in zip(targets, colors):
         label = get_target_label(treatment_target, t)
-        handles.append(mlines.Line2D([], [],
-                                     color = c,
-                                     **_get_kwds(label)))
+        handles.append(lines.Line2D([], [],
+                                    color = c,
+                                    **_get_kwds(label)))
         labels.append(label)
         if label == 'Baseline':
             # Blank spacer.
-            handles.append(mlines.Line2D([], [],
-                                         linewidth = 0))
+            handles.append(lines.Line2D([], [],
+                                        linewidth = 0))
             labels.append(' ')
 
 
@@ -257,7 +257,7 @@ def plot_all_countries(treatment_target):
                 pyplot.close(fig)
 
 
-def plot_some_countries(treatment_target):
+def plot_somecountries(treatment_target):
     with model.results.modes.load_vaccine_sensitivity() as results:
         fig = pyplot.figure(figsize = (8.5, 7.5))
         # Legend in tiny bottom row
@@ -302,7 +302,7 @@ if __name__ == '__main__':
     # plot_country('South Africa',
     #              model.targets.vaccine_sensitivity_baselines[0])
     for treatment_target in model.targets.vaccine_sensitivity_baselines:
-        plot_some_countries(treatment_target)
+        plot_somecountries(treatment_target)
 
     pyplot.show()
 

@@ -13,7 +13,7 @@ import model
 
 def _run_one(country, targets = None):
     if targets is None:
-        targets = model.targets.vaccine_sensitivity_all
+        targets = model.targets.vaccine_sensitivity
     parameters = model.parameters.Parameters(country)
     parameter_values = parameters.mode()
     results = joblib.Parallel(n_jobs = -1)(

@@ -270,20 +270,21 @@ class Vaccine(Targets):
 
 
 # Build each of these and each of these + vaccine.
-_baseline = [StatusQuo(),
-             # UNAIDS90(),
+_baselines = [StatusQuo(),
+             UNAIDS90(),
              UNAIDS95()]
 all_ = []
-for target in _baseline:
+for target in _baselines:
     all_.extend([target,
                  Vaccine(treatment_targets = target)])
 
 
-vaccine_sensitivity_baselines = [StatusQuo(),
-                                 UNAIDS95()]
-vaccine_sensitivity_all = []
-for target in vaccine_sensitivity_baselines:
-    vaccine_sensitivity_all.extend([
+_vaccine_sensitivity_baselines = [StatusQuo(),
+                                  # UNAIDS90(),
+                                  UNAIDS95()]
+vaccine_sensitivity = []
+for target in _vaccine_sensitivity_baselines:
+    vaccine_sensitivity.extend([
         Vaccine(treatment_targets = target),
         Vaccine(treatment_targets = target, efficacy = 0.3),
         Vaccine(treatment_targets = target, efficacy = 0.7),
