@@ -54,6 +54,11 @@ class Results:
             self._load_data()
         return getattr(self._data, key)
 
+    def keys(self):
+        if self._data is None:
+            self._load_data()
+        return self._data.keys()
+
     def flush(self):
         del self._data
         self._data = None

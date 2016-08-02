@@ -98,6 +98,10 @@ cache
 +++++
 .. automodule:: model.results.samples.cache
 
+h5
+++
+.. automodule:: model.results.samples.h5
+
 results
 +++++++
 .. automodule:: model.results.samples.results

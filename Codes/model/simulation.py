@@ -28,9 +28,9 @@ class Simulation(container.Container):
     ``'odeint'`` to use :func:`scipy.integrate.odeint`.
     '''
 
-    _keys = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
+    _keys = ['susceptible', 'vaccinated', 'acute', 'undiagnosed',
              'diagnosed', 'treated', 'viral_suppression',
-             'AIDS', 'dead', 'new_infections')
+             'AIDS', 'dead', 'new_infections']
 
     _alive = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
               'diagnosed', 'treated', 'viral_suppression', 'AIDS')
@@ -214,3 +214,17 @@ class Simulation(container.Container):
 
     def plot(self, *args, **kwargs):
         plot.simulation(self, *args, **kwargs)
+
+    @classmethod
+    def _build_keys(cls):
+        '''
+        Build list of keys to dump.
+        '''
+        for attr in dir(cls):
+            if not attr.startswith('_'):
+                obj = getattr(cls, attr)
+                if not callable(obj):
+                    cls._keys.append(attr)
+
+
+Simulation._build_keys()
