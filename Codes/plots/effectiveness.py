@@ -182,8 +182,7 @@ def plot_country(results, country, confidence_level = 0.95, **kwargs):
 
 
 def plot_allcountries(results, **kwargs):
-    # countries = ['Global'] + sorted(model.datasheet.get_country_list())
-    countries = sorted(model.datasheet.get_country_list())
+    countries = ['Global'] + sorted(model.datasheet.get_country_list())
     filename = '{}_all.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         for country in countries:
