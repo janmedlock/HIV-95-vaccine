@@ -12,7 +12,6 @@ import sys
 import matplotlib
 from matplotlib import cm
 from matplotlib import colors
-from matplotlib import lines
 from matplotlib import ticker
 import numpy
 
@@ -318,17 +317,3 @@ def format_axes(ax, country, info,
     if title is not None:
         ax.set_title(title, size = 'medium',
                      va = 'bottom', ha = 'center')
-
-def make_legend(fig, targets):
-    colors = seaborn.color_palette()
-    handles = []
-    labels = []
-    for (t, c) in zip(targets, colors):
-        handles.append(lines.Line2D([], [], color = c))
-        labels.append(get_target_label(t))
-    return fig.legend(handles, labels,
-                      loc = 'lower center',
-                      ncol = len(labels) // 2,
-                      frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
