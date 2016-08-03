@@ -11,7 +11,8 @@ import sys
 
 import matplotlib
 from matplotlib import cm
-from matplotlib import colors as mcolors
+from matplotlib import colors
+from matplotlib import lines
 from matplotlib import ticker
 import numpy
 
@@ -152,7 +153,7 @@ def cmap_reflected(cmap_base):
                                cmaps_[1]._segmentdata[k](2 * (x - 0.5)))
         return f
     cdict = {k: cfunc(k) for k in ('red', 'green', 'blue')}
-    return mcolors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
+    return colors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
 
 
 _cmap_percentile_base = 'cubehelix'
@@ -162,9 +163,9 @@ cmap_percentile = cmap_reflected(_cmap_percentile_base)
 def cmap_scaled(cmap_base, vmin = 0, vmax = 1, N = 256):
     cmap = cm.get_cmap(cmap_base)
     pts = numpy.linspace(vmin, vmax, N)
-    colors = cmap(pts)
-    return mcolors.LinearSegmentedColormap.from_list(cmap_base + '_scaled',
-                                                     colors)
+    colors_ = cmap(pts)
+    return colors.LinearSegmentedColormap.from_list(cmap_base + '_scaled',
+                                                    colors_)
 
 
 _cp = seaborn.color_palette('Paired', 12)
@@ -318,3 +319,16 @@ def format_axes(ax, country, info,
         ax.set_title(title, size = 'medium',
                      va = 'bottom', ha = 'center')
 
+def make_legend(fig, targets):
+    colors = seaborn.color_palette()
+    handles = []
+    labels = []
+    for (t, c) in zip(targets, colors):
+        handles.append(lines.Line2D([], [], color = c))
+        labels.append(common.get_target_label(t))
+    return fig.legend(handles, labels,
+                      loc = 'lower center',
+                      ncol = len(labels) // 2,
+                      frameon = False,
+                      fontsize = 11,
+                      numpoints = 1)

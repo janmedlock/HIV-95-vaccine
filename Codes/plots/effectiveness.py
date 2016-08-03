@@ -8,7 +8,6 @@ Plot the effectiveness of interventions.
 import os.path
 import sys
 
-from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib.backends import backend_pdf
 import numpy
@@ -60,11 +59,10 @@ def _plot_cell(ax, results, country, targets, attr,
         except tables.NoSuchNodeError:
             pass
         else:
-            lines = ax.plot(common.t,
-                            numpy.asarray(v['median']) / info.scale,
-                            label = common.get_target_label(target),
-                            color = colors[i],
-                            zorder = 2)
+            ax.plot(common.t, numpy.asarray(v['median']) / info.scale,
+                    label = common.get_target_label(target),
+                    color = colors[i],
+                    zorder = 2)
 
             if confidence_level > 0:
                 CI = v[CIkey]
@@ -75,21 +73,6 @@ def _plot_cell(ax, results, country, targets, attr,
                                 alpha = alpha)
 
     common.format_axes(ax, country, info, country_label, attr_label)
-
-
-def _make_legend(fig):
-    colors = seaborn.color_palette()
-    handles = []
-    labels = []
-    for (t, c) in zip(model.targets.all_, colors):
-        handles.append(lines.Line2D([], [], color = c))
-        labels.append(common.get_target_label(t))
-    return fig.legend(handles, labels,
-                      loc = 'lower center',
-                      ncol = len(labels) // 2,
-                      frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
 
 
 def plot_somecountries(results, confidence_level = 0, **kwargs):
@@ -112,7 +95,7 @@ def plot_somecountries(results, confidence_level = 0, **kwargs):
                            attr_label = attr_label,
                            **kwargs)
 
-        _make_legend(fig)
+        common.make_legend(fig)
 
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
@@ -174,7 +157,7 @@ def plot_country(results, country, confidence_level = 0.95, **kwargs):
 
     # Make legend at bottom.
     with seaborn.color_palette(common.colors_paired):
-        _make_legend(fig)
+        common.make_legend(fig)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
