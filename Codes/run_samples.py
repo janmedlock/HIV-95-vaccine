@@ -37,7 +37,7 @@ def _main():
         for target in model.targets.all_:
             if not model.results.samples.exists(country, target):
                 results = _run_country(country, target, samples)
-                model.results.dump(country, target, results)
+                model.results.samples.dump(country, target, results)
 
 
 if __name__ == '__main__':
