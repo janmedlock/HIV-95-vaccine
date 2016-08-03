@@ -20,10 +20,11 @@ sys.path.append('..')
 import model
 
 
-def get_outcome_samples(results, country, targets, attr, times):
-    t = results[country][targets[0]].t
-    x, y =  (numpy.asarray(getattr(results[country][target], attr))
-             for target in targets)
+def get_outcome_samples(country, targets, stat, times):
+    results = [model.results.samples.Results(country, target)
+               for target in targets]
+    t = results[0].t
+    x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
     z = x - y
     interp = interpolate.interp1d(t, z, axis = -1)
     outcome_samples = interp(times)
@@ -212,8 +213,7 @@ def tornado(X, y, outcome, parameter_names = None, colors = None):
 
 
 if __name__ == '__main__':
-    # country = 'Global'
-    country = 'South Africa'
+    country = 'Global'
     outcome = 'new_infections'
     baseline = model.targets.StatusQuo()
     targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
@@ -224,28 +224,27 @@ if __name__ == '__main__':
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.samples.Cache() as results:
-        outcome_samples = get_outcome_samples(results, country, targets,
-                                              outcome, time)
+    outcome_samples = get_outcome_samples(country, targets,
+                                          outcome, time)
 
-        # Order parameters by abs(prcc).
-        rho = stats.prcc(parameter_samples, outcome_samples)
-        ix = numpy.argsort(numpy.abs(rho))[ : : -1]
-        parameter_samples = parameter_samples[:, ix]
-        parameter_names = [parameter_names[i] for i in ix]
+    # Order parameters by abs(prcc).
+    rho = stats.prcc(parameter_samples, outcome_samples)
+    ix = numpy.argsort(numpy.abs(rho))[ : : -1]
+    parameter_samples = parameter_samples[:, ix]
+    parameter_names = [parameter_names[i] for i in ix]
 
-        colors = seaborn.color_palette('Dark2', len(parameter_names))
+    colors = seaborn.color_palette('Dark2', len(parameter_names))
 
-        plot_samples(parameter_samples, outcome_samples, outcome,
-                     parameter_names = parameter_names,
-                     colors = colors)
+    plot_samples(parameter_samples, outcome_samples, outcome,
+                 parameter_names = parameter_names,
+                 colors = colors)
 
-        plot_ranks(parameter_samples, outcome_samples, outcome,
-                   parameter_names = parameter_names,
-                   colors = colors)
+    plot_ranks(parameter_samples, outcome_samples, outcome,
+               parameter_names = parameter_names,
+               colors = colors)
 
-        # tornado(parameter_samples, outcome_samples, outcome,
-        #         parameter_names = parameter_names,
-        #         colors = colors)
+    # tornado(parameter_samples, outcome_samples, outcome,
+    #         parameter_names = parameter_names,
+    #         colors = colors)
 
     pyplot.show()
