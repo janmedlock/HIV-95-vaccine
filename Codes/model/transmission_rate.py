@@ -29,7 +29,7 @@ def estimate_vs_time(parameters):
     '''
     # Interpolate in case of any missing data.
     prevalence = parameters.prevalence.interpolate(method = 'index')
-    incidence = parameters.incidence.interpolate(method = 'index')
+    incidence = parameters.incidence_per_capita.interpolate(method = 'index')
     transmission_rates_vs_time = incidence / prevalence / (1 - prevalence)
     # Remove nan entries.
     return transmission_rates_vs_time.dropna()
