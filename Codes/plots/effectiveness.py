@@ -77,83 +77,11 @@ def _plot_cell(ax, results, country, targets, attr,
     common.format_axes(ax, country, info, country_label, attr_label)
 
 
-def plot_somecountries(results, targets = None, confidence_level = 0.95,
-                       **kwargs):
-    if targets is None:
-        targets = model.targets.all_
-
-    ncols = len(common.countries_to_plot)
-    nrows = len(common.effectiveness_measures)
-    fig, axes = pyplot.subplots(nrows, ncols,
-                                figsize = (8.5, 7.5),
-                                sharex = 'all', sharey = 'none')
-    for (col, country) in enumerate(common.countries_to_plot):
-        for (row, attr) in enumerate(common.effectiveness_measures):
-            ax = axes[row, col]
-
-            attr_label = 'ylabel' if ax.is_first_col() else None
-            country_label = 'title' if ax.is_first_row() else None
-
-            _plot_cell(ax, results, country, targets, attr,
-                       confidence_level,
-                       country_label = country_label,
-                       attr_label = attr_label,
-                       **kwargs)
-
-    _make_legend(fig, targets)
-
-    fig.tight_layout(rect = (0, 0.07, 1, 1))
-
-    return fig
-
-
-def plot_somecountries_alltargets(results, targets = None,
-                                  confidence_level = 0, colors = None,
-                                  **kwargs):
-    if targets is None:
-        targets = model.targets.all_
-    if colors is None:
-        colors = common.colors_paired
-    with seaborn.color_palette(colors, len(targets)):
-        fig = plot_somecountries(results,
-                                 targets,
-                                 confidence_level = confidence_level,
-                                 **kwargs)
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
-    return fig
-
-
-def plot_somecountries_pairedtargets(results, targets = None, **kwargs):
-    if targets is None:
-        targets = model.targets.all_
-
-    cp = seaborn.color_palette('colorblind')
-    ix = [2, 0, 3, 1, 4, 5]
-    # cp = seaborn.color_palette('Dark2')
-    # ix = [1, 0, 3, 2, 5, 4]
-    colors = [cp[i] for i in ix]
-
-    filebase = common.get_filebase()
-    figs = []
-    for i in range(len(targets) // 2):
-        targets_ = targets[2 * i : 2 * i + 2]
-        with seaborn.color_palette(colors):
-            fig = plot_somecountries(results, targets_, **kwargs)
-        figs.append(fig)
-        filebase_suffix = str(targets_[0]).replace(' ', '_')
-        filebase_ = '{}_{}'.format(filebase, filebase_suffix)
-        fig.savefig('{}.pdf'.format(filebase_))
-        fig.savefig('{}.png'.format(filebase_))
-
-    return figs
-
-
-def _make_legend(fig, targets):
+def _make_legend(fig):
     colors = seaborn.color_palette()
     handles = []
     labels = []
-    for (t, c) in zip(targets, colors):
+    for (t, c) in zip(model.targets.all_, colors):
         handles.append(lines.Line2D([], [], color = c))
         labels.append(common.get_target_label(t))
     return fig.legend(handles, labels,
@@ -164,14 +92,39 @@ def _make_legend(fig, targets):
                       numpoints = 1)
 
 
-def plot_country(results, country, targets = None,
-                 confidence_level = 0.95,
-                 **kwargs):
-    if targets is None:
-        targets = model.targets.all_
+def plot_somecountries(results, confidence_level = 0, **kwargs):
+    with seaborn.color_palette(common.colors_paired):
+        ncols = len(common.countries_to_plot)
+        nrows = len(common.effectiveness_measures)
+        fig, axes = pyplot.subplots(nrows, ncols,
+                                    figsize = (8.5, 7.5),
+                                    sharex = 'all', sharey = 'none')
+        for (col, country) in enumerate(common.countries_to_plot):
+            for (row, attr) in enumerate(common.effectiveness_measures):
+                ax = axes[row, col]
 
+                attr_label = 'ylabel' if ax.is_first_col() else None
+                country_label = 'title' if ax.is_first_row() else None
+
+                _plot_cell(ax, results, country, model.targets.all_, attr,
+                           confidence_level,
+                           country_label = country_label,
+                           attr_label = attr_label,
+                           **kwargs)
+
+        _make_legend(fig)
+
+    fig.tight_layout(rect = (0, 0.07, 1, 1))
+
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    fig.savefig('{}.png'.format(common.get_filebase()))
+
+    return fig
+
+
+def plot_country(results, country, confidence_level = 0.95, **kwargs):
     nrows = len(common.effectiveness_measures)
-    ncols = int(numpy.ceil(len(targets) / 2))
+    ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
                                 figsize = (8.5, 11),
                                 sharex = 'all', sharey = 'row')
@@ -179,13 +132,12 @@ def plot_country(results, country, targets = None,
     country_str = common.country_label_replacements.get(country, country)
     fig.suptitle(country_str, size = 'large', va = 'center')
 
-    colors = common.colors_paired
     for (row, attr) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
         info = common.get_stat_info(attr)
         if info.scale is None:
             data = []
-            for target in targets:
+            for target in model.targets.all_:
                 try:
                     v = results[country][str(target)][attr]
                 except tables.NoSuchNodeError:
@@ -200,8 +152,8 @@ def plot_country(results, country, targets = None,
 
         for col in range(ncols):
             ax = axes[row, col]
-            targs = targets[2 * col : 2 * (col + 1)]
-            colors_ = colors[2 * col : 2 * (col + 1)]
+            targs = model.targets.all_[2 * col : 2 * (col + 1)]
+            colors = common.colors_paired[2 * col : 2 * (col + 1)]
 
             if (ax.is_first_col() or ax.is_last_col()):
                 attr_label = 'ylabel'
@@ -211,7 +163,7 @@ def plot_country(results, country, targets = None,
             _plot_cell(ax, results, country, targs, attr,
                        confidence_level,
                        attr_label = attr_label,
-                       colors = colors_,
+                       colors = colors,
                        scale = info.scale, units = info.units,
                        **kwargs)
 
@@ -221,8 +173,8 @@ def plot_country(results, country, targets = None,
                 ax.yaxis.get_label().set_rotation(270)
 
     # Make legend at bottom.
-    with seaborn.color_palette(colors):
-        _make_legend(fig, targets)
+    with seaborn.color_palette(common.colors_paired):
+        _make_legend(fig)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
@@ -250,9 +202,7 @@ if __name__ == '__main__':
     with model.results.samples.stats.load() as results:
         # plot_country(results, 'South Africa')
 
-        plot_somecountries_alltargets(results)
-
-        # plot_somecountries_pairedtargets(results)
+        plot_somecountries(results)
 
         pyplot.show()
 
