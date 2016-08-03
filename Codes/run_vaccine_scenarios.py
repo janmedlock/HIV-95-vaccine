@@ -42,7 +42,7 @@ def _build_global(results):
 
     results['Global'] = model.results.modes.ResultsCountry()
     for (target, v) in results_.items():
-        results['Global'][target] = model.global_.Global(v)
+        results['Global'][target] = model.multicountry.Global(v)
     return results
 
 

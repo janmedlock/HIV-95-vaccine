@@ -3,7 +3,7 @@ HIV 90-90-90 & optimization model.
 '''
 
 from . import datasheet
-from . import global_
+from . import multicountry
 from . import multisim
 # from . import optimization
 from . import parameters

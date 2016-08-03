@@ -22,10 +22,6 @@ effectiveness
 -------------
 .. automodule:: model.effectiveness
 
-global_
--------
-.. automodule:: model.global_
-
 incidence
 ---------
 .. automodule:: model.incidence
@@ -33,6 +29,10 @@ incidence
 latin_hypercube_sampling
 ------------------------
 .. automodule:: model.latin_hypercube_sampling
+
+multicountry
+------------
+.. automodule:: model.multicountry
 
 multisim
 --------
@@ -77,6 +77,10 @@ proportions
 R0
 --
 .. automodule:: model.R0
+
+regions
+-------
+.. automodule:: model.regions
 
 results
 -------

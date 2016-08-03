@@ -8,7 +8,6 @@ from scipy import stats
 from scipy import optimize
 
 from . import datasheet
-from . import global_
 from . import latin_hypercube_sampling
 from . import R0
 from . import transmission_rate
@@ -288,16 +287,6 @@ class _Super:
         return retval
 
 
-def get_parameters(country):
-    '''
-    Little factory function to load 'Global' parameters if needed.
-    '''
-    if country == 'Global':
-        return global_.Parameters()
-    else:
-        return Parameters(country)
-
-
 class Sample(_Super):
     def __init__(self, parameters, values = None):
         if values is not None:
@@ -369,3 +358,26 @@ class Mode(_Super):
     def from_country(cls, country):
         parameters = Parameters(country)
         return cls(parameters)
+
+
+class GlobalParameters:
+    def __init__(self):
+        with pandas.ExcelFile(datasheet.datapath) as wb:
+            pi = datasheet.IncidencePrevalence.get_country_data('Global',
+                                                                wb = wb)
+            pop = datasheet.Population.get_country_data('Global',
+                                                        wb = wb)
+            self.prevalence = pi.prevalence
+            self.incidence_per_capita = pi.incidence_per_capita
+            self.population = pop
+            self.drug_coverage = None
+
+
+def get_parameters(country):
+    '''
+    Little factory function to load 'Global' parameters if needed.
+    '''
+    if country == 'Global':
+        return GlobalParameters()
+    else:
+        return Parameters(country)

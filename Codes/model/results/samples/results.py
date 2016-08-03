@@ -11,7 +11,7 @@ import os
 
 from .. import common
 from ... import datasheet
-from ... import global_
+from ... import multicountry
 from ... import picklefile
 
 
@@ -47,11 +47,11 @@ class Results:
 
     def _build_global(self):
         # OrderedDict so that the countries' Results._load_data() are called
-        # in order later by global_.Global()
+        # in order later by multicountry.Global()
         data = collections.OrderedDict()
         for country in sorted(datasheet.get_country_list()):
             data[country] = Results(country, self._target)
-        self._data = global_.Global(data)
+        self._data = multicountry.Global(data)
         
     def __getattr__(self, key):
         # Don't use ._data for special attrs.
