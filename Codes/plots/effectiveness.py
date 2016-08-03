@@ -91,37 +91,7 @@ def _make_legend(fig):
                       numpoints = 1)
 
 
-def plot_somecountries(results, confidence_level = 0, **kwargs):
-    with seaborn.color_palette(common.colors_paired):
-        ncols = len(common.countries_to_plot)
-        nrows = len(common.effectiveness_measures)
-        fig, axes = pyplot.subplots(nrows, ncols,
-                                    figsize = (8.5, 7.5),
-                                    sharex = 'all', sharey = 'none')
-        for (col, country) in enumerate(common.countries_to_plot):
-            for (row, attr) in enumerate(common.effectiveness_measures):
-                ax = axes[row, col]
-
-                attr_label = 'ylabel' if ax.is_first_col() else None
-                country_label = 'title' if ax.is_first_row() else None
-
-                _plot_cell(ax, results, country, model.targets.all_, attr,
-                           confidence_level,
-                           country_label = country_label,
-                           attr_label = attr_label,
-                           **kwargs)
-
-        _make_legend(fig)
-
-    fig.tight_layout(rect = (0, 0.07, 1, 1))
-
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
-
-    return fig
-
-
-def plot_country(results, country, confidence_level = 0.95, **kwargs):
+def _plot_country(results, country, confidence_level = 0.95, **kwargs):
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
@@ -179,29 +149,57 @@ def plot_country(results, country, confidence_level = 0.95, **kwargs):
     return fig
 
 
-def plot_allcountries(results, **kwargs):
-    # countries = ['Global'] + sorted(model.datasheet.get_country_list())
-    countries = sorted(model.datasheet.get_country_list())
-    filename = '{}_all.pdf'.format(common.get_filebase())
-    with backend_pdf.PdfPages(filename) as pdf:
-        for country in countries:
-            print(country)
-            try:
-                fig = plot_country(results, country, **kwargs)
-            except FileNotFoundError:
-                print('\tfailed')
-            else:
+def plot_country(country, **kwargs):
+    with model.results.samples.stats.load() as results:
+        return _plot_country(results, country, **kwargs)
+
+
+def plot_allcountries(**kwargs):
+    with model.results.samples.stats.load() as results:
+        countries = ['Global'] + sorted(model.datasheet.get_country_list())
+        filename = '{}_all.pdf'.format(common.get_filebase())
+        with backend_pdf.PdfPages(filename) as pdf:
+            for country in countries:
+                print(country)
+                fig = _plot_country(results, country, **kwargs)
                 pdf.savefig(fig)
-            finally:
                 pyplot.close(fig)
 
 
-if __name__ == '__main__':
+def plot_somecountries(confidence_level = 0, **kwargs):
     with model.results.samples.stats.load() as results:
-        # plot_country(results, 'South Africa')
+        with seaborn.color_palette(common.colors_paired):
+            ncols = len(common.countries_to_plot)
+            nrows = len(common.effectiveness_measures)
+            fig, axes = pyplot.subplots(nrows, ncols,
+                                        figsize = (8.5, 7.5),
+                                        sharex = 'all', sharey = 'none')
+            for (col, country) in enumerate(common.countries_to_plot):
+                for (row, attr) in enumerate(common.effectiveness_measures):
+                    ax = axes[row, col]
 
-        plot_somecountries(results)
+                    attr_label = 'ylabel' if ax.is_first_col() else None
+                    country_label = 'title' if ax.is_first_row() else None
 
-        pyplot.show()
+                    _plot_cell(ax, results, country, model.targets.all_, attr,
+                               confidence_level,
+                               country_label = country_label,
+                               attr_label = attr_label,
+                               **kwargs)
 
-        plot_allcountries(results)
+        _make_legend(fig)
+
+    fig.tight_layout(rect = (0, 0.07, 1, 1))
+
+    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    fig.savefig('{}.png'.format(common.get_filebase()))
+
+    return fig
+
+
+if __name__ == '__main__':
+    # plot_country('South Africa')
+    # plot_somecountries()
+    # pyplot.show()
+
+    plot_allcountries()
