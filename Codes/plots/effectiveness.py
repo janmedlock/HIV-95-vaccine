@@ -187,7 +187,7 @@ def plot_somecountries(confidence_level = 0, **kwargs):
                                attr_label = attr_label,
                                **kwargs)
 
-        _make_legend(fig)
+            _make_legend(fig)
 
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
@@ -199,7 +199,7 @@ def plot_somecountries(confidence_level = 0, **kwargs):
 
 if __name__ == '__main__':
     # plot_country('South Africa')
-    # plot_somecountries()
-    # pyplot.show()
+    plot_somecountries()
+    pyplot.show()
 
-    plot_allcountries()
+    # plot_allcountries()
