@@ -325,7 +325,7 @@ def make_legend(fig, targets):
     labels = []
     for (t, c) in zip(targets, colors):
         handles.append(lines.Line2D([], [], color = c))
-        labels.append(common.get_target_label(t))
+        labels.append(get_target_label(t))
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = len(labels) // 2,

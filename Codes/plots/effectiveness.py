@@ -95,7 +95,7 @@ def plot_somecountries(results, confidence_level = 0, **kwargs):
                            attr_label = attr_label,
                            **kwargs)
 
-        common.make_legend(fig)
+        common.make_legend(fig, model.targets.all_)
 
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
@@ -155,9 +155,8 @@ def plot_country(results, country, confidence_level = 0.95, **kwargs):
                 ax.yaxis.set_label_position('right')
                 ax.yaxis.get_label().set_rotation(270)
 
-    # Make legend at bottom.
     with seaborn.color_palette(common.colors_paired):
-        common.make_legend(fig)
+        common.make_legend(fig, model.targets.all_)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
