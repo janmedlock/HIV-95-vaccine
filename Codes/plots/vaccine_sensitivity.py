@@ -95,8 +95,6 @@ def _get_plot_info(treatment_target, parameters, results, stat):
             x = None
         data_sim.append(x)
 
-    t = list(results.values())[0].t
-
     if percent:
         scale = 1 / 100
         unit = '%%'
@@ -112,7 +110,7 @@ def _get_plot_info(treatment_target, parameters, results, stat):
             scale = 1
             unit = ''
 
-    return (data_sim, t, targets, label, scale, unit)
+    return (data_sim, targets, label, scale, unit)
 
 
 def _get_kwds(label):
@@ -132,46 +130,18 @@ def _plot_cell(ax, country, treatment_target, parameters, results, stat,
     '''
     Plot one axes of  figure.
     '''
-    (data_sim, t, targets, label, scale, unit) = _get_plot_info(
+    (data_sim, targets, label, scale, unit) = _get_plot_info(
         treatment_target, parameters, results, stat)
 
     # Plot simulation data.
     for (target, x) in zip(targets, data_sim):
         if x is not None:
             tlabel = get_target_label(treatment_target, target)
-            ax.plot(t, numpy.asarray(x) / scale,
+            ax.plot(common.t, numpy.asarray(x) / scale,
                     label = tlabel,
                     **_get_kwds(tlabel))
 
-    tick_interval = 10
-    a = int(numpy.floor(t[0]))
-    b = int(numpy.ceil(t[-1]))
-    ticks = range(a, b, tick_interval)
-    if ((b - a) % tick_interval) == 0:
-        ticks = list(ticks) + [b]
-    ax.set_xticks(ticks)
-    ax.set_xlim(a, b)
-
-    ax.grid(True, which = 'both', axis = 'both')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    # One minor tick between major ticks.
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
-
-    country_str = common.country_label_replacements.get(country,
-                                                        country)
-    if country_label == 'ylabel':
-        ax.set_ylabel(country_str, size = 'medium')
-    elif country_label == 'title':
-        ax.set_title(country_str, size = 'medium')
-
-    if attr_label == 'ylabel':
-        ax.set_ylabel(label, size = 'medium')
-    elif attr_label == 'title':
-        ax.set_title(label, size = 'medium')
+    common.format_axes(ax, country, info, country_label, attr_label)
 
 
 def _make_legend(ax, treatment_target):
