@@ -204,7 +204,6 @@ if __name__ == '__main__':
     #              model.targets.vaccine_sensitivity_baselines[0])
     for treatment_target in model.targets.vaccine_sensitivity_baselines:
         plot_somecountries(treatment_target)
-
     pyplot.show()
 
     plot_all_countries(model.targets.vaccine_sensitivity_baselines[0])
