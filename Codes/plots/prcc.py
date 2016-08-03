@@ -22,19 +22,20 @@ import model
 
 
 
-def get_outcome_samples(results, country, targets, attr, times):
-    t = results[country][targets[0]].t
-    x, y =  (numpy.asarray(getattr(results[country][target], attr))
-             for target in targets)
+def get_outcome_samples(country, targets, stat, times):
+    results = [model.results.samples.Results(country, target)
+               for target in targets]
+    t = results[0].t
+    x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
     z = x - y
     interp = interpolate.interp1d(t, z, axis = -1)
     outcome_samples = interp(times)
     return outcome_samples
 
 
-def tornado(ax, results, country, targets, outcome, t, parameter_samples,
+def tornado(ax, country, targets, outcome, t, parameter_samples,
             colors, parameter_names = None, ylabels = 'left'):
-    outcome_samples = get_outcome_samples(results, country, targets,
+    outcome_samples = get_outcome_samples(country, targets,
                                           outcome, t)
 
     n = numpy.shape(parameter_samples)[-1]
@@ -75,45 +76,49 @@ def tornados():
     baseline = model.targets.StatusQuo()
     targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
     targets = list(map(str, targets))
-    times = (2025, 2035)
+    # times = (2025, 2035)
+    times = (2035, )
 
-    figsize = (8, 6)
+    figsize = (5, 6)
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.samples.Cache() as results:
-        # Order colors by order of prccs for 1st time.
-        outcome_samples = get_outcome_samples(results, country, targets,
-                                              outcome, times[0])
-        rho = stats.prcc(parameter_samples, outcome_samples)
-        ix = numpy.argsort(numpy.abs(rho))[ : : -1]
-        labels = [parameter_names[i] for i in ix]
-        colors_ = seaborn.color_palette(palette, len(parameter_names))
-        colors = {l: c for (l, c) in zip(labels, colors_)}
+    # Order colors by order of prccs for 1st time.
+    outcome_samples = get_outcome_samples(country, targets,
+                                          outcome, times[0])
+    rho = stats.prcc(parameter_samples, outcome_samples)
+    ix = numpy.argsort(numpy.abs(rho))[ : : -1]
+    labels = [parameter_names[i] for i in ix]
+    colors_ = seaborn.color_palette(palette, len(parameter_names))
+    colors = {l: c for (l, c) in zip(labels, colors_)}
 
-        gs = gridspec.GridSpec(1, len(times))
-        fig = pyplot.figure(figsize = figsize)
-        sharedax = None
-        for (i, t) in enumerate(times):
-            ax = fig.add_subplot(gs[0, i],
-                                 sharex = sharedax)
-            sharedax = ax
+    gs = gridspec.GridSpec(1, len(times))
+    fig = pyplot.figure(figsize = figsize)
+    sharedax = None
+    for (i, t) in enumerate(times):
+        ax = fig.add_subplot(gs[0, i],
+                             sharex = sharedax)
+        sharedax = ax
 
-            if i == 0:
-                ylabels = 'left'
-            elif i == len(times) - 1:
-                ylabels = 'right'
-            else:
-                ylabels = 'none'
-            tornado(ax, results, country, targets, outcome, t,
-                    parameter_samples, colors,
-                    parameter_names = parameter_names,
-                    ylabels = ylabels)
-            ax.set_xlabel('PRCC')
-            ax.set_title(t)
+        if i == 0:
+            ylabels = 'left'
+        elif i == len(times) - 1:
+            ylabels = 'right'
+        else:
+            ylabels = 'none'
+        tornado(ax, country, targets, outcome, t,
+                parameter_samples, colors,
+                parameter_names = parameter_names,
+                ylabels = ylabels)
+        ax.set_xlabel('PRCC')
+        # Make x-axis limits symmetric.
+        xmin, xmax = ax.get_xlim()
+        xabs = max(abs(xmin), abs(xmax))
+        ax.set_xlim(- xabs, xabs)
+        # ax.set_title(t)
 
     fig.tight_layout()
 
