@@ -22,29 +22,29 @@ sys.path.append('..')
 import model
 
 
-def _plot_cell(ax, results, country, targets, attr,
+def _plot_cell(ax, results, country, targets, stat,
                confidence_level,
                scale = None, units = None,
-               country_label = None, attr_label = None,
+               country_label = None, stat_label = None,
                colors = None, alpha = 0.35):
     if colors is None:
         colors = seaborn.color_palette()
 
-    info = common.get_stat_info(attr)
-
     CIkey = 'CI{:g}'.format(100 * confidence_level)
 
+    info = common.get_stat_info(stat)
+
+    # Allow scaling across rows in _plot_country().
     if scale is not None:
         info.scale = scale
         if units is None:
             units = ''
         info.units = units
-
     if info.scale is None:
         data = []
         for target in targets:
             try:
-                v = results[country][str(target)][attr]
+                v = results[country][str(target)][stat]
             except tables.NoSuchNodeError:
                 pass
             else:
@@ -56,7 +56,7 @@ def _plot_cell(ax, results, country, targets, attr,
 
     for (i, target) in enumerate(targets):
         try:
-            v = results[country][str(target)][attr]
+            v = results[country][str(target)][stat]
         except tables.NoSuchNodeError:
             pass
         else:
@@ -73,7 +73,7 @@ def _plot_cell(ax, results, country, targets, attr,
                                 color = colors[i],
                                 alpha = alpha)
 
-    common.format_axes(ax, country, info, country_label, attr_label)
+    common.format_axes(ax, country, info, country_label, stat_label)
 
 
 def _make_legend(fig):
@@ -101,14 +101,14 @@ def _plot_country(results, country, confidence_level = 0.95, **kwargs):
     country_str = common.country_label_replacements.get(country, country)
     fig.suptitle(country_str, size = 'large', va = 'center')
 
-    for (row, attr) in enumerate(common.effectiveness_measures):
+    for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
-        info = common.get_stat_info(attr)
+        info = common.get_stat_info(stat)
         if info.scale is None:
             data = []
             for target in model.targets.all_:
                 try:
-                    v = results[country][str(target)][attr]
+                    v = results[country][str(target)][stat]
                 except tables.NoSuchNodeError:
                     pass
                 else:
@@ -125,13 +125,13 @@ def _plot_country(results, country, confidence_level = 0.95, **kwargs):
             colors = common.colors_paired[2 * col : 2 * (col + 1)]
 
             if (ax.is_first_col() or ax.is_last_col()):
-                attr_label = 'ylabel'
+                stat_label = 'ylabel'
             else:
-                attr_label = None
+                stat_label = None
 
-            _plot_cell(ax, results, country, targs, attr,
+            _plot_cell(ax, results, country, targs, stat,
                        confidence_level,
-                       attr_label = attr_label,
+                       stat_label = stat_label,
                        colors = colors,
                        scale = info.scale, units = info.units,
                        **kwargs)
@@ -175,16 +175,16 @@ def plot_somecountries(confidence_level = 0, **kwargs):
                                         figsize = (8.5, 7.5),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
-                for (row, attr) in enumerate(common.effectiveness_measures):
+                for (row, stat) in enumerate(common.effectiveness_measures):
                     ax = axes[row, col]
 
-                    attr_label = 'ylabel' if ax.is_first_col() else None
+                    stat_label = 'ylabel' if ax.is_first_col() else None
                     country_label = 'title' if ax.is_first_row() else None
 
-                    _plot_cell(ax, results, country, model.targets.all_, attr,
+                    _plot_cell(ax, results, country, model.targets.all_, stat,
                                confidence_level,
                                country_label = country_label,
-                               attr_label = attr_label,
+                               stat_label = stat_label,
                                **kwargs)
 
             _make_legend(fig)
@@ -202,4 +202,4 @@ if __name__ == '__main__':
     plot_somecountries()
     pyplot.show()
 
-    # plot_allcountries()
+    plot_allcountries()

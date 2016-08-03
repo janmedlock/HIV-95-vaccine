@@ -63,9 +63,9 @@ def _get_kwds(label):
                     linestyle = 'solid')
 
 
-def _plot_cell(ax, country, treatment_target, results, stat,
+def _plot_cell(ax, results, country, treatment_target, stat,
                country_label = None,
-               attr_label = 'ylabel'):
+               stat_label = 'ylabel'):
     '''
     Plot one axes of  figure.
     '''
@@ -96,7 +96,7 @@ def _plot_cell(ax, country, treatment_target, results, stat,
                     label = label,
                     **_get_kwds(label))
 
-    common.format_axes(ax, country, info, country_label, attr_label)
+    common.format_axes(ax, country, info, country_label, stat_label)
 
 
 def _make_legend(fig, treatment_target):
@@ -124,18 +124,17 @@ def _make_legend(fig, treatment_target):
                       numpoints = 1)
 
 
-def _plot_country(country, treatment_target, results):
+def _plot_country(results, country, treatment_target):
     with seaborn.color_palette(colors):
         nrows = len(common.effectiveness_measures)
         ncols = 1
         fig, axes = pyplot.subplots(nrows, ncols,
                                     figsize = (8.5, 11),
                                     sharex = 'all', sharey = 'none')
-        for (row, attr) in enumerate(common.effectiveness_measures):
+        for (row, stat) in enumerate(common.effectiveness_measures):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
-            _plot_cell(ax, country, treatment_target,
-                       results, attr,
+            _plot_cell(ax, results, country, treatment_target, stat,
                        country_label = country_label)
 
         _make_legend(fig, treatment_target)
@@ -147,10 +146,10 @@ def _plot_country(country, treatment_target, results):
 
 def plot_country(country, treatment_target):
     with model.results.modes.load_vaccine_sensitivity() as results:
-        return _plot_country(country, treatment_target, results)
+        return _plot_country(results, country, treatment_target)
 
 
-def plot_all_countries(treatment_target):
+def plot_allcountries(treatment_target):
     with model.results.modes.load_vaccine_sensitivity() as results:
         countries = sorted(results.keys())
         if 'Global' in countries:
@@ -160,7 +159,7 @@ def plot_all_countries(treatment_target):
         with backend_pdf.PdfPages(filename) as pdf:
             for country in countries:
                 print(country)
-                fig = _plot_country(country, treatment_target, results)
+                fig = _plot_country(results, country, treatment_target)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 
@@ -175,16 +174,15 @@ def plot_somecountries(treatment_target):
                                         figsize = (8.5, 7.5),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
-                for (row, attr) in enumerate(common.effectiveness_measures):
+                for (row, stat) in enumerate(common.effectiveness_measures):
                     ax = axes[row, col]
 
-                    attr_label = 'ylabel' if ax.is_first_col() else None
+                    stat_label = 'ylabel' if ax.is_first_col() else None
                     country_label = 'title' if ax.is_first_row() else None
 
-                    _plot_cell(ax, country, treatment_target,
-                               results, attr,
+                    _plot_cell(ax, results, country, treatment_target, stat,
                                country_label = country_label,
-                               attr_label = attr_label)
+                               stat_label = stat_label)
 
             _make_legend(fig, treatment_target)
 
@@ -206,4 +204,4 @@ if __name__ == '__main__':
         plot_somecountries(treatment_target)
     pyplot.show()
 
-    plot_all_countries(model.targets.vaccine_sensitivity_baselines[0])
+    # plot_allcountries(model.targets.vaccine_sensitivity_baselines[0])

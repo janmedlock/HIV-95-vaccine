@@ -271,7 +271,7 @@ data_getter = DataGetter()
 
 
 def format_axes(ax, country, info,
-                country_label, attr_label,
+                country_label, stat_label,
                 plot_hist = False, tick_interval = 10):
     '''
     Do common formatting.
@@ -304,9 +304,9 @@ def format_axes(ax, country, info,
         ylabel = country_str
     elif country_label == 'title':
         title = country_str
-    if attr_label == 'ylabel':
+    if stat_label == 'ylabel':
         ylabel = info.label
-    elif attr_label == 'title':
+    elif stat_label == 'title':
         title = info.label
 
     if ylabel is not None:
