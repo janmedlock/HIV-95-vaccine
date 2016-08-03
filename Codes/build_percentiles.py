@@ -21,7 +21,7 @@ CI_levels = ['median', 50, 80, 90, 95, 99]
 
 def _main():
     with model.results.samples.stats.load(mode = 'a') as h5file:
-        countries = model.datasheet.get_country_list()
+        countries = ['Global'] + model.datasheet.get_country_list()
         for (country, target) in itertools.product(countries,
                                                    model.targets.all_):
             target = str(target)
