@@ -22,6 +22,10 @@ effectiveness
 -------------
 .. automodule:: model.effectiveness
 
+h5
+--
+.. automodule:: model.h5
+
 incidence
 ---------
 .. automodule:: model.incidence
@@ -121,10 +125,6 @@ samples
 simulation
 ----------
 .. automodule:: model.simulation
-
-tables_dict
------------
-.. automodule:: model.tables_dict
 
 targets
 -------

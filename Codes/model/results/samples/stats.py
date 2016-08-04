@@ -5,10 +5,9 @@ Retrieve statistics from simulations with parameter distrubtions.
 import os.path
 
 from .. import common
-from ... import tables_dict
+from ... import h5
 
 
 def open_(mode = 'r'):
-    return tables_dict.open_file(os.path.join(common.resultsdir,
-                                              'samples_stats.h5'),
-                                 mode = mode)
+    return h5.open_file(os.path.join(common.resultsdir, 'samples_stats.h5'),
+                        mode = mode)
