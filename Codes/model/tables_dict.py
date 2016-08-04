@@ -1,6 +1,6 @@
 '''
-Add a dict interface to :mod:`tables` and default compression
-and checksum filters.
+Add a dict interface to :mod:`tables`.
+Add default compression and checksum filters.
 '''
 
 import warnings
@@ -8,19 +8,43 @@ import warnings
 import tables
 
 
-def root_getitem(h5file, key):
+def dump(h5file, obj):
+    with warnings.catch_warnings():
+        warnings.filter_warnings('ignore',
+                                 category = tables.NoSuchNodeError)
+        for key in obj.keys():
+            val = getattr(self, key)
+            group = '/{}/{}'.format(self.country, str(self.targets))
+            path = '{}/{}'.format(group, key)
+            if path in h5file:
+                arr = h5file.get_node(group, key)
+                arr[:] = val
+            else:
+                results.create_carray(group, key, obj = val,
+                                      createparents = True)
+
+
+# Add some methods to tables.File
+
+def file_getitem(h5file, key):
     return getattr(h5file.root, key)
 
-def root_contains(h5file, key):
+def file_contains(h5file, key):
     return (key in h5file.root)
 
-def root_keys(h5file):
+def file_keys(h5file):
     return [g._v_name for g in h5file.root]
 
-setattr(tables.File, '__getitem__', root_getitem)
-setattr(tables.File, '__contains__', root_contains)
-setattr(tables.File, 'keys', root_keys)
+def file_dump(h5file, obj):
+    return dump(h5file, obj)
 
+setattr(tables.File, '__getitem__', file_getitem)
+setattr(tables.File, '__contains__', file_contains)
+setattr(tables.File, 'keys', file_keys)
+setattr(tables.File, 'dump', file_dump)
+
+
+# Add some methods to tables.Group
 
 def group_getitem(group, key):
     return getattr(group, key)
@@ -45,15 +69,3 @@ def open_file(filename, mode = 'r', filters = None, **kwds):
                             mode = mode,
                             filters = filters,
                             **kwds)
-
-def dump(h5file, obj):
-    for key in obj.keys():
-        val = getattr(self, key)
-        group = '/{}/{}'.format(self.country, str(self.targets))
-        path = '{}/{}'.format(group, key)
-        if path in h5file:
-            arr = h5file.get_node(group, key)
-            arr[:] = val
-        else:
-            results.create_carray(group, key, obj = val,
-                                  createparents = True)
