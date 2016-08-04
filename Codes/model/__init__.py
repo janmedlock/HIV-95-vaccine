@@ -7,6 +7,7 @@ from . import multicountry
 from . import multisim
 # from . import optimization
 from . import parameters
+from . import regions
 from . import results
 from . import samples
 from . import simulation

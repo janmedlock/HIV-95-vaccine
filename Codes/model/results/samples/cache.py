@@ -124,13 +124,13 @@ class Cache(collections.OrderedDict):
             return False
         else:
             cache_entry = getattr(self[country][target], attr)
-            data_file = results.Results.get_path(country, target)
+            data_file = results.get_path(country, target)
             mtime_cache = cache_entry.attrs.mtime
             mtime_data = os.path.getmtime(data_file)
             return (mtime_data <= mtime_cache)
 
     def _load(self, country, target, attr):
-        with results.Results(country, target) as results:
+        with results.load(country, target) as results:
             value = getattr(results, attr)
         h5path = '/{}/{}'.format(country, target)
         with warnings.catch_warnings():
@@ -143,8 +143,7 @@ class Cache(collections.OrderedDict):
         return array
 
     def _exists(self, country, target = None):
-        data_file = results.Results.get_path(country, target)
-        return os.path.exists(data_file)
+        return results.exists(country, target)
 
     def __del__(self):
         self.close()

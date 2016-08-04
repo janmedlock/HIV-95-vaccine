@@ -27,7 +27,7 @@ regions = {
      'Thailand', 'Vietnam'],
 
     'Eastern Europe and Central Asia':
-    ['Belarus', 'Bulgaria', 'Kazakhstan', 'Kyrgystan', 'Moldova', ' Russia',
+    ['Belarus', 'Bulgaria', 'Kazakhstan', 'Kyrgystan', 'Moldova', 'Russia',
      'Tajikistan', 'Ukraine', 'Uzbekistan'],
 
     'Western Europe':
@@ -47,3 +47,6 @@ regions = {
      'Honduras', 'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru',
      'Uruguay', 'Venezuela']
 }
+
+
+all_ = list(regions.keys())

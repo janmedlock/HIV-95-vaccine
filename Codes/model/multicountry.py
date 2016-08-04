@@ -9,6 +9,7 @@ from . import datasheet
 from . import incidence
 from . import multicountry
 from . import parameters
+from . import regions
 
 
 class MultiCountry(container.Container):
@@ -95,6 +96,7 @@ class Global(multicountry.MultiCountry):
 
     @property
     def prevalence(self):
+        # Scale prevalence.
         prev = super().prevalence
         scale_prev = self.global_prevalence / prev[..., 0]
         prev *= scale_prev[..., numpy.newaxis]

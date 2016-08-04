@@ -105,7 +105,7 @@ def plot(infections_per_capita_averted):
 
 def _get_infections_per_capita(country, target):
     try:
-        with model.results.samples.Results(country, target) as results:
+        with model.results.samples.load(country, target) as results:
             alive = results.alive
             new_infections = results.new_infections
     except FileNotFoundError:

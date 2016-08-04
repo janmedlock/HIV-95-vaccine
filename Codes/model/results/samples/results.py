@@ -13,19 +13,51 @@ from .. import common
 from ... import datasheet
 from ... import multicountry
 from ... import picklefile
+from ... import regions
+
+
+_regions = ['Global'] + regions.all_
+
+
+def _is_region(x):
+    return (x in _regions)
+
+
+def _is_country(x):
+    return (not _is_region(x))
+
+
+def get_path(country_or_region, target):
+    if isinstance(target, type):
+        # It's a class.
+        target = target()
+    if target is not None:
+        path = os.path.join(common.resultsdir,
+                            country_or_region,
+                            '{}.pkl'.format(str(target)))
+    else:
+        path = os.path.join(common.resultsdir,
+                            country_or_region)
+    return path
+
+
+def exists(country_or_region, target):
+    resultsfile = get_path(country_or_region, target)
+    return os.path.exists(resultsfile)
 
 
 class Results:
     '''
     Class to load the data on demand.
     '''
-    def __init__(self, country, target):
-        if (not self.exists(country, target)) and (not country == 'Global'):
-            raise FileNotFoundError("'{}', '{}' not found!".format(country,
-                                                                   target))
-        self._country = country
+    def __init__(self, country_or_region, target):
+        self._country_or_region = country_or_region
         # Convert to string in case its an instance.
         self._target = str(target)
+
+        if (not self.exists) and _is_country(self._country_or_region):
+            raise FileNotFoundError("'{}', '{}' not found!".format(
+                self._country_or_region, self._target))
         self._data = None
 
     def __enter__(self):
@@ -35,24 +67,28 @@ class Results:
         pass
 
     def _load_data(self):
-        if ((self._country == 'Global')
-            and (not self.exists(self._country, self._target))):
-            print('Building Global, {}...'.format(self._target))
-            self._build_global()
+        if _is_region(self._country_or_region) and (not self.exists):
+            print('Building {}, {}...'.format(self._country_or_region,
+                                              self._target))
+            self._build_regional()
         else:
-            print('Loading data for {}, {}...'.format(self._country,
+            print('Loading data for {}, {}...'.format(self._country_or_region,
                                                       self._target))
-            path = self.get_path(self._country, self._target)
-            self._data = picklefile.load(path)
+            self._data = picklefile.load(self.path)
 
-    def _build_global(self):
+    def _build_regional(self):
         # OrderedDict so that the countries' Results._load_data() are called
-        # in order later by multicountry.Global()
+        # in order later by multicountry.MultiCountry()
         data = collections.OrderedDict()
-        for country in sorted(datasheet.get_country_list()):
-            data[country] = Results(country, self._target)
-        self._data = multicountry.Global(data)
-        
+        if self._country_or_region == 'Global':
+            for country in sorted(datasheet.get_country_list()):
+                data[country] = load(country, self._target)
+            self._data = multicountry.Global(data)
+        else:
+            for country in sorted(regions.regions[self._country_or_region]):
+                data[country] = load(country, self._target)
+            self._data = multicountry.MultiCountry(data)
+
     def __getattr__(self, key):
         # Don't use ._data for special attrs.
         if key.startswith('__') and key.endswith('__'):
@@ -71,30 +107,22 @@ class Results:
         del self._data
         self._data = None
 
-    @staticmethod
-    def get_path(country, target):
-        if isinstance(target, type):
-            # It's a class.
-            target = target()
-        if target is not None:
-            path = os.path.join(common.resultsdir, country,
-                                '{!s}.pkl'.format(target))
-        else:
-            path = os.path.join(common.resultsdir, country)
-        return path
+    @property
+    def path(self):
+        return get_path(self._country_or_region, self._target)
 
-    @classmethod
-    def exists(cls, country, target):
-        resultsfile = cls.get_path(country, target)
-        return os.path.exists(resultsfile)
+    @property
+    def exists(self):
+        return exists(self._country_or_region, self._target)
 
 
-def exists(country, target):
-    return Results.exists(country, target)
+def load(country_or_region, target):
+    return Results(country_or_region, target)
 
 
-def dump(country, target, results):
-    resultsfile = Results.get_path(country, target)
-    if not os.path.exists(os.path.join(common.resultsdir, country)):
-        os.mkdir(os.path.join(common.resultsdir, country))
+def dump(country_or_region, target, results):
+    resultsfile = get_path(country_or_region, target)
+    resultsdir = os.path.dirname(resultsfile)
+    if not os.path.exists(resultsdir):
+        os.mkdir(resultsdir)
     picklefile.dump(results, resultsfile)

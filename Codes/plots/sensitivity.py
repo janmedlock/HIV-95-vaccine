@@ -21,7 +21,7 @@ import model
 
 
 def get_outcome_samples(country, targets, stat, times):
-    results = [model.results.samples.Results(country, target)
+    results = [model.results.samples.load(country, target)
                for target in targets]
     t = results[0].t
     x, y =  (numpy.asarray(getattr(r, stat)) for r in results)

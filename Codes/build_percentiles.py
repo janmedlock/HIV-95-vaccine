@@ -29,7 +29,7 @@ def _main():
             stats_exist = '/{}/{}'.format(country, target) in h5file
             if results_exist and (not stats_exist):
                 print('{}, {}'.format(country, target))
-                with model.results.samples.Results(country, target) as results:
+                with model.results.samples.load(country, target) as results:
                     with warnings.catch_warnings():
                         warnings.filterwarnings(
                             'ignore',
