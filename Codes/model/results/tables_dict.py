@@ -11,10 +11,14 @@ import tables
 def root_getitem(h5file, key):
     return getattr(h5file.root, key)
 
+def root_contains(h5file, key):
+    return (key in h5file.root)
+
 def root_keys(h5file):
     return [g._v_name for g in h5file.root]
 
 setattr(tables.File, '__getitem__', root_getitem)
+setattr(tables.File, '__contains__', root_contains)
 setattr(tables.File, 'keys', root_keys)
 
 
