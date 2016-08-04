@@ -21,12 +21,11 @@ import model
 
 
 def get_outcome_samples(country, targets, stat, times):
-    results = [model.results.samples.load(country, target)
-               for target in targets]
-    t = results[0].t
+    results = (model.results.samples.load(country, target)
+               for target in targets)
     x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
     z = x - y
-    interp = interpolate.interp1d(t, z, axis = -1)
+    interp = interpolate.interp1d(common.t, z, axis = -1)
     outcome_samples = interp(times)
     return outcome_samples
 

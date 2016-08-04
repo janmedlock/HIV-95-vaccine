@@ -6,7 +6,6 @@ Calculate PRCCs and make tornado plots.
 import os.path
 import sys
 
-from matplotlib import gridspec
 from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
@@ -21,14 +20,12 @@ sys.path.append('..')
 import model
 
 
-
 def get_outcome_samples(country, targets, stat, times):
-    results = [model.results.samples.load(country, target)
-               for target in targets]
-    t = results[0].t
+    results = (model.results.samples.load(country, target)
+               for target in targets)
     x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
     z = x - y
-    interp = interpolate.interp1d(t, z, axis = -1)
+    interp = interpolate.interp1d(common.t, z, axis = -1)
     outcome_samples = interp(times)
     return outcome_samples
 
@@ -95,17 +92,15 @@ def tornados():
     colors_ = seaborn.color_palette(palette, len(parameter_names))
     colors = {l: c for (l, c) in zip(labels, colors_)}
 
-    gs = gridspec.GridSpec(1, len(times))
-    fig = pyplot.figure(figsize = figsize)
-    sharedax = None
-    for (i, t) in enumerate(times):
-        ax = fig.add_subplot(gs[0, i],
-                             sharex = sharedax)
-        sharedax = ax
-
-        if i == 0:
+    nrows = 1
+    ncols = len(times)
+    fig, axes = pyplot.subplots(nrows, ncols,
+                                figsize = figsize,
+                                sharex = true)
+    for (ax, t) in zip(axes, times):
+        if ax.is_first_col():
             ylabels = 'left'
-        elif i == len(times) - 1:
+        elif ax.is_last_col():
             ylabels = 'right'
         else:
             ylabels = 'none'
