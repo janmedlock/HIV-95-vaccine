@@ -12,6 +12,11 @@ import tables
 import model
 
 
+regions_and_countries = (['Global'] + model.regions.all_
+                         + model.datasheet.get_country_list())
+
+targets = model.targets.all_
+
 stats_to_save = ['infected', 'incidence', 'prevalence',
                  'incidence_per_capita', 'AIDS', 'dead',
                  'new_infections', 'alive']
@@ -21,15 +26,16 @@ CI_levels = ['median', 50, 80, 90, 95, 99]
 
 def _main():
     with model.results.samples.stats.load(mode = 'a') as h5file:
-        countries = ['Global'] + model.datasheet.get_country_list()
-        for (country, target) in itertools.product(countries,
-                                                   model.targets.all_):
+        for (region_or_country, target) in itertools.product(
+                regions_and_countries, targets):
             target = str(target)
-            results_exist = model.results.samples.exists(country, target)
-            stats_exist = '/{}/{}'.format(country, target) in h5file
+            results_exist = model.results.samples.exists(region_or_country,
+                                                         target)
+            stats_exist = '/{}/{}'.format(region_or_country, target) in h5file
             if results_exist and (not stats_exist):
-                print('{}, {}'.format(country, target))
-                with model.results.samples.load(country, target) as results:
+                print('{}, {}'.format(region_or_country, target))
+                with model.results.samples.load(region_or_country,
+                                                target) as results:
                     with warnings.catch_warnings():
                         warnings.filterwarnings(
                             'ignore',
@@ -38,13 +44,13 @@ def _main():
                         warnings.filterwarnings(
                             'ignore',
                             category = RuntimeWarning)
-                        ctgroup = h5file.create_group(
-                            '/{}'.format(country),
+                        rtgroup = h5file.create_group(
+                            '/{}'.format(region_or_country),
                             target,
                             createparents = True)
                         for stat in stats_to_save:
                             vals = getattr(results, stat)
-                            ctsgroup = h5file.create_group(ctgroup,
+                            rtsgroup = h5file.create_group(rtgroup,
                                                            stat)
                             for lev in CI_levels:
                                 if lev == 'median':
@@ -56,7 +62,7 @@ def _main():
                                                             50 + lev / 2],
                                                            axis = 0)
                                     name = 'CI{}'.format(lev)
-                                h5file.create_carray(ctsgroup, name,
+                                h5file.create_carray(rtsgroup, name,
                                                      obj = obj)
 
 
