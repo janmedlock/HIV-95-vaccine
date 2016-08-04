@@ -156,12 +156,13 @@ def plot_country(country, **kwargs):
 
 def plot_allcountries(**kwargs):
     with model.results.samples.stats.load() as results:
-        countries = ['Global'] + sorted(model.datasheet.get_country_list())
+        regions_and_countries = (model.regions.all_
+                                 + sorted(model.datasheet.get_country_list()))
         filename = '{}_all.pdf'.format(common.get_filebase())
         with backend_pdf.PdfPages(filename) as pdf:
-            for country in countries:
-                print(country)
-                fig = _plot_country(results, country, **kwargs)
+            for region_or_country in regions_and_countries:
+                print(region_or_country)
+                fig = _plot_country(results, region_or_country, **kwargs)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 
