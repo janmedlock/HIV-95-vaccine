@@ -151,15 +151,22 @@ def plot_country(country, treatment_target):
 
 def plot_allcountries(treatment_target):
     with model.results.modes.load_vaccine_sensitivity() as results:
-        countries = sorted(results.keys())
-        if 'Global' in countries:
-            countries.remove('Global')
-            countries = ['Global'] + countries
+        regions_and_countries = results.keys()
+        # Put regions first.
+        regions = []
+        for r in model.regions.all_:
+            if r in regions_and_countries:
+                regions.append(r)
+                regions_and_countries.remove(r)
+        countries = sorted(regions_and_countries)
+        regions_and_countries = regions + countries
+
         filename = '{}_all.pdf'.format(common.get_filebase())
         with backend_pdf.PdfPages(filename) as pdf:
-            for country in countries:
-                print(country)
-                fig = _plot_country(results, country, treatment_target)
+            for region_or_country in regions_and_countries:
+                print(region_or_country)
+                fig = _plot_country(results, region_or_country,
+                                    treatment_target)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 

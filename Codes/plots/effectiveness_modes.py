@@ -132,15 +132,21 @@ def plot_country(country, **kwargs):
 
 def plot_allcountries(**kwargs):
     with model.results.modes.load() as results:
-        countries = sorted(results.keys())
-        # Move Global to front.
-        countries.remove('Global')
-        countries = ['Global'] + countries
+        regions_and_countries = results.keys()
+        # Put regions first.
+        regions = []
+        for r in model.regions.all_:
+            if r in regions_and_countries:
+                regions.append(r)
+                regions_and_countries.remove(r)
+        countries = sorted(regions_and_countries)
+        regions_and_countries = regions + countries
+
         filename = '{}_all.pdf'.format(common.get_filebase())
         with backend_pdf.PdfPages(filename) as pdf:
-            for country in countries:
-                print(country)
-                fig = _plot_country(results, country, **kwargs)
+            for region_or_country in regions_and_countries:
+                print(region_or_country)
+                fig = _plot_country(results, region_or_country, **kwargs)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 

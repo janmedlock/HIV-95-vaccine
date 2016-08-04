@@ -105,21 +105,18 @@ def plot(infections_averted):
 def _get_infections_averted():
     with model.results.samples.stats.load() as results:
         countries = list(results.keys())
-        try:
-            countries.remove('Global')
-        except ValueError:
-            pass
 
         infections_averted = pandas.DataFrame(columns = interventions,
                                               index = countries)
         for country in countries:
-            try:
-                x = results[country][baseline].new_infections.median[-1]
-                for intv in interventions:
-                    y = results[country][intv].new_infections.median[-1]
-                    infections_averted.loc[country, intv] = (x - y) / x
-            except tables.exceptions.NoSuchNodeError:
-                pass
+            if model.regions.is_country(country):
+                try:
+                    x = results[country][baseline].new_infections.median[-1]
+                    for intv in interventions:
+                        y = results[country][intv].new_infections.median[-1]
+                        infections_averted.loc[country, intv] = (x - y) / x
+                except tables.exceptions.NoSuchNodeError:
+                    pass
     return infections_averted
 
 
