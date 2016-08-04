@@ -2,13 +2,19 @@
 '''
 Using the modes of the parameter distributions,
 run simulations for the different vaccine sensitivity scenarios.
+
+.. todo:: Update to use hdf5 well and save Simulation.keys().
 '''
 
-import collections
-
 import joblib
+import tables
 
 import model
+
+
+stats_to_save = ['infected', 'incidence', 'prevalence',
+                 'incidence_per_capita', 'AIDS', 'dead',
+                 'new_infections', 'alive']
 
 
 def _run_one(country, targets = None):
@@ -27,40 +33,44 @@ def _run_one(country, targets = None):
     return retval
 
 
-def _build_global(results):
+def _build_regionals(results, targets = None):
+    if targets is None:
+        targets = model.targets.vaccine_sensitivity
+
     countries = list(results.keys())
-    if 'Global' in countries:
-        countries.remove('Global')
+    for region in model.regions.all_:
+        if region in countries:
+            countries.remove(region)
 
-    # Store results_[target][country].
-    results_ = collections.OrderedDict()
-    for country in countries:
-        for (target, val) in results[country].items():
-            if target not in results_:
-                results_[target] = collections.OrderedDict()
-            results_[target][country] = val
-
-    results['Global'] = model.results.modes.ResultsCountry()
-    for (target, v) in results_.items():
-        results['Global'][target] = model.multicountry.Global(v)
-    return results
+    for target in targets:
+        val = {country: results[country][str(target)] for country in countries}
+        for region in model.regions.all_:
+            if region == 'Global':
+                mc = model.multicountry.Global(val)
+            else:
+                val_ = {c: val[c] for c in val.keys()
+                        if c in model.regions.regions[region]}
+                mc = model.multicountry.MultiCountry(val_)
+            for stat in stats_to_save:
+                obj = getattr(mc, stat)
+                try:
+                    arr = results[region][str(target)][stat]
+                except tables.NoSuchNodeError:
+                    group = '/{}/{}'.format(region, str(target))
+                    results.create_carray(group, stat, obj = obj,
+                                          createparents = True)
+                else:
+                    arr[:] = obj
 
 
 def _run_all(targets = None):
-    results = model.results.modes.load_vaccine_sensitivity()
     countries = model.datasheet.get_country_list()
-    updated = False
-    # Put 'Global' first.
-    if 'Global' not in results:
-        results['Global']
+    results = model.results.modes.load_vaccine_sensitivity(mode = 'a')
     for country in countries:
         if country not in results:
             print(country)
             results[country] = _run_one(country, targets = targets)
-            updated = True
-    if updated:
-        _build_global(results)
-        results.dump()
+    _build_regionals(results, targets = targets)
     return results
 
 
