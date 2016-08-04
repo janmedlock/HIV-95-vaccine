@@ -25,7 +25,7 @@ CI_levels = ['median', 50, 80, 90, 95, 99]
 
 
 def _main():
-    with model.results.samples.stats.load(mode = 'a') as h5file:
+    with model.results.samples.stats.open_(mode = 'a') as h5file:
         for (region_or_country, target) in itertools.product(
                 regions_and_countries, targets):
             target = str(target)
@@ -34,8 +34,8 @@ def _main():
             stats_exist = '/{}/{}'.format(region_or_country, target) in h5file
             if results_exist and (not stats_exist):
                 print('{}, {}'.format(region_or_country, target))
-                with model.results.samples.load(region_or_country,
-                                                target) as results:
+                with model.results.samples.open_(region_or_country,
+                                                 target) as results:
                     with warnings.catch_warnings():
                         warnings.filterwarnings(
                             'ignore',

@@ -130,7 +130,7 @@ class Cache(collections.OrderedDict):
             return (mtime_data <= mtime_cache)
 
     def _load(self, country, target, attr):
-        with results.load(country, target) as results:
+        with results.open_(country, target) as results:
             value = getattr(results, attr)
         h5path = '/{}/{}'.format(country, target)
         with warnings.catch_warnings():

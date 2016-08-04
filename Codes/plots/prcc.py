@@ -23,7 +23,7 @@ import model
 
 
 def get_outcome_samples(country, targets, stat, times):
-    results = (model.results.samples.load(country, target)
+    results = (model.results.samples.open_(country, target)
                for target in targets)
     x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
     z = x - y

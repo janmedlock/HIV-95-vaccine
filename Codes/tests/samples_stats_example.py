@@ -18,7 +18,7 @@ import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with model.results.samples.stats.load() as results:
+    with model.results.samples.stats.open_() as results:
         countries = results.keys()
         print('countries =', countries)
 

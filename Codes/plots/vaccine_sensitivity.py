@@ -145,12 +145,12 @@ def _plot_country(results, country, treatment_target):
 
 
 def plot_country(country, treatment_target):
-    with model.results.modes.load_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_sensitivity() as results:
         return _plot_country(results, country, treatment_target)
 
 
 def plot_allcountries(treatment_target):
-    with model.results.modes.load_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_sensitivity() as results:
         regions_and_countries = results.keys()
         # Put regions first.
         regions = []
@@ -172,7 +172,7 @@ def plot_allcountries(treatment_target):
 
 
 def plot_somecountries(treatment_target):
-    with model.results.modes.load_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_sensitivity() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)

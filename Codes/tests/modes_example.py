@@ -17,8 +17,7 @@ import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with model.results.modes.load() as results:
-
+    with model.results.modes.open_() as results:
         # The data look like results[country][target][stat]
 
         countries = results.keys()

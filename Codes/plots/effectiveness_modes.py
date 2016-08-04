@@ -131,12 +131,12 @@ def _plot_country(results, country, **kwargs):
 
 
 def plot_country(country, **kwargs):
-    with model.results.modes.load() as results:
+    with model.results.modes.open_() as results:
         return _plot_country(results, country, **kwargs)
 
 
 def plot_allcountries(**kwargs):
-    with model.results.modes.load() as results:
+    with model.results.modes.open_() as results:
         regions_and_countries = results.keys()
         # Put regions first.
         regions = []
@@ -157,7 +157,7 @@ def plot_allcountries(**kwargs):
 
 
 def plot_somecountries(**kwargs):
-    with model.results.modes.load() as results:
+    with model.results.modes.open_() as results:
         with seaborn.color_palette(common.colors_paired):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)

@@ -103,7 +103,7 @@ def plot(infections_averted):
 
 
 def _get_infections_averted():
-    with model.results.samples.stats.load() as results:
+    with model.results.samples.stats.open_() as results:
         countries = list(results.keys())
 
         infections_averted = pandas.DataFrame(columns = interventions,

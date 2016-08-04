@@ -8,12 +8,12 @@ from . import common
 from . import tables_dict
 
 
-def load(mode = 'r'):
+def open_(mode = 'r'):
     return tables_dict.open_file(os.path.join(common.resultsdir,
                                               'modes.h5'),
                                  mode = mode)
 
-def load_vaccine_sensitivity(mode = 'r'):
+def open_vaccine_sensitivity(mode = 'r'):
     return tables_dict.open_file(os.path.join(common.resultsdir,
                                               'vaccine_sensitivity.h5'),
                                  mode = mode)

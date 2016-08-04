@@ -150,12 +150,12 @@ def _plot_country(results, country, confidence_level = 0.95, **kwargs):
 
 
 def plot_country(country, **kwargs):
-    with model.results.samples.stats.load() as results:
+    with model.results.samples.stats.open_() as results:
         return _plot_country(results, country, **kwargs)
 
 
 def plot_allcountries(**kwargs):
-    with model.results.samples.stats.load() as results:
+    with model.results.samples.stats.open_() as results:
         regions_and_countries = (model.regions.all_
                                  + sorted(model.datasheet.get_country_list()))
         filename = '{}_all.pdf'.format(common.get_filebase())
@@ -168,7 +168,7 @@ def plot_allcountries(**kwargs):
 
 
 def plot_somecountries(confidence_level = 0, **kwargs):
-    with model.results.samples.stats.load() as results:
+    with model.results.samples.stats.open_() as results:
         with seaborn.color_palette(common.colors_paired):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)

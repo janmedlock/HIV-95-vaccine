@@ -20,7 +20,7 @@ def _main():
         # for target in model.targets.all_:
         for target in targets:
             if not model.results.samples.exists(region, target):
-                results = model.results.samples.load(region, target)
+                results = model.results.samples.open_(region, target)
                 results._load_data()
                 model.results.samples.dump(region, target, results)
 

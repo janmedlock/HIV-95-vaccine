@@ -76,7 +76,7 @@ class Results:
         data = collections.OrderedDict()
         for country in sorted(countries):
             try:
-                data[country] = load(country, self._target)
+                data[country] = open_(country, self._target)
             except FileNotFoundError as err:
                 print(err)
 
@@ -112,7 +112,7 @@ class Results:
         return exists(self._country_or_region, self._target)
 
 
-def load(country_or_region, target):
+def open_(country_or_region, target):
     return Results(country_or_region, target)
 
 

@@ -64,7 +64,7 @@ def _build_regionals(results, targets = None):
 
 
 def _run_all(targets = None):
-    results = model.results.modes.load(mode = 'a')
+    results = model.results.modes.open_(mode = 'a')
     countries = model.datasheet.get_country_list()
     for country in countries:
         if country not in results:

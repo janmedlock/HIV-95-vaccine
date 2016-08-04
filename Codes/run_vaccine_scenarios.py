@@ -65,7 +65,7 @@ def _build_regionals(results, targets = None):
 
 def _run_all(targets = None):
     countries = model.datasheet.get_country_list()
-    results = model.results.modes.load_vaccine_sensitivity(mode = 'a')
+    results = model.results.modes.open_vaccine_sensitivity(mode = 'a')
     for country in countries:
         if country not in results:
             print(country)
