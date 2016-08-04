@@ -16,17 +16,6 @@ from ... import picklefile
 from ... import regions
 
 
-_regions = ['Global'] + regions.all_
-
-
-def _is_region(x):
-    return (x in _regions)
-
-
-def _is_country(x):
-    return (not _is_region(x))
-
-
 def get_path(country_or_region, target):
     if isinstance(target, type):
         # It's a class.
@@ -55,7 +44,7 @@ class Results:
         # Convert to string in case its an instance.
         self._target = str(target)
 
-        if (not self.exists) and _is_country(self._country_or_region):
+        if (not self.exists) and regions.is_country(self._country_or_region):
             raise FileNotFoundError("'{}', '{}' not found!".format(
                 self._country_or_region, self._target))
         self._data = None
@@ -67,7 +56,7 @@ class Results:
         pass
 
     def _load_data(self):
-        if _is_region(self._country_or_region) and (not self.exists):
+        if regions.is_region(self._country_or_region) and (not self.exists):
             print('Building {}, {}...'.format(self._country_or_region,
                                               self._target))
             self._build_regional()
@@ -77,16 +66,23 @@ class Results:
             self._data = picklefile.load(self.path)
 
     def _build_regional(self):
-        # OrderedDict so that the countries' Results._load_data() are called
-        # in order later by multicountry.MultiCountry()
-        data = collections.OrderedDict()
         if self._country_or_region == 'Global':
-            for country in sorted(datasheet.get_country_list()):
+            countries = datasheet.get_country_list()
+        else:
+            countries = regions.regions[self._country_or_region]
+
+        # Use an OrderedDict so that the countries' Results._load_data()
+        # are called in order later by multicountry.MultiCountry().
+        data = collections.OrderedDict()
+        for country in sorted(countries):
+            try:
                 data[country] = load(country, self._target)
+            except FileNotFoundError as err:
+                print(err)
+
+        if self._country_or_region == 'Global':
             self._data = multicountry.Global(data)
         else:
-            for country in sorted(regions.regions[self._country_or_region]):
-                data[country] = load(country, self._target)
             self._data = multicountry.MultiCountry(data)
 
     def __getattr__(self, key):

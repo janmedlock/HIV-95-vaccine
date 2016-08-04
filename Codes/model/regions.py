@@ -49,4 +49,12 @@ regions = {
 }
 
 
-all_ = list(regions.keys())
+all_ = ['Global'] + sorted(regions.keys())
+
+
+def is_region(x):
+    return (x in all_)
+
+
+def is_country(x):
+    return (not is_region(x))
