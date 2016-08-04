@@ -40,7 +40,7 @@ def _plot_cell(ax, results, parameters, country, stat,
             data.append(v)
         info.autoscale(data)
 
-    if plot_hist:
+    if plot_hist and (parameters is not None):
         data_hist = common.data_hist_getter[stat](parameters)
         if data_hist is not None:
             data_hist = data_hist.dropna()
@@ -64,7 +64,8 @@ def _plot_cell(ax, results, parameters, country, stat,
 
             # Make a dotted line connecting the end of the historical data
             # and the begining of the simulation.
-            if plot_hist and (data_hist is not None) and (len(data_hist) > 0):
+            if (plot_hist and (parameters is not None)
+                and (data_hist is not None) and (len(data_hist) > 0)):
                 # Drop NaNs at the beginning of incidence.
                 t = numpy.compress(numpy.isfinite(v), common.t)
                 w = numpy.compress(numpy.isfinite(v), v)
@@ -103,7 +104,11 @@ def _make_legend(fig, plot_hist = True):
 
 
 def _plot_country(results, country, **kwargs):
-    parameters = model.parameters.get_parameters(country)
+    try:
+        parameters = model.parameters.get_parameters(country)
+    except KeyError:
+        parameters = None
+
     with seaborn.color_palette(common.colors_paired):
         nrows = len(common.effectiveness_measures)
         ncols = 1
@@ -135,10 +140,10 @@ def plot_allcountries(**kwargs):
         regions_and_countries = results.keys()
         # Put regions first.
         regions = []
-        for r in model.regions.all_:
-            if r in regions_and_countries:
-                regions.append(r)
-                regions_and_countries.remove(r)
+        for region in model.regions.all_:
+            if region in regions_and_countries:
+                regions.append(region)
+                regions_and_countries.remove(region)
         countries = sorted(regions_and_countries)
         regions_and_countries = regions + countries
 
