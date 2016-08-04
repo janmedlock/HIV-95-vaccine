@@ -114,10 +114,6 @@ stats
 +++++
 .. automodule:: model.results.samples.stats
 
-tables_dict
-~~~~~~~~~~~
-.. automodule:: model.results.tables_dict
-
 samples
 -------
 .. automodule:: model.samples
@@ -125,6 +121,10 @@ samples
 simulation
 ----------
 .. automodule:: model.simulation
+
+tables_dict
+-----------
+.. automodule:: model.tables_dict
 
 targets
 -------

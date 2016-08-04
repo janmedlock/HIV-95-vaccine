@@ -5,7 +5,7 @@ Retrieve statistics from simulations with parameter distrubtions.
 import os.path
 
 from .. import common
-from .. import tables_dict
+from ... import tables_dict
 
 
 def open_(mode = 'r'):

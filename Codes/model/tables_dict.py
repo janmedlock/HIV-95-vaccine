@@ -45,3 +45,15 @@ def open_file(filename, mode = 'r', filters = None, **kwds):
                             mode = mode,
                             filters = filters,
                             **kwds)
+
+def dump(h5file, obj):
+    for key in obj.keys():
+        val = getattr(self, key)
+        group = '/{}/{}'.format(self.country, str(self.targets))
+        path = '{}/{}'.format(group, key)
+        if path in h5file:
+            arr = h5file.get_node(group, key)
+            arr[:] = val
+        else:
+            results.create_carray(group, key, obj = val,
+                                  createparents = True)

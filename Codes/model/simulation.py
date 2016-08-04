@@ -7,7 +7,6 @@ import warnings
 
 import numpy
 from scipy import integrate
-import tables
 
 from . import container
 # from . import cost
@@ -215,18 +214,6 @@ class Simulation(container.Container):
 
     def plot(self, *args, **kwargs):
         plot.simulation(self, *args, **kwargs)
-
-    def dump(self, h5file):
-        for key in self.keys():
-            obj = getattr(self, key)
-            group = '/{}/{}'.format(self.country, str(self.targets))
-            try:
-                arr = h5file.get_node(group, key)
-            except tables.NoSuchNodeError:
-                results.create_carray(group, key, obj = obj,
-                                      createparents = True)
-            else:
-                arr[:] = obj
 
     @classmethod
     def _build_keys(cls):
