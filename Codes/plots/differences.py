@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Plot differences for samples from uncertainty analysis.
+
+.. todo:: Clean up.
 '''
 
 import operator

@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Plot correlation between samples and outcomes.
+
+.. todo:: Clean up similarity with prcc.py.
 '''
 
 import os.path
