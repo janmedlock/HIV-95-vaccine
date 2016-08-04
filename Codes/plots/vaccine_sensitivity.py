@@ -154,10 +154,10 @@ def plot_allcountries(treatment_target):
         regions_and_countries = results.keys()
         # Put regions first.
         regions = []
-        for r in model.regions.all_:
-            if r in regions_and_countries:
-                regions.append(r)
-                regions_and_countries.remove(r)
+        for region in model.regions.all_:
+            if region in regions_and_countries:
+                regions.append(region)
+                regions_and_countries.remove(region)
         countries = sorted(regions_and_countries)
         regions_and_countries = regions + countries
 
