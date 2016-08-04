@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Calculate PRCCs and make tornado plots.
+
+.. todo:: Clean up similarity with sensitivity.py.
 '''
 
 import os.path
@@ -96,7 +98,11 @@ def tornados():
     ncols = len(times)
     fig, axes = pyplot.subplots(nrows, ncols,
                                 figsize = figsize,
-                                sharex = true)
+                                sharex = 'all')
+
+    if isinstance(axes, pyplot.Axes):
+        axes = [axes]
+
     for (ax, t) in zip(axes, times):
         if ax.is_first_col():
             ylabels = 'left'
