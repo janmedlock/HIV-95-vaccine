@@ -217,6 +217,6 @@ def plot_some(confidence_level = 0, **kwargs):
 if __name__ == '__main__':
     # plot_one('South Africa')
     plot_some()
-    # pyplot.show()
+    pyplot.show()
 
-    # plot_all()
+    plot_all()
