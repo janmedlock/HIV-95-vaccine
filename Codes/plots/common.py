@@ -6,20 +6,28 @@ import collections
 import copy
 import inspect
 import operator
-import os.path
+import os
+import subprocess
 import sys
+import time
 
 import matplotlib
 from matplotlib import cm
 from matplotlib import colors
 from matplotlib import ticker
+from matplotlib.backends import backend_pdf
+from matplotlib.backends import backend_cairo
 import numpy
+from PIL import Image
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 # import seaborn
 import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
+
+
+author = 'Jan Medlock et al'
 
 
 countries_to_plot = ('Global',
@@ -317,3 +325,103 @@ def format_axes(ax, country, info,
     if title is not None:
         ax.set_title(title, size = 'medium',
                      va = 'bottom', ha = 'center')
+
+
+def _get_title(filename):
+    base, _ = os.path.splitext(os.path.basename(filename))
+    title = base.replace('_', ' ').title()
+    return title
+
+
+def pdf_add_info(filename, **kwargs):
+    '''
+    Use pdftk to set PDF metadata.
+    '''
+    if 'Author' not in kwargs:
+        kwargs['Author'] = author
+    if 'Title' not in kwargs:
+        kwargs['Title'] = _get_title(filename)
+    curtime = time.strftime('D:%Y%m%d%H%M%S')
+    for key in ['CreationDate', 'ModDate']:
+        if key not in kwargs:
+            kwargs[key] = curtime
+
+    # Build info in pdftk's required format.
+    def build_info_item(key, value):
+        return 'InfoBegin\nInfoKey: {}\nInfoValue: {}'.format(key, value)
+    infostr = '\n'.join(build_info_item(k, v) for (k, v) in kwargs.items())
+
+    # pdftk will write to a tempfile, then we'll replace to original file
+    # with the tempfile
+    tempname = filename + '.tmp'
+    args = ['pdftk', filename, 'update_info_utf8', '-', 'output', tempname]
+    cp = subprocess.run(args, input = infostr.encode('utf-8'))
+    cp.check_returncode()  # Make sure it succeeded.
+    os.replace(tempname, filename)
+
+
+_keymap = {'Author': 'Artist',
+           'Title': 'ImageDescription'}
+
+
+def image_add_info(filename, **kwargs):
+    if 'Author' not in kwargs:
+        kwargs['Author'] = author
+    if 'Title' not in kwargs:
+        kwargs['Title'] = _get_title(filename)
+
+    im = Image.open(filename)
+    format_ = im.format
+    if format_ == 'TIFF':
+        from PIL import TiffImagePlugin
+        info = dict(im.tag_v2)
+        for (key, value) in kwargs.items():
+            # Convert to TIFF tag names.
+            tagname = _keymap.get(key, key)
+            # Get tag ID number.
+            tagid = getattr(TiffImagePlugin, tagname.upper())
+            info[tagid] = value
+        # Drop alpha channel.
+        im = im.convert('RGB')
+        tempfile = filename + '.temp'
+        im.save(tempfile, format_,
+                tiffinfo = info,
+                compression = 'tiff_lzw')
+        os.replace(tempfile, filename)
+    elif im.format == 'PNG':
+        from PIL import PngImagePlugin
+        info = PngImagePlugin.PngInfo()
+        for (key, value) in kwargs.items():
+            # Convert to TIFF tag names.
+            tagname = _keymap.get(key, key)
+            info.add_text(tagname, value)
+        tempfile = filename + '.temp'
+        im.save(tempfile, format_,
+                pnginfo = info,
+                optimize = True)
+        os.replace(tempfile, filename)
+    im.close()
+
+
+def savefig(fig, filename, title = None, **kwargs):
+    if title is None:
+        title = _get_title(filename)
+    info = dict(Author = author, Title = title)
+
+    if filename.endswith('.pdf'):
+        # Cairo makes much smaller PDFs.
+        oldcanvas = fig.canvas
+        backend_cairo.FigureCanvasCairo(fig)
+        fig.savefig(filename, **kwargs)
+        fig.canvas = oldcanvas
+        # Use pdftk to add author etc.
+        pdf_add_info(filename, **info)
+    else:
+        savekwds = {}
+        if (('dpi' not in kwargs)
+            and (filename.lower().endswith('.tiff')
+                 or filename.lower().endswith('.tif'))):
+            kwargs['dpi'] = 600
+        fig.savefig(filename, **kwargs)
+        # Use PIL etc to set metadata.
+        image_add_info(filename, **info)

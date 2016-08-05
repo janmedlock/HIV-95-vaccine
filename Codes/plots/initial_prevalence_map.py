@@ -59,8 +59,8 @@ def _main():
 
     m.tighten(aspect_adjustment = 1.35)
 
-    m.savefig('{}.pdf'.format(common.get_filebase()))
-    m.savefig('{}.png'.format(common.get_filebase()))
+    common.savefig(m.fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(m.fig, '{}.png'.format(common.get_filebase()))
 
     m.show()
 

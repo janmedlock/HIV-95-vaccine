@@ -110,8 +110,8 @@ def plot_ranks(X, y, outcome, parameter_names = None, alpha = 0.7,
                      horizontalalignment = 'center',
                      verticalalignment = 'center')
 
-    fig.savefig('{}_rank.png'.format(common.get_filebase()))
-    fig.savefig('{}_rank.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}_rank.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}_rank.png'.format(common.get_filebase()))
 
 
 def plot_samples(X, y, outcome, parameter_names = None, alpha = 0.7,
@@ -178,8 +178,8 @@ def plot_samples(X, y, outcome, parameter_names = None, alpha = 0.7,
                      horizontalalignment = 'center',
                      verticalalignment = 'center')
 
-    fig.savefig('{}.png'.format(common.get_filebase()))
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
 
 def tornado(X, y, outcome, parameter_names = None, colors = None):
@@ -209,8 +209,8 @@ def tornado(X, y, outcome, parameter_names = None, colors = None):
 
     fig.tight_layout()
 
-    fig.savefig('{}_tornado.png'.format(common.get_filebase()))
-    fig.savefig('{}_tornado.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}_tornado.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}_tornado.png'.format(common.get_filebase()))
 
 
 if __name__ == '__main__':

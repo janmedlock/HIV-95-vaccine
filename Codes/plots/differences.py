@@ -182,8 +182,8 @@ def plot_selected(results, skip_global = False):
         fig.tight_layout()
         fileroot = '{}_{}'.format(common.get_filebase(),
                                   baseline.replace(' ', '_'))
-        fig.savefig('{}.png'.format(fileroot))
-        fig.savefig('{}.pdf'.format(fileroot))
+        common.savefig(fig, '{}.pdf'.format(fileroot))
+        common.savefig(fig, '{}.png'.format(fileroot))
 
 
 def plot_all(results):

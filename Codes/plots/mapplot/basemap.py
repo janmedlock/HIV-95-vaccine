@@ -681,6 +681,9 @@ class Basemap:
                                  shrink = shrink,
                                  panchor = panchor,
                                  *args, **kwargs)
+        # Try to work around ugliness from viewer bugs.
+        cbar.solids.set_edgecolor('face')
+        cbar.solids.drawedges = False
         return cbar
 
     def savefig(self, *args, **kwargs):

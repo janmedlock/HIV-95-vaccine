@@ -10,6 +10,7 @@ import sys
 
 from matplotlib import lines
 from matplotlib import pyplot
+from matplotlib.backends import backend_cairo
 from matplotlib.backends import backend_pdf
 import numpy
 import tables
@@ -34,7 +35,7 @@ def _plot_cell(ax, results, country, targets, stat,
 
     info = common.get_stat_info(stat)
 
-    # Allow scaling across rows in _plot_country().
+    # Allow scaling across rows in _plot_one().
     if scale is not None:
         info.scale = scale
         if units is None:
@@ -60,17 +61,28 @@ def _plot_cell(ax, results, country, targets, stat,
         except tables.NoSuchNodeError:
             pass
         else:
-            ax.plot(common.t, numpy.asarray(v['median']) / info.scale,
-                    label = common.get_target_label(target),
-                    color = colors[i],
-                    zorder = 2)
+            l = ax.plot(common.t, numpy.asarray(v['median']) / info.scale,
+                        label = common.get_target_label(target),
+                        color = colors[i],
+                        zorder = 2)
 
             if confidence_level > 0:
                 CI = v[CIkey]
+                # Draw borders of CI with alpha = 1,
+                # which is why this is separate from fill_between().
+                lw = l[0].get_linewidth() / 2
+                for j in range(2):
+                    ax.plot(common.t,
+                            numpy.asarray(CI[j]) / info.scale,
+                            color = colors[i],
+                            linewidth = lw,
+                            zorder = 2)
+                # Shade interior of CI.
                 ax.fill_between(common.t,
                                 numpy.asarray(CI[0]) / info.scale,
                                 numpy.asarray(CI[1]) / info.scale,
-                                color = colors[i],
+                                facecolor = colors[i],
+                                linewidth = 0,
                                 alpha = alpha)
 
     common.format_axes(ax, country, info, country_label, stat_label)
@@ -91,7 +103,7 @@ def _make_legend(fig):
                       numpoints = 1)
 
 
-def _plot_country(results, country, confidence_level = 0.95, **kwargs):
+def _plot_one(results, country, confidence_level = 0.5, **kwargs):
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
@@ -149,12 +161,12 @@ def _plot_country(results, country, confidence_level = 0.95, **kwargs):
     return fig
 
 
-def plot_country(country, **kwargs):
+def plot_one(country, **kwargs):
     with model.results.samples.stats.open_() as results:
-        return _plot_country(results, country, **kwargs)
+        return _plot_one(results, country, **kwargs)
 
 
-def plot_allcountries(**kwargs):
+def plot_all(**kwargs):
     with model.results.samples.stats.open_() as results:
         regions_and_countries = (model.regions.all_
                                  + sorted(model.datasheet.get_country_list()))
@@ -162,12 +174,16 @@ def plot_allcountries(**kwargs):
         with backend_pdf.PdfPages(filename) as pdf:
             for region_or_country in regions_and_countries:
                 print(region_or_country)
-                fig = _plot_country(results, region_or_country, **kwargs)
+                fig = _plot_one(results, region_or_country, **kwargs)
+                # The Cairo backend makes much smaller PDFs than Agg or Pdf,
+                # but fig.tight_layout() in _plot_one()
+                # forces the canvas to Agg, so we need to set it here.
+                backend_cairo.FigureCanvasCairo(fig)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 
 
-def plot_somecountries(confidence_level = 0, **kwargs):
+def plot_some(confidence_level = 0, **kwargs):
     with model.results.samples.stats.open_() as results:
         with seaborn.color_palette(common.colors_paired):
             ncols = len(common.countries_to_plot)
@@ -192,15 +208,15 @@ def plot_somecountries(confidence_level = 0, **kwargs):
 
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
+    common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
     return fig
 
 
 if __name__ == '__main__':
-    # plot_country('South Africa')
-    plot_somecountries()
-    pyplot.show()
+    # plot_one('South Africa')
+    plot_some()
+    # pyplot.show()
 
-    plot_allcountries()
+    # plot_all()

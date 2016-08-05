@@ -57,8 +57,8 @@ def plot_transmission_rates(countries, fig = None,
     ax.grid(False, axis = 'y')
     fig.tight_layout()
     if savefig:
-        fig.savefig('{}.pdf'.format(common.get_filebase()))
-        fig.savefig('{}.png'.format(common.get_filebase()))
+        common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+        common.savefig(fig, '{}.png'.format(common.get_filebase()))
     return fig, ax
 
 

@@ -182,8 +182,8 @@ def plot_somecountries(**kwargs):
 
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
+    common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
     return fig
 

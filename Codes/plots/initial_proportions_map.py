@@ -81,8 +81,8 @@ def _main():
 
     m.tighten()
 
-    m.savefig('{}.pdf'.format(common.get_filebase()))
-    m.savefig('{}.png'.format(common.get_filebase()))
+    common.savefig(m.fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(m.fig, '{}.png'.format(common.get_filebase()))
 
     m.show()
 

@@ -198,8 +198,8 @@ def plot_somecountries(treatment_target):
     fig.tight_layout(rect = (0, 0.07, 1, 1))
 
     suffix = str(treatment_target).replace(' ', '_')
-    fig.savefig('{}_{}.pdf'.format(common.get_filebase(), suffix))
-    fig.savefig('{}_{}.png'.format(common.get_filebase(), suffix))
+    common.savefig(fig, '{}_{}.pdf'.format(common.get_filebase(), suffix))
+    common.savefig(fig, '{}_{}.png'.format(common.get_filebase(), suffix))
 
     return fig
 

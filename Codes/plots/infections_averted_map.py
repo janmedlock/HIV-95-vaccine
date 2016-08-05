@@ -87,6 +87,9 @@ def plot(infections_averted):
                         shrink = 0.8,
                         panchor = False,
                         format = common.PercentFormatter())
+    # Try to work around ugliness from viewer bugs.
+    cbar.solids.set_edgecolor('face')
+    cbar.solids.drawedges = False
 
     ticklabels = cbar.ax.get_xticklabels()
     if infections_averted.min().min() < vmin * scale:
@@ -98,8 +101,8 @@ def plot(infections_averted):
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
 
-    fig.savefig('{}.pdf'.format(common.get_filebase()))
-    fig.savefig('{}.png'.format(common.get_filebase()))
+    common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
 
 def _get_infections_averted():
