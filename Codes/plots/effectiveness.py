@@ -2,6 +2,8 @@
 '''
 Plot the effectiveness of interventions.
 
+.. todo:: Try to get Cairo into multi-page PDFs.
+
 .. todo:: Add historical incidence and prevalence to plots.
 '''
 
@@ -178,7 +180,7 @@ def plot_all(**kwargs):
                 # The Cairo backend makes much smaller PDFs than Agg or Pdf,
                 # but fig.tight_layout() in _plot_one()
                 # forces the canvas to Agg, so we need to set it here.
-                backend_cairo.FigureCanvasCairo(fig)
+                # backend_cairo.FigureCanvasCairo(fig)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 

@@ -124,7 +124,7 @@ def _make_legend(fig, treatment_target):
                       numpoints = 1)
 
 
-def _plot_country(results, country, treatment_target):
+def _plot_one(results, country, treatment_target):
     with seaborn.color_palette(colors):
         nrows = len(common.effectiveness_measures)
         ncols = 1
@@ -144,12 +144,12 @@ def _plot_country(results, country, treatment_target):
     return fig
 
 
-def plot_country(country, treatment_target):
+def plot_one(country, treatment_target):
     with model.results.modes.open_vaccine_sensitivity() as results:
-        return _plot_country(results, country, treatment_target)
+        return _plot_one(results, country, treatment_target)
 
 
-def plot_allcountries(treatment_target):
+def plot_all(treatment_target):
     with model.results.modes.open_vaccine_sensitivity() as results:
         regions_and_countries = results.keys()
         # Put regions first.
@@ -165,13 +165,12 @@ def plot_allcountries(treatment_target):
         with backend_pdf.PdfPages(filename) as pdf:
             for region_or_country in regions_and_countries:
                 print(region_or_country)
-                fig = _plot_country(results, region_or_country,
-                                    treatment_target)
+                fig = _plot_one(results, region_or_country, treatment_target)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 
 
-def plot_somecountries(treatment_target):
+def plot_some(treatment_target):
     with model.results.modes.open_vaccine_sensitivity() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)
@@ -205,10 +204,9 @@ def plot_somecountries(treatment_target):
 
 
 if __name__ == '__main__':
-    # plot_country('South Africa',
-    #              model.targets.vaccine_sensitivity_baselines[0])
+    # plot_one('South Africa', model.targets.vaccine_sensitivity_baselines[0])
     for treatment_target in model.targets.vaccine_sensitivity_baselines:
-        plot_somecountries(treatment_target)
+        plot_some(treatment_target)
     pyplot.show()
 
-    # plot_allcountries(model.targets.vaccine_sensitivity_baselines[0])
+    # plot_all(model.targets.vaccine_sensitivity_baselines[0])

@@ -62,7 +62,7 @@ def plot_transmission_rates(countries, fig = None,
     return fig, ax
 
 
-def _plot_sim_cell(ax, parameters, targets, results, stat):
+def _plot_cell(ax, parameters, targets, results, stat):
     '''
     Plot one axes of simulation and historical data figure.
     '''
@@ -141,8 +141,7 @@ def _plot_sim_cell(ax, parameters, targets, results, stat):
     ax.set_ylabel(ylabel, size = 'medium')
 
 
-def plot_country(country,
-                 fig = None):
+def plot_one(country, fig = None):
     '''
     Plot transmission rate estimate and compare simulation
     with historical data.
@@ -205,17 +204,17 @@ def plot_country(country,
     results = joblib.Parallel(n_jobs = -1)(
         joblib.delayed(model.simulation.Simulation)(parameter_values, target)
         for target in targets)
-    _plot_sim_cell(axes[1], parameters, targets, results, 'infected')
-    _plot_sim_cell(axes[2], parameters, targets, results, 'prevalence')
-    _plot_sim_cell(axes[3], parameters, targets, results, 'incidence')
-    # _plot_sim_cell(axes[4], parameters, targets, results, 'drug_coverage')
+    _plot_cell(axes[1], parameters, targets, results, 'infected')
+    _plot_cell(axes[2], parameters, targets, results, 'prevalence')
+    _plot_cell(axes[3], parameters, targets, results, 'incidence')
+    # _plot_cell(axes[4], parameters, targets, results, 'drug_coverage')
     axes[1].legend(loc = 'upper left', frameon = False)
 
     fig.tight_layout()
     return fig
 
 
-def plot_all_countries():
+def plot_all():
     countries = model.datasheet.get_country_list()
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
@@ -226,15 +225,15 @@ def plot_all_countries():
         for country in countries:
             print(country)
             fig = pyplot.figure(figsize = (11, 8.5))
-            plot_country(country, fig = fig)
+            plot_one(country, fig = fig)
             pdf.savefig(fig)
             pyplot.close(fig)
 
 
 if __name__ == '__main__':
-    # plot_country('South Africa')
+    # plot_one('South Africa')
     countries = model.datasheet.get_country_list()
     plot_transmission_rates(countries)
     pyplot.show()
 
-    # plot_all_countries()
+    # plot_all()

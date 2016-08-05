@@ -103,7 +103,7 @@ def _make_legend(fig, plot_hist = True):
                       numpoints = 1)
 
 
-def _plot_country(results, country, **kwargs):
+def _plot_one(results, country, **kwargs):
     try:
         parameters = model.parameters.get_parameters(country)
     except KeyError:
@@ -130,12 +130,12 @@ def _plot_country(results, country, **kwargs):
     return fig
 
 
-def plot_country(country, **kwargs):
+def plot_one(country, **kwargs):
     with model.results.modes.open_() as results:
-        return _plot_country(results, country, **kwargs)
+        return _plot_one(results, country, **kwargs)
 
 
-def plot_allcountries(**kwargs):
+def plot_all(**kwargs):
     with model.results.modes.open_() as results:
         regions_and_countries = results.keys()
         # Put regions first.
@@ -151,12 +151,12 @@ def plot_allcountries(**kwargs):
         with backend_pdf.PdfPages(filename) as pdf:
             for region_or_country in regions_and_countries:
                 print(region_or_country)
-                fig = _plot_country(results, region_or_country, **kwargs)
+                fig = _plot_one(results, region_or_country, **kwargs)
                 pdf.savefig(fig)
                 pyplot.close(fig)
 
 
-def plot_somecountries(**kwargs):
+def plot_some(**kwargs):
     with model.results.modes.open_() as results:
         with seaborn.color_palette(common.colors_paired):
             ncols = len(common.countries_to_plot)
@@ -189,8 +189,8 @@ def plot_somecountries(**kwargs):
 
 
 if __name__ == '__main__':
-    # plot_country('South Africa')
-    plot_somecountries()
+    # plot_one('South Africa')
+    plot_some()
     pyplot.show()
 
-    plot_allcountries()
+    plot_all()
