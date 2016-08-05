@@ -5,23 +5,74 @@ Add default compression and checksum filters.
 
 import warnings
 
+import numpy
 import tables
 
+from . import container
 
-def dump(h5file, obj):
-    with warnings.catch_warnings():
-        warnings.filter_warnings('ignore',
-                                 category = tables.NoSuchNodeError)
-        for key in obj.keys():
-            val = getattr(self, key)
-            group = '/{}/{}'.format(self.country, str(self.targets))
-            path = '{}/{}'.format(group, key)
-            if path in h5file:
-                arr = h5file.get_node(group, key)
-                arr[:] = val
-            else:
-                results.create_carray(group, key, obj = val,
-                                      createparents = True)
+
+def _dump_val(h5file, group, name, val):
+    # tables requires the value be at least 1d,
+    # i.e. no scalars.
+    val = numpy.atleast_1d(val)
+
+    if isinstance(val, (numbers.Number, numpy.ndarray, numpy.record)):
+        if name in group:
+            arr = h5file.get_node(group, name)
+            arr[:] = val
+        else:
+            with warnings.catch_warnings():
+                warnings.filter_warnings('ignore',
+                                         category = tables.NaturalNameWarning)
+                arr = results.create_carray(group, key, obj = val)
+        return arr
+    elif isinstance(val, container.Container):
+        # Get a Group() with the current name.
+        try:
+            namegroup = h5file.get_node(group, name)
+        except tables.NoSuchNodeError:
+            namegroup = h5file.create_group(group, name)
+        # Recurse through the keys.
+        for key in val.keys():
+            subval = getattr(val, key)
+            _dump_val(h5file, namegroup, key, subval)
+        return namegroup
+    elif isinstance(val, list):
+        # This is for MultiSim().
+        raise NotImplementedError
+    else:
+        raise ValueError("Unknown type '{}'!".format(type(val)))
+
+
+def _get_group(h5file, *groups):
+    if len(groups) == 0:
+        group = h5file.root
+    elif isinstance(groups[0], tables.Group):
+        msg = "I don't know what to do with multiple tables.Group()s!"
+        assert len(groups) == 1, msg
+        group = groups[0]
+    else:
+        groupname = '/' + '/'.join(map(str, groups))
+        try:
+            group = h5file.get_node(groupname)
+        except tables.NoSuchNodeError:
+            # Make the group.
+            idx = groupname.rfind('/')
+            lastname = groupname[idx + 1 : ]
+            firstnames = groupname[ : idx]
+            with warnings.catch_warnings():
+                warnings.filter_warnings('ignore',
+                                         category = tables.NaturalNameWarning)
+                group = h5file.create_group(firstnames, lastname,
+                                            createparents = True)
+    return group
+
+
+def dump(h5file, obj, *groups):
+    group = _get_group(h5file, *groups)
+    for key in obj.keys():
+        _dump_val(hd5file, group, key, getattr(obj, key))
+    return group
 
 
 # Add some methods to tables.File

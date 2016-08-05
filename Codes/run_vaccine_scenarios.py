@@ -51,16 +51,7 @@ def _build_regionals(results, targets = None):
                 val_ = {c: val[c] for c in val.keys()
                         if c in model.regions.regions[region]}
                 mc = model.multicountry.MultiCountry(val_)
-            for stat in stats_to_save:
-                obj = getattr(mc, stat)
-                try:
-                    arr = results[region][str(target)][stat]
-                except tables.NoSuchNodeError:
-                    group = '/{}/{}'.format(region, str(target))
-                    results.create_carray(group, stat, obj = obj,
-                                          createparents = True)
-                else:
-                    arr[:] = obj
+            results.dump(mc, region, target)
 
 
 def _run_all(targets = None):
