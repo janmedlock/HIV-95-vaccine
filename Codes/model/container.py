@@ -1,5 +1,7 @@
 import collections
 
+import numpy
+
 
 class Container(collections.abc.MutableMapping):
     '''
@@ -23,6 +25,10 @@ class Container(collections.abc.MutableMapping):
 
     def __len__(self):
         return len(self._keys)
+
+    def to_records(self):
+        names, arrays = zip(*self.items())
+        return numpy.rec.fromarrays(arrays, names = names)
 
 
 class DefaultOrderedDict(collections.OrderedDict):
