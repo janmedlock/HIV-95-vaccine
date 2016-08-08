@@ -298,7 +298,6 @@ def format_axes(ax, country, info,
     ax.grid(True, which = 'both', axis = 'both')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(UnitsFormatter(info.units))
     # One minor tick between major ticks.
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
