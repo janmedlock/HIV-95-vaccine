@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Convert the samples results to h5.
+Build a patch for samples.h5.
 '''
 
 import numbers

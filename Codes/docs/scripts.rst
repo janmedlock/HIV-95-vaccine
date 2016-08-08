@@ -1,6 +1,14 @@
 scripts
 =======
 
+build_percentiles
+-----------------
+.. automodule:: build_percentiles
+
+build_regionals
+---------------
+.. automodule:: build_regionals
+
 datasheet_report
 ----------------
 .. automodule:: datasheet_report
@@ -12,14 +20,6 @@ drive_download
 generate_samples
 ----------------
 .. automodule:: generate_samples
-
-build_percentiles
------------------
-.. automodule:: build_percentiles
-
-build_regionals
----------------
-.. automodule:: build_regionals
 
 module_versions
 ---------------
@@ -36,3 +36,11 @@ run_samples
 run_vaccine_scenarios
 ---------------------
 .. automodule:: run_vaccine_scenarios
+
+samples_patch
+-------------
+.. automodule:: samples_patch
+
+samples_patch_build
+-------------------
+.. automodule:: samples_patch_build
