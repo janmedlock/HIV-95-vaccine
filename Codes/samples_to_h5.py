@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Build a patch for samples.h5.
+Build samples.h5.
 '''
 
 import numbers

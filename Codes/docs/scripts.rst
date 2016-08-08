@@ -44,3 +44,7 @@ samples_patch
 samples_patch_build
 -------------------
 .. automodule:: samples_patch_build
+
+samples_to_h5
+-------------
+.. automodule:: samples_to_h5
