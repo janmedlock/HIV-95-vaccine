@@ -21,6 +21,10 @@ effectiveness_modes
 -------------------
 .. automodule:: plots.effectiveness_modes
 
+effectiveness_regions
+---------------------
+.. automodule:: plots.effectiveness_regions
+
 infections_averted_map
 ----------------------
 .. automodule:: plots.infections_averted_map

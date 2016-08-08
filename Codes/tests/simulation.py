@@ -21,4 +21,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    s = _main()
+    sim = _main()
