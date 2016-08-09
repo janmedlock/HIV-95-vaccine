@@ -149,7 +149,7 @@ def plot_all(**kwargs):
                 regions_and_countries.remove(region)
         # countries needs to be sorted by the name on graph.
         countries = sorted(regions_and_countries,
-                           key = common.get_country_label)
+                           key = common.country_sort_key)
         regions_and_countries = regions + countries
 
         filename = '{}_all.pdf'.format(common.get_filebase())

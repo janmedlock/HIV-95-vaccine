@@ -5,6 +5,7 @@ Make a LaTeX-formatted table from the simulation output.
 
 import locale
 import sys
+import unicodedata
 
 import numpy
 import pandas
@@ -46,7 +47,8 @@ if __name__ == '__main__':
                  for c in countries)
     names_countries = {country_label_replacements.get(c, c): c
                        for c in countries}
-    names_sorted = list(names_countries.keys())
+    names_sorted = [unicodedata.normalize('NFKD', x)
+                    for x in names_countries.keys()]
     names_sorted.remove('Global')
     names_sorted = ['Global'] + sorted(names_sorted)
 

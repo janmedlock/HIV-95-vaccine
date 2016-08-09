@@ -10,6 +10,7 @@ import os
 import subprocess
 import sys
 import time
+import unicodedata
 
 import matplotlib
 from matplotlib import cm
@@ -54,7 +55,9 @@ _all_regions = model.regions.all_
 # _all_regions is already sorted by 'Global', then alphabetical.
 _all_countries = model.datasheet.get_country_list()
 # _all_countries needs to be sorted by the name on graph.
-_all_countries.sort(key = get_country_label)
+def country_sort_key(x):
+    return unicodedata.normalize('NFKD', get_country_label(x))
+_all_countries.sort(key = country_sort_key)
 all_regions_and_countries = _all_regions + _all_countries
 
 

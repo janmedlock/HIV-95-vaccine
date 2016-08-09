@@ -14,7 +14,7 @@ import common
 sys.path.append('..')
 import model
 
-countries = ['Global'] + sorted(model.datasheet.get_country_list())
+countries = common.all_regions_and_countries
 
 target = model.targets.Vaccine(treatment_targets = model.targets.StatusQuo())
 

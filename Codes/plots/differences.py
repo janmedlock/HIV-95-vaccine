@@ -186,7 +186,7 @@ def plot_selected(results, skip_global = False):
 
 
 def plot_all(results):
-    countries = ['Global'] + sorted(model.get_country_list())
+    countries = common.all_regions_and_countries
 
     for targs in targets:
         baseline = targs[0]
