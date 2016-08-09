@@ -33,8 +33,8 @@ country_replacements = {
     'Viet Nam': 'Vietnam',
     # Some screwed up regions.
     'Eastern and Southern Africa': 'East and Southern Africa',
-    'Asia and the Pacific': 'Asia Pacific',
-    'The Caribbean': 'Carribbean',
+    'Asia and The Pacific': 'Asia Pacific',
+    'The Caribbean': 'Caribbean',
     'Western and Central Europe': 'Western Europe',
 }
 
