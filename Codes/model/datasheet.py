@@ -31,6 +31,11 @@ country_replacements = {
     'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
     'Venezuela (Bolivarian Republic of)': 'Venezuela',
     'Viet Nam': 'Vietnam',
+    # Some screwed up regions.
+    'Eastern and Southern Africa': 'East and Southern Africa',
+    'Asia and the Pacific': 'Asia Pacific',
+    'The Caribbean': 'Carribbean',
+    'Western and Central Europe': 'Western Europe',
 }
 
 country_replacements_inv = {v: k for (k, v) in country_replacements.items()}

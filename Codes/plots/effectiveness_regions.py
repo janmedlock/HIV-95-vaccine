@@ -32,15 +32,15 @@ targets = model.targets.all_
 
 region_labels = {
     'Global': 'Global',
-    'Asia Pacific': 'Asia\nPacific',
-    'Caribbean': 'Carribean',
-    'East and Southern Africa': 'East &\nSouthern Africa',
+    'Asia Pacific': 'Asia &\nThe Pacific',
+    'Caribbean': 'The\nCarribean',
+    'East and Southern Africa': 'Eastern &\nSouthern Africa',
     'Eastern Europe and Central Asia': 'Eastern Europe\n& Central Asia',
     'Latin America': 'Latin\nAmerica',
     'Middle East and North Africa': 'Middle East &\nNorth Africa',
     'North America': 'North\nAmerica',
     'West and Central Africa': 'West &\nCentral Africa',
-    'Western Europe': 'Western\nEurope'
+    'Western Europe': 'Western &\nCentral Europe'
 }
 
 
