@@ -9,12 +9,18 @@ import sys
 import numpy
 import pandas
 
+sys.path.append('..')
+import model
+
 
 country_label_replacements = {'United States of America': 'United States',
                               'Democratic Republic of the Congo': 'DR Congo',
-                              'Republic of Congo': 'Congo',
-                              'Ivory Coast': 'Côte D\'Ivoire',
-                              'The Bahamas': 'Bahamas'}
+                              'Bolivia (Plurinational State of)': 'Bolivia',
+                              'Iran (Islamic Republic of)': 'Iran',
+                              "Lao People's Democratic Republic": 'Laos',
+                              'Republic of Moldova': 'Moldova',
+                              'Venezuela (Bolivarian Republic of)': 'Venezuela'
+}
 
 
 def _format_number(x):
@@ -35,8 +41,11 @@ if __name__ == '__main__':
                          index_col = [0, 1],
                          header = [0, 1, 2])
 
+    countries = df.index.levels[0]
+    countries = (model.datasheet.country_replacements_inv.get(c, c)
+                 for c in countries)
     names_countries = {country_label_replacements.get(c, c): c
-                       for c in df.index.levels[0]}
+                       for c in countries}
     names_sorted = list(names_countries.keys())
     names_sorted.remove('Global')
     names_sorted = ['Global'] + sorted(names_sorted)

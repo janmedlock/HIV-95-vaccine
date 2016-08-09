@@ -37,9 +37,25 @@ countries_to_plot = ('Global',
                      'United States of America')
 
 
-country_label_replacements = {
+country_labels_short = {
     'United States of America': 'United States'
 }
+
+
+def get_country_label(c, short = False):
+    # Convert back to original UNAIDS names.
+    v = model.datasheet.country_replacements_inv.get(c, c)
+    if short:
+        v = country_labels_short.get(v, v)
+    return v
+
+
+_all_regions = model.regions.all_
+# _all_regions is already sorted by 'Global', then alphabetical.
+_all_countries = model.datasheet.get_country_list()
+# _all_countries needs to be sorted by the name on graph.
+_all_countries.sort(key = get_country_label)
+all_regions_and_countries = _all_regions + _all_countries
 
 
 effectiveness_measures = ['infected', 'incidence_per_capita', 'AIDS', 'dead']
@@ -280,7 +296,9 @@ data_getter = DataGetter()
 
 def format_axes(ax, country, info,
                 country_label, stat_label,
-                plot_hist = False, tick_interval = 10):
+                country_label_short = True,
+                plot_hist = False,
+                tick_interval = 10):
     '''
     Do common formatting.
     '''
@@ -303,7 +321,7 @@ def format_axes(ax, country, info,
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    country_str = country_label_replacements.get(country, country)
+    country_str = get_country_label(country, short = country_label_short)
 
     ylabel = None
     title = None

@@ -125,8 +125,7 @@ def _plot_cell(ax, results, country, targs, stat,
     ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
     ax.grid(True, which = 'both', axis = 'both')
 
-    country_str = common.country_label_replacements.get(country,
-                                                        country)
+    country_str = common.get_country_label(country)
     if country_label == 'ylabel':
         ax.set_ylabel(country_str, size = 'medium')
     elif country_label == 'title':
@@ -204,8 +203,7 @@ def plot_all(results):
             for (i, country) in enumerate(common.countries_to_plot):
                 print('\t', country)
                 fig = pyplot.figure(figsize = (8.5, 11))
-                title = common.country_label_replacements.get(country,
-                                                              country)
+                title = common.get_country_label(country)
                 try:
                     for (row, attr) in enumerate(common.effectiveness_measures):
                         print('\t\t', attr)

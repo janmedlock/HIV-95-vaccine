@@ -24,6 +24,7 @@ import model
 def _plot_cell(ax, results, parameters, country, stat,
                plot_hist = True,
                country_label = None,
+               country_label_short = True,
                stat_label = 'ylabel'):
     '''
     Plot one axes of simulation and historical data figure.
@@ -79,7 +80,8 @@ def _plot_cell(ax, results, parameters, country, stat,
                         zorder = 2)
 
     common.format_axes(ax, country, info, country_label, stat_label,
-                       plot_hist = plot_hist)
+                       plot_hist = plot_hist,
+                       country_label_short = country_label_short)
 
 
 def _make_legend(fig, plot_hist = True):
@@ -121,6 +123,7 @@ def _plot_one(results, country, **kwargs):
             country_label = 'title' if ax.is_first_row() else None
             _plot_cell(ax, results, parameters, country, stat,
                        country_label = country_label,
+                       country_label_short = False,
                        **kwargs)
 
         _make_legend(fig)
@@ -144,7 +147,9 @@ def plot_all(**kwargs):
             if region in regions_and_countries:
                 regions.append(region)
                 regions_and_countries.remove(region)
-        countries = sorted(regions_and_countries)
+        # countries needs to be sorted by the name on graph.
+        countries = sorted(regions_and_countries,
+                           key = common.get_country_label)
         regions_and_countries = regions + countries
 
         filename = '{}_all.pdf'.format(common.get_filebase())

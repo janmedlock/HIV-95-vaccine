@@ -65,6 +65,7 @@ def _get_kwds(label):
 
 def _plot_cell(ax, results, country, treatment_target, stat,
                country_label = None,
+               country_label_short = True,
                stat_label = 'ylabel'):
     '''
     Plot one axes of  figure.
@@ -96,7 +97,8 @@ def _plot_cell(ax, results, country, treatment_target, stat,
                     label = label,
                     **_get_kwds(label))
 
-    common.format_axes(ax, country, info, country_label, stat_label)
+    common.format_axes(ax, country, info, country_label, stat_label,
+                       country_label_short = country_label_short)
 
 
 def _make_legend(fig, treatment_target):
@@ -135,7 +137,8 @@ def _plot_one(results, country, treatment_target):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
             _plot_cell(ax, results, country, treatment_target, stat,
-                       country_label = country_label)
+                       country_label = country_label,
+                       country_label_short = False)
 
         _make_legend(fig, treatment_target)
 
@@ -158,7 +161,9 @@ def plot_all(treatment_target):
             if region in regions_and_countries:
                 regions.append(region)
                 regions_and_countries.remove(region)
-        countries = sorted(regions_and_countries)
+        # countries needs to be sorted by the name on graph.
+        countries = sorted(regions_and_countries,
+                           key = common.get_country_label)
         regions_and_countries = regions + countries
 
         filename = '{}_all.pdf'.format(common.get_filebase())

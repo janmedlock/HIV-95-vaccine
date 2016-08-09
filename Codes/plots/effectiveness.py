@@ -112,8 +112,8 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
                                 figsize = (8.5, 11),
                                 sharex = 'all', sharey = 'row')
 
-    country_str = common.country_label_replacements.get(country, country)
-    fig.suptitle(country_str, size = 'large', va = 'center')
+    country_name = common.get_country_label(country)
+    fig.suptitle(country_name, size = 'large', va = 'center')
 
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
@@ -170,11 +170,9 @@ def plot_one(country, **kwargs):
 
 def plot_all(**kwargs):
     with model.results.samples.stats.open_() as results:
-        regions_and_countries = (model.regions.all_
-                                 + sorted(model.datasheet.get_country_list()))
         filename = '{}_all.pdf'.format(common.get_filebase())
         with backend_pdf.PdfPages(filename) as pdf:
-            for region_or_country in regions_and_countries:
+            for region_or_country in common.all_regions_and_countries:
                 print(region_or_country)
                 fig = _plot_one(results, region_or_country, **kwargs)
                 # The Cairo backend makes much smaller PDFs than Agg or Pdf,
