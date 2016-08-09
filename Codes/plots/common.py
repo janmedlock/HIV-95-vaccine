@@ -39,7 +39,8 @@ countries_to_plot = ('Global',
 
 
 country_labels_short = {
-    'United States of America': 'United States'
+    'United States of America': 'United States',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
 }
 
 

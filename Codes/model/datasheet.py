@@ -26,10 +26,11 @@ country_replacements = {
     'Iran (Islamic Republic of)': 'Iran',
     "Lao People's Democratic Republic": 'Laos',
     'Republic of Moldova': 'Moldova',
+    'Russian Federation': 'Russia',
     'Timor-Leste': 'East Timor',
-    # 'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    # 'United States': 'United States of America',
-    'Venezuela (Bolivarian Republic of)': 'Venezuela'
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'Venezuela (Bolivarian Republic of)': 'Venezuela',
+    'Viet Nam': 'Vietnam',
 }
 
 country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
