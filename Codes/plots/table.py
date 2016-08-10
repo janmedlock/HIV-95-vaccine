@@ -48,11 +48,11 @@ def _main():
     cix = pandas.MultiIndex.from_tuples(tuples)
 
     df = pandas.DataFrame(index = ix, columns = cix)
-    for country in countries:
-        for attr in attrs:
-            for target in targets:
-                with model.results.samples.open_(country, target) as results:
-                    x = getattr(results, attr)
+    with model.results.samples.h5.open_() as results:
+        for country in countries:
+            for attr in attrs:
+                for target in targets:
+                    x = getattr(results[country][target], attr)
                     avg, CI = common.getstats(x, alpha = alpha)
 
                     for (v, s) in zip((avg, CI[0], CI[1]), stats):
