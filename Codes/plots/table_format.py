@@ -4,14 +4,14 @@ Make a LaTeX-formatted table from the simulation output.
 '''
 
 import locale
+import os.path
 import sys
-import unicodedata
 
 import numpy
 import pandas
 
-sys.path.append('..')
-import model
+sys.path.append(os.path.dirname(__file__))  # For Sphinx.
+import common
 
 
 country_label_replacements = {'United States of America': 'United States',
@@ -35,6 +35,11 @@ def _format_target(t):
     return t.replace('%', '\%').replace('_', ' ')
 
 
+def normalize(c):
+    x = common.get_country_label(c)
+    y = country_label_replacements.get(x, x)
+    return y
+
 if __name__ == '__main__':
     locale.setlocale(locale.LC_NUMERIC, 'en_US.utf8')
 
@@ -42,15 +47,7 @@ if __name__ == '__main__':
                          index_col = [0, 1],
                          header = [0, 1, 2])
 
-    countries = df.index.levels[0]
-    countries = (model.datasheet.country_replacements_inv.get(c, c)
-                 for c in countries)
-    names_countries = {country_label_replacements.get(c, c): c
-                       for c in countries}
-    names_sorted = [unicodedata.normalize('NFKD', x)
-                    for x in names_countries.keys()]
-    names_sorted.remove('Global')
-    names_sorted = ['Global'] + sorted(names_sorted)
+    countries = common.all_regions_and_countries
 
     targets = df.index.levels[1]
 
@@ -74,17 +71,18 @@ if __name__ == '__main__':
         fd.write('\\multicolumn{3}{c|[3pt]}{People with AIDS}\n')
         fd.write('\\\\\n')
 
-        for (x, n) in enumerate(names_sorted):
+        for (x, c) in enumerate(countries):
             if x == 0:
                 fd.write('\\tabucline[3pt]{-}\n')
             else:
                 fd.write('\\tabucline[1.5pt]{-}\n')
 
             for (i, target) in enumerate(targets):
-                v = df.loc[(names_countries[n], target)]
+                v = df.loc[(c, target)]
 
                 if i == len(targets) - 1:
-                    fd.write('\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '.format(n))
+                    s = '\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '
+                    fd.write(s.format(normalize(c)))
                 else:
                     fd.write(' & ')
                 fd.write('{}'.format(_format_target(target)))
