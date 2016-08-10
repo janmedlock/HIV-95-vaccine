@@ -28,9 +28,8 @@ def _main():
             for target in model.targets.all_:
                 target = str(target)
                 group = '/{}/{}'.format(country, target)
-                results_exist = model.results.samples.exists(country, target)
                 stats_exist = group in h5file
-                if results_exist and (not stats_exist):
+                if not stats_exist:
                     print('{}, {}'.format(country, target))
                     with model.results.samples.open_(country,
                                                      target) as results:
