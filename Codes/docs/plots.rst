@@ -61,10 +61,6 @@ table_format
 ------------
 .. automodule:: plots.table_format
 
-table_incidence
----------------
-.. automodule:: plots.table_incidence
-
 transmission_rate
 -----------------
 .. automodule:: plots.transmission_rate
