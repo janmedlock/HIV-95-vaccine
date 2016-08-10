@@ -25,19 +25,15 @@ sys.path.append('..')
 import model
 
 
-targets = model.targets.all_
+# Pairs (baseline, baseline + vaccine)
+targets = [model.targets.all_[i : i + 2]
+           for i in range(0, len(model.targets.all_), 2)]
 
 
-def _data_getter(results, country, attr):
-    def f(target):
-        return numpy.asarray(getattr(results[country][target], attr))
-    return f
-    
-
-def _get_plot_info(results, country, targs, stat, skip_global = False):
+def _get_plot_info(country, targs, stat):
     scale = None
     percent = False
-    data_getter = _data_getter(results, country, stat)
+    units = ''
 
     if stat == 'infected':
         label = 'PLHIV'
@@ -56,59 +52,52 @@ def _get_plot_info(results, country, targs, stat, skip_global = False):
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
     
-    if (country == 'Global') and skip_global:
-        t = results[common.countries_to_plot[-1]][targs[0]].t
-        data = None
-    else:
-        t = results[country][targs[0]].t
-        v_base, v_intv = map(data_getter, targs)
-        data = v_base - v_intv
-        # data = (v_base - v_intv) / v_base
+    with model.results.samples.open_(country, targs[0]) as results:
+        v_base = numpy.asarray(getattr(results, stat))
+    with model.results.samples.open_(country, targs[1]) as results:
+        v_intv = numpy.asarray(getattr(results, stat))
+
+    data = v_base - v_intv
+    # data = (v_base - v_intv) / v_base
 
     if percent:
         scale = 1 / 100
-        unit = '%%'
+        units = '%%'
     elif scale is None:
         vmax = numpy.max(data)
         if vmax > 1e6:
             scale = 1e6
-            unit = 'M'
+            units = 'M'
         elif vmax > 1e3:
             scale = 1e3
-            unit = 'k'
+            units = 'k'
         else:
             scale = 1
-            unit = ''
+            units = ''
 
-    return (data, t, label, scale, unit)
+    return (data, label, scale, units)
 
 
-def _plot_cell(ax, results, country, targs, stat,
+def _plot_cell(ax, country, targs, stat,
                country_label = None,
-               attr_label = None,
-               skip_global = False):
+               attr_label = None):
     '''
     .. todo:: Do a better job with making the lower ylim 0.
     '''
-    data, t, label, scale, unit = _get_plot_info(results, country,
-                                                 targs, stat,
-                                                 skip_global = skip_global)
+    data, label, scale, unit = _get_plot_info(country, targs, stat)
 
-    if not (country == 'Global' and skip_global):
-        # Drop infinite data.
-        ix = numpy.all(numpy.isfinite(data), axis = 0)
-        q, C = common.getpercentiles(data[:, ix])
-        col = ax.pcolormesh(t[ix], q / scale, C,
-                            cmap = common.cmap_percentile,
-                            shading = 'gouraud')
-        if numpy.all(q > 0):
-            ax.set_ylim(bottom = 0)
-    else:
-        col = None
+    # Drop infinite data.
+    ix = numpy.all(numpy.isfinite(data), axis = 0)
+    q, C = common.getpercentiles(data[:, ix])
+    col = ax.pcolormesh(common.t[ix], q / scale, C,
+                        cmap = common.cmap_percentile,
+                        shading = 'gouraud')
+    if numpy.all(q > 0):
+        ax.set_ylim(bottom = 0)
 
     tick_interval = 10
-    a = int(numpy.floor(t[0]))
-    b = int(numpy.ceil(t[-1]))
+    a = int(numpy.floor(common.t[0]))
+    b = int(numpy.ceil(common.t[-1]))
     ticks = range(a, b, tick_interval)
     if ((b - a) % tick_interval) == 0:
         ticks = list(ticks) + [b]
@@ -138,7 +127,7 @@ def _plot_cell(ax, results, country, targs, stat,
     return col
 
 
-def plot_selected(results, skip_global = False):
+def plot_selected():
     for targs in targets:
         baseline = targs[0]
         print(baseline)
@@ -158,13 +147,11 @@ def plot_selected(results, skip_global = False):
                 country_label = 'title' if (row == 0) else None
                 ax = fig.add_subplot(gs[row, col])
                 _plot_cell(ax,
-                           results,
                            country,
                            targs,
                            attr,
                            country_label = country_label,
-                           attr_label = attr_label,
-                           skip_global = skip_global)
+                           attr_label = attr_label)
                 if row != nrows - 2:
                     for l in ax.get_xticklabels():
                         l.set_visible(False)
@@ -180,12 +167,12 @@ def plot_selected(results, skip_global = False):
 
         fig.tight_layout()
         fileroot = '{}_{}'.format(common.get_filebase(),
-                                  baseline.replace(' ', '_'))
+                                  str(baseline).replace(' ', '_'))
         common.savefig(fig, '{}.pdf'.format(fileroot))
         common.savefig(fig, '{}.png'.format(fileroot))
 
 
-def plot_all(results):
+def plot_all():
     countries = common.all_regions_and_countries
 
     for targs in targets:
@@ -210,13 +197,11 @@ def plot_all(results):
                         country_label = 'title' if (row == 0) else None
                         ax = fig.add_subplot(gs[row, 0])
                         _plot_cell(ax,
-                                   results,
                                    country,
                                    targs,
                                    attr,
                                    country_label = country_label,
-                                   attr_label = 'ylabel',
-                                   skip_global = skip_global)
+                                   attr_label = 'ylabel')
                         if row != nrows - 2:
                             for l in ax.get_xticklabels():
                                 l.set_visible(False)
@@ -231,8 +216,7 @@ def plot_all(results):
 
 
 if __name__ == '__main__':
-    with model.results.samples.Cache() as results:
-        plot_selected(results, skip_global = True)
-        # plot_all(results)
+    plot_selected()
+    # plot_all()
 
     # pyplot.show()

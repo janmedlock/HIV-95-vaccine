@@ -48,23 +48,18 @@ def _main():
     cix = pandas.MultiIndex.from_tuples(tuples)
 
     df = pandas.DataFrame(index = ix, columns = cix)
-    with model.results.samples.Cache() as results:
-        for country in countries:
-            for attr in attrs:
-                for target in targets:
-                    try:
-                        t = results[country][target].t
-                        x = getattr(results[country][target], attr)
-                    except FileNotFoundError:
-                        pass
-                    else:
-                        avg, CI = common.getstats(x, alpha = alpha)
+    for country in countries:
+        for attr in attrs:
+            for target in targets:
+                with model.results.samples.open_(country, target) as results:
+                    x = getattr(results, attr)
+                    avg, CI = common.getstats(x, alpha = alpha)
 
-                        for (v, s) in zip((avg, CI[0], CI[1]), stats):
-                            z = numpy.interp(times, t, v)
-                            for (i, t_) in enumerate(times):
-                                df.loc[(country, target),
-                                       (t_, attr_names[attr], s)] = z[i]
+                    for (v, s) in zip((avg, CI[0], CI[1]), stats):
+                        z = numpy.interp(times, common.t, v)
+                        for (i, t_) in enumerate(times):
+                            df.loc[(country, target),
+                                   (t_, attr_names[attr], s)] = z[i]
 
     # Round.
     # df = df.round()
