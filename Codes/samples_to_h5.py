@@ -20,7 +20,7 @@ def _main():
                              complib = 'zlib',
                              shuffle = True,
                              fletcher32 = True)
-    with tables.open_file('/media/backup2/samples.h5',
+    with tables.open_file('results/samples.h5',
                           mode = 'a',
                           filters = filters) as h5file:
         countries = model.regions.all_ + model.datasheet.get_country_list()
