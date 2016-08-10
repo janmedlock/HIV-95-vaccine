@@ -15,6 +15,8 @@ files = (
     '../../Documents/Latex/diagram_standalone.png',
     'differences_Status_Quo.pdf',
     'differences_Status_Quo.png',
+    'differences_90–90–90.pdf',
+    'differences_90–90–90.png',
     'differences_95–95–95.pdf',
     'differences_95–95–95.png',
     'effectiveness_modes.pdf',
