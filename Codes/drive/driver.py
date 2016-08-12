@@ -8,6 +8,11 @@ import apiclient.http
 import oauth2client.client
 
 
+mimetype_extensions = {
+    'application/x-vnd.oasis.opendocument.spreadsheet': '.ods',
+}
+
+
 class Driver:
     # Files are relative to this module file,
     # not files that might import it.
@@ -110,7 +115,7 @@ class Driver:
         try:
             mtime_local = os.path.getmtime(localfilename)
         except FileNotFoundError:
-            return False
+            return True
         else:
             mtime_drive = self.get_mtime(drivefilename)
             return (mtime_local < mtime_drive)
@@ -163,7 +168,13 @@ class Driver:
 
     def export(self, filename, mimeType, only_if_drive_is_newer = False):
         fileId = self.find_fileId(filename)
-        exportname = filename + mimetypes.guess_extension(mimeType)
+        if mimeType in mimetype_extensions:
+            ext = mimetype_extensions[mimeType]
+        else:
+            ext = mimetypes.guess_extension(mimeType)
+        if ext is None:
+            ext = ''
+        exportname = filename + ext
         if fileId is None:
             raise ValueError("No file '{}' in directory!".format(filename))
         elif ((not only_if_drive_is_newer)

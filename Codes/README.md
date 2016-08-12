@@ -46,12 +46,12 @@ etc. mentioned below are covered in this documentation.
 * [data_sources.ods](data_sources.ods) contains the data used to
   parametrize the model and references to the data sources.
 
-* [DataSheet.xlsx](DataSheet.xlsx) contains a hand-curated version of
+* [data_sheet.xlsx](data_sheet.xlsx) contains a hand-curated version of
   [data_sources.ods](data_sources.ods), with fewer references to
-  sources etc,  that is parsed by the simulation code.
+  sources etc, that is parsed by the simulation code.
 
-* [datasheet_report.py](datasheet_report.py) reports on the
-  completeness of the data in [Datasheet.xlsx](DataSheet.xlsx).
+* [data_sheet_report.py](data_sheet_report.py) reports on the
+  completeness of the data in [data_sheet.xlsx](data_sheet.xlsx).
 
 ### Simulations
 
@@ -134,11 +134,11 @@ tools.  A few highlights:
   countries.
 
 * [initial_prevalence_map.py](plots/initial_prevalence_map.py) uses
-  the data in [DataSheet.xlsx](DataSheet.xlsx) to make a choropleth
+  the data in [data_sheet.xlsx](data_sheet.xlsx) to make a choropleth
   map of 2015 prevalence.  **No simulation data is needed.**
 
 * [transmission_rate.py](plots/transmission_rate.py) uses the data
-  in [DataSheet.xlsx](DataSheet.xlsx) to make a graph of estimated
+  in [data_sheet.xlsx](data_sheet.xlsx) to make a graph of estimated
   transmission rates for each country.  **No simulation data is
   needed.**
 

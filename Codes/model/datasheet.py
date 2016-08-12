@@ -12,7 +12,7 @@ import pandas
 
 from . import picklefile
 
-datafile = '../DataSheet.xlsx'
+datafile = '../data_sheet.xlsx'
 # It's relative to this module file,
 # not files that might import it.
 datapath = os.path.join(os.path.dirname(__file__), datafile)

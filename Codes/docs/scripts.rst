@@ -9,9 +9,9 @@ build_regionals
 ---------------
 .. automodule:: build_regionals
 
-datasheet_report
-----------------
-.. automodule:: datasheet_report
+data_sheet_report
+-----------------
+.. automodule:: data_sheet_report
 
 drive_download
 --------------

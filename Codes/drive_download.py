@@ -5,9 +5,10 @@ Download files from Google Drive.
 
 import drive
 
+xlsx_mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 files = (
-    {'filename': 'DataSheet',
-     'mimeType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}, 
+    {'filename': 'data_sheet',
+     'mimeType': xlsx_mime},
 )
        
 

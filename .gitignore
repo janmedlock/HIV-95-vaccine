@@ -1,7 +1,7 @@
 __pycache__/
 *.npy
 *.pkl
-/README.html
+/Codes/README.html
 /Codes/old/
 /Codes/results/
 /Codes/docs/_build/
