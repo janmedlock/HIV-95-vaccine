@@ -32,15 +32,15 @@ targets = model.targets.all_
 
 region_labels = {
     'Global': 'Global',
-    'Asia Pacific': 'Asia &\nThe Pacific',
+    'Asia Pacific': 'Asia\n& The\nPacific',
     'Caribbean': 'The\nCarribean',
-    'East and Southern Africa': 'Eastern &\nSouthern Africa',
-    'Eastern Europe and Central Asia': 'Eastern Europe\n& Central Asia',
+    'East and Southern Africa': 'Eastern &\nSouthern\nAfrica',
+    'Eastern Europe and Central Asia': 'Eastern\nEurope &\nCentral Asia',
     'Latin America': 'Latin\nAmerica',
-    'Middle East and North Africa': 'Middle East &\nNorth Africa',
+    'Middle East and North Africa': 'Middle\nEast &\nNorth Africa',
     'North America': 'North\nAmerica',
-    'West and Central Africa': 'West &\nCentral Africa',
-    'Western Europe': 'Western &\nCentral Europe'
+    'West and Central Africa': 'West &\nCentral\nAfrica',
+    'Western Europe': 'Western &\nCentral\nEurope'
 }
 
 
@@ -89,18 +89,17 @@ def _plot_stat(ax, results, regions, stat, confidence_level, **kwargs):
 
     ax.set_xticks(numpy.arange(len(regions)) + 0.5)
     ax.set_xticklabels([region_labels[r] for r in regions],
-                       size = 'x-small')
+                       size = pyplot.rcParams['font.size'] - 1)
 
     ax.grid(False, which = 'both', axis = 'x')
-    ax.grid(True, which = 'both', axis = 'y')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.yaxis.set_major_formatter(common.UnitsFormatter(info.units))
     # One minor tick between major ticks.
-    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    ax.set_ylabel(info.label, size = 'medium',
-                  va = 'top', ha = 'center',
-                  labelpad = 25)
+    ax.set_ylabel(info.label,
+                  va = 'baseline', ha = 'center',
+                  labelpad = 5)
 
 
 def _make_legend(fig):
@@ -113,9 +112,7 @@ def _make_legend(fig):
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = len(labels) // 2,
-                      frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
+                      frameon = False)
 
 
 def plot(confidence_level = 0.5, **kwargs):
@@ -139,8 +136,8 @@ def plot(confidence_level = 0.5, **kwargs):
         nrows = len(effectiveness_measures)
         ncols = 1
         fig, axes = pyplot.subplots(nrows, ncols,
-                                    figsize = (8.5, 8),
-                                    sharex = 'none', sharey = 'none')
+                                    figsize = (common.width_2column, 4),
+                                    sharex = 'col', sharey = 'none')
 
         with seaborn.color_palette(common.colors_paired):
             for (ax, stat) in zip(axes, effectiveness_measures):
@@ -148,7 +145,8 @@ def plot(confidence_level = 0.5, **kwargs):
                            confidence_level, **kwargs)
             _make_legend(fig)
 
-    fig.tight_layout(rect = (0, 0.055, 1, 1))
+    fig.tight_layout(h_pad = 1, w_pad = 0,
+                     rect = (0, 0.06, 1, 1))
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
     common.savefig(fig, '{}.png'.format(common.get_filebase()))

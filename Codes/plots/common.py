@@ -39,9 +39,41 @@ countries_to_plot = ('Global',
 
 
 country_labels_short = {
+    'Bolivia (Plurinational State of)': 'Bolivia',
+    'Democratic Republic of the Congo': 'DR Congo',
+    'Iran (Islamic Republic of)': 'Iran',
+    "Lao People's Democratic Republic": 'Laos',
+    'Republic of Moldova': 'Moldova',
+    'Russian Federation': 'Russia',
+    'Trinidad and Tobago': 'Trinidad & Tobago',
     'United States of America': 'United States',
     'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'United Republic of Tanzania': 'Tanzania',
+    'Venezuela (Bolivarian Republic of)': 'Venezuela',
 }
+
+
+# Science style
+width_1column = 2.25  # inches
+width_2column = 4.75  # inches
+
+fontdict = {'family': 'sans-serif', 'size': 7}
+fontdict_part = {'size': 9, 'weight': 'bold'}
+matplotlib.rc('font', **fontdict)
+matplotlib.rc('figure', titlesize = fontdict['size'] + 1)
+matplotlib.rc('axes', titlesize = fontdict['size'] + 1,
+              labelsize = fontdict['size'] + 1)
+matplotlib.rc('xtick', labelsize = fontdict['size'] - 1)
+matplotlib.rc('ytick', labelsize = fontdict['size'] - 1)
+matplotlib.rc('xtick.major', pad = 4)
+matplotlib.rc('ytick.major', pad = 2)
+matplotlib.rc('legend', fontsize = fontdict['size'],
+              borderpad = 0,
+              borderaxespad = 0)
+matplotlib.rc('lines', linewidth = 1.25)
+
+# matplotlib.rc('axes.grid', which = 'both')
+matplotlib.rc('axes.grid', which = 'major')
 
 
 def get_country_label(c, short = False):
@@ -52,14 +84,14 @@ def get_country_label(c, short = False):
     return v
 
 
-_all_regions = model.regions.all_
-# _all_regions is already sorted by 'Global', then alphabetical.
-_all_countries = model.datasheet.get_country_list()
-# _all_countries needs to be sorted by the name on graph.
+all_regions = model.regions.all_
+# all_regions is already sorted by 'Global', then alphabetical.
+all_countries = model.datasheet.get_country_list()
+# all_countries needs to be sorted by the name on graph.
 def country_sort_key(x):
     return unicodedata.normalize('NFKD', get_country_label(x))
-_all_countries.sort(key = country_sort_key)
-all_regions_and_countries = _all_regions + _all_countries
+all_countries.sort(key = country_sort_key)
+all_regions_and_countries = all_regions + all_countries
 
 
 effectiveness_measures = ['infected', 'incidence_per_capita', 'AIDS', 'dead']
@@ -92,9 +124,6 @@ _parameter_names_map = dict(
 
 parameter_names = [_parameter_names_map[p]
                    for p in model.parameters.Parameters.get_rv_names()]
-
-
-matplotlib.rc('axes.grid', which = 'both')  # major & minor
 
 
 def get_filebase():
@@ -196,7 +225,7 @@ def cmap_scaled(cmap_base, vmin = 0, vmax = 1, N = 256):
 
 
 _cp = seaborn.color_palette('Paired', 12)
-_ix = [4, 5, 0, 1, 2, 3, 6, 7, 8, 9, 10, 11]
+_ix = [6, 7, 0, 1, 2, 3, 4, 5, 8, 9, 10, 11]
 colors_paired = [_cp[i] for i in _ix]
 
 
@@ -205,7 +234,7 @@ def get_target_label(target):
     i = retval.find('(')
     if i != -1:
         retval = retval[ : i]
-    return retval
+    return retval.capitalize()
 
 
 class StatInfoEntry:
@@ -236,20 +265,35 @@ class StatInfoEntry:
             self.scale = 1
             self.units = ''
         
+    def autounits(self, data):
+        if len(data) > 0:
+            vmax = numpy.nanmax(data) / self.scale
+            if vmax > 1e6:
+                self.scale *= 1e6
+                self.units = 'M'
+            elif vmax > 1e3:
+                self.scale *= 1e3
+                self.units = 'k'
+            else:
+                self.units = ''
+        else:
+            self.units = ''
+        
 
 _stat_info = dict(
-    infected = StatInfoEntry(label = 'PLHIV'),
-    prevalence = StatInfoEntry(label = 'Prevalence',
+    infected = StatInfoEntry(label = 'PLHIV\n'),
+    prevalence = StatInfoEntry(label = 'Prevalence\n',
                                percent = True),
     incidence_per_capita = StatInfoEntry(label = 'Incidence\n(per M per y)',
-                                         scale = 1e-6),
+                                         scale = 1e-6,
+                                         units = None),
     drug_coverage = StatInfoEntry(label = 'ART\nCoverage',
                                   percent = True),
-    AIDS = StatInfoEntry(label = 'AIDS'),
-    dead = StatInfoEntry(label = 'HIV-Related\nDeaths'),
-    viral_suppression = StatInfoEntry(label = 'Viral\nSupression',
+    AIDS = StatInfoEntry(label = 'AIDS\n'),
+    dead = StatInfoEntry(label = 'HIV-related\ndeaths'),
+    viral_suppression = StatInfoEntry(label = 'Viral\nsupression',
                                       percent = True),
-    new_infections = StatInfoEntry(label = 'New Infections'),
+    new_infections = StatInfoEntry(label = 'New\ninfections'),
 )
 
 
@@ -257,7 +301,7 @@ def get_stat_info(stat):
     try:
         return copy.copy(_stat_info[stat])
     except KeyError:
-        return StatInfoEntry(label = stat.title())
+        return StatInfoEntry(label = stat.capitalize())
 
 
 def _none_func():
@@ -317,13 +361,12 @@ def format_axes(ax, country, info,
     ax.set_xticks(ticks)
     ax.set_xlim(a, b)
 
-    ax.grid(True, which = 'both', axis = 'both')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
     ax.yaxis.set_major_formatter(UnitsFormatter(info.units))
     # One minor tick between major ticks.
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+    # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
     country_str = get_country_label(country, short = country_label_short)
 
@@ -339,18 +382,16 @@ def format_axes(ax, country, info,
         title = info.label
 
     if ylabel is not None:
-        ax.set_ylabel(ylabel, size = 'medium',
-                      va = 'top', ha = 'center',
-                      labelpad = 25)
+        ax.set_ylabel(ylabel, va = 'baseline', ha = 'center',
+                      labelpad = 5)
 
     if title is not None:
-        ax.set_title(title, size = 'medium',
-                     va = 'bottom', ha = 'center')
+        ax.set_title(title, va = 'center', ha = 'center')
 
 
 def _get_title(filename):
     base, _ = os.path.splitext(os.path.basename(filename))
-    title = base.replace('_', ' ').title()
+    title = base.replace('_', ' ').capitalize()
     return title
 
 
@@ -403,7 +444,8 @@ def image_add_info(filename, **kwargs):
             tagid = getattr(TiffImagePlugin, tagname.upper())
             info[tagid] = value
         # Drop alpha channel.
-        im = im.convert('RGB')
+        # im = im.convert('RGB')
+        im = im.convert('CMYK')
         tempfile = filename + '.temp'
         im.save(tempfile, format_,
                 tiffinfo = info,
@@ -442,7 +484,8 @@ def savefig(fig, filename, title = None, **kwargs):
         if (('dpi' not in kwargs)
             and (filename.lower().endswith('.tiff')
                  or filename.lower().endswith('.tif'))):
-            kwargs['dpi'] = 600
+            # kwargs['dpi'] = 600
+            kwargs['dpi'] = 300
         fig.savefig(filename, **kwargs)
         # Use PIL etc to set metadata.
         image_add_info(filename, **info)

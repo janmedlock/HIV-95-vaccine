@@ -21,6 +21,9 @@ sys.path.append('..')
 import model
 
 
+alpha0 = 0.9
+
+
 def _plot_cell(ax, results, parameters, country, stat,
                plot_hist = True,
                country_label = None,
@@ -31,15 +34,17 @@ def _plot_cell(ax, results, parameters, country, stat,
     '''
     info = common.get_stat_info(stat)
 
+    data = []
+    for target in model.targets.all_:
+        try:
+            v = results[country][str(target)][stat]
+        except tables.NoSuchNodeError:
+            v = None
+        data.append(v)
     if info.scale is None:
-        data = []
-        for target in model.targets.all_:
-            try:
-                v = results[country][str(target)][stat]
-            except tables.NoSuchNodeError:
-                v = None
-            data.append(v)
         info.autoscale(data)
+    if info.units is None:
+        info.autounits(data)
 
     if plot_hist and (parameters is not None):
         data_hist = common.data_hist_getter[stat](parameters)
@@ -60,7 +65,7 @@ def _plot_cell(ax, results, parameters, country, stat,
         else:
             ax.plot(common.t, numpy.asarray(v) / info.scale,
                     label = common.get_target_label(target),
-                    alpha = 0.7,
+                    alpha = alpha0,
                     zorder = 1)
 
             # Make a dotted line connecting the end of the historical data
@@ -76,7 +81,7 @@ def _plot_cell(ax, results, parameters, country, stat,
                         color = 'black',
                         linestyle = 'dotted',
                         label = None,
-                        alpha = 0.7,
+                        alpha = alpha0,
                         zorder = 2)
 
     common.format_axes(ax, country, info, country_label, stat_label,
@@ -95,14 +100,12 @@ def _make_legend(fig, plot_hist = True):
         handles.append(lines.Line2D([], [], linewidth = 0))
         labels.append(' ')
     for (t, c) in zip(model.targets.all_, colors):
-        handles.append(lines.Line2D([], [], color = c))
+        handles.append(lines.Line2D([], [], color = c, alpha = alpha0))
         labels.append(common.get_target_label(t))
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = len(labels) // 2,
-                      frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
+                      frameon = False)
 
 
 def _plot_one(results, country, **kwargs):
@@ -167,7 +170,7 @@ def plot_some(**kwargs):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (8.5, 7.5),
+                                        figsize = (common.width_2column, 4.75),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 parameters = model.parameters.get_parameters(country)
@@ -185,7 +188,8 @@ def plot_some(**kwargs):
 
             _make_legend(fig, plot_hist = False)
 
-    fig.tight_layout(rect = (0, 0.07, 1, 1))
+    fig.tight_layout(h_pad = 0.7, w_pad = 0,
+                     rect = (0, 0.04, 1, 1))
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
     common.savefig(fig, '{}.png'.format(common.get_filebase()))
@@ -198,4 +202,4 @@ if __name__ == '__main__':
     plot_some()
     pyplot.show()
 
-    plot_all()
+    # plot_all()

@@ -25,6 +25,9 @@ sys.path.append('..')
 import model
 
 
+alpha0 = 0.9
+
+
 def _plot_cell(ax, results, country, targets, stat,
                confidence_level,
                scale = None, units = None,
@@ -40,22 +43,23 @@ def _plot_cell(ax, results, country, targets, stat,
     # Allow scaling across rows in _plot_one().
     if scale is not None:
         info.scale = scale
-        if units is None:
-            units = ''
+    if units is not None:
         info.units = units
-    if info.scale is None:
-        data = []
-        for target in targets:
-            try:
-                v = results[country][str(target)][stat]
-            except tables.NoSuchNodeError:
-                pass
+    data = []
+    for target in targets:
+        try:
+            v = results[country][str(target)][stat]
+        except tables.NoSuchNodeError:
+            pass
+        else:
+            if confidence_level > 0:
+                data.append(v[CIkey])
             else:
-                if confidence_level > 0:
-                    data.append(v[CIkey])
-                else:
-                    data.append(v['median'])
+                data.append(v['median'])
+    if info.scale is None:
         info.autoscale(data)
+    if info.units is None:
+        info.autounits(data)
 
     for (i, target) in enumerate(targets):
         try:
@@ -66,6 +70,7 @@ def _plot_cell(ax, results, country, targets, stat,
             l = ax.plot(common.t, numpy.asarray(v['median']) / info.scale,
                         label = common.get_target_label(target),
                         color = colors[i],
+                        alpha = alpha0,
                         zorder = 2)
 
             if confidence_level > 0:
@@ -78,6 +83,7 @@ def _plot_cell(ax, results, country, targets, stat,
                             numpy.asarray(CI[j]) / info.scale,
                             color = colors[i],
                             linewidth = lw,
+                            alpha = alpha0,
                             zorder = 2)
                 # Shade interior of CI.
                 ax.fill_between(common.t,
@@ -90,19 +96,18 @@ def _plot_cell(ax, results, country, targets, stat,
     common.format_axes(ax, country, info, country_label, stat_label)
 
 
-def _make_legend(fig):
+def _make_legend(fig, **kwargs):
     colors = seaborn.color_palette()
     handles = []
     labels = []
     for (t, c) in zip(model.targets.all_, colors):
-        handles.append(lines.Line2D([], [], color = c))
+        handles.append(lines.Line2D([], [], color = c, alpha = alpha0))
         labels.append(common.get_target_label(t))
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = len(labels) // 2,
                       frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
+                      **kwargs)
 
 
 def _plot_one(results, country, confidence_level = 0.5, **kwargs):
@@ -113,25 +118,27 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
                                 sharex = 'all', sharey = 'row')
 
     country_name = common.get_country_label(country)
-    fig.suptitle(country_name, size = 'large', va = 'center')
+    fig.suptitle(country_name, size = 15, va = 'center')
 
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
         info = common.get_stat_info(stat)
-        if info.scale is None:
-            data = []
-            for target in model.targets.all_:
-                try:
-                    v = results[country][str(target)][stat]
-                except tables.NoSuchNodeError:
-                    pass
+        data = []
+        for target in model.targets.all_:
+            try:
+                v = results[country][str(target)][stat]
+            except tables.NoSuchNodeError:
+                pass
+            else:
+                if confidence_level > 0:
+                    CIkey = 'CI{:g}'.format(100 * confidence_level)
+                    data.append(v[CIkey])
                 else:
-                    if confidence_level > 0:
-                        CIkey = 'CI{:g}'.format(100 * confidence_level)
-                        data.append(v[CIkey])
-                    else:
-                        data.append(v['median'])
+                    data.append(v['median'])
+        if info.scale is None:
             info.autoscale(data)
+        if info.units is None:
+            info.autounits(data)
 
         for col in range(ncols):
             ax = axes[row, col]
@@ -150,13 +157,19 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
                        scale = info.scale, units = info.units,
                        **kwargs)
 
+            ax.tick_params(labelsize = 11)
+            ax.tick_params(axis = 'x', pad = 8)
+            ax.yaxis.get_label().set_size(12)
+
             if ax.is_last_col():
                 ax.yaxis.set_ticks_position('right')
                 ax.yaxis.set_label_position('right')
                 ax.yaxis.get_label().set_rotation(270)
+                ax.yaxis.labelpad = 26
+            
 
     with seaborn.color_palette(common.colors_paired):
-        _make_legend(fig)
+        _make_legend(fig, fontsize = 12, columnspacing = 5)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
@@ -189,7 +202,7 @@ def plot_some(confidence_level = 0, **kwargs):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (8.5, 7.5),
+                                        figsize = (common.width_2column, 4.75),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 for (row, stat) in enumerate(common.effectiveness_measures):
@@ -206,7 +219,8 @@ def plot_some(confidence_level = 0, **kwargs):
 
             _make_legend(fig)
 
-    fig.tight_layout(rect = (0, 0.07, 1, 1))
+    fig.tight_layout(h_pad = 0.7, w_pad = 0,
+                     rect = (0, 0.04, 1, 1))
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
     common.savefig(fig, '{}.png'.format(common.get_filebase()))
@@ -216,7 +230,7 @@ def plot_some(confidence_level = 0, **kwargs):
 
 if __name__ == '__main__':
     # plot_one('South Africa')
-    plot_some()
-    pyplot.show()
+    # plot_some()
+    # pyplot.show()
 
     plot_all()

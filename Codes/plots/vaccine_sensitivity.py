@@ -74,16 +74,18 @@ def _plot_cell(ax, results, country, treatment_target, stat,
 
     targets = _get_targets(treatment_target)
 
+    data = []
+    for target in targets:
+        try:
+            v = getattr(results[country][str(target)], stat)
+        except tables.NoSuchNodeError:
+            pass
+        else:
+            data.append(v)
     if info.scale is None:
-        data = []
-        for target in targets:
-            try:
-                v = getattr(results[country][str(target)], stat)
-            except tables.NoSuchNodeError:
-                pass
-            else:
-                data.append(v)
         info.autoscale(data)
+    if info.units is None:
+        info.autounits(data)
 
     # Plot simulation data.
     for target in targets:
@@ -121,9 +123,7 @@ def _make_legend(fig, treatment_target):
     return fig.legend(handles, labels,
                       loc = 'lower center',
                       ncol = int(numpy.ceil(len(labels) / 2)),
-                      frameon = False,
-                      fontsize = 11,
-                      numpoints = 1)
+                      frameon = False)
 
 
 def _plot_one(results, country, treatment_target):
@@ -182,7 +182,7 @@ def plot_some(treatment_target):
             nrows = len(common.effectiveness_measures)
             legend_height_ratio = 0.35
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (8.5, 7.5),
+                                        figsize = (common.width_2column, 4.75),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 for (row, stat) in enumerate(common.effectiveness_measures):
@@ -197,9 +197,8 @@ def plot_some(treatment_target):
 
             _make_legend(fig, treatment_target)
 
-    fig.tight_layout()
-
-    fig.tight_layout(rect = (0, 0.07, 1, 1))
+    fig.tight_layout(h_pad = 0.7, w_pad = 0,
+                     rect = (0, 0.04, 1, 1))
 
     suffix = str(treatment_target).replace(' ', '_')
     common.savefig(fig, '{}_{}.pdf'.format(common.get_filebase(), suffix))

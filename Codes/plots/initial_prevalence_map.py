@@ -38,7 +38,7 @@ def _main():
     cmap = 'YlOrRd'
     norm = colors.LogNorm
     ticks = ticker.LogLocator(10, [1, 2.5, 5])
-    fig = pyplot.figure()
+    fig = pyplot.figure(figsize = (common.width_2column, 3))
     m = mapplot.Basemap()
     m.choropleth(countries, 100 * prevalence,
                  cmap = cmap,
@@ -56,6 +56,7 @@ def _main():
     if prevalence.max() > vmax:
         ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
+    cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'])
 
     m.tighten(aspect_adjustment = 1.35)
 

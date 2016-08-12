@@ -53,9 +53,12 @@ def plot_transmission_rates(countries, fig = None,
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
-    ax.set_yticklabels(reversed(countries), fontdict = dict(size = 6))
+    yticklabels = (common.get_country_label(c, short = True)
+                   for c in reversed(countries))
+    ax.set_yticklabels(yticklabels, size = 6)
+    ax.tick_params(axis = 'y', pad = 4)
     ax.grid(False, axis = 'y')
-    fig.tight_layout()
+    fig.tight_layout(pad = 0)
     if savefig:
         common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
         common.savefig(fig, '{}.png'.format(common.get_filebase()))
@@ -215,7 +218,7 @@ def plot_one(country, fig = None):
 
 
 def plot_all():
-    countries = model.datasheet.get_country_list()
+    countries = common.all_countries
     filename = '{}.pdf'.format(common.get_filebase())
     with backend_pdf.PdfPages(filename) as pdf:
         fig, ax = plot_transmission_rates(countries, savefig = False)
@@ -232,8 +235,7 @@ def plot_all():
 
 if __name__ == '__main__':
     # plot_one('South Africa')
-    countries = model.datasheet.get_country_list()
-    plot_transmission_rates(countries)
+    plot_transmission_rates(common.all_countries)
     pyplot.show()
 
     # plot_all()

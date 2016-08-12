@@ -40,7 +40,7 @@ norm = mcolors.Normalize(vmin = vmin, vmax = vmax)
 cmap = 'plasma_r'
 label_coords = (-130, -30)
 height = 0.28
-pad = 0.035
+pad = 0.02
 cpad = 0.05
 aspect = 1.45
 
@@ -49,7 +49,7 @@ def plot(infections_averted):
     countries = infections_averted.index
     interventions = infections_averted.columns
 
-    fig = pyplot.figure()
+    fig = pyplot.figure(figsize = (common.width_2column, 6))
     nrows = len(interventions)
     for (i, intv) in enumerate(interventions):
         if i <  nrows - 1:
@@ -73,11 +73,12 @@ def plot(infections_averted):
         label = common.get_target_label(intv)
         label = label.replace('_', ' ').replace('+', '\n+')
         X, Y = label_coords
-        m.text_coords(X, Y, label,
-                      fontdict = dict(size = 20,
-                                      weight = 'bold'),
-                      horizontalalignment = 'center',
-                      verticalalignment = 'center')
+        m.text_coords(
+            X, Y, label,
+            fontdict = dict(size = pyplot.rcParams['font.size'] + 3,
+                            weight = 'bold'),
+            horizontalalignment = 'center',
+            verticalalignment = 'center')
 
     cbar = fig.colorbar(mappable,
                         label = title,
@@ -97,6 +98,7 @@ def plot(infections_averted):
     if infections_averted.max().max() > vmax * scale:
         ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
+    cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'])
 
     w, h = fig.get_size_inches()
     fig.set_size_inches(w, w * aspect, forward = True)
@@ -126,4 +128,4 @@ def _get_infections_averted():
 if __name__ == '__main__':
     infections_averted = _get_infections_averted()
     plot(infections_averted)
-    pyplot.show()
+    # pyplot.show()
