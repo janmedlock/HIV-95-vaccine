@@ -25,7 +25,7 @@ from .effectiveness import TestDALYsQALYs
 #                  incremental_QALYs = 27464382.193239689,
 #                  ICER_DALYs = 0.43365824620362664,
 #                  ICER_QALYs = 0.36741823987165301)
-# 
+#
 #     def test_stats(self):
 #         import numpy
 #         from .parameters import Parameters
