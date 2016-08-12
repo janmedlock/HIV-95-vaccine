@@ -43,11 +43,12 @@ etc. mentioned below are covered in this documentation.
 
 ### Parameter data
 
-* [DataSheet.xlsx](DataSheet.xlsx) contains the data used to
-  parametrize the model for each country.
-  <!---
-  Add link to supplementary material here.
-  --->
+* [data_sources.ods](data_sources.ods) contains the data used to
+  parametrize the model and references to the data sources.
+
+* [DataSheet.xlsx](DataSheet.xlsx) contains a hand-curated version of
+  [data_sources.ods](data_sources.ods), with fewer references to
+  sources etc,  that is parsed by the simulation code.
 
 * [datasheet_report.py](datasheet_report.py) reports on the
   completeness of the data in [Datasheet.xlsx](DataSheet.xlsx).
