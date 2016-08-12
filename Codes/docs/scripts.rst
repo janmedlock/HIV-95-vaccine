@@ -48,3 +48,7 @@ samples_patch_build
 samples_to_h5
 -------------
 .. automodule:: samples_to_h5
+
+samples_to_h5_full
+------------------
+.. automodule:: samples_to_h5_full

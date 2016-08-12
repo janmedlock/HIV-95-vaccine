@@ -215,6 +215,13 @@ class Simulation(container.Container):
     def plot(self, *args, **kwargs):
         plot.simulation(self, *args, **kwargs)
 
+    def dump(self):
+        '''
+        .. todo:: Replace _build_keys() and dumping based on keys with
+                  this method.  Propagate to Regional, etc.
+        '''
+        raise NotImplementedError
+
     @classmethod
     def _build_keys(cls):
         '''

@@ -1,10 +1,6 @@
 #!/usr/bin/python3
 '''
 Plot the effectiveness of interventions.
-
-.. todo:: Try to get Cairo into multi-page PDFs.
-
-.. todo:: Add historical incidence and prevalence to plots.
 '''
 
 import os.path
