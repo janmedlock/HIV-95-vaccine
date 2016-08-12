@@ -9,6 +9,7 @@ import operator
 import os
 import subprocess
 import sys
+import tempfile
 import time
 import unicodedata
 
@@ -415,9 +416,18 @@ def pdf_add_info(filename, **kwargs):
 
     # pdftk will write to a tempfile, then we'll replace to original file
     # with the tempfile
-    tempname = filename + '.tmp'
+    tempfd, tempname = tempfile.mkstemp()
     args = ['pdftk', filename, 'update_info_utf8', '-', 'output', tempname]
     cp = subprocess.run(args, input = infostr.encode('utf-8'))
+    cp.check_returncode()  # Make sure it succeeded.
+    os.replace(tempname, filename)
+
+
+def pdfoptimize(filename):
+    tempfd, tempname = tempfile.mkstemp()
+    args = ['pdftocairo', '-pdf', filename, tempname]
+    print('Optimizing {}.'.format(filename))
+    cp = subprocess.run(args)
     cp.check_returncode()  # Make sure it succeeded.
     os.replace(tempname, filename)
 
@@ -446,11 +456,11 @@ def image_add_info(filename, **kwargs):
         # Drop alpha channel.
         # im = im.convert('RGB')
         im = im.convert('CMYK')
-        tempfile = filename + '.temp'
-        im.save(tempfile, format_,
+        tempfd, tempname = tempfile.mkstemp()
+        im.save(tempname, format_,
                 tiffinfo = info,
                 compression = 'tiff_lzw')
-        os.replace(tempfile, filename)
+        os.replace(tempname, filename)
     elif im.format == 'PNG':
         from PIL import PngImagePlugin
         info = PngImagePlugin.PngInfo()
@@ -458,11 +468,11 @@ def image_add_info(filename, **kwargs):
             # Convert to TIFF tag names.
             tagname = _keymap.get(key, key)
             info.add_text(tagname, value)
-        tempfile = filename + '.temp'
-        im.save(tempfile, format_,
+        tempfd, tempname = tempfile.mkstemp()
+        im.save(tempname, format_,
                 pnginfo = info,
                 optimize = True)
-        os.replace(tempfile, filename)
+        os.replace(tempname, filename)
     im.close()
 
 

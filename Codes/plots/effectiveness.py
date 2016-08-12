@@ -12,7 +12,6 @@ import sys
 
 from matplotlib import lines
 from matplotlib import pyplot
-from matplotlib.backends import backend_cairo
 from matplotlib.backends import backend_pdf
 import numpy
 import tables
@@ -188,12 +187,12 @@ def plot_all(**kwargs):
             for region_or_country in common.all_regions_and_countries:
                 print(region_or_country)
                 fig = _plot_one(results, region_or_country, **kwargs)
-                # The Cairo backend makes much smaller PDFs than Agg or Pdf,
-                # but fig.tight_layout() in _plot_one()
-                # forces the canvas to Agg, so we need to set it here.
-                # backend_cairo.FigureCanvasCairo(fig)
                 pdf.savefig(fig)
                 pyplot.close(fig)
+
+    common.pdfoptimize(filename)
+    # Use pdftk to add author etc.
+    common.pdf_add_info(filename, Author = common.author)
 
 
 def plot_some(confidence_level = 0, **kwargs):
@@ -230,7 +229,7 @@ def plot_some(confidence_level = 0, **kwargs):
 
 if __name__ == '__main__':
     # plot_one('South Africa')
-    # plot_some()
-    # pyplot.show()
+    plot_some()
+    pyplot.show()
 
     plot_all()
