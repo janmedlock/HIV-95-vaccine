@@ -6,10 +6,10 @@
 [\<jan.medlock@oregonstate.edu\>](mailto:jan.medlock@oregonstate.edu),
 Abhishek Pandey, Alyssa S. Parpia, Amber Tang, Laura A. Skrip,
 Alison P. Galvani.
-[The Center for Infectious Disease Modeling and Analysis](http://cidma.yale.edu/)**
+[The Center for Infectious Disease Modeling and Analysis](http://cidma.yale.edu/).**
 
-Copyright 2015--2016, Jan Medlock et al, All rights reserved.  Released
-under the [GNU AGPL 3](LICENSE).
+**Copyright 2015–2016, Jan Medlock et al.  All rights reserved.
+Released under the [GNU AGPL 3](LICENSE).**
 
 This repository contains Python code and data used to simulate and
 analyze HIV transmission in many (127, as of this writing) countries
