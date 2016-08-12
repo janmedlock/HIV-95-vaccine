@@ -44,7 +44,7 @@ etc. mentioned below are covered in this documentation.
 ### Parameter data
 
 * [data_sources.ods](data_sources.ods) contains the data used to
-  parametrize the model and references to the data sources.
+  parametrize the model and references to the sources of these data.
 
 * [data_sheet.xlsx](data_sheet.xlsx) contains a hand-curated version of
   [data_sources.ods](data_sources.ods), with fewer references to
