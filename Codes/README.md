@@ -43,12 +43,12 @@ etc. mentioned below are covered in this documentation.
 
 ### Parameter data
 
-* [data_sources.ods](data_sources.ods) contains the data used to
+* [data_sources/](data_sources/) contains the data used to
   parametrize the model and references to the sources of these data.
 
-* [data_sheet.xlsx](data_sheet.xlsx) contains a hand-curated version of
-  [data_sources.ods](data_sources.ods), with fewer references to
-  sources etc, that is parsed by the simulation code.
+* [data_sheet.xlsx](data_sheet.xlsx) contains a hand-curated version
+  of [data_sources/](data_sources/), with fewer references to sources
+  etc, that is parsed by the simulation code.
 
 * [data_sheet_report.py](data_sheet_report.py) reports on the
   completeness of the data in [data_sheet.xlsx](data_sheet.xlsx).
