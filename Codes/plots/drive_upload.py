@@ -11,8 +11,8 @@ import drive
 
 
 files = (
-    '../../Documents/Latex/diagram_standalone.pdf',
-    '../../Documents/Latex/diagram_standalone.png',
+    '../../Documents/diagram_standalone.pdf',
+    '../../Documents/diagram_standalone.png',
     'effectiveness.pdf',
     'effectiveness.png',
     'effectiveness_all.pdf',
