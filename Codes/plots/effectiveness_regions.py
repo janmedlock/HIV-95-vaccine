@@ -137,8 +137,7 @@ def plot(confidence_level = 0.5, **kwargs):
 
         nrows = len(effectiveness_measures)
         ncols = 1
-        with seaborn.axes_style('whitegrid'), \
-             seaborn.color_palette(common.colors_paired):
+        with seaborn.color_palette(common.colors_paired):
             fig, axes = pyplot.subplots(nrows, ncols,
                                         figsize = (common.width_2column, 4),
                                         sharex = 'col', sharey = 'none')
