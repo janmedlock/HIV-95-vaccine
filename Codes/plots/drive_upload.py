@@ -28,10 +28,10 @@ files = (
     'prcc.png',
     'transmission_rate.pdf',
     'transmission_rate.png',
-    'vaccine_sensitivity_Status_Quo.pdf',
-    'vaccine_sensitivity_Status_Quo.png',
-    'vaccine_sensitivity_95–95–95.pdf',
-    'vaccine_sensitivity_95–95–95.png'
+    'vaccine_scenarios_Status_Quo.pdf',
+    'vaccine_scenarios_Status_Quo.png',
+    'vaccine_scenarios_95–95–95.pdf',
+    'vaccine_scenarios_95–95–95.png'
 )
        
 # 'Effectiveness of HIV vaccine files' folder

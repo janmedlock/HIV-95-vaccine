@@ -19,7 +19,7 @@ stats_to_save = ['infected', 'incidence', 'prevalence',
 
 def _run_one(country, targets = None):
     if targets is None:
-        targets = model.targets.vaccine_sensitivity
+        targets = model.targets.vaccine_scenarios
     parameters = model.parameters.Parameters(country)
     parameter_values = parameters.mode()
     results = joblib.Parallel(n_jobs = -1)(
@@ -35,7 +35,7 @@ def _run_one(country, targets = None):
 
 def _build_regionals(results, targets = None):
     if targets is None:
-        targets = model.targets.vaccine_sensitivity
+        targets = model.targets.vaccine_scenarios
 
     countries = list(results.keys())
     for region in model.regions.all_:
@@ -56,7 +56,7 @@ def _build_regionals(results, targets = None):
 
 def _run_all(targets = None):
     countries = model.datasheet.get_country_list()
-    results = model.results.modes.open_vaccine_sensitivity(mode = 'a')
+    results = model.results.modes.open_vaccine_scenarios(mode = 'a')
     for country in countries:
         if country not in results:
             print(country)

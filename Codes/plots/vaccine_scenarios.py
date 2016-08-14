@@ -48,7 +48,7 @@ def get_target_label(treatment_target, target):
 
 
 def _get_targets(treatment_target):
-    return [str(t) for t in model.targets.vaccine_sensitivity
+    return [str(t) for t in model.targets.vaccine_scenarios
             if str(t._treatment_targets) == str(treatment_target)]
 
 
@@ -148,12 +148,12 @@ def _plot_one(results, country, treatment_target):
 
 
 def plot_one(country, treatment_target):
-    with model.results.modes.open_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_scenarios() as results:
         return _plot_one(results, country, treatment_target)
 
 
 def plot_all(treatment_target):
-    with model.results.modes.open_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_scenarios() as results:
         regions_and_countries = results.keys()
         # Put regions first.
         regions = []
@@ -176,7 +176,7 @@ def plot_all(treatment_target):
 
 
 def plot_some(treatment_target):
-    with model.results.modes.open_vaccine_sensitivity() as results:
+    with model.results.modes.open_vaccine_scenarios() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)
@@ -208,9 +208,9 @@ def plot_some(treatment_target):
 
 
 if __name__ == '__main__':
-    # plot_one('South Africa', model.targets.vaccine_sensitivity_baselines[0])
-    for treatment_target in model.targets.vaccine_sensitivity_baselines:
+    # plot_one('South Africa', model.targets.vaccine_scenarios_baselines[0])
+    for treatment_target in model.targets.vaccine_scenarios_baselines:
         plot_some(treatment_target)
     pyplot.show()
 
-    # plot_all(model.targets.vaccine_sensitivity_baselines[0])
+    # plot_all(model.targets.vaccine_scenarios_baselines[0])

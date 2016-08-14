@@ -279,12 +279,12 @@ for target in all_baselines:
                  Vaccine(treatment_targets = target)])
 
 
-vaccine_sensitivity_baselines = [StatusQuo(),
-                                 # UNAIDS90(),
-                                 UNAIDS95()]
-vaccine_sensitivity = []
-for target in vaccine_sensitivity_baselines:
-    vaccine_sensitivity.extend([
+vaccine_scenarios_baselines = [StatusQuo(),
+                               # UNAIDS90(),
+                               UNAIDS95()]
+vaccine_scenarios = []
+for target in vaccine_scenarios_baselines:
+    vaccine_scenarios.extend([
         Vaccine(treatment_targets = target),
         Vaccine(treatment_targets = target, efficacy = 0.3),
         Vaccine(treatment_targets = target, efficacy = 0.7),

@@ -12,7 +12,7 @@ def open_(mode = 'r'):
     return h5.open_file(os.path.join(common.resultsdir, 'modes.h5'),
                         mode = mode)
 
-def open_vaccine_sensitivity(mode = 'r'):
+def open_vaccine_scenarios(mode = 'r'):
     return h5.open_file(os.path.join(common.resultsdir,
-                                     'vaccine_sensitivity.h5'),
+                                     'vaccine_scenarios.h5'),
                         mode = mode)
