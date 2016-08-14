@@ -129,7 +129,7 @@ parameter_names = [_parameter_names_map[p]
 
 def get_filebase():
     stack = inspect.stack()
-    caller = stack[1]
+    caller = stack[-1]
     filebase, _ = os.path.splitext(caller.filename)
     return filebase
 
