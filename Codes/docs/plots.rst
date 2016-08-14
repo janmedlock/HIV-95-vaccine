@@ -17,6 +17,10 @@ effectiveness
 -------------
 .. automodule:: plots.effectiveness
 
+effectiveness_all
+-----------------
+.. automodule:: plots.effectiveness_all
+
 effectiveness_modes
 -------------------
 .. automodule:: plots.effectiveness_modes

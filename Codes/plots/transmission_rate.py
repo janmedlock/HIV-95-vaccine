@@ -83,7 +83,7 @@ def _plot_cell(ax, parameters, targets, results, stat):
     elif stat == 'incidence':
         scale = 1e-3
         ylabel = 'Incidence\n(per 1000 per y)'
-        data = parameters.incidence
+        data = parameters.incidence_per_capita
         # Compute from simulation results.
         val = [r.incidence_per_capita for r in results]
     elif stat == 'drug_coverage':
@@ -104,6 +104,7 @@ def _plot_cell(ax, parameters, targets, results, stat):
         ax.plot(data_.index, data_ / scale,
                 marker = '.', markersize = 10,
                 zorder = 2,
+                color = 'black',
                 label = 'data')
     else:
         # Pop a style for consistency with other plots.
@@ -113,14 +114,16 @@ def _plot_cell(ax, parameters, targets, results, stat):
     style = next(ax._get_lines.prop_cycler)
 
     # Plot simulation data.
-    for (ti, vi, targeti) in zip(t, val, targets):
+    for (ti, vi, targeti, ci) in zip(t, val, targets, common.colors_paired):
         ax.plot(ti, vi / scale, alpha = 0.7, zorder = 1,
-                label = str(targeti))
+                label = str(targeti), color = ci)
         # Make a dotted line connecting the end of the historical data
         # and the begining of the simulation.
         if len(data_) > 0:
-            x = [data_.index[-1], ti[0]]
-            y = [data_.iloc[-1], vi[0]]
+            ti_ = numpy.compress(numpy.isfinite(vi), ti)
+            vi_ = numpy.compress(numpy.isfinite(vi), vi)
+            x = [data_.index[-1], ti_[0]]
+            y = [data_.iloc[-1], vi_[0]]
             ax.plot(x, numpy.asarray(y) / scale,
                     linestyle = 'dotted', color = 'black',
                     zorder = 2)
