@@ -57,6 +57,7 @@ country_labels_short = {
 # Science style
 width_1column = 2.25  # inches
 width_2column = 4.75  # inches
+width_3column = 3 * width_1column + 2 * (width_2column - 2 * width_1column)
 
 fontdict = {'family': 'sans-serif', 'size': 7}
 fontdict_part = {'size': 9, 'weight': 'bold'}

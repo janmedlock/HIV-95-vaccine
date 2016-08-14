@@ -8,7 +8,6 @@ import sys
 
 from matplotlib import lines
 from matplotlib import pyplot
-from matplotlib.backends import backend_pdf
 import numpy
 import tables
 
@@ -23,15 +22,26 @@ import model
 alpha0 = 0.9
 
 
+def _set_clip_on(obj, val):
+    if obj is not None:
+        try:
+            obj.set_clip_on(val)
+        except AttributeError:
+            for x in obj:
+                _set_clip_on(x, val)
+
+
 def _plot_cell(ax, results, country, targets, stat,
-               confidence_level,
+               confidence_level, ci_bar,
                scale = None, units = None,
                country_label = None, stat_label = None,
-               colors = None, alpha = 0.35):
+               colors = None, alpha = 0.35,
+               jitter = 0.6):
     if colors is None:
         colors = seaborn.color_palette()
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
+    CIBkey = 'CI{:g}'.format(100 * ci_bar)
 
     info = common.get_stat_info(stat)
 
@@ -47,7 +57,10 @@ def _plot_cell(ax, results, country, targets, stat,
         except tables.NoSuchNodeError:
             pass
         else:
-            if confidence_level > 0:
+            # Store the largest one.
+            if ci_bar > 0:
+                data.append(v[CIBkey])
+            elif confidence_level > 0:
                 data.append(v[CIkey])
             else:
                 data.append(v['median'])
@@ -70,23 +83,38 @@ def _plot_cell(ax, results, country, targets, stat,
 
             if confidence_level > 0:
                 CI = v[CIkey]
-                # Draw borders of CI with alpha = 1,
+                # Draw borders of CI with high alpha,
                 # which is why this is separate from fill_between().
-                lw = l[0].get_linewidth() / 2
-                for j in range(2):
-                    ax.plot(common.t,
-                            numpy.asarray(CI[j]) / info.scale,
-                            color = colors[i],
-                            linewidth = lw,
-                            alpha = alpha0,
-                            zorder = 2)
-                # Shade interior of CI.
+                # lw = l[0].get_linewidth() / 2
+                # for j in range(2):
+                #     ax.plot(common.t,
+                #             numpy.asarray(CI[j]) / info.scale,
+                #             color = colors[i],
+                #             linewidth = lw,
+                #             alpha = alpha0,
+                #             zorder = 2)
+                # Shade interior of CI, with low alpha.
                 ax.fill_between(common.t,
                                 numpy.asarray(CI[0]) / info.scale,
                                 numpy.asarray(CI[1]) / info.scale,
                                 facecolor = colors[i],
                                 linewidth = 0,
                                 alpha = alpha)
+
+            if ci_bar > 0:
+                mid = v['median'][-1]
+                CIB = v[CIBkey][:, -1]
+                yerr = [mid - CIB[0], CIB[1] - mid]
+                eb = ax.errorbar(common.t[-1] + jitter * (i + 1),
+                                 mid / info.scale,
+                                 yerr = (numpy.reshape(yerr, (-1, 1))
+                                         / info.scale),
+                                 fmt = 'none',  # Don't show midpoint.
+                                 ecolor = colors[i],
+                                 capsize = 3,
+                                 alpha = alpha0)
+                # Allow errorbar to draw outside of axes.
+                _set_clip_on(eb, False)
 
     common.format_axes(ax, country, info, country_label, stat_label)
 
@@ -105,15 +133,19 @@ def _make_legend(fig, **kwargs):
                       **kwargs)
 
 
-def _plot_one(results, country, confidence_level = 0.5, **kwargs):
+def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
+              figsize = (common.width_3column, 9), **kwargs):
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
-                                figsize = (8.5, 11),
+                                figsize = figsize,
                                 sharex = 'all', sharey = 'row')
 
     country_name = common.get_country_label(country)
     fig.suptitle(country_name, size = 15, va = 'center')
+
+    CIkey = 'CI{:g}'.format(100 * confidence_level)
+    CIBkey = 'CI{:g}'.format(100 * ci_bar)
 
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
@@ -125,8 +157,10 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
             except tables.NoSuchNodeError:
                 pass
             else:
-                if confidence_level > 0:
-                    CIkey = 'CI{:g}'.format(100 * confidence_level)
+                # Store the largest one.
+                if ci_bar > 0:
+                    data.append(v[CIBkey])
+                elif confidence_level > 0:
                     data.append(v[CIkey])
                 else:
                     data.append(v['median'])
@@ -140,13 +174,14 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
             targs = model.targets.all_[2 * col : 2 * (col + 1)]
             colors = common.colors_paired[2 * col : 2 * (col + 1)]
 
-            if (ax.is_first_col() or ax.is_last_col()):
+            if ax.is_first_col():
                 stat_label = 'ylabel'
             else:
                 stat_label = None
 
             _plot_cell(ax, results, country, targs, stat,
                        confidence_level,
+                       ci_bar = ci_bar,
                        stat_label = stat_label,
                        colors = colors,
                        scale = info.scale, units = info.units,
@@ -156,15 +191,8 @@ def _plot_one(results, country, confidence_level = 0.5, **kwargs):
             ax.tick_params(axis = 'x', pad = 8)
             ax.yaxis.get_label().set_size(12)
 
-            if ax.is_last_col():
-                ax.yaxis.set_ticks_position('right')
-                ax.yaxis.set_label_position('right')
-                ax.yaxis.get_label().set_rotation(270)
-                ax.yaxis.labelpad = 26
-            
-
     with seaborn.color_palette(common.colors_paired):
-        _make_legend(fig, fontsize = 12, columnspacing = 5)
+        _make_legend(fig, fontsize = 11, columnspacing = 5)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
@@ -176,22 +204,7 @@ def plot_one(country, **kwargs):
         return _plot_one(results, country, **kwargs)
 
 
-def plot_all(**kwargs):
-    with model.results.samples.stats.open_() as results:
-        filename = '{}_all.pdf'.format(common.get_filebase())
-        with backend_pdf.PdfPages(filename) as pdf:
-            for region_or_country in common.all_regions_and_countries:
-                print(region_or_country)
-                fig = _plot_one(results, region_or_country, **kwargs)
-                pdf.savefig(fig)
-                pyplot.close(fig)
-
-    common.pdfoptimize(filename)
-    # Use pdftk to add author etc.
-    common.pdf_add_info(filename, Author = common.author)
-
-
-def plot_some(confidence_level = 0, **kwargs):
+def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     with model.results.samples.stats.open_() as results:
         with seaborn.color_palette(common.colors_paired):
             ncols = len(common.countries_to_plot)
@@ -208,6 +221,7 @@ def plot_some(confidence_level = 0, **kwargs):
 
                     _plot_cell(ax, results, country, model.targets.all_, stat,
                                confidence_level,
+                               ci_bar = ci_bar,
                                country_label = country_label,
                                stat_label = stat_label,
                                **kwargs)
@@ -227,5 +241,3 @@ if __name__ == '__main__':
     # plot_one('South Africa')
     plot_some()
     pyplot.show()
-
-    plot_all()
