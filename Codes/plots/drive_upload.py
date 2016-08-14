@@ -20,8 +20,6 @@ files = (
     'effectiveness_regions.png',
     'infections_averted_map.pdf',
     'infections_averted_map.png',
-    'infections_per_capita_averted_map.pdf',
-    'infections_per_capita_averted_map.png',
     'initial_prevalence_map.pdf',
     'initial_prevalence_map.png',
     'prcc.pdf',
