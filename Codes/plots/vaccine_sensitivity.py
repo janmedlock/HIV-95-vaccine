@@ -22,7 +22,7 @@ sys.path.append('..')
 import model
 
 
-ix = [2, 3, 4, 5, 9, 7]
+ix = [0, 1, 2, 3, 5, 9]
 colors = ['black'] + [common.colors_paired[i] for i in ix]
 
 

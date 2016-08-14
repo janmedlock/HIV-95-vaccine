@@ -92,12 +92,14 @@ def _plot_stat(ax, results, regions, stat, confidence_level, **kwargs):
                        size = pyplot.rcParams['font.size'] - 1)
 
     ax.grid(False, which = 'both', axis = 'x')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
+    seaborn.despine(ax = ax, right = True, left = True)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(base = 5))
     ax.yaxis.set_major_formatter(common.UnitsFormatter(info.units))
     # One minor tick between major ticks.
     # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    ax.set_ylabel(info.label,
+    label = info.label.replace('\n', ' ')
+    ax.set_ylabel(label,
                   va = 'baseline', ha = 'center',
                   labelpad = 5)
 
@@ -135,11 +137,11 @@ def plot(confidence_level = 0.5, **kwargs):
 
         nrows = len(effectiveness_measures)
         ncols = 1
-        fig, axes = pyplot.subplots(nrows, ncols,
-                                    figsize = (common.width_2column, 4),
-                                    sharex = 'col', sharey = 'none')
-
-        with seaborn.color_palette(common.colors_paired):
+        with seaborn.axes_style('whitegrid'), \
+             seaborn.color_palette(common.colors_paired):
+            fig, axes = pyplot.subplots(nrows, ncols,
+                                        figsize = (common.width_2column, 4),
+                                        sharex = 'col', sharey = 'none')
             for (ax, stat) in zip(axes, effectiveness_measures):
                 _plot_stat(ax, results, regions_sorted, stat,
                            confidence_level, **kwargs)
