@@ -19,6 +19,7 @@ __pycache__/
 /Codes/plots/*.log
 /Codes/plots/*.out
 /Codes/plots/table_sub.tex
+/Codes/plots/effectiveness_all/
 /Documents/**/*.pdf
 /Documents/**/*.png
 /Documents/**/.auto

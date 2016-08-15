@@ -1,15 +1,18 @@
 \documentclass[11pt]{article}
 
 \usepackage{amsmath}
-\usepackage[pdfborder={0 0 0}]{hyperref}
-\usepackage[numbers,round,sort&compress]{natbib}
-\usepackage{hypernat}
 \usepackage{geometry}
 \usepackage{setspace}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage[utf8x]{inputenc}
 \usepackage{microtype}
 \usepackage[final]{pdfpages}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage[numbers,round,sort&compress]{natbib}
+\usepackage{hypernat}
 
 \usepackage[noblocks]{authblk}
 \renewcommand{\Authsep}{, }
@@ -23,6 +26,8 @@
 \renewcommand{\vec}[1]{\mathbf{#1}}
 \newcommand{\mat}[1]{\mathbf{#1}}
 \newcommand{\me}{\mathrm{e}}
+
+\renewcommand{\figurename}{Fig.}
 
 
 \title{Supporting online material for\\
@@ -77,17 +82,25 @@ months. Where data were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  We found sufficient data to
 parametrize our mathematical modeling for 127 countries.  See
-Supplementary Material 2 (SM2)for full information on data sources for
-each country.
+\autoref{data_source_treatment_cascade}--\ref{data_source_regions} for
+full information on data sources for each country.
+
+\begin{table}
+  \centering
+  \tiny
+  \input{treatment_cascade.tex}
+  \caption{Data sources on the treatment cascade.}
+  \label{data_source_treatment_cascade}
+\end{table}
 
 
 \section{Mathematical model}
+
 \begin{figure}
+  \centering
+  \input{diagram}
+  \caption{Model diagram.}
   \label{model_diag}
-  \begin{center}
-    \input{diagram}
-    \caption{Model diagram.}
-  \end{center}
 \end{figure}
 
 Our continuous-time, compartmental model consists of 8 health states:
@@ -297,13 +310,13 @@ acute, unsuppressed, suppressed, and AIDS classes due to the general
 lack of historical data on diagnosis and treatment. We calculated a
 time-independent aggregate transmission rate by taking an exponential
 weighted mean of the historical (i.e., time-dependent) transmission
-rates for each given country (\ref{transmission_rate}). The aggregate
-transmission rate was then combined with estimated HIV transmission
-risk by stage of HIV infection \cite{Hollingsworth2008-iy} and
-treatment status \cite{Wawer2005-us} to calculate separate
-transmission rates for unsuppressed, acute, and viral-suppression
-people. These rates were used to simulate model projections through
-2035.
+rates for each given country (\autoref{transmission_rate}). The
+aggregate transmission rate was then combined with estimated HIV
+transmission risk by stage of HIV infection
+\cite{Hollingsworth2008-iy} and treatment status \cite{Wawer2005-us}
+to calculate separate transmission rates for unsuppressed, acute, and
+viral-suppression people. These rates were used to simulate model
+projections through 2035.
 
 
 
@@ -374,7 +387,22 @@ that we use to simulate our model forward and project results up to 2035.
 
 
 
+\begin{figure}
+  \centering
+  \includegraphics[width = \textwidth]{../Codes/plots/transmission_rate}
+  \caption{Country-specific transmission rates were calculated based
+    on the relative contributions of individuals with acute infection,
+    unsuppressed viral load or suppressed viral load to overall
+    transmission (\autoref{model_fitting}). The estimates were
+    calibrated to data on country-level incidence and/or prevalence to
+    account for variation in historical incidence while accurately
+    reflecting recent HIV rates.}
+  \label{transmission_rate}
+\end{figure}
+
+
 \section{Analysis}
+
 We evaluated the global and country-specific impacts of meeting the
 UNAIDS targets and vaccine deployment on four outcome measures: HIV
 incidence, PLHIV, number of people with AIDS, and AIDS-related deaths
@@ -405,33 +433,27 @@ context of status quo diagnosis and treatment, achieving the UNAIDS
 generated through model simulations based on published parameter
 distributions (\autoref{model_param}) and country-specific estimated
 transmission rate distributions. The parameters were sampled using
-latin hypercube sampling \cite{} and the variance reduction technique
-of running different interventions with random parameter values
-\cite{}.
+latin hypercube sampling \cite{}
+and the variance reduction technique of running different
+interventions with random parameter values \cite{}.
 
 We calculated partial rank correlation coefficients (PRCC) to measure
 the independent effect of each parameter on model projections of HIV
-incidence. Furthermore, due to uncertainty surrounding the prospective
-vaccine, we obtained model projections using six additional vaccine
-scenarios by considering alternative estimates of efficacy (30\%,
-70\%), coverage (50\%, 90\%), time to 50\% coverage (2 years, 5
-years), and first year of availability (2025).
+incidence (\autoref{PRCCs}). Furthermore, due to uncertainty
+surrounding the prospective vaccine, we obtained model projections
+using six additional vaccine scenarios by considering alternative
+estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%), time to
+50\% coverage (2 years, 5 years), and first year of availability
+(2025).
 
+\begin{figure}
+  \centering
+  \includegraphics{../Codes/plots/prcc.pdf}
+  \caption{Parameter sensitivity of model global infections averted
+    from 2015 to 2035.}
+  \label{PRCCs}
+\end{figure}
 
-
-\section{Results}
-
-\subsection{Medians and distributions for country-specific
-  transmission rates}
-\label{transmission_rate}
-Country-specific transmission rates were calculated based on the
-relative contributions of individuals with acute infection,
-unsuppressed viral load or suppressed viral load to overall
-transmission (\autoref{model_fitting}). The estimates were calibrated
-to data on country-level incidence and/or prevalence to account for
-variation in historical incidence while accurately reflecting recent
-HIV rates.
-\includepdf[]{../../Codes/plots/transmission_rate}
 
 \subsection{Effectiveness of HIV interventions globally, regionally
   and for each of 127 countries}
@@ -443,14 +465,19 @@ interquartile ranges are presented between 2015 and 2035 for number of
 PLHIV, annual incidence (per million population), number of people
 with AIDS, and number of HIV-related deaths under the status quo and
 five intervention scenarios: vaccination only, attainment of the
-UNAIDS 90-90-90 target, 90-90-90 target and vaccination, attainment of
-the UNAIDS 95-95-95 target, and 95-95-95 target and vaccination.  The
+UNAIDS 90--90--90 target, 90--90--90 target and vaccination, attainment of
+the UNAIDS 95--95--95 target, and 95--95--95 target and vaccination.  The
 country-specific projections as well as aggregated projections at the
 regional and global levels follow:
 
 
 \bibliographystyle{science_nat}
 
-\bibliography{SM}
+\bibliography{supplementary_text}
+
+
+\clearpage
+\input{../Codes/plots/effectiveness_all/all}
+
 
 \end{document}

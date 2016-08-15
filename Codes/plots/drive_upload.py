@@ -11,25 +11,15 @@ import drive
 
 
 files = (
-    '../../Documents/diagram_standalone.pdf',
-    '../../Documents/diagram_standalone.png',
+    '../../Documents/supplementary_text.pdf',
     'effectiveness.pdf',
     'effectiveness.png',
-    'effectiveness_all.pdf',
     'effectiveness_regions.pdf',
     'effectiveness_regions.png',
     'infections_averted_map.pdf',
     'infections_averted_map.png',
-    'initial_prevalence_map.pdf',
-    'initial_prevalence_map.png',
-    'prcc.pdf',
-    'prcc.png',
-    'transmission_rate.pdf',
-    'transmission_rate.png',
     'vaccine_scenarios_Status_Quo.pdf',
     'vaccine_scenarios_Status_Quo.png',
-    'vaccine_scenarios_95–95–95.pdf',
-    'vaccine_scenarios_95–95–95.png'
 )
        
 # 'Effectiveness of HIV vaccine files' folder

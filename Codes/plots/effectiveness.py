@@ -134,7 +134,7 @@ def _make_legend(fig, **kwargs):
 
 
 def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
-              figsize = (common.width_3column, 9), **kwargs):
+              figsize = (common.width_2column, 6), **kwargs):
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
@@ -142,7 +142,7 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                                 sharex = 'all', sharey = 'row')
 
     country_name = common.get_country_label(country)
-    fig.suptitle(country_name, size = 15, va = 'center')
+    fig.suptitle(country_name, size = 10, va = 'center')
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
     CIBkey = 'CI{:g}'.format(100 * ci_bar)
@@ -187,12 +187,8 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                        scale = info.scale, units = info.units,
                        **kwargs)
 
-            ax.tick_params(labelsize = 11)
-            ax.tick_params(axis = 'x', pad = 8)
-            ax.yaxis.get_label().set_size(12)
-
     with seaborn.color_palette(common.colors_paired):
-        _make_legend(fig, fontsize = 11, columnspacing = 5)
+        _make_legend(fig)
 
     fig.tight_layout(rect = (0, 0.055, 1, 0.985))
 
