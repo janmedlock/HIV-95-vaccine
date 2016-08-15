@@ -206,7 +206,7 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_2column, 4.75),
+                                        figsize = (common.width_2column, 4),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 for (row, stat) in enumerate(common.effectiveness_measures):

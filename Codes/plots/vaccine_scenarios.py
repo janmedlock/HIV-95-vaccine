@@ -191,7 +191,7 @@ def plot_some(treatment_target):
             nrows = len(common.effectiveness_measures)
             legend_height_ratio = 0.35
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_2column, 4.75),
+                                        figsize = (common.width_2column, 4),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 for (row, stat) in enumerate(common.effectiveness_measures):

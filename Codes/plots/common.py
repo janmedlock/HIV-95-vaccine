@@ -34,6 +34,7 @@ author = 'Jan Medlock et al'
 
 countries_to_plot = ('Global',
                      'India',
+                     'Rwanda',
                      'South Africa',
                      'Swaziland',
                      'United States of America')
