@@ -106,7 +106,8 @@ def rhs(t, state, targets, parameters):
 
     dZ = parameters.death_rate_AIDS * W
 
-    dR = force_of_infection * S
+    dR = (force_of_infection * S
+          + (1 - targets.vaccine_efficacy) * force_of_infection * Q)
 
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
@@ -174,9 +175,10 @@ def rhs_log(t, state_trans, targets, parameters):
         + parameters.progression_rate_suppressed * numpy.exp(V_log - W_log)
         - parameters.death_rate_AIDS)
 
-    dZ = parameters.death_rate_AIDS * W
+    dZ = parameters.death_rate_AIDS * numpy.exp(W_log)
 
-    dR = force_of_infection * S
+    dR = (force_of_infection * numpy.exp(S_log)
+          + (1 - targets.vaccine_efficacy) * force_of_infection * Q)
 
     dstate = [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]
     return dstate
