@@ -77,7 +77,7 @@ def tornados():
     # times = (2025, 2035)
     times = (2035, )
 
-    figsize = (5.95, 6.5)
+    figsize = (5.95, 5)
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()
