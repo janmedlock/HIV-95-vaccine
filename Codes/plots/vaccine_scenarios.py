@@ -10,6 +10,7 @@ import sys
 
 from matplotlib import lines
 from matplotlib import pyplot
+from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 import tables
@@ -156,12 +157,12 @@ def _plot_one(results, country, treatment_target):
     return fig
 
 
-def plot_one(country, treatment_target):
+def plot_one(country, treatment_target = model.targets.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         return _plot_one(results, country, treatment_target)
 
 
-def plot_all(treatment_target):
+def plot_all(treatment_target = model.targets.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         regions_and_countries = results.keys()
         # Put regions first.
@@ -184,7 +185,7 @@ def plot_all(treatment_target):
                 pyplot.close(fig)
 
 
-def plot_some(treatment_target):
+def plot_some(treatment_target = model.targets.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)
@@ -204,22 +205,24 @@ def plot_some(treatment_target):
                                country_label = country_label,
                                stat_label = stat_label)
 
+                    ax.xaxis.set_tick_params(labelsize = 5)
+                    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
+                    ax.title.set_verticalalignment('bottom')
+
             _make_legend(fig, treatment_target)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
-                     rect = (0, 0.04, 1, 1))
+                     rect = (0, 0.05, 1, 1))
 
-    suffix = str(treatment_target).replace(' ', '_')
-    common.savefig(fig, '{}_{}.pdf'.format(common.get_filebase(), suffix))
-    common.savefig(fig, '{}_{}.png'.format(common.get_filebase(), suffix))
+    common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
+    common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
     return fig
 
 
 if __name__ == '__main__':
-    # plot_one('South Africa', model.targets.vaccine_scenarios_baselines[0])
-    for treatment_target in model.targets.vaccine_scenarios_baselines:
-        plot_some(treatment_target)
+    # plot_one('South Africa')
+    plot_some()
     pyplot.show()
 
-    # plot_all(model.targets.vaccine_scenarios_baselines[0])
+    # plot_all()

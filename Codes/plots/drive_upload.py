@@ -22,8 +22,8 @@ files = (
     'infections_averted_map.png',
     'initial_prevalence_map.pdf',
     'initial_prevalence_map.png',
-    'vaccine_scenarios_Status_Quo.pdf',
-    'vaccine_scenarios_Status_Quo.png',
+    'vaccine_scenarios.pdf',
+    'vaccine_scenarios.png',
 )
        
 # 'Effectiveness of HIV vaccine files' folder

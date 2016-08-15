@@ -8,6 +8,7 @@ import sys
 
 from matplotlib import lines
 from matplotlib import pyplot
+from matplotlib import ticker
 import numpy
 import tables
 
@@ -222,10 +223,14 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
                                stat_label = stat_label,
                                **kwargs)
 
+                    ax.xaxis.set_tick_params(labelsize = 5)
+                    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
+                    ax.title.set_verticalalignment('bottom')
+
             _make_legend(fig)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
-                     rect = (0, 0.04, 1, 1))
+                     rect = (0, 0.05, 1, 1))
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
     common.savefig(fig, '{}.png'.format(common.get_filebase()))
