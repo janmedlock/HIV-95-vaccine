@@ -38,8 +38,17 @@ def get_target_label(treatment_target, target):
     diff = []
     for i in range(len(args)):
         if args[i] != args_baseline[i]:
-            fancy = args[i].replace('_', ' ').replace('=', ' = ').capitalize()
-            diff.append(fancy)
+            fancy = args[i].replace('_', ' ').replace('=', ' = ')
+            fancy = fancy.replace('time to start', 'start date')
+            if fancy.startswith('time to fifty percent'):
+                i = fancy.find('=')
+                t = float(fancy[i + 2 : -1])
+                fancy = 'scale-up = {:g}% y$^{{-1}}$'.format(50 / t)
+            i = fancy.find('=')
+            pre = fancy[ : i - 1]
+            post = fancy[i + 2 : ]
+            fancy = post + ' ' + pre
+            diff.append(fancy.capitalize())
     retval = ', '.join(diff)
     if retval == '':
         return 'Baseline'

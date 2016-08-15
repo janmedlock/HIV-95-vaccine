@@ -54,6 +54,8 @@ country_labels_short = {
 }
 
 
+matplotlib.rc('mathtext', fontset = 'stixsans')
+
 # Science style
 width_1column = 2.25  # inches
 width_2column = 4.75  # inches
