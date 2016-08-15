@@ -128,4 +128,4 @@ def _get_infections_averted():
 if __name__ == '__main__':
     infections_averted = _get_infections_averted()
     plot(infections_averted)
-    # pyplot.show()
+    pyplot.show()
