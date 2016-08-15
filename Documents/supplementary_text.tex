@@ -59,7 +59,66 @@
 \renewcommand{\thetable}{\labelPrefix\arabic{table}}
 
 
-Model source code: \url{https://github.com/janmedlock/HIV-95-vaccine/}.
+\section*{To do}
+
+\begin{itemize}
+\item Finish tables
+\item Reformat transmission rate figure
+\end{itemize}
+
+We developed a continuous-time, compartmental model consisting of 8
+health states: susceptible to HIV infection, vaccinated against HIV,
+acute HIV infection, undiagnosed HIV infection, diagnosed but
+untreated HIV infection, treated without achieving viral suppression,
+achieved viral suppression, and having AIDS (Supplementary text). We
+found sufficient country-level demographic data, as well as estimates
+of longitudinal HIV incidence and prevalence for the 15–49 age group,
+spanning from as early as 1990 to 2015 to parameterize our model for
+127 countries. See Supporting text for information on data sources.
+
+Using available historical data for incidence and prevalence, and
+published transmission estimates (13), we estimated transmission rates
+for people with acute infection, unsuppressed viral load and
+suppressed viral load. Our calibration method provided a recent
+snapshot of country-specific transmission, while using historical data
+to smooth out variations. See Supporting text for detailed information
+on estimating the transmission rate.
+
+Projections were generated for each country through model simulations
+using 1000 random samples from published parameter distributions
+(table S1, Supplementary text) and the country-specific estimated
+distribution of the transmission rate. We evaluated the global and
+country-level impacts of meeting the UNAIDS targets and vaccine
+deployment on four outcome measures: HIV incidence, PLHIV, PLAIDS, and
+AIDS-related deaths between 2015 and 2035. Our base-case scenario
+assumed maintenance of the status quo: that 2015 levels of the
+proportion of PLHIV diagnosed (pD), proportion of those diagnosed on
+ART (pT), and proportion of those on treatment who have achieved viral
+suppression (pV) continue unchanged until 2035. The intervention
+scenarios were (1.) the attainment of the 90–90–90 target by linear
+increases in pD, pT, and pV until 2020 followed by maintenance of
+those levels until 2035, and (2.) linear increase in the diagnosis and
+treatment levels to the 90–90–90 target by 2020, a linear increase
+from 90–90–90 to the 95–95–95 target by 2030, and maintenance of the
+95–95–95 levels to 2035. (For 90–90–90, if any initial level was above
+90\%, it was kept constant going forward so that the intervention did
+not worsen coverage.  Likewise, for 95–95–95, any initial level above
+95\% was kept constant.)  For vaccination, we assumed deployment of a
+vaccine with 50\% efficacy in 2020 with coverage increasing linearly
+from 0\% to 50\% at 2 years post-rollout, continuing on the same
+linear trend to 70\% at 2.8 years post-rollout, and maintaining
+constant 70\% coverage thereafter. We also performed a partial rank
+correlation coefficient (PRCC) sensitivity analysis for each model
+parameter and a scenario analysis to account for uncertainty in the
+profile of the prospective vaccine. See Supplementary text for more
+details.
+
+
+\section{Source code}
+
+The source code for the model and analysis tools is available at
+\url{https://github.com/janmedlock/HIV-95-vaccine/}.
+
 
 \section{Data sources}
 
@@ -82,15 +141,40 @@ months. Where data were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  We found sufficient data to
 parametrize our mathematical modeling for 127 countries.  See
-\autoref{data_source_treatment_cascade}--\ref{data_source_regions} for
+\hyperref[data_source_treatment_cascade]{Tables
+  \ref*{data_source_treatment_cascade}}--\ref{data_source_regions} for
 full information on data sources for each country.
 
 \begin{table}
   \centering
   \tiny
-  \input{treatment_cascade.tex}
-  \caption{Data sources on the treatment cascade.}
+  \input{treatment_cascade}
+  \caption{Data used for the treatment cascade.}
   \label{data_source_treatment_cascade}
+\end{table}
+
+\begin{table}
+  \centering
+  \tiny
+  % \input{prevalence}
+  \caption{Data sources for prevalence.}
+  \label{data_source_prevalence}
+\end{table}
+
+\begin{table}
+  \centering
+  \tiny
+  % \input{incidence}
+  \caption{Data sources for prevalence.}
+  \label{data_source_incidence}
+\end{table}
+
+\begin{table}
+  \centering
+  \tiny
+  % \input{regions}
+  \caption{Countries by UNAIDS region.}
+  \label{data_source_regions}
 \end{table}
 
 
@@ -114,25 +198,25 @@ incidence and prevalence data (Table \ref{model_param}).
 
 
 \begin{table}
-\begin{center}
-  \begin{tabular}{cp{4cm}llc}
-\hline
-    Symbol & Definition & Value & Sampling Distribution & Source \\ \hline
-    $\delta$	& Rate of leaving acute phase of HIV infection & 4.1379/year & T (4.1379, 2, 9.6) & \cite{Hollingsworth2008-iy} \\
-    $\sigma$	& Rate of developing AIDS among non-virally suppressed individuals
-                       & 0.1064/year & & \cite{Morgan2002-cq} \\
-    $\gamma$ & Rate of viral suppression & 1/year & U (0.5, 1.5) & \cite{Currie2009-yz} \\
-    $\upsilon$	& Death rate from AIDS & 0.5/year &  & \cite{Morgan2002-cq} \\
-    $\omega$	& Reduction in life years for treated PLHIV & 5 & U (5, 8) & \cite{Unaids2014-ue, Samji2013-kf}\\
-    $\beta_{A}$	& Transmission probability during acute phase & 0.0082 & T (0.0082, 0.0039, 0.0150) & \cite{Skarbinski2015-ni,Wawer2005-us}\\
-    $\beta_{U}$	& Transmission probability after acute phase & 0.0014 & T (0.0014, 0.00077, 0.00251) & \cite{Hughes2012-so}\\
-    $\varepsilon$	& Proportional reduction of transmission with treatment & 0.08 & $\beta$ (0.08, 0.002, 0.57)& \cite{Donnell2010-xo}\\
-    $n$			& Sex acts per year & 102 & U (96, 108) & \cite{Wawer2005-us,Abdool_Karim2010-cm}\\ \hline
-  \end{tabular}
-\caption{Parameters used in model. (T: triangular distribution, U:
-  uniform distribution, $\beta$: beta distribution).}
-\end{center}
-\label{model_param}
+  \begin{center}
+    \begin{tabular}{cp{4cm}llc}
+      \hline
+      Symbol & Definition & Value & Sampling Distribution & Source \\ \hline
+      $\delta$	& Rate of leaving acute phase of HIV infection & 4.1379/year & T (4.1379, 2, 9.6) & \cite{Hollingsworth2008-iy} \\
+      $\sigma$	& Rate of developing AIDS among non-virally suppressed individuals
+                          & 0.1064/year & & \cite{Morgan2002-cq} \\
+      $\gamma$ & Rate of viral suppression & 1/year & U (0.5, 1.5) & \cite{Currie2009-yz} \\
+      $\upsilon$	& Death rate from AIDS & 0.5/year &  & \cite{Morgan2002-cq} \\
+      $\omega$	& Reduction in life years for treated PLHIV & 5 & U (5, 8) & \cite{Unaids2014-ue, Samji2013-kf}\\
+      $\beta_{A}$	& Transmission probability during acute phase & 0.0082 & T (0.0082, 0.0039, 0.0150) & \cite{Skarbinski2015-ni,Wawer2005-us}\\
+      $\beta_{U}$	& Transmission probability after acute phase & 0.0014 & T (0.0014, 0.00077, 0.00251) & \cite{Hughes2012-so}\\
+      $\varepsilon$	& Proportional reduction of transmission with treatment & 0.08 & $\beta$ (0.08, 0.002, 0.57)& \cite{Donnell2010-xo}\\
+      $n$			& Sex acts per year & 102 & U (96, 108) & \cite{Wawer2005-us,Abdool_Karim2010-cm}\\ \hline
+    \end{tabular}
+    \caption{Parameters used in model. (T: triangular distribution, U:
+      uniform distribution, $\beta$: beta distribution).}
+    \label{model_param}
+  \end{center}
 \end{table}
 
 
@@ -227,7 +311,7 @@ and the proportion with viral suppression is
   p_V = \frac{V}{T + V}.
 \end{equation}
 
-The targets for the proportions $p_D$, $p_T$, and $p_V$ in the achievement of 90---90---90
+The targets for the proportions $p_D$, $p_T$, and $p_V$ in the achievement of 90--90--90
 all operate under the following assumption:
 if the initial level $p_x(0)$ is less than $90\%$, the proportion will increase
 linearly in the first 5 years and then stay at $90\%$ for the
@@ -254,10 +338,9 @@ years. The coverage will continue to increase linearly till it reaches
 the desired coverage ($50\%,70\%,90\%$) and then stay constant for the
 remainder of the projections.
 
-95---95---95 goal is implemented subsequently after meeting
-90---90---90 by2020 by  increasing $p_D$, $p_T$, and $p_V$ to
-95---95---95 levels by 2030 linearly. \comment{@Jan, We use the
-  Heaveside function here too?}
+95--95--95 goal is implemented subsequently after meeting 90--90--90
+by 2020 by increasing $p_D$, $p_T$, and $p_V$ to 95--95--95 levels by
+2030 linearly. \comment{@Jan, We use the Heaveside function here too?}
 
 
 \subsection{Rates that are on when $p_x < p^*_x$}
