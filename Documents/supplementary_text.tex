@@ -10,6 +10,9 @@
 \usepackage[final]{pdfpages}
 \usepackage{float}
 \usepackage{longtable}
+\usepackage[labelsep = period, singlelinecheck = off, labelfont = {bf}]{caption}
+
+% Load hyperref after the other stuff above.
 \usepackage[pdfborder={0 0 0}]{hyperref}
 \usepackage[numbers,round,sort&compress]{natbib}
 \usepackage{hypernat}
@@ -141,40 +144,8 @@ months. Where data were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  We found sufficient data to
 parametrize our mathematical modeling for 127 countries.  See
-\hyperref[data_source_treatment_cascade]{Tables
-  \ref*{data_source_treatment_cascade}}--\ref{data_source_regions} for
-full information on data sources for each country.
-
-%\begin{table}
-  \centering
-  \input{treatment_cascade}
- % \caption{Data used for the treatment cascade.}}
-  %\label{data_source_treatment_cascade}
-%\end{table}
-
-\begin{table}
-  \centering
-  \tiny
-  % \input{prevalence}
-  \caption{Data sources for prevalence.}
-  \label{data_source_prevalence}
-\end{table}
-
-\begin{table}
-  \centering
-  \tiny
-  % \input{incidence}
-  \caption{Data sources for prevalence.}
-  \label{data_source_incidence}
-\end{table}
-
-\begin{table}
-  \centering
-  \tiny
-  % \input{regions}
-  \caption{Countries by UNAIDS region.}
-  \label{data_source_regions}
-\end{table}
+Supplemental data files for full information on data sources for each
+country.
 
 
 \section{Mathematical model}
@@ -471,7 +442,7 @@ that we use to simulate our model forward and project results up to 2035.
 
 \begin{figure}
   \centering
-%  \includegraphics[width = \textwidth]{../Codes/plots/transmission_rate}
+  \includegraphics{../Codes/plots/transmission_rate}
   \caption{Country-specific transmission rates were calculated based
     on the relative contributions of individuals with acute infection,
     unsuppressed viral load or suppressed viral load to overall
@@ -530,7 +501,7 @@ estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%), time to
 
 \begin{figure}
   \centering
- % \includegraphics{../Codes/plots/prcc.pdf}
+  \includegraphics{../Codes/plots/prcc.pdf}
   \caption{Parameter sensitivity of model global infections averted
     from 2015 to 2035.}
   \label{PRCCs}
@@ -558,8 +529,11 @@ regional and global levels follow:
 \bibliography{supplementary_text}
 
 
+\appendix
 \clearpage
-%\input{../Codes/plots/effectiveness_all/all}
+\section{Model results by region and country}
+
+\input{../Codes/plots/effectiveness_all/all}
 
 
 \end{document}
