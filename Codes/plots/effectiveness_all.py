@@ -22,13 +22,13 @@ template = r'''
   \centering
   \includegraphics{{{figfile:}}}
   \caption{{{region_or_country:} model outcomes under the different
-    diagnosis, treatment, and vaccination scenarios.  The model was run
-    with 1000 samples from the parameter distributions: central curves
-    show the medians over the model runs, shaded regions show the 1st
-    and 3rd quartiles (i.e., 25th and 75th percentiles), and vertical
-    bars to the right of each axis show the 5th and 95th percentiles
-    at the end time, 2035.  Regional and global outcomes were aggregated
-    from the country-level model outcomes.}}
+    diagnosis, treatment, and vaccination scenarios.  Central curves
+    show the medians over model runs with 1000 samples from parameter
+    distributions, shaded regions show the 1st and 3rd quartiles
+    (i.e., 25th and 75th percentiles), and vertical bars to the right of
+    each axis show the 5th and 95th percentiles at the end time, 2035.
+    Regional and global outcomes were aggregated from the country-level
+    model outcomes.}}
   \label{{effectiveness_{base:}}}
 \end{{figure}}
 '''

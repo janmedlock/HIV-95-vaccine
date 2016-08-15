@@ -7,14 +7,13 @@
 \usepackage{tikz}
 \usepackage[utf8x]{inputenc}
 \usepackage{microtype}
-\usepackage[final]{pdfpages}
-\usepackage{float}
-\usepackage{longtable}
-\usepackage[labelsep = period, singlelinecheck = off, labelfont = {bf}]{caption}
+\usepackage[font = {sf}, labelfont = {bf},
+  labelsep = period, singlelinecheck = off]{caption}
+\usepackage[font = {sf}]{floatrow}
 
 % Load hyperref after the other stuff above.
 \usepackage[pdfborder={0 0 0}]{hyperref}
-\usepackage[numbers,round,sort&compress]{natbib}
+\usepackage[numbers, round, sort&compress]{natbib}
 \usepackage{hypernat}
 
 \usepackage[noblocks]{authblk}
@@ -61,13 +60,6 @@
 \renewcommand{\thefigure}{\labelPrefix\arabic{figure}}
 \renewcommand{\thetable}{\labelPrefix\arabic{table}}
 
-
-\section*{To do}
-
-\begin{itemize}
-\item Finish tables
-\item Reformat transmission rate figure
-\end{itemize}
 
 We developed a continuous-time, compartmental model consisting of 8
 health states: susceptible to HIV infection, vaccinated against HIV,
@@ -119,8 +111,9 @@ details.
 
 \section{Source code}
 
-The source code for the model and analysis tools is available at
-\url{https://github.com/janmedlock/HIV-95-vaccine/}.
+The source code for the model and analysis tools is publicly available
+at \url{https://github.com/janmedlock/HIV-95-vaccine/}
+\cite{medlock2016-git}.
 
 
 \section{Data sources}
@@ -145,7 +138,8 @@ resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  We found sufficient data to
 parametrize our mathematical modeling for 127 countries.  See
 Supplemental data files for full information on data sources for each
-country.
+country.  The data files are also available in the public source-code
+repository \cite{medlock2016-git}.
 
 
 \section{Mathematical model}
@@ -442,7 +436,7 @@ that we use to simulate our model forward and project results up to 2035.
 
 \begin{figure}
   \centering
-  \includegraphics{../Codes/plots/transmission_rate}
+  \includegraphics{../Codes/plots/transmission_rate.pdf}
   \caption{Country-specific transmission rates were calculated based
     on the relative contributions of individuals with acute infection,
     unsuppressed viral load or suppressed viral load to overall
@@ -524,15 +518,16 @@ country-specific projections as well as aggregated projections at the
 regional and global levels follow:
 
 
+\clearpage
 \bibliographystyle{science_nat}
-
 \bibliography{supplementary_text}
 
 
 \appendix
-\clearpage
+\newpage
+\vspace*{3in}
 \section{Model results by region and country}
-
+\newpage
 \input{../Codes/plots/effectiveness_all/all}
 
 

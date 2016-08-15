@@ -30,34 +30,49 @@ def plot_transmission_rates(countries, fig = None,
                             savefig = True):
     if fig is None:
         fig = pyplot.figure(figsize = (8.5, 11))
-    ax = fig.add_subplot(1, 1, 1)
-    n = len(countries)
-    colors = seaborn.color_palette('husl', n)
-    for (i, country) in enumerate(countries):
-        # Plot from top instead of bottom.
-        j = n - 1 - i
-        parameters = model.parameters.Parameters(country)
-        rv = transmission_rate.estimate(parameters)
-        a, b = rv.ppf([quantile_level / 2, 1 - quantile_level / 2])
-        x = numpy.linspace(a, b, 101)
-        y = rv.pdf(x) / n * scale
-        ax.fill_between(x, j + y, j - y,
-                        linewidth = 0,
-                        facecolor = colors[i],
-                        alpha = 0.7)
-        ax.scatter(rv.mode, j,
-                   marker = '|', s = 30, linewidth = 1,
-                   color = 'black')
+    with seaborn.axes_style('whitegrid'):
+        ax = fig.add_subplot(1, 1, 1)
+        seaborn.despine(ax = ax, top = True, bottom = True)
+        n = len(countries)
+        colors = seaborn.color_palette('husl', n)
+        for (i, country) in enumerate(countries):
+            # Plot from top instead of bottom.
+            j = n - 1 - i
+            parameters = model.parameters.Parameters(country)
+            rv = transmission_rate.estimate(parameters)
+            a, b = rv.ppf([quantile_level / 2, 1 - quantile_level / 2])
+            x = numpy.linspace(a, b, 101)
+            y = rv.pdf(x) / n * scale
+            ax.fill_between(x, j + y, j - y,
+                            linewidth = 0,
+                            facecolor = colors[i],
+                            alpha = 0.7)
+            ax.scatter(rv.mode, j,
+                       marker = '|', s = 30, linewidth = 1,
+                       color = 'black')
+    ax.xaxis.set_tick_params(labelsize = pyplot.rcParams['font.size'])
     ax.set_xlabel('Transmission rate (per year)')
-    ax.set_xlim(0, 0.5)
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))
+    ax.set_xlim(0, 0.5001)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(0.05))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
     yticklabels = (common.get_country_label(c, short = True)
                    for c in reversed(countries))
-    ax.set_yticklabels(yticklabels, size = 6)
-    ax.tick_params(axis = 'y', pad = 4)
+    ax.set_yticklabels(yticklabels, size = 5)
     ax.grid(False, axis = 'y')
+    # Alternate right-left alignment.
+    for (i, x) in enumerate(zip(ax.yaxis.get_major_ticks(),
+                                ax.yaxis.get_ticklabels())):
+        t, l = x
+        if i % 2 == 0:
+            ha = 'right'
+            pad = 2
+        else:
+            ha = 'left'
+            pad = 70
+        l.set_horizontalalignment(ha)
+        l.set_rotation_mode('anchor')
+        t.set_pad(pad)
     fig.tight_layout(pad = 0)
     if savefig:
         common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
@@ -238,7 +253,9 @@ def plot_all():
 
 if __name__ == '__main__':
     # plot_one('South Africa')
-    plot_transmission_rates(common.all_countries)
+    plot_transmission_rates(
+        common.all_countries,
+        fig = pyplot.figure(figsize = (5.95, 6.5)))
     pyplot.show()
 
     # plot_all()

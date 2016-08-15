@@ -77,7 +77,7 @@ def tornados():
     # times = (2025, 2035)
     times = (2035, )
 
-    figsize = (common.width_2column, 5)
+    figsize = (5.95, 6.5)
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()
@@ -96,30 +96,33 @@ def tornados():
 
         nrows = 1
         ncols = len(times)
-        fig, axes = pyplot.subplots(nrows, ncols,
-                                    figsize = figsize,
-                                    sharex = 'all')
+        with seaborn.axes_style('whitegrid'):
+            fig, axes = pyplot.subplots(nrows, ncols,
+                                        figsize = figsize,
+                                        sharex = 'all')
 
-        if isinstance(axes, pyplot.Axes):
-            axes = [axes]
+            if isinstance(axes, pyplot.Axes):
+                axes = [axes]
 
-        for (ax, t) in zip(axes, times):
-            if ax.is_first_col():
-                ylabels = 'left'
-            elif ax.is_last_col():
-                ylabels = 'right'
-            else:
-                ylabels = 'none'
-            tornado(ax, results, country, targets, outcome, t,
-                    parameter_samples, colors,
-                    parameter_names = parameter_names,
-                    ylabels = ylabels)
-            ax.set_xlabel('PRCC')
-            # Make x-axis limits symmetric.
-            xmin, xmax = ax.get_xlim()
-            xabs = max(abs(xmin), abs(xmax))
-            ax.set_xlim(- xabs, xabs)
-            # ax.set_title(t)
+            for (ax, t) in zip(axes, times):
+                seaborn.despine(ax = ax, top = True, bottom = True)
+                ax.tick_params(labelsize = pyplot.rcParams['font.size'])
+                if ax.is_first_col():
+                    ylabels = 'left'
+                elif ax.is_last_col():
+                    ylabels = 'right'
+                else:
+                    ylabels = 'none'
+                tornado(ax, results, country, targets, outcome, t,
+                        parameter_samples, colors,
+                        parameter_names = parameter_names,
+                        ylabels = ylabels)
+                ax.set_xlabel('PRCC')
+                # Make x-axis limits symmetric.
+                xmin, xmax = ax.get_xlim()
+                xabs = max(abs(xmin), abs(xmax))
+                ax.set_xlim(- xabs, xabs)
+                # ax.set_title(t)
 
     fig.tight_layout(pad = 0)
 
