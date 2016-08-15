@@ -483,12 +483,8 @@ def savefig(fig, filename, title = None, **kwargs):
     info = dict(Author = author, Title = title)
 
     if filename.endswith('.pdf'):
-        # Cairo makes much smaller PDFs.
-        oldcanvas = fig.canvas
-        backend_cairo.FigureCanvasCairo(fig)
         fig.savefig(filename, **kwargs)
-        fig.canvas = oldcanvas
-        # Use pdftk to add author etc.
+        pdfoptimize(filename)
         pdf_add_info(filename, **info)
     else:
         savekwds = {}
