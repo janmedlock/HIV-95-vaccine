@@ -100,13 +100,11 @@ from 90–90–90 to the 95–95–95 target by 2030, and maintenance of the
 not worsen coverage.  Likewise, for 95–95–95, any initial level above
 95\% was kept constant.)  For vaccination, we assumed deployment of a
 vaccine with 50\% efficacy in 2020 with coverage increasing linearly
-from 0\% to 50\% at 2 years post-rollout, continuing on the same
-linear trend to 70\% at 2.8 years post-rollout, and maintaining
-constant 70\% coverage thereafter. We also performed a partial rank
-correlation coefficient (PRCC) sensitivity analysis for each model
-parameter and a scenario analysis to account for uncertainty in the
-profile of the prospective vaccine. See Supplementary text for more
-details.
+by 25\% per year, continuing up to 70\% at 2.8 years post-rollout, and
+maintaining constant 70\% coverage thereafter.  We also performed a
+partial rank correlation coefficient (PRCC) sensitivity analysis for
+each model parameter and a scenario analysis to account for
+uncertainty in the profile of the prospective vaccine.
 
 
 \section{Source code}
@@ -187,45 +185,47 @@ incidence and prevalence data (Table \ref{model_param}).
 
 The PLHIV population was comprised of people in the acutely infected,
 undiagnosed, diagnosed, treated, viral suppression and AIDS
-compartments. People susceptible to HIV (S) progress to the
-acute-infection phase (A) according to the force of infection, which
+compartments. People susceptible to HIV ($S$) progress to the
+acute-infection phase ($A$) according to the force of infection, which
 depends on the HIV transmission rate, estimated from the
-country-specific incidence and prevalence data (next section),
-adjusted for the current number of acutely infected, untreated or
-ineffectively treated, and viral suppression PLHIV.  Acute infection
-is characterized by high viral loads and lasts 88 days on average
-\cite{Hollingsworth2008-iy}. We assumed that individuals remain
-undiagnosed during their acute infection phase and during at least
-some of the subsequent period of clinical latency (i.e., the
-undiagnosed compartment). Individuals in the undiagnosed class will be
-diagnosed at a rate determined by the country's initial diagnosis
-level and potential progress towards the UNAIDS targets. Diagnosed
-people transition to the treated compartment upon starting ART at a
-rate of $\phi$ , and to the virally suppressed class (V) after
-achieving viral suppression through treatment retention at a rate of
-$\gamma$. The disengagement from treatment moves individuals (T, V) at
-a rate of $\omega$ back to the diagnosed class (D). Rates of movement
-between the undiagnosed (U), diagnosed (D), treated (T) and virally
-suppressed classes (V) are determined by the proportions of PLHIV
-diagnosed ($p_{D}$), proportion of diagnosed individuals on ART
-($p_{T}$), and the proportion of individuals on ART who have achieved
-viral suppression ($p_{V}$). PLHIV in U, D, T, and V classes develop
-AIDS (W) after an average duration dependent on viral suppression
-status. Individuals who have achieved viral suppression (V) take
-longer to develop AIDS ($1/\theta$), than those who are in the other
-PLHIV classes ($1/\sigma$). Individuals who are susceptible to HIV can
-be vaccinated at a of rate ($\zeta$), and depending on vaccine
-efficacy, have a reduced chance of HIV infection. The model equations
+country-specific incidence and prevalence data
+(\autoref{model_fitting}), adjusted for the current number of acutely
+infected, untreated or ineffectively treated, and viral suppression
+PLHIV.  Acute infection is characterized by high viral loads and lasts
+88 [XX, YY] days \cite{Hollingsworth2008-iy}. We assumed that people
+remain undiagnosed during their acute infection phase and during at
+least some of the subsequent period of clinical latency (i.e., the
+undiagnosed compartment). After acute infection, people move into the
+chronic undiagnosed class ($U$).  People in the undiagnosed class will
+be diagnosed at a rate determined by the country's initial diagnosis
+level and potential progress towards the UNAIDS targets.  Diagnosed
+people (compartment $D$) transition to the treated compartment ($T$)
+upon starting ART at a rate of $\phi$ , and then to the
+viral-suppression class ($V$) after achieving viral suppression
+through treatment retention at a rate of $\gamma$. The disengagement
+from treatment moves people from treated ($T$) and viral suppression
+($V$) at a rate of $\omega$ back to the diagnosed class ($D$). Rates
+of movement between the undiagnosed ($U$), diagnosed ($D$), treated
+($T$) and viral-suppression classes ($V$) are determined by the
+proportions of PLHIV diagnosed ($p_{D}$), proportion of diagnosed
+people on ART ($p_{T}$), and the proportion of people on ART who have
+achieved viral suppression ($p_{V}$). PLHIV in $U$, $D$, $T$, and $V$
+classes develop AIDS (compartment $W$) after an average duration
+dependent on viral suppression status. People who have achieved viral
+suppression ($V$) take longer to develop AIDS ($1/\theta$), than those
+who are in the other PLHIV classes ($1/\sigma$). People who are
+susceptible to HIV are vaccinated at rate $\zeta$, transitioning into
+the vaccinated compartment ($R$), where the vaccine reduces their
+force of infection by the efficacy factor $\rho$.  The model equations
 are
-
 \begin{equation}
   \label{model_eqns}
   \begin{split}
     \frac{\md S}{\md t} &= B N - \lambda S - \zeta S- \mu S,
     \\
-     \frac{\md R}{\md t} & = \zeta S - \rho \lambda R - \mu R,
+    \frac{\md R}{\md t} & = \zeta S - (1 - \rho) \lambda R - \mu R,
     \\
-    \frac{\md A}{\md t} &= \lambda S +\rho \lambda R - \delta A - \mu A,
+    \frac{\md A}{\md t} &= \lambda S + (1 - \rho) \lambda R - \delta A - \mu A,
     \\
     \frac{\md U}{\md t} &= \delta A - \alpha U - \mu U - \sigma U,
     \\
@@ -255,11 +255,10 @@ with force of infection
     \tau_T &= (1 - \epsilon) \tau_U.
   \end{split}
 \end{equation}
-
-The rate of developing AIDS  among those who have acheived
-viral suppression ($\theta$) is
+The rate of developing AIDS among those who have acheived viral
+suppression is
 \begin{equation}
- \frac{1}{1/\mu-\omega-1/\nu}.
+ \theta = \frac{1}{1/\mu-\omega-1/\nu}.
 \end{equation}
 
 The proportion diagnosed is
@@ -270,17 +269,21 @@ the proportion treated is
 \begin{equation}
   p_T = \frac{T + V + W}{D + T + V + W},
 \end{equation}
-and the proportion with viral suppression is
+the proportion with viral suppression is
 \begin{equation}
-  p_V = \frac{V}{T + V}.
+  p_V = \frac{V}{T + V},
+\end{equation}
+and the proportion of people vaccinated is
+\begin{equation}
+  P_{V} = \frac{R}{S+R}.
 \end{equation}
 
-The targets for the proportions $p_D$, $p_T$, and $p_V$ in the achievement of 90--90--90
-all operate under the following assumption:
-if the initial level $p_x(0)$ is less than $90\%$, the proportion will increase
-linearly in the first 5 years and then stay at $90\%$ for the
-remaining time; and if the initial level is at $90\%$ or above, the proportion
-will remain constant for the duration of the study:
+The targets for the proportions $p_D$, $p_T$, and $p_V$ in the
+achievement of 90--90--90 all operate under the following assumption:
+if the initial level $p_x(0)$ is less than $90\%$, the proportion will
+increase linearly in the first 5 years and then stay at $90\%$ for the
+remaining time; and if the initial level is at $90\%$ or above, the
+proportion will remain constant for the duration of the study:
 \begin{equation}
   p_x^*(t)
   = p_x(0) + \left[
@@ -290,26 +293,22 @@ will remain constant for the duration of the study:
 \end{equation}
 for $x \in \{D, T, V\}$.
 
-Similarly, the proportion of people vaccinated is
-\begin{equation}
-P_{V} = \frac{R}{S+R},
-\end{equation}
 
-We can implement the vaccination compartment in the same way as the other controls. When we begin
-vaccination in 2020/2025, the initial vaccination level is 0\%. This
-coverage will increase linearly to $50\%$ within first 2 or 5
-years. The coverage will continue to increase linearly till it reaches
-the desired coverage ($50\%,70\%,90\%$) and then stay constant for the
-remainder of the projections.
+We can implement the vaccination compartment in the same way as the
+other controls. When we begin vaccination in 2020 (also 2025 in
+scenario analysis), the initial vaccination level is 0\%. The coverage
+will increase linearly by 25\% per year (also 10\% per year in
+scenario analysis). The coverage will continue to increase linearly
+until it reaches 70\% coverage (50\% \& 90\% in scenario analysis) and
+then stay constant for the remainder of the time period.
 
 95--95--95 goal is implemented subsequently after meeting 90--90--90
 by 2020 by increasing $p_D$, $p_T$, and $p_V$ to 95--95--95 levels by
-2030 linearly. \comment{@Jan, We use the Heaveside function here too?}
+2030 linearly. \comment{@Jan, We use the Heaveside function here too?
+JM: Yes.  I'll write it at some point.}
 
-
-\subsection{Rates that are on when $p_x < p^*_x$}
-
-The rates are applied when the proportions of $p_D$, $p_T$, and $p_V$ are below the target levels:
+The rates are applied when the proportions of $p_D$, $p_T$, and $p_V$
+are below the target levels:
 \begin{equation}
   \begin{split}
     \alpha(t) &= \alpha_{\max} H\left(p_D^*(t) - p_D(t)\right),
@@ -349,6 +348,7 @@ with some small value of $\chi$.
 
 \section{Model fitting}
 \label{model_fitting}
+
 We first estimated country-specific rates of HIV transmission for each
 of the available historical data point for incidence and
 prevalence. The calculation involved a simplified force of infection
@@ -438,7 +438,7 @@ that we use to simulate our model forward and project results up to 2035.
   \centering
   \includegraphics{../Codes/plots/transmission_rate.pdf}
   \caption{Country-specific transmission rates were calculated based
-    on the relative contributions of individuals with acute infection,
+    on the relative contributions of people with acute infection,
     unsuppressed viral load or suppressed viral load to overall
     transmission (\autoref{model_fitting}). The estimates were
     calibrated to data on country-level incidence and/or prevalence to
@@ -461,9 +461,9 @@ maintenance of the status quo: that 2015 levels of the proportion of
 PLHIV diagnosed ($p_{D}$), proportion of those diagnosed on ART
 ($p_{T}$), and proportion of those on treatment who have achieved
 viral suppression ($p_{V}$) continue unchanged until 2035.  The
-intervention scenarios were (1.) the attainment of the 90--90--90
+intervention scenarios were 1.) the attainment of the 90--90--90
 target by linear increases in $p_{D}$, $p_{T}$, and $p_{V}$ until 2020
-followed by maintenance of those levels until 2035, and (2.) linear
+followed by maintenance of those levels until 2035, and 2.) linear
 increase in the diagnosis and treatment levels to the 90--90--90
 targets by 2020, a linear increase from 90--90--90 to the 95--95--95
 target by 2030, and maintenance of the 95--95--95 levels to 2035. (For
@@ -484,14 +484,29 @@ latin hypercube sampling \cite{}
 and the variance reduction technique of running different
 interventions with random parameter values \cite{}.
 
-We calculated partial rank correlation coefficients (PRCC) to measure
-the independent effect of each parameter on model projections of HIV
-incidence (\autoref{PRCCs}). Furthermore, due to uncertainty
-surrounding the prospective vaccine, we obtained model projections
-using six additional vaccine scenarios by considering alternative
-estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%), time to
-50\% coverage (2 years, 5 years), and first year of availability
-(2025).
+Model outcomes were projected until 2035 for each of the 127 countries
+with sufficient data on status quo rates of diagnosis and treatment
+and on historical incidence or prevalence
+(\hyperref[effectiveness_Global]{\autoref*{effectiveness_Global}}--\ref{effectiveness_Zimbabwe}). The
+median estimates with interquartile ranges are presented between 2015
+and 2035 for number of PLHIV, per-capita incidence, PLAIDS, and number
+of HIV-related deaths under the status quo and five intervention
+scenarios: vaccination only, attaining the UNAIDS 90--90--90 target,
+attaining the 90--90--90 target and vaccination, attaining the UNAIDS
+95--95--95 target, and attaining the 95--95--95 target and
+vaccination.  The results from the country were aggregated to the
+regional and global levels by adding the numbers of people in each
+compartment over time and then PLHIV, per-capita incidence, PLAIDS,
+and HIV-related deaths were calculated from the aggregates.
+
+We calculated partial rank correlation coefficients (PRCC) \cite{}
+to measure the independent effect of each parameter on model
+projections of HIV incidence (\autoref{PRCCs}). Furthermore, due to
+uncertainty surrounding the prospective vaccine, we obtained model
+projections using six additional vaccine scenarios by considering
+alternative estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%),
+speed of scale up (10\% coverage per year), and first year of
+availability (2025).
 
 \begin{figure}
   \centering
@@ -500,22 +515,6 @@ estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%), time to
     from 2015 to 2035.}
   \label{PRCCs}
 \end{figure}
-
-
-\subsection{Effectiveness of HIV interventions globally, regionally
-  and for each of 127 countries}
-
-Model outcomes were projected until 2035 for each of the 127 countries
-with sufficient data on status quo rates of diagnosis and treatment
-and on historical incidence or prevalence. The median estimates with
-interquartile ranges are presented between 2015 and 2035 for number of
-PLHIV, annual incidence (per million population), number of people
-with AIDS, and number of HIV-related deaths under the status quo and
-five intervention scenarios: vaccination only, attainment of the
-UNAIDS 90--90--90 target, 90--90--90 target and vaccination, attainment of
-the UNAIDS 95--95--95 target, and 95--95--95 target and vaccination.  The
-country-specific projections as well as aggregated projections at the
-regional and global levels follow:
 
 
 \clearpage
