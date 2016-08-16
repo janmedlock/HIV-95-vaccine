@@ -15,7 +15,7 @@ samplesfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 def load():
     samples = numpy.load(samplesfile)
-    print('Loaded {} samples.'.format(len(samples)))
+    # print('Loaded {} samples.'.format(len(samples)))
     return samples
 
 

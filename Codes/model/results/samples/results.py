@@ -64,6 +64,7 @@ class Results:
             print('Loading data for {}, {}...'.format(self._country_or_region,
                                                       self._target))
             self._data = picklefile.load(self.path)
+            self.correct_ni()
 
     def _build_regional(self):
         if self._country_or_region == 'Global':
@@ -110,6 +111,60 @@ class Results:
     @property
     def exists(self):
         return exists(self._country_or_region, self._target)
+
+    def correct_ni(self):
+        '''
+        Correct new infections from previous bug.
+        '''
+        import numpy
+        from scipy import integrate
+
+        from ... import parameters
+        from ... import samples
+
+        country = self._data.country[0]
+        target = self._data.targets[0]
+
+        samples_ = samples.load()
+        nsamples = len(samples_)
+        parameters_ = parameters.Sample.from_samples(country, samples_)
+        transmission_rate_acute = numpy.empty(nsamples)
+        transmission_rate_unsuppressed = numpy.empty(nsamples)
+        transmission_rate_suppressed = numpy.empty(nsamples)
+        for (i, p) in enumerate(parameters_):
+            transmission_rate_acute[i] = p.transmission_rate_acute
+            transmission_rate_unsuppressed[i] = p.transmission_rate_unsuppressed
+            transmission_rate_suppressed[i] = p.transmission_rate_suppressed
+
+        S = numpy.asarray(self._data.susceptible)
+        Q = numpy.asarray(self._data.vaccinated)
+        A = numpy.asarray(self._data.acute)
+        U = numpy.asarray(self._data.undiagnosed)
+        D = numpy.asarray(self._data.diagnosed)
+        T = numpy.asarray(self._data.treated)
+        V = numpy.asarray(self._data.viral_suppression)
+        W = numpy.asarray(self._data.AIDS)
+        N = S + Q + A + U + D + T + V
+
+        force_of_infection = (
+            transmission_rate_acute[:, numpy.newaxis] * A
+            + transmission_rate_unsuppressed[:, numpy.newaxis] * (U + D + T)
+            + transmission_rate_suppressed[:, numpy.newaxis] * V) / N
+
+        dni = (force_of_infection * S
+               + (1 - target.vaccine_efficacy) * force_of_infection * Q)
+
+        t = numpy.linspace(2015, 2035, 2401)
+        self._data.new_infections = integrate.cumtrapz(dni, t, initial = 0)
+        print('Corrected new infections.')
+        incidence = numpy.diff(self._data.new_infections) / numpy.diff(t)
+        # Put NaNs in the first column to make it align with t.
+        pad = numpy.nan * numpy.ones((nsamples, 1))
+        self._data.incidence = numpy.hstack((pad, incidence))
+        print('Corrected incidence.')
+        self._data.incidence_per_capita = (self._data.incidence
+                                           / numpy.asarray(self._data.alive))
+        print('Corrected incidence per capita.')
 
 
 def open_(country_or_region, target):
