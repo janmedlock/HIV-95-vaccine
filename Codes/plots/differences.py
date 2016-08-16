@@ -16,6 +16,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
+import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -30,7 +31,7 @@ targets = [model.targets.all_[i : i + 2]
            for i in range(0, len(model.targets.all_), 2)]
 
 
-def _get_plot_info(country, targs, stat):
+def _get_plot_info(results, country, targs, stat):
     scale = None
     percent = False
     units = ''
@@ -52,10 +53,10 @@ def _get_plot_info(country, targs, stat):
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
     
-    with model.results.samples.open_(country, targs[0]) as results:
-        v_base = numpy.asarray(getattr(results, stat))
-    with model.results.samples.open_(country, targs[1]) as results:
-        v_intv = numpy.asarray(getattr(results, stat))
+    v_base = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[0])],
+                                   stat))
+    v_intv = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[1])],
+                                   stat))
 
     data = v_base - v_intv
     # data = (v_base - v_intv) / v_base
@@ -78,13 +79,13 @@ def _get_plot_info(country, targs, stat):
     return (data, label, scale, units)
 
 
-def _plot_cell(ax, country, targs, stat,
+def _plot_cell(ax, results, country, targs, stat,
                country_label = None,
                attr_label = None):
     '''
     .. todo:: Do a better job with making the lower ylim 0.
     '''
-    data, label, scale, unit = _get_plot_info(country, targs, stat)
+    data, label, scale, unit = _get_plot_info(results, country, targs, stat)
 
     # Drop infinite data.
     ix = numpy.all(numpy.isfinite(data), axis = 0)
@@ -139,23 +140,25 @@ def plot_selected():
         gs = gridspec.GridSpec(nrows, ncols,
                                height_ratios = ((1, ) * (nrows - 1)
                                                 + (legend_height_ratio, )))
-        for (col, country) in enumerate(common.countries_to_plot):
-            print('\t', country)
-            attr_label = 'ylabel' if (col == 0) else None
-            for (row, attr) in enumerate(common.effectiveness_measures):
-                print('\t\t', attr)
-                country_label = 'title' if (row == 0) else None
-                ax = fig.add_subplot(gs[row, col])
-                _plot_cell(ax,
-                           country,
-                           targs,
-                           attr,
-                           country_label = country_label,
-                           attr_label = attr_label)
-                if row != nrows - 2:
-                    for l in ax.get_xticklabels():
-                        l.set_visible(False)
-                    ax.xaxis.offsetText.set_visible(False)
+        with model.results.samples.h5.open_() as results:
+            for (col, country) in enumerate(common.countries_to_plot):
+                print('\t', country)
+                attr_label = 'ylabel' if (col == 0) else None
+                for (row, attr) in enumerate(common.effectiveness_measures):
+                    print('\t\t', attr)
+                    country_label = 'title' if (row == 0) else None
+                    ax = fig.add_subplot(gs[row, col])
+                    _plot_cell(ax,
+                               results,
+                               country,
+                               targs,
+                               attr,
+                               country_label = country_label,
+                               attr_label = attr_label)
+                    if row != nrows - 2:
+                        for l in ax.get_xticklabels():
+                            l.set_visible(False)
+                        ax.xaxis.offsetText.set_visible(False)
 
         ax = fig.add_subplot(gs[-1, :])
         colorbar.ColorbarBase(ax,
@@ -187,32 +190,35 @@ def plot_all():
             gs = gridspec.GridSpec(nrows, ncols,
                                    height_ratios = ((1, ) * (nrows - 1)
                                                     + (legend_height_ratio, )))
-            for (i, country) in enumerate(common.countries_to_plot):
-                print('\t', country)
-                fig = pyplot.figure(figsize = (8.5, 11))
-                title = common.get_country_label(country)
-                try:
-                    for (row, attr) in enumerate(common.effectiveness_measures):
-                        print('\t\t', attr)
-                        country_label = 'title' if (row == 0) else None
-                        ax = fig.add_subplot(gs[row, 0])
-                        _plot_cell(ax,
-                                   country,
-                                   targs,
-                                   attr,
-                                   country_label = country_label,
-                                   attr_label = 'ylabel')
-                        if row != nrows - 2:
-                            for l in ax.get_xticklabels():
-                                l.set_visible(False)
-                            ax.xaxis.offsetText.set_visible(False)
-                except FileNotFoundError:
-                    pass
-                else:
-                    fig.tight_layout()
-                    pdf.savefig(fig)
-                finally:
-                    pyplot.close(fig)
+            with model.results.samples.h5.open_() as results:
+                for (i, country) in enumerate(common.countries_to_plot):
+                    print('\t', country)
+                    fig = pyplot.figure(figsize = (8.5, 11))
+                    title = common.get_country_label(country)
+                    try:
+                        for (row, attr) in enumerate(
+                                common.effectiveness_measures):
+                            print('\t\t', attr)
+                            country_label = 'title' if (row == 0) else None
+                            ax = fig.add_subplot(gs[row, 0])
+                            _plot_cell(ax,
+                                       results,
+                                       country,
+                                       targs,
+                                       attr,
+                                       country_label = country_label,
+                                       attr_label = 'ylabel')
+                            if row != nrows - 2:
+                                for l in ax.get_xticklabels():
+                                    l.set_visible(False)
+                                ax.xaxis.offsetText.set_visible(False)
+                    except tables.NoSuchNodeError:
+                        pass
+                    else:
+                        fig.tight_layout()
+                        pdf.savefig(fig)
+                    finally:
+                        pyplot.close(fig)
 
 
 if __name__ == '__main__':

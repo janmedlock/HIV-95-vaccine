@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections averted at different times.
+
+.. todo:: This uses :func:`model.results.samples.open_` because `alive`
+          is not in :func:`model.results.samples.h5.open_` at the moment.
 '''
 
 import os.path

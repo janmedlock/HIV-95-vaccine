@@ -22,10 +22,9 @@ sys.path.append('..')
 import model
 
 
-def get_outcome_samples(country, targets, stat, times):
-    results = (model.results.samples.open_(country, target)
-               for target in targets)
-    x, y =  (numpy.asarray(getattr(r, stat)) for r in results)
+def get_outcome_samples(results, country, targets, stat, times):
+    x, y =  (numpy.asarray(getattr(results['/{}/{}'.format(country, t)], stat))
+             for t in targets)
     z = x - y
     interp = interpolate.interp1d(common.t, z, axis = -1)
     outcome_samples = interp(times)
@@ -225,8 +224,9 @@ if __name__ == '__main__':
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    outcome_samples = get_outcome_samples(country, targets,
-                                          outcome, time)
+    with model.results.samples.h5.open_() as results:
+        outcome_samples = get_outcome_samples(results, country, targets,
+                                              outcome, time)
 
     # Order parameters by abs(prcc).
     rho = stats.prcc(parameter_samples, outcome_samples)
