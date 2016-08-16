@@ -69,8 +69,8 @@ transmission_rate
 -----------------
 .. automodule:: plots.transmission_rate
 
-vaccine_sensitivity
--------------------
-.. automodule:: plots.vaccine_sensitivity
+vaccine_scenarios
+-----------------
+.. automodule:: plots.vaccine_scenarios
 
 .. include:: mapplot.rst_
