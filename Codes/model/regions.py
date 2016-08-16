@@ -2,7 +2,12 @@
 Countries by region.
 '''
 
+from . import datasheet
+
 regions = {
+    'Global':
+    datasheet.get_country_list(),
+
     'East and Southern Africa':
     ['Angola', 'Botswana', 'Burundi', 'Eritrea', 'Ethiopia', 'Kenya',
      'Lesotho', 'Madagascar', 'Malawi', 'Mozambique', 'Namibia', 'Rwanda',
@@ -49,7 +54,10 @@ regions = {
 }
 
 
-all_ = ['Global'] + sorted(regions.keys())
+all_ = sorted(regions.keys())
+# Move Global to front.
+all_.remove('Global')
+all_.insert(0, 'Global')
 
 
 def is_region(x):

@@ -7,9 +7,7 @@ import model
 
 
 def _main():
-    regions = ['Global'] + model.regions.all_
-
-    for region in regions:
+    for region in model.regions.all_:
         for target in model.targets.all_:
             if not model.results.samples.exists(region, target):
                 results = model.results.samples.open_(region, target)
