@@ -59,7 +59,8 @@ def get_target_label(treatment_target, target):
 
 def _get_targets(treatment_target):
     return [str(t) for t in model.targets.vaccine_scenarios
-            if str(t._treatment_targets) == str(treatment_target)]
+            if hasattr(t, '_treatment_targets')
+            and (str(t._treatment_targets) == str(treatment_target))]
 
 
 def _get_kwds(label):
