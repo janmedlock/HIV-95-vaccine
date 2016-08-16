@@ -4,6 +4,7 @@ Countries by region.
 
 from . import datasheet
 
+
 regions = {
     'Global':
     datasheet.get_country_list(),

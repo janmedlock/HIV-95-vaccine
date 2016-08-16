@@ -110,7 +110,8 @@ class Results:
 
     def correct_ni(self):
         '''
-        Correct new infections from previous bug.
+        Correct new infections, incidence, and incidence per capita
+        from previous bug.
         '''
         import numpy
         from scipy import integrate
