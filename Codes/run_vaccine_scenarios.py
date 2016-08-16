@@ -26,10 +26,9 @@ def _run_one(country, targets = None):
         joblib.delayed(model.simulation.Simulation)(parameter_values,
                                                     target)
         for target in targets)
-    retval = model.results.modes.ResultsCountry()
+    retval = {}
     for (target, r) in zip(targets, results):
-        target_ = str(target)
-        retval[target_] = r
+        retval[str(target)] = r
     return retval
 
 
@@ -51,7 +50,10 @@ def _build_regionals(results, targets = None):
                 val_ = {c: val[c] for c in val.keys()
                         if c in model.regions.regions[region]}
                 mc = model.multicountry.MultiCountry(val_)
-            results.dump(mc, region, target)
+            for s in stats_to_save:
+                v = getattr(mc, s)
+                model.h5._dump_val(results, '/{}/{}'.format(region, target),
+                                   s, v)
 
 
 def _run_all(targets = None):
@@ -60,7 +62,12 @@ def _run_all(targets = None):
     for country in countries:
         if country not in results:
             print(country)
-            results[country] = _run_one(country, targets = targets)
+            r = _run_one(country, targets = targets)
+            for (t, v) in r.items():
+                for s in stats_to_save:
+                    x = getattr(v, s)
+                    model.h5._dump_val(results, '/{}/{}'.format(country, t),
+                                       s, x)
     _build_regionals(results, targets = targets)
     return results
 

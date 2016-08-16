@@ -3,6 +3,7 @@ Add a dict interface to :mod:`tables`.
 Add default compression and checksum filters.
 '''
 
+import numbers
 import warnings
 
 import numpy
@@ -22,9 +23,10 @@ def _dump_val(h5file, group, name, val):
             arr[:] = val
         else:
             with warnings.catch_warnings():
-                warnings.filter_warnings('ignore',
-                                         category = tables.NaturalNameWarning)
-                arr = results.create_carray(group, key, obj = val)
+                warnings.filterwarnings('ignore',
+                                        category = tables.NaturalNameWarning)
+                arr = h5file.create_carray(group, name, obj = val,
+                                           createparents = True)
         return arr
     elif isinstance(val, container.Container):
         # Get a Group() with the current name.

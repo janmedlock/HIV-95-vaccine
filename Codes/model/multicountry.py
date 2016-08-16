@@ -17,11 +17,13 @@ class MultiCountry(container.Container):
     Class to hold the results of multiple countries,
     e.g. Global or regional.
     '''
-    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections',
-             'viral_suppression')
+    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
 
     def __init__(self, data):
-        self.t = None
+        # self.t = None
+        self.t = numpy.linspace(
+            2015, 2035,
+            20 * 120 + 1)
         for k in self.keys():
             setattr(self, k, 0)
 
@@ -74,7 +76,7 @@ class Global(multicountry.MultiCountry):
         scale_infected = self.global_infected / self.infected[..., 0]
         self.infected *= scale_infected[..., numpy.newaxis]
         # Also scale viral_suppression by scale_infected for now.
-        self.viral_suppression *= scale_infected[..., numpy.newaxis]
+        # self.viral_suppression *= scale_infected[..., numpy.newaxis]
 
         # Convert global annual AIDS deaths
         # to global number of people with AIDS.
