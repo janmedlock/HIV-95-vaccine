@@ -64,7 +64,8 @@ class Results:
             print('Loading data for {}, {}...'.format(self._country_or_region,
                                                       self._target))
             self._data = picklefile.load(self.path)
-            self.correct_ni()
+            if regions.is_country(self._country_or_region):
+                self.correct_ni()
 
     def _build_regional(self):
         countries = regions.regions[self._country_or_region]
