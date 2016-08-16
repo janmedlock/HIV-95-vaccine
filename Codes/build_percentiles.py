@@ -12,14 +12,12 @@ import tables
 import model
 
 
-regions_and_countries = (['Global'] + model.regions.all_
-                         + model.datasheet.get_country_list())
+regions_and_countries = model.regions.all_ + model.datasheet.get_country_list()
 
 targets = model.targets.all_
 
-stats_to_save = ['infected', 'incidence', 'prevalence',
-                 'incidence_per_capita', 'AIDS', 'dead',
-                 'new_infections', 'alive']
+_stats_to_dump = ['new_infections', 'infected', 'incidence_per_capita',
+                  'AIDS', 'dead']
 
 CI_levels = ['median', 50, 80, 90, 95, 99]
 
@@ -48,7 +46,7 @@ def _main():
                             '/{}'.format(region_or_country),
                             target,
                             createparents = True)
-                        for stat in stats_to_save:
+                        for stat in _stats_to_dump:
                             vals = getattr(results, stat)
                             rtsgroup = h5file.create_group(rtgroup,
                                                            stat)

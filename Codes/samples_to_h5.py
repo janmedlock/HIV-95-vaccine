@@ -16,13 +16,7 @@ _stats_to_dump = ['new_infections', 'infected', 'incidence_per_capita',
                   'AIDS', 'dead']
 
 def _main():
-    filters = tables.Filters(complevel = 4,
-                             complib = 'zlib',
-                             shuffle = True,
-                             fletcher32 = True)
-    with tables.open_file('results/samples.h5',
-                          mode = 'a',
-                          filters = filters) as h5file:
+    with model.results.samples.h5.open_() as h5file:
         countries = model.regions.all_ + model.datasheet.get_country_list()
         for country in countries:
             for target in model.targets.all_:
