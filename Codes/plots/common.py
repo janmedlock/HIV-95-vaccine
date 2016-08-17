@@ -424,7 +424,9 @@ def pdf_add_info(filename, **kwargs):
     args = ['pdftk', filename, 'update_info_utf8', '-', 'output', tempname]
     cp = subprocess.run(args, input = infostr.encode('utf-8'))
     cp.check_returncode()  # Make sure it succeeded.
+    st = os.stat(filename)  # To preserve permissions
     os.replace(tempname, filename)
+    os.chmod(filename, st.st_mode)  # Set permissions
 
 
 def pdfoptimize(filename):
@@ -433,7 +435,9 @@ def pdfoptimize(filename):
     print('Optimizing {}.'.format(filename))
     cp = subprocess.run(args)
     cp.check_returncode()  # Make sure it succeeded.
+    st = os.stat(filename)  # To preserve permissions
     os.replace(tempname, filename)
+    os.chmod(filename, st.st_mode)  # Set permissions
 
 
 _keymap = {'Author': 'Artist',
@@ -464,7 +468,9 @@ def image_add_info(filename, **kwargs):
         im.save(tempname, format_,
                 tiffinfo = info,
                 compression = 'tiff_lzw')
+        st = os.stat(filename)  # To preserve permissions
         os.replace(tempname, filename)
+        os.chmod(filename, st.st_mode)  # Set permissions
     elif im.format == 'PNG':
         from PIL import PngImagePlugin
         info = PngImagePlugin.PngInfo()
@@ -476,7 +482,9 @@ def image_add_info(filename, **kwargs):
         im.save(tempname, format_,
                 pnginfo = info,
                 optimize = True)
+        st = os.stat(filename)  # To preserve permissions
         os.replace(tempname, filename)
+        os.chmod(filename, st.st_mode)  # Set permissions
     im.close()
 
 
