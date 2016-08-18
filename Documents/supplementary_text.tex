@@ -75,17 +75,22 @@
 
 \section{Mathematical model}
 
-We developed a continuous-time, compartmental model consisting of 8
-health states (\autoref{model_diag}): susceptible to HIV infection
-($S$), vaccinated against HIV ($R$), acute HIV infection ($A$),
-undiagnosed HIV infection ($U$), diagnosed but untreated HIV infection
-($D$), treated without viral suppression ($T$), viral suppression
-($V$), and having AIDS ($W$).  Transitions between states are governed
-by a series of differential equations parametrized using rates
-estimated from other studies and from incidence and prevalence data
-(Table \ref{model_param}).  The model is deterministic, but
-uncertainty in the parameters is treated by running the model with
-many different samples from the parameter distributions.
+We developed a continuous-time, compartmental model that divides
+people aged 15 years and older into 8 health states
+(\autoref{model_diag}): susceptible to HIV infection ($S$), vaccinated
+against HIV ($R$), acute HIV infection ($A$), undiagnosed HIV
+infection ($U$), diagnosed but untreated HIV infection ($D$), treated
+without viral suppression ($T$), viral suppression ($V$), and having
+AIDS ($W$).  We chose to consider only people aged 15 years and older
+because they are the vast majority of PLHIV (93\% in 2014
+\cite{UNICEF}).  Transitions between states are governed by a series
+of differential equations parametrized using rates estimated from
+other studies and from incidence and prevalence data (Table
+\ref{model_param}).  The model is deterministic, but uncertainty in
+the parameters is treated by running the model with many different
+samples from the parameter distributions and summarizing the model
+outcomes using the median, 1st and 3rd quartiles (i.e., 25th and 75th
+percentiles), and 5th and 95th percentiles.
 
 \begin{figure}
   \centering
@@ -100,6 +105,10 @@ many different samples from the parameter distributions.
       \hline
       & Definition & Value & Reference \\
       \hline
+      $\mu$ & Background death rate & Country specific
+      & \cite{World_Development_Indicators2013-ee} \\
+      $B$ & Recruitment rate & Country specific
+      & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
       $\delta$	& Rate of leaving acute infection
       & $\Triangular$(2, 4.14, 9.6)\;y$^{-1}$
       & \cite{Hollingsworth2008-iy} \\
@@ -127,10 +136,6 @@ many different samples from the parameter distributions.
       & \cite{Donnell2010-xo} \\
       $n$ & Sex acts per year & $\Uniform$(96, 108)
       & \cite{Wawer2005-us,Abdool_Karim2010-cm}\\
-      $\mu$ & Background death rate & Country specific
-      & \cite{World_Development_Indicators2013-ee} \\
-      $B$ & Birth rate & Country specific
-      & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
       $\alpha$ & Diagnosis rate & See eqs.~(\ref{target_rates}) & --- \\
       $\phi$ & Treatment rate & See eqs.~(\ref{target_rates}) & --- \\
       $\psi$ & Rate of relapse to untreated & See eqs.~(\ref{target_rates})
@@ -148,7 +153,14 @@ many different samples from the parameter distributions.
 \end{table}
 
 
-Birth and death.
+The background mortality rate ($\mu$) in each of the 127 countries was
+collected from published estimates
+\cite{World_Development_Indicators2013-ee}.  The recruitment rate into
+the 15 age group was 
+including population
+growth rate \cite{WorldBankpg}, death rate
+\cite{World_Development_Indicators2013-ee}, and number of people aged
+15--49 years \cite{The_World_Bank2016-fd}
 
 People living with HIV (PLHIV) are divided among the acutely infected,
 undiagnosed, diagnosed, treated, viral suppression and AIDS

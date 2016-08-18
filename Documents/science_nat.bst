@@ -849,6 +849,12 @@ FUNCTION {format.pages}
     }
   if$
 }
+FUNCTION {first.page}
+{ 't := ""
+  { t empty$ not t #1 #1 substring$ "-" = not and }
+  { t #1 #1 substring$ * t #2 global.max$ substring$ 't := }
+  while$
+}
 FUNCTION {format.journal.pages}
 { pages duplicate$ empty$ 'pop$
     { swap$ duplicate$ empty$
@@ -856,7 +862,8 @@ FUNCTION {format.journal.pages}
         {
           ", " *
           swap$
-          n.dashify
+          % n.dashify
+	  first.page
           "pages" bibinfo.check
           *
         }
@@ -1547,7 +1554,7 @@ FUNCTION {begin.bib}
   write$ newline$
   "\providecommand{\url}[1]{\texttt{#1}}"
   write$ newline$
-  "\providecommand{\urlprefix}{URL }"
+  "\providecommand{\urlprefix}{}"
   write$ newline$
 }
 EXECUTE {begin.bib}
