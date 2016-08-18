@@ -1,20 +1,24 @@
 \documentclass[11pt]{article}
 
-\usepackage{amsmath}
-\usepackage{geometry}
-\usepackage{setspace}
-\usepackage{graphicx}
-\usepackage{tikz}
 \usepackage[utf8x]{inputenc}
 \usepackage{microtype}
+\usepackage{geometry}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{tikz}
+
 \usepackage[font = {sf}, labelfont = {bf},
   labelsep = period, singlelinecheck = off]{caption}
 \usepackage[font = {sf}]{floatrow}
+\usepackage{tabularx}
 
-% Load hyperref after the other stuff above.
-\usepackage[pdfborder={0 0 0}]{hyperref}
 \usepackage[numbers, round, sort&compress]{natbib}
-\usepackage{hypernat}
+\renewcommand{\citenumfont}{\itshape}  % Citations get italics numbers
+\makeatletter
+\renewcommand\NAT@open{(\hspace*{-0.3ex}}   % Tweak spacing.
+\renewcommand\@biblabel[1]{#1.}  % Reference list doesn't use square brackets.
+\makeatother
 
 \usepackage[noblocks]{authblk}
 \renewcommand{\Authsep}{, }
@@ -22,14 +26,28 @@
 \renewcommand{\Authands}{ \& }
 \renewcommand{\Affilfont}{\small}
 
+% Load hyperref after the other stuff above.
+\usepackage[pdfborder={0 0 0}]{hyperref}
+\usepackage{hypernat}
+
 \newcommand{\comment}[1]{\textbf{[#1]}}
 \newcommand{\md}{\mathrm{d}}
 \newcommand{\mT}{\mathrm{T}}
 \renewcommand{\vec}[1]{\mathbf{#1}}
 \newcommand{\mat}[1]{\mathbf{#1}}
 \newcommand{\me}{\mathrm{e}}
+\DeclareMathOperator{\Uniform}{Uniform}
+\DeclareMathOperator{\Triangular}{Triangular}
+\DeclareMathOperator{\Lognormal}{Lognormal}
+\DeclareMathOperator{\BetaPERT}{Beta-PERT}
 
+\newcommand{\labelPrefix}{S}
+\renewcommand{\thesection}{\labelPrefix\arabic{section}}
+\renewcommand{\theequation}{\labelPrefix\arabic{equation}}
+\renewcommand{\thefigure}{\labelPrefix\arabic{figure}}
+\renewcommand{\thetable}{\labelPrefix\arabic{table}}
 \renewcommand{\figurename}{Fig.}
+\renewcommand{\sectionautorefname}{Section}
 
 
 \title{Supporting online material for\\
@@ -52,95 +70,22 @@
 
 
 \begin{document}
+
 \maketitle
 
-\newcommand{\labelPrefix}{S}
-\renewcommand{\thesection}{\labelPrefix\arabic{section}}
-\renewcommand{\theequation}{\labelPrefix\arabic{equation}}
-\renewcommand{\thefigure}{\labelPrefix\arabic{figure}}
-\renewcommand{\thetable}{\labelPrefix\arabic{table}}
-
+\section{Mathematical model}
 
 We developed a continuous-time, compartmental model consisting of 8
-health states: susceptible to HIV infection, vaccinated against HIV,
-acute HIV infection, undiagnosed HIV infection, diagnosed but
-untreated HIV infection, treated without achieving viral suppression,
-achieved viral suppression, and having AIDS (Supplementary text). We
-found sufficient country-level demographic data, as well as estimates
-of longitudinal HIV incidence and prevalence for the 15–49 age group,
-spanning from as early as 1990 to 2015 to parameterize our model for
-127 countries. See Supporting text for information on data sources.
-
-Using available historical data for incidence and prevalence, and
-published transmission estimates (13), we estimated transmission rates
-for people with acute infection, unsuppressed viral load and
-suppressed viral load. Our calibration method provided a recent
-snapshot of country-specific transmission, while using historical data
-to smooth out variations. See Supporting text for detailed information
-on estimating the transmission rate.
-
-Projections were generated for each country through model simulations
-using 1000 random samples from published parameter distributions
-(table S1, Supplementary text) and the country-specific estimated
-distribution of the transmission rate. We evaluated the global and
-country-level impacts of meeting the UNAIDS targets and vaccine
-deployment on four outcome measures: HIV incidence, PLHIV, PLAIDS, and
-AIDS-related deaths between 2015 and 2035. Our base-case scenario
-assumed maintenance of the status quo: that 2015 levels of the
-proportion of PLHIV diagnosed (pD), proportion of those diagnosed on
-ART (pT), and proportion of those on treatment who have achieved viral
-suppression (pV) continue unchanged until 2035. The intervention
-scenarios were (1.) the attainment of the 90–90–90 target by linear
-increases in pD, pT, and pV until 2020 followed by maintenance of
-those levels until 2035, and (2.) linear increase in the diagnosis and
-treatment levels to the 90–90–90 target by 2020, a linear increase
-from 90–90–90 to the 95–95–95 target by 2030, and maintenance of the
-95–95–95 levels to 2035. (For 90–90–90, if any initial level was above
-90\%, it was kept constant going forward so that the intervention did
-not worsen coverage.  Likewise, for 95–95–95, any initial level above
-95\% was kept constant.)  For vaccination, we assumed deployment of a
-vaccine with 50\% efficacy in 2020 with coverage increasing linearly
-by 25\% per year, continuing up to 70\% at 2.8 years post-rollout, and
-maintaining constant 70\% coverage thereafter.  We also performed a
-partial rank correlation coefficient (PRCC) sensitivity analysis for
-each model parameter and a scenario analysis to account for
-uncertainty in the profile of the prospective vaccine.
-
-
-\section{Source code}
-
-The source code for the model and analysis tools is publicly available
-at \url{https://github.com/janmedlock/HIV-95-vaccine/}
-\cite{medlock2016-git}.
-
-
-\section{Data sources}
-
-Several sources provided information to parameterize our model at the
-country level. Demographic data, including population growth rate
-\cite{WorldBankpg}, death rate
-\cite{World_Development_Indicators2013-ee}, and number of people aged
-15--49 years \cite{The_World_Bank2016-fd} were obtained from the World
-Bank. Longitudinal HIV incidence and prevalence estimates for the
-15--49 age group, spanning from as early as 1990 to 2015, was
-primarily derived from the AIDSinfo database produced by UNAIDS
-\cite{Unaids2016-an}. Other sources included UNAIDS Country Progress
-Reports \cite{Unaids2016-am} published from 2012 to 2016 and AIDS Data
-Hub \cite{AIDSdatahub-fg}, which compiles data from UNAIDS, UNICEF,
-WHO, and the Asian Development Bank. These sources were also used to
-inform the initial conditions for the model: the number of people who
-have been diagnosed with HIV, who are on ART, and who have viral
-suppression or have been retained on treatment for at least 12
-months. Where data were not available from these sources, alternative
-resources such as peer-reviewed journal articles and country health
-ministry reports were consulted.  We found sufficient data to
-parametrize our mathematical modeling for 127 countries.  See
-Supplemental data files for full information on data sources for each
-country.  The data files are also available in the public source-code
-repository \cite{medlock2016-git}.
-
-
-\section{Mathematical model}
+health states (\autoref{model_diag}): susceptible to HIV infection
+($S$), vaccinated against HIV ($R$), acute HIV infection ($A$),
+undiagnosed HIV infection ($U$), diagnosed but untreated HIV infection
+($D$), treated without viral suppression ($T$), viral suppression
+($V$), and having AIDS ($W$).  Transitions between states are governed
+by a series of differential equations parametrized using rates
+estimated from other studies and from incidence and prevalence data
+(Table \ref{model_param}).  The model is deterministic, but
+uncertainty in the parameters is treated by running the model with
+many different samples from the parameter distributions.
 
 \begin{figure}
   \centering
@@ -149,75 +94,196 @@ repository \cite{medlock2016-git}.
   \label{model_diag}
 \end{figure}
 
-Our continuous-time, compartmental model consists of 8 health states:
-susceptible to HIV infection, vaccinated against HIV, acute HIV
-infection, undiagnosed HIV infection, diagnosed but untreated HIV
-infection, treated without achieving viral suppression, achieved viral
-suppression, and having AIDS (Figure \ref{model_diag}). Transitions
-between states are governed by a series of differential equations
-parameterized using rates estimated from other studies and from
-incidence and prevalence data (Table \ref{model_param}).
-
-
 \begin{table}
   \begin{center}
-    \begin{tabular}{cp{4cm}llc}
+    \begin{tabularx}{\textwidth}{lXlll}
       \hline
-      Symbol & Definition & Value & Sampling Distribution & Source \\ \hline
-      $\delta$	& Rate of leaving acute phase of HIV infection & 4.1379/year & T (4.1379, 2, 9.6) & \cite{Hollingsworth2008-iy} \\
-      $\sigma$	& Rate of developing AIDS among non-virally suppressed individuals
-                          & 0.1064/year & & \cite{Morgan2002-cq} \\
-      $\gamma$ & Rate of viral suppression & 1/year & U (0.5, 1.5) & \cite{Currie2009-yz} \\
-      $\upsilon$	& Death rate from AIDS & 0.5/year &  & \cite{Morgan2002-cq} \\
-      $\omega$	& Reduction in life years for treated PLHIV & 5 & U (5, 8) & \cite{Unaids2014-ue, Samji2013-kf}\\
-      $\beta_{A}$	& Transmission probability during acute phase & 0.0082 & T (0.0082, 0.0039, 0.0150) & \cite{Skarbinski2015-ni,Wawer2005-us}\\
-      $\beta_{U}$	& Transmission probability after acute phase & 0.0014 & T (0.0014, 0.00077, 0.00251) & \cite{Hughes2012-so}\\
-      $\varepsilon$	& Proportional reduction of transmission with treatment & 0.08 & $\beta$ (0.08, 0.002, 0.57)& \cite{Donnell2010-xo}\\
-      $n$			& Sex acts per year & 102 & U (96, 108) & \cite{Wawer2005-us,Abdool_Karim2010-cm}\\ \hline
-    \end{tabular}
-    \caption{Parameters used in model. (T: triangular distribution, U:
-      uniform distribution, $\beta$: beta distribution).}
+      & Definition & Value & Reference \\
+      \hline
+      $\delta$	& Rate of leaving acute infection
+      & $\Triangular$(2, 4.14, 9.6)\;y$^{-1}$
+      & \cite{Hollingsworth2008-iy} \\
+      $\sigma$	& Rate of developing AIDS without viral suppression
+      & 0.1064\;y$^{-1}$ & \cite{Morgan2002-cq} \\
+      $\theta$ & Rate of developing AIDS with viral suppression
+      & See eq.~(\ref{theta}) & --- \\
+      $\gamma$ & Rate of viral suppression
+      & $\Uniform$(0.5, 1.5)\;y$^{-1}$
+      & \cite{Currie2009-yz} \\
+      $\nu$ & Death rate from AIDS & 0.5\;y$^{-1}$
+      & \cite{Morgan2002-cq} \\
+      $\rho$ & Vaccine efficacy & 50\%\,[30\%, 70\%] & --- \\
+      $\omega$	& Reduction in lifetime with viral suppression
+      & $\Uniform$(5, 8)\;y
+      & \cite{Unaids2014-ue, Samji2013-kf} \\
+      $\tau_{A}$ & Transmissibility during acute phase
+      & $\Triangular$(0.0039, 0.0082, 0.0150)
+      & \cite{Skarbinski2015-ni,Wawer2005-us}\\
+      $\tau_{U}$ & Transmissibility after acute phase
+      & $\Triangular$(0.00077, 0.0014, 0.00251)
+      & \cite{Hughes2012-so} \\
+      $\varepsilon$ & Relative transmissibility with
+      viral suppression & $\BetaPERT$(0.08, 0.002, 0.57)
+      & \cite{Donnell2010-xo} \\
+      $n$ & Sex acts per year & $\Uniform$(96, 108)
+      & \cite{Wawer2005-us,Abdool_Karim2010-cm}\\
+      $\mu$ & Background death rate & Country specific
+      & \cite{World_Development_Indicators2013-ee} \\
+      $B$ & Birth rate & Country specific
+      & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
+      $\alpha$ & Diagnosis rate & See eqs.~(\ref{target_rates}) & --- \\
+      $\phi$ & Treatment rate & See eqs.~(\ref{target_rates}) & --- \\
+      $\psi$ & Rate of relapse to untreated & See eqs.~(\ref{target_rates})
+      & --- \\
+      $\zeta$ & Vaccination rate & See eqs.~(\ref{target_rates}) & --- \\
+      \hline
+    \end{tabularx}
+    \caption{Model parameters. $\Triangular$, $\Uniform$,
+      and $\BetaPERT$ are sampling distributions: see text for a
+      full description.  For vaccine efficacy, $50\%$ was the
+      baseline, and $30\%$ and $70\%$ were also used in scenario
+      analysis.}
     \label{model_param}
   \end{center}
 \end{table}
 
 
+Birth and death.
 
-The PLHIV population was comprised of people in the acutely infected,
+People living with HIV (PLHIV) are divided among the acutely infected,
 undiagnosed, diagnosed, treated, viral suppression and AIDS
 compartments. People susceptible to HIV ($S$) progress to the
-acute-infection phase ($A$) according to the force of infection, which
-depends on the HIV transmission rate, estimated from the
-country-specific incidence and prevalence data
+acute-infection phase ($A$) according to the force of infection
+($\lambda$), which depends on the HIV transmission rate, estimated
+from the country-specific incidence and prevalence data
 (\autoref{model_fitting}), adjusted for the current number of acutely
 infected, untreated or ineffectively treated, and viral suppression
 PLHIV.  Acute infection is characterized by high viral loads and lasts
-88 [XX, YY] days \cite{Hollingsworth2008-iy}. We assumed that people
-remain undiagnosed during their acute infection phase and during at
-least some of the subsequent period of clinical latency (i.e., the
-undiagnosed compartment). After acute infection, people move into the
-chronic undiagnosed class ($U$).  People in the undiagnosed class will
-be diagnosed at a rate determined by the country's initial diagnosis
-level and potential progress towards the UNAIDS targets.  Diagnosed
-people (compartment $D$) transition to the treated compartment ($T$)
-upon starting ART at a rate of $\phi$ , and then to the
-viral-suppression class ($V$) after achieving viral suppression
-through treatment retention at a rate of $\gamma$. The disengagement
-from treatment moves people from treated ($T$) and viral suppression
-($V$) at a rate of $\omega$ back to the diagnosed class ($D$). Rates
-of movement between the undiagnosed ($U$), diagnosed ($D$), treated
-($T$) and viral-suppression classes ($V$) are determined by the
-proportions of PLHIV diagnosed ($p_{D}$), proportion of diagnosed
-people on ART ($p_{T}$), and the proportion of people on ART who have
-achieved viral suppression ($p_{V}$). PLHIV in $U$, $D$, $T$, and $V$
-classes develop AIDS (compartment $W$) after an average duration
-dependent on viral suppression status. People who have achieved viral
-suppression ($V$) take longer to develop AIDS ($1/\theta$), than those
-who are in the other PLHIV classes ($1/\sigma$). People who are
-susceptible to HIV are vaccinated at rate $\zeta$, transitioning into
+an average of 2.90 [95\% confidence interval 1.23, 6.00]\;months
+\cite{Hollingsworth2008-iy}.  (We converted these durations to rates
+like $1 / 2.90\;\text{month$^{-1}$} \approx 4.14\;\text{y$^{-1}$}$ and
+set the parameter using random samples from
+$\Triangular(2, 4.14, 9.6)\;\text{y$^{-1}$}$ to capture the
+uncertainty in its value.)  We assumed that people remain undiagnosed
+during their acute infection phase and during at least some of the
+subsequent period of clinical latency (i.e., the undiagnosed
+compartment $U$). After acute infection, people move into the chronic
+undiagnosed class ($U$).  People in the undiagnosed class will be
+diagnosed at the rate $\alpha$, which is determined by the country's
+current diagnosis level and its diagnosis target.  Diagnosed people
+($D$) transition to the treated compartment ($T$) upon starting ART at
+the rate $\phi$, dependent on the country's current treatment level
+and its treatment target.  After some time, treated people then to the
+viral-suppression class ($V$), at the rate $\gamma$.  We took $\gamma$
+as a random sample from $\Uniform(0.5, 1.5)\;\text{y$^{-1}$}$, that
+is, viral suppression occurs after between 8 months and 2 years on
+treatment \cite{Currie2009-yz}.  The disengagement from treatment
+moves people from treated ($T$) and viral suppression ($V$) at the
+rate $\psi$, dependent on the current level of viral suppression and
+the country's target, back to the diagnosed class ($D$).
+
+PLHIV without viral suppression (compartments $U$, $D$, and $T$)
+develop AIDS (compartment $W$) after an average duration of 10.4 y
+\cite{Morgan2002-cq}, giving the transition rate
+$\sigma = 0.1064\;\text{y$^{-1}$}$.  People who have achieved viral
+suppression ($V$) develop AIDS at rate $\theta$, slower than PLHIV
+without viral suppression.  People with viral suppression are
+estimated to live 5--8 y shorter lives than the non-HIV infected
+\cite{Unaids2014-ue, Samji2013-kf}, which we quantified by randomly
+sampling the parameter $\omega$ from $\Uniform(5, 8)\;\text{y}$.
+Assuming no relapse to untreated, the duration of viral suppression is
+\begin{equation}
+  \frac{1}{\theta + \mu} = \frac{1}{\mu} - \omega - \frac{1}{\nu}.
+\end{equation}
+The term to the left of the equals sign is the time until leaving
+viral suppression by either progression to AIDS (at rate $\theta$) or
+background mortality (at rate $\mu$).  The term to the right of the
+equals sign is the lifespan of the non-HIV infected, minus the
+reduction in life due to having HIV with viral suppression, minus the
+duration of the AIDS stage.  Solving for $\theta$ gives the rate of
+progression to AIDS with viral suppression as
+\begin{equation}
+  \label{theta}
+  \theta = \frac{1}{1/\mu - \omega - 1/\nu} - \mu.
+\end{equation}
+
+Susceptible people are vaccinated at rate $\zeta$, transitioning into
 the vaccinated compartment ($R$), where the vaccine reduces their
-force of infection by the efficacy factor $\rho$.  The model equations
-are
+force of infection by the efficacy factor $\rho$.
+
+Transition rates between the undiagnosed ($U$), diagnosed ($D$),
+treated ($T$), and viral-suppression classes ($V$) are determined by
+the proportion of PLHIV diagnosed
+\begin{equation}
+  p_D = \frac{D + T + V + W}{A + U + D + T + V + W},
+\end{equation}
+the proportion of diagnosed people on ART
+\begin{equation}
+  p_T = \frac{T + V + W}{D + T + V + W},
+\end{equation}
+the proportion of people on ART who have
+achieved viral suppression
+\begin{equation}
+  p_V = \frac{V}{T + V},
+\end{equation}
+and the proportion of susceptible people vaccinated is
+\begin{equation}
+  p_R = \frac{R}{S + R}.
+\end{equation}
+
+We can implement the vaccination compartment in the same way as the
+other controls. When we begin vaccination in 2020 (also 2025 in
+scenario analysis), the initial vaccination level is 0\%. The coverage
+will increase linearly by 25\% per year (also 10\% per year in
+scenario analysis). The coverage will continue to increase linearly
+until it reaches 70\% coverage (50\% \& 90\% in scenario analysis) and
+then stay constant for the remainder of the time period.
+
+95--95--95 goal is implemented subsequently after meeting 90--90--90
+by 2020 by increasing $p_D$, $p_T$, and $p_V$ to 95--95--95 levels by
+2030 linearly. \comment{@Jan, We use the Heaveside function here too?
+JM: Yes.  I'll write it at some point.}
+
+The rates are applied when the proportions of $p_D$, $p_T$, $p_V$, and
+$p_R$ are below the target levels:
+\begin{equation}
+  \label{target_rates}
+  \begin{split}
+    \alpha(t) &= \alpha_{\max} H\left(p_D^*(t) - p_D(t)\right),
+    \\
+    \phi(t) &= \phi_{\max} H\left(p_T^*(t) - p_T(t)\right),
+    \\
+    \psi(t) &= \psi_{\max} H\left(p_V(t) - p_V^*(t)\right),
+    \\
+    \zeta(t) &= \zeta_{\max} H\left(p^{*}_{R}(t) - p_{W}(t)\right),
+  \end{split}
+\end{equation}
+where $H(x)$ is the Heaviside function
+\begin{equation}
+  H(x) =
+  \begin{cases}
+    0 & \text{if $x < 0$},
+    \\
+    1 & \text{if $x > 0$}.
+  \end{cases}
+\end{equation}
+
+The discontinuity of the Heaviside function makes numerical solution
+difficult.  Instead, replace $H$ with the continuous piecewise linear
+function
+\begin{equation}
+  H(x) =
+  \begin{cases}
+    0 & \text{if $x < 0$},
+    \\
+    x / \chi & \text{if $0 \leq x \leq \chi$},
+    \\
+    1 & \text{if $x > \chi$},
+  \end{cases}
+\end{equation}
+with some small value of $\chi$.
+
+The model equations are
 \begin{equation}
   \label{model_eqns}
   \begin{split}
@@ -249,33 +315,11 @@ with force of infection
     \\
     N &= S + R +  A + U + D + T + V,
     \\
-    \beta_x &= c \left[1 - (1 - \tau_x)^n\right]
+    \beta_x &= T \left[1 - (1 - \tau_x)^n\right]
     \text{ for $x \in \{A, U, T\}$},
     \\
-    \tau_T &= (1 - \epsilon) \tau_U.
+    \tau_T &= \varepsilon \tau_U.
   \end{split}
-\end{equation}
-The rate of developing AIDS among those who have acheived viral
-suppression is
-\begin{equation}
- \theta = \frac{1}{1/\mu-\omega-1/\nu}.
-\end{equation}
-
-The proportion diagnosed is
-\begin{equation}
-  p_D = \frac{D + T + V + W}{A + U + D + T + V + W},
-\end{equation}
-the proportion treated is
-\begin{equation}
-  p_T = \frac{T + V + W}{D + T + V + W},
-\end{equation}
-the proportion with viral suppression is
-\begin{equation}
-  p_V = \frac{V}{T + V},
-\end{equation}
-and the proportion of people vaccinated is
-\begin{equation}
-  P_{V} = \frac{R}{S+R}.
 \end{equation}
 
 The targets for the proportions $p_D$, $p_T$, and $p_V$ in the
@@ -294,60 +338,147 @@ proportion will remain constant for the duration of the study:
 for $x \in \{D, T, V\}$.
 
 
-We can implement the vaccination compartment in the same way as the
-other controls. When we begin vaccination in 2020 (also 2025 in
-scenario analysis), the initial vaccination level is 0\%. The coverage
-will increase linearly by 25\% per year (also 10\% per year in
-scenario analysis). The coverage will continue to increase linearly
-until it reaches 70\% coverage (50\% \& 90\% in scenario analysis) and
-then stay constant for the remainder of the time period.
-
-95--95--95 goal is implemented subsequently after meeting 90--90--90
-by 2020 by increasing $p_D$, $p_T$, and $p_V$ to 95--95--95 levels by
-2030 linearly. \comment{@Jan, We use the Heaveside function here too?
-JM: Yes.  I'll write it at some point.}
-
-The rates are applied when the proportions of $p_D$, $p_T$, and $p_V$
-are below the target levels:
+$\Uniform(a, b)$ is the uniform random variable with minimum $a$
+and maximum $b$: it has density function
+\begin{equation}
+  \label{uniform}
+  p_{\Uniform}(x) =
+  \begin{cases}
+    \frac{1}{b - a} & \text{if $a \leq x \leq b$,}
+    \\
+    0 & \text{otherwise.}
+  \end{cases}
+\end{equation}
+We defined the mode for the uniform distribution to be the midpoint
+$\frac{b - a}{2}$.
+%
+$\Triangular(a, b, c)$ is the triangular random variable
+distribution with minimum $a$, mode $b$, and maximum $c$: it has
+density function
+\begin{equation}
+  \label{triangular}
+  p_{\Triangular}(x) =
+  \begin{cases}
+    \frac{2 (x - a)}{(c - a)(b - a)} & \text{if $a \leq x \leq b$,}
+    \\
+    \frac{2 (c - x)}{(c - a)(c - b)} & \text{if $b \leq x \leq c$,}
+    \\
+    0 & \text{otherwise.}
+  \end{cases}
+\end{equation}
+$\BetaPERT(a, b, c)$ is the beta-PERT probability distribution
+\cite{malcom1959} with minimum $a$, mode $b$, and maximum $c$: it has
+density function
+\begin{equation}
+  \label{betaPERT}
+  p_{\BetaPERT}(x) =
+  \begin{cases}
+    \frac{(x - a)^{v - 1} (c - x)^{w - 1}}{(c - a)^{v + w - 2} B(v, w)}
+    & \text{if $a \leq x \leq c$,}
+    \\
+    0 & \text{otherwise,}
+  \end{cases}
+\end{equation}
+where
 \begin{equation}
   \begin{split}
-    \alpha(t) &= \alpha_{\max} H\left(p_D^*(t) - p_D(t)\right),
+    \mu &= \frac{a + \lambda b + c}{\lambda + 2},
     \\
-    \phi(t) &= \phi_{\max} H\left(p_T^*(t) - p_T(t)\right),
+    v &= \frac{(\mu - a)(2 b - a - c)}{(b - \mu) (c - a)},
     \\
-    \psi(t) &= \psi_{\max} H\left(p_V(t) - p_V^*(t)\right),
-    \\
-    \zeta(t) &= \zeta_{max} H\left(P^{*}_{V}(t)-P_{V}(t)\right),
+    w &= \frac{v (a - \mu)}{\mu - c},
   \end{split}
 \end{equation}
-where $H(x)$ is the Heaviside function
+and $B(v, w)$ is the standard beta function \cite[\S 6.2]{davis1972}.
+We used the standard value of $\lambda = 4$.
+%
+$\Lognormal(\mu, \sigma^2)$ is the lognormal random variable: it has
+density function
 \begin{equation}
-  H(x) =
-  \begin{cases}
-    0 & \text{if $x < 0$},
-    \\
-    1 & \text{if $x > 0$}.
-  \end{cases}
+  p_{\Lognormal}(x) = \frac{1}{x \sigma \sqrt{2 \pi}}
+  \exp\left(- \frac{\left(\log x - \mu\right)^2}{2 \sigma^2}\right).
 \end{equation}
 
-The discontinuity of the Heaviside function makes numerical solution
-difficult.  Instead, replace $H$ with the continuous piecewise linear
-function
-\begin{equation}
-  H(x) =
-  \begin{cases}
-    0 & \text{if $x < 0$},
-    \\
-    x / \chi & \text{if $0 \leq x \leq \chi$},
-    \\
-    1 & \text{if $x > \chi$},
-  \end{cases}
-\end{equation}
-with some small value of $\chi$.
+
+
+Projections were generated for each country through model simulations
+using 1000 random samples from published parameter distributions
+(table S1, Supplementary text) and the country-specific estimated
+distribution of the transmission rate. We evaluated the global and
+country-level impacts of meeting the UNAIDS targets and vaccine
+deployment on four outcome measures: HIV incidence, PLHIV, PLAIDS, and
+AIDS-related deaths between 2015 and 2035. Our base-case scenario
+assumed maintenance of the status quo: that 2015 levels of the
+proportion of PLHIV diagnosed (pD), proportion of those diagnosed on
+ART (pT), and proportion of those on treatment who have achieved viral
+suppression (pV) continue unchanged until 2035. The intervention
+scenarios were (1.) the attainment of the 90–90–90 target by linear
+increases in pD, pT, and pV until 2020 followed by maintenance of
+those levels until 2035, and (2.) linear increase in the diagnosis and
+treatment levels to the 90–90–90 target by 2020, a linear increase
+from 90–90–90 to the 95–95–95 target by 2030, and maintenance of the
+95–95–95 levels to 2035. (For 90–90–90, if any initial level was above
+90\%, it was kept constant going forward so that the intervention did
+not worsen coverage.  Likewise, for 95–95–95, any initial level above
+95\% was kept constant.)  For vaccination, we assumed deployment of a
+vaccine with 50\% efficacy in 2020 with coverage increasing linearly
+by 25\% per year, continuing up to 70\% at 2.8 years post-rollout, and
+maintaining constant 70\% coverage thereafter.  We also performed a
+partial rank correlation coefficient (PRCC) sensitivity analysis for
+each model parameter and a scenario analysis to account for
+uncertainty in the profile of the prospective vaccine.
+
+
+
+\section{Source code}
+
+The source code for the model and analysis tools is publicly available
+at \url{https://github.com/janmedlock/HIV-95-vaccine/}
+\cite{medlock2016-git}.
+
+
+\section{Data sources}
+\label{data_sources}
+
+For 127 countries, we found sufficient data to parametrize our model:
+these data consisted of estimates of longitudinal HIV incidence and
+prevalence for ages 15–49 years starting as early as 1990 in some
+countries and running through 2015, along with basic demographics
+(\autoref{data_sources}).
+
+Several sources provided information to parameterize our model at the
+country level. Demographic data, including population growth rate
+\cite{WorldBankpg}, death rate
+\cite{World_Development_Indicators2013-ee}, and number of people aged
+15--49 years \cite{The_World_Bank2016-fd} were obtained from the World
+Bank. Longitudinal HIV incidence and prevalence estimates for the
+15--49 age group, spanning from as early as 1990 to 2015, was
+primarily derived from the AIDSinfo database produced by UNAIDS
+\cite{Unaids2016-an}. Other sources included UNAIDS Country Progress
+Reports \cite{Unaids2016-am} published from 2012 to 2016 and AIDS Data
+Hub \cite{AIDSdatahub-fg}, which compiles data from UNAIDS, UNICEF,
+WHO, and the Asian Development Bank. These sources were also used to
+inform the initial conditions for the model: the number of people who
+have been diagnosed with HIV, who are on ART, and who have viral
+suppression or have been retained on treatment for at least 12
+months. Where data were not available from these sources, alternative
+resources such as peer-reviewed journal articles and country health
+ministry reports were consulted.  We found sufficient data to
+parametrize our mathematical modeling for 127 countries.  See
+Supplemental data files for full information on data sources for each
+country.  The data files are also available in the public source-code
+repository \cite{medlock2016-git}.
 
 
 \section{Model fitting}
 \label{model_fitting}
+
+Using available historical data for incidence and prevalence, and
+published transmission estimates, we estimated transmission rates for
+people with acute infection, unsuppressed viral load and suppressed
+viral load. Our calibration method provided a recent snapshot of
+country-specific transmission, while using historical data to smooth
+out variations.
 
 We first estimated country-specific rates of HIV transmission for each
 of the available historical data point for incidence and
@@ -480,9 +611,9 @@ context of status quo diagnosis and treatment, achieving the UNAIDS
 generated through model simulations based on published parameter
 distributions (\autoref{model_param}) and country-specific estimated
 transmission rate distributions. The parameters were sampled using
-latin hypercube sampling \cite{}
-and the variance reduction technique of running different
-interventions with random parameter values \cite{}.
+latin hypercube sampling \cite{blower1994} and the variance reduction
+technique of running different interventions with random parameter
+values \cite{shechter2006}.
 
 Model outcomes were projected until 2035 for each of the 127 countries
 with sufficient data on status quo rates of diagnosis and treatment
@@ -499,14 +630,14 @@ regional and global levels by adding the numbers of people in each
 compartment over time and then PLHIV, per-capita incidence, PLAIDS,
 and HIV-related deaths were calculated from the aggregates.
 
-We calculated partial rank correlation coefficients (PRCC) \cite{}
-to measure the independent effect of each parameter on model
-projections of HIV incidence (\autoref{PRCCs}). Furthermore, due to
-uncertainty surrounding the prospective vaccine, we obtained model
-projections using six additional vaccine scenarios by considering
-alternative estimates of efficacy (30\%, 70\%), coverage (50\%, 90\%),
-speed of scale up (10\% coverage per year), and first year of
-availability (2025).
+We calculated partial rank correlation coefficients (PRCC)
+\cite{blower1994} to measure the independent effect of each parameter
+on model projections of HIV incidence (\autoref{PRCCs}). Furthermore,
+due to uncertainty surrounding the prospective vaccine, we obtained
+model projections using six additional vaccine scenarios by
+considering alternative estimates of efficacy (30\%, 70\%), coverage
+(50\%, 90\%), speed of scale up (10\% coverage per year), and first
+year of availability (2025).
 
 \begin{figure}
   \centering
