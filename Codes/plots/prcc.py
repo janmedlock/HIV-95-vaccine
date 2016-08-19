@@ -71,9 +71,8 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
 def tornados():
     country = 'Global'
     outcome = 'new_infections'
-    baseline = 
     targets = [[model.targets.StatusQuo(),
-                model.targets.UNAIDS95()]
+                model.targets.UNAIDS95()],
                [model.targets.StatusQuo(),
                 model.targets.Vaccine(
                     treatment_targets = model.targets.StatusQuo())]]
