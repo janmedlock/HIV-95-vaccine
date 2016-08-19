@@ -25,6 +25,7 @@ __pycache__/
 /Documents/**/.auto
 /Documents/**/*.aux
 /Documents/**/*.bbl
+/Documents/**/*.bcf
 /Documents/**/*.blg
 /Documents/**/*.log
 /Documents/**/*.out
@@ -32,3 +33,4 @@ __pycache__/
 /Documents/**/*.snm
 /Documents/**/*.toc
 /Documents/**/*.synctex.gz
+/Documents/**/*.run.xml

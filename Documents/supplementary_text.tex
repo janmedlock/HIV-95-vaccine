@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 
-\usepackage[utf8x]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage{microtype}
 \usepackage{geometry}
 
@@ -13,22 +13,55 @@
 \usepackage[font = {sf}]{floatrow}
 \usepackage{tabularx}
 
-\usepackage[numbers, round, sort&compress]{natbib}
-\renewcommand{\citenumfont}{\itshape}  % Citations get italics numbers
-\makeatletter
-\renewcommand\NAT@open{(\hspace*{-0.3ex}}   % Tweak spacing.
-\renewcommand\@biblabel[1]{#1.}  % Reference list doesn't use square brackets.
-\makeatother
-
 \usepackage[noblocks]{authblk}
 \renewcommand{\Authsep}{, }
 \renewcommand{\Authand}{ \& }
 \renewcommand{\Authands}{ \& }
 \renewcommand{\Affilfont}{\small}
 
-% Load hyperref after the other stuff above.
 \usepackage[pdfborder={0 0 0}]{hyperref}
-\usepackage{hypernat}
+
+\usepackage[style = science, article-title = true, maxnames = 100]{biblatex}
+\addbibresource{supplementary_text.bib}
+\newcommand{\labeltitlepunc}{}
+\DeclareBibliographyDriver{incollection}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/translator+others}%
+  \setunit{\labelnamepunct}\newblock
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \usebibmacro{title}%
+  \usebibmacro{in:}%
+  \usebibmacro{maintitle+booktitle}%
+  \newunit\newblock
+  \usebibmacro{byeditor+others}%
+  \newunit\newblock
+  \printfield{volumes}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+  \usebibmacro{publisher+location+date}%
+  \newunit\newblock
+  \printfield{volume}
+  \newunit
+  \usebibmacro{chapter+pages}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{isbn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \usebibmacro{related}%
+  \usebibmacro{finentry}%
+}
 
 \newcommand{\comment}[1]{\textbf{[#1]}}
 \newcommand{\md}{\mathrm{d}}
@@ -76,21 +109,23 @@
 \section{Mathematical model}
 
 We developed a continuous-time, compartmental model that divides
-people aged 15 years and older into 8 health states
+people aged $15\;\text{y}$ and older into 8 health states
 (\autoref{model_diag}): susceptible to HIV infection ($S$), vaccinated
 against HIV ($R$), acute HIV infection ($A$), undiagnosed HIV
 infection ($U$), diagnosed but untreated HIV infection ($D$), treated
 without viral suppression ($T$), viral suppression ($V$), and having
-AIDS ($W$).  We chose to consider only people aged 15 years and older
-because they are the vast majority of PLHIV (93\% in 2014
-\cite{UNICEF}).  Transitions between states are governed by a series
-of differential equations parametrized using rates estimated from
-other studies and from incidence and prevalence data (Table
-\ref{model_param}).  The model is deterministic, but uncertainty in
-the parameters is treated by running the model with many different
-samples from the parameter distributions and summarizing the model
-outcomes using the median, 1st and 3rd quartiles (i.e., 25th and 75th
-percentiles), and 5th and 95th percentiles.
+AIDS ($W$).  We chose to consider only people aged $15\;\text{y}$ and
+older because they are the vast majority of PLHIV, 93\% in 2014
+\cite{UNICEF}, and because HIV and demographic data are often
+stratified into these ages \cite[e.g.,][]{Unaids2016-an}.  Transitions
+between model states are governed by a series of differential
+equations parametrized using rates estimated from other studies and
+from incidence and prevalence data (Table \ref{model_param}).  The
+model is deterministic, but uncertainty in the parameters is treated
+by running the model with many different samples from the parameter
+distributions and summarizing the model outcomes using the median, 1st
+and 3rd quartiles (i.e., 25th and 75th percentiles), and 5th and 95th
+percentiles.
 
 \begin{figure}
   \centering
@@ -153,15 +188,6 @@ percentiles), and 5th and 95th percentiles.
 \end{table}
 
 
-The background mortality rate ($\mu$) in each of the 127 countries was
-collected from published estimates
-\cite{World_Development_Indicators2013-ee}.  The recruitment rate into
-the 15 age group was 
-including population
-growth rate \cite{WorldBankpg}, death rate
-\cite{World_Development_Indicators2013-ee}, and number of people aged
-15--49 years \cite{The_World_Bank2016-fd}
-
 People living with HIV (PLHIV) are divided among the acutely infected,
 undiagnosed, diagnosed, treated, viral suppression and AIDS
 compartments. People susceptible to HIV ($S$) progress to the
@@ -218,6 +244,16 @@ progression to AIDS with viral suppression as
   \label{theta}
   \theta = \frac{1}{1/\mu - \omega - 1/\nu} - \mu.
 \end{equation}
+
+The background mortality rate ($\mu$) in each of the 127 countries was
+collected from published estimates
+\cite{World_Development_Indicators2013-ee}.  The recruitment rate into
+ages $15\;\text{y}$ and older group ($B$) was set by the difference
+between the population growth rate \cite{WorldBankpg} and the
+background mortality rate \cite{World_Development_Indicators2013-ee}.
+\comment{Add mortality and population growth to data sources.}
+
+The number of people aged 15--49 years \cite{The_World_Bank2016-fd}
 
 Susceptible people are vaccinated at rate $\zeta$, transitioning into
 the vaccinated compartment ($R$), where the vaccine reduces their
@@ -661,8 +697,7 @@ year of availability (2025).
 
 
 \clearpage
-\bibliographystyle{science_nat}
-\bibliography{supplementary_text}
+\printbibliography
 
 
 \appendix
