@@ -71,11 +71,14 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
 def tornados():
     country = 'Global'
     outcome = 'new_infections'
-    baseline = model.targets.StatusQuo()
-    targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+    baseline = 
+    targets = [[model.targets.StatusQuo(),
+                model.targets.UNAIDS95()]
+               [model.targets.StatusQuo(),
+                model.targets.Vaccine(
+                    treatment_targets = model.targets.StatusQuo())]]
     targets = list(map(str, targets))
-    # times = (2025, 2035)
-    times = (2035, )
+    time = 2035
 
     figsize = (5.95, 5)
     palette = 'Dark2'
@@ -86,8 +89,8 @@ def tornados():
 
     with model.results.samples.h5.open_() as results:
         # Order colors by order of prccs for 1st time.
-        outcome_samples = get_outcome_samples(results, country, targets,
-                                              outcome, times[0])
+        outcome_samples = get_outcome_samples(results, country, targets[0],
+                                              outcome, time)
         rho = stats.prcc(parameter_samples, outcome_samples)
         ix = numpy.argsort(numpy.abs(rho))[ : : -1]
         labels = [parameter_names[i] for i in ix]
@@ -95,7 +98,7 @@ def tornados():
         colors = {l: c for (l, c) in zip(labels, colors_)}
 
         nrows = 1
-        ncols = len(times)
+        ncols = len(targets)
         with seaborn.axes_style('whitegrid'):
             fig, axes = pyplot.subplots(nrows, ncols,
                                         figsize = figsize,
@@ -104,7 +107,7 @@ def tornados():
             if isinstance(axes, pyplot.Axes):
                 axes = [axes]
 
-            for (ax, t) in zip(axes, times):
+            for (ax, targets_) in zip(axes, targets):
                 seaborn.despine(ax = ax, top = True, bottom = True)
                 ax.tick_params(labelsize = pyplot.rcParams['font.size'])
                 if ax.is_first_col():
@@ -113,7 +116,7 @@ def tornados():
                     ylabels = 'right'
                 else:
                     ylabels = 'none'
-                tornado(ax, results, country, targets, outcome, t,
+                tornado(ax, results, country, targets_, outcome, time,
                         parameter_samples, colors,
                         parameter_names = parameter_names,
                         ylabels = ylabels)
@@ -122,7 +125,7 @@ def tornados():
                 xmin, xmax = ax.get_xlim()
                 xabs = max(abs(xmin), abs(xmax))
                 ax.set_xlim(- xabs, xabs)
-                # ax.set_title(t)
+                ax.set_title(title)
 
     fig.tight_layout(pad = 0)
 
