@@ -72,7 +72,8 @@ def tornados():
     country = 'Global'
     outcome = 'new_infections'
     baseline = model.targets.StatusQuo()
-    targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+    # targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+    targets = [baseline, model.targets.UNAIDS95()]
     targets = list(map(str, targets))
     # times = (2025, 2035)
     times = (2035, )
