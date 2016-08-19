@@ -116,16 +116,14 @@ historical_data_style = dict(marker = '.',
 
 
 _parameter_names_map = dict(
-    coital_acts_per_year = 'annual\ncoital\nacts',
-    death_years_lost_by_suppression = 'life-years\nlost:\nsuppressed',
-    progression_rate_acute = 'acute\nprogression\nrate',
-    suppression_rate = 'suppression\nrate',
-    transmission_rate_quantile = 'transmission\nrate',
-    transmission_per_coital_act_acute = 'relative\ntransmission\nrate:\nacute',
-    transmission_per_coital_act_unsuppressed \
-        = 'relative\ntransmission\nrate:\nunsuppressed',
-    transmission_per_coital_act_reduction_by_suppression \
-        = 'transmission\nreduction\nby\nsuppression'
+    coital_acts_per_year = 'Coital acts\nper year',
+    death_years_lost_by_suppression = 'Reduction in\nlifetime with\nviral suppression',
+    progression_rate_acute = 'Rate of\nleaving\nacute infection',
+    suppression_rate = 'Rate of\nviral\nsuppression',
+    transmission_rate_quantile = 'Transmission\nrate',
+    transmission_per_coital_act_acute = 'Transmissibility\nduring\nacute phase',
+    transmission_per_coital_act_unsuppressed = 'Transmissibility\nafter\nacute phase',
+    transmission_per_coital_act_reduction_by_suppression = 'Relative\ntransmissibility\nwith\nviral suppression'
 )
 
 parameter_names = [_parameter_names_map[p]
