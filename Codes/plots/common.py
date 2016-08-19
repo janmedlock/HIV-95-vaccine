@@ -99,7 +99,8 @@ all_countries.sort(key = country_sort_key)
 all_regions_and_countries = all_regions + all_countries
 
 
-effectiveness_measures = ['infected', 'incidence_per_capita', 'AIDS', 'dead']
+effectiveness_measures = ['new_infections', 'infected',
+                          'incidence_per_capita', 'AIDS', 'dead']
 
 
 t = numpy.linspace(2015, 2035, 20 * 120 +1)

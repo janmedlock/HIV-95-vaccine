@@ -32,7 +32,7 @@
 
   \draw [->] (Susceptible) to node [above] {$\zeta$} (Vaccinated);
 
-  \draw [->] (Vaccinated) to node [below] {$\rho \lambda$} (Acute);
+  \draw [->] (Vaccinated) to node [sloped, below, yshift = 0.05cm] {$(1 - \rho) \lambda$} (Acute);
 
   \draw [->] (Acute) to node [left] {$\delta$} (Undiagnosed);
 
@@ -77,5 +77,5 @@
 
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "model"
+%%% TeX-master: "supplementary_text"
 %%% End:
