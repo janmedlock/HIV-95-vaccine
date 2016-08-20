@@ -99,8 +99,8 @@ all_countries.sort(key = country_sort_key)
 all_regions_and_countries = all_regions + all_countries
 
 
-effectiveness_measures = ['new_infections', 'infected',
-                          'incidence_per_capita', 'AIDS', 'dead']
+effectiveness_measures = ['new_infections', 'incidence_per_capita',
+                          'infected', 'AIDS', 'dead']
 
 
 t = numpy.linspace(2015, 2035, 20 * 120 +1)
@@ -293,11 +293,11 @@ _stat_info = dict(
                                          units = None),
     drug_coverage = StatInfoEntry(label = 'ART\nCoverage',
                                   percent = True),
-    AIDS = StatInfoEntry(label = 'AIDS\n'),
+    AIDS = StatInfoEntry(label = 'PLAIDS\n'),
     dead = StatInfoEntry(label = 'HIV-related\ndeaths'),
     viral_suppression = StatInfoEntry(label = 'Viral\nsupression',
                                       percent = True),
-    new_infections = StatInfoEntry(label = 'New\ninfections'),
+    new_infections = StatInfoEntry(label = 'Cumulative\nincidence'),
 )
 
 
