@@ -138,13 +138,15 @@ def plot(confidence_level = 0.5, **kwargs):
         nrows = len(effectiveness_measures)
         ncols = 1
         with seaborn.color_palette(common.colors_paired):
-            fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_2column, 4),
-                                        sharex = 'col', sharey = 'none')
-            for (ax, stat) in zip(axes, effectiveness_measures):
-                _plot_stat(ax, results, regions_sorted, stat,
-                           confidence_level, **kwargs)
-            _make_legend(fig)
+            with seaborn.axes_style('darkgrid'):
+                fig, axes = pyplot.subplots(nrows, ncols,
+                                            figsize = (common.width_2column, 4),
+                                            sharex = 'col', sharey = 'none')
+                for (ax, stat) in zip(axes, effectiveness_measures):
+                    _plot_stat(ax, results, regions_sorted, stat,
+                               confidence_level, **kwargs)
+                    seaborn.despine(ax = ax, bottom = True, left = True)
+                _make_legend(fig)
 
     fig.tight_layout(h_pad = 1, w_pad = 0,
                      rect = (0, 0.06, 1, 1))
