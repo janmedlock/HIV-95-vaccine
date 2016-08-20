@@ -604,52 +604,6 @@ where $T_V = t_V + c_V / r_V$ is the time when rollout reaches
 the full coverage $c_V$.
 
 
-\section{Numerical solution}
-
-For accuracy and speed in numerically solving differential equations
-\eqref{model_eqns}, the variables $S$, $U$, $D$, $T$, $V$, and
-$W$---i.e., those that are not initially $0$---were log transformed
-and the differential equations were written in terms of
-the new log variables:
-\begin{equation}
-  \label{model_eqns_log}
-  \begin{split}
-    \frac{\md \log S}{\md t} &= \kappa N \me^{- \log S} - \lambda - \zeta - \mu,
-    \\
-    \frac{\md R}{\md t} & = \zeta \me^{\log S} - (1 - \rho) \lambda R - \mu R,
-    \\
-    \frac{\md A}{\md t} &= \lambda \me^{\log S} + (1 - \rho) \lambda R
-    - \delta A - \mu A,
-    \\
-    \frac{\md \log U}{\md t} &= \delta A \me^{- \log U} - \alpha - \mu - \sigma,
-    \\
-    \frac{\md \log D}{\md t} &=  \alpha \me^{\log U - \log D}
-    + \psi \me^{\log T - \log D} + \psi \me^{\log V - \log D} - \phi - \mu - \sigma,
-    \\
-    \frac{\md \log T}{\md t} &= \phi \me^{\log D - \log T} - \psi - \gamma - \mu
-    - \sigma,
-    \\
-    \frac{\md \log V}{\md t} &= \gamma \me^{\log T - \log V} - \psi
-    - \mu  - \theta,
-    \\
-    \frac{\md \log W}{\md t} &= \sigma \me^{\log U - \log W}
-    + \sigma \me^{\log D - \log W} + \sigma \me^{\log T - \log W}
-    + \theta \me^{\log V - \log W} - \nu,
-    \\
-    \frac{\md Y}{\md t} &= \lambda \left[\me^{\log S} + (1 - \rho) R\right],
-    \\
-    \frac{\md Z}{\md t} &= \nu \me^{\log W}.
-  \end{split}
-\end{equation}
-
-The model simulation and analysis tools, written in Python, are
-publicly available at
-\url{https://github.com/janmedlock/HIV-95-vaccine/}
-\cite{medlock2016-git}.  The differential equations were solved using
-\texttt{scipy.integrate.odeint()} \cite{scipy}.  See the source code
-for full details.
-
-
 \section{Uncertainty analysis}
 \label{uncertainty}
 
@@ -894,6 +848,14 @@ that we use to simulate our model forward and project results up to 2035.
     reflecting recent HIV rates.}
   \label{transmission_rate}
 \end{figure}
+
+
+\section{Source code}
+
+The model simulation and analysis tools, written in Python, are
+publicly available at
+\url{https://github.com/janmedlock/HIV-95-vaccine/}
+\cite{medlock2016-git}.
 
 
 \section{Analysis}
