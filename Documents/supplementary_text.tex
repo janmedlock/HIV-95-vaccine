@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage{microtype}
@@ -116,7 +116,7 @@ parametrize the model was only available for ages $15$--$49$ rather
 than for ages $15$ and older.  The background mortality rate ($\mu$)
 in each of the 127 countries was collected from published estimates
 \cite{World_Development_Indicators2013-ee}.  The recruitment rate into
-ages $15\;\text{y}$ and older group ($B$) was set by the difference
+ages $15\;\text{y}$ and older group ($\kappa$) was set by the difference
 between the country's population growth rate \cite{WorldBankpg} and
 its background mortality rate
 \cite{World_Development_Indicators2013-ee}, as would be true if the
@@ -149,9 +149,9 @@ percentiles), and 5th and 95th percentiles.
       \hline
       & Definition & Value & Reference \\
       \hline
-      $\mu$ & Background death rate & Country specific, see Table S2
+      $\mu$ & Background death rate & Country specific, Table S2
       & \cite{World_Development_Indicators2013-ee} \\
-      $B$ & Recruitment rate & Country specific, see Table S2
+      $\kappa$ & Recruitment rate & Country specific, Table S2
       & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
       $\delta$	& Rate of leaving acute infection
       & $\Triangular$(2, 4.14, 9.6)\;y$^{-1}$
@@ -159,7 +159,7 @@ percentiles), and 5th and 95th percentiles.
       $\sigma$	& Rate of developing AIDS without viral suppression
       & 0.1064\;y$^{-1}$ & \cite{Morgan2002-cq} \\
       $\theta$ & Rate of developing AIDS with viral suppression
-      & See eq.~(\ref{theta}) & --- \\
+      & Eq.~(\ref{theta}) & --- \\
       $\gamma$ & Rate of viral suppression
       & $\Uniform$(0.5, 1.5)\;y$^{-1}$
       & \cite{Currie2009-yz} \\
@@ -196,7 +196,6 @@ percentiles), and 5th and 95th percentiles.
   \end{center}
 \end{table}
 
-
 People susceptible to HIV ($S$) progress to acute infection ($A$)
 according to the force of infection ($\lambda$,
 eq.~\eqref{force_of_infection}), which depends on the HIV transmission
@@ -223,8 +222,8 @@ treated people then transition to the viral-suppression class ($V$),
 at the rate $\gamma$.  We took $\gamma$ as a random sample from
 $\Uniform(0.5, 1.5)\;\text{y$^{-1}$}$, that is, viral suppression
 occurs after between 8 months and 2 years on treatment
-\cite{Currie2009-yz}.  The disengagement from treatment moves people
-from treated ($T$) and viral suppression ($V$) at the rate $\psi$,
+\cite{Currie2009-yz}.  Disengagement from treatment moves people from
+treated ($T$) and viral suppression ($V$) at the rate $\psi$,
 dependent on the current level of viral suppression and the country's
 target (\autoref{targets}), back to the diagnosed class ($D$).
 
@@ -257,14 +256,21 @@ In scenarios with vaccine, susceptible people are vaccinated at rate
 $\zeta$, depending on the country's current vaccination coverage and
 its coverage target (\autoref{targets}), transitioning into the
 vaccinated compartment ($R$), where the vaccine reduces their force of
-infection by the efficacy factor $\rho$.  Without vaccine,
-$\zeta = 0$.
+infection by the efficacy factor $\rho$.  We took the base-case
+efficacy to be $50\%$ and varied it to $30\%$ and $70\%$ in analyzing
+vaccination scenarios (\autoref{uncertainty}).  We did not model
+specific vaccine dose regime, such that implicit in our efficacy
+parameter is the assumption that boosters will be used to maintain
+efficacy over time.  Without vaccine, $\zeta = 0$.
+
+We also added differential equations to track the cumulative number of
+new infections ($Y$) and AIDS deaths ($Z$) over the model period.
 
 The model equations are
 \begin{equation}
   \label{model_eqns}
   \begin{split}
-    \frac{\md S}{\md t} &= B N - \lambda S - \zeta S- \mu S,
+    \frac{\md S}{\md t} &= \kappa N - \lambda S - \zeta S- \mu S,
     \\
     \frac{\md R}{\md t} & = \zeta S - (1 - \rho) \lambda R - \mu R,
     \\
@@ -282,33 +288,83 @@ The model equations are
     \\
     \frac{\md W}{\md t} &= \sigma U + \sigma D + \sigma T + \theta V -
     \nu W,
+    \\
+    \frac{\md Y}{\md t} &= \lambda \big[S + (1 - \rho) R\big],
+    \\
+    \frac{\md Z}{\md t} &= \nu W,
   \end{split}
 \end{equation}
 with force of infection
 \begin{equation}
   \label{force_of_infection}
   \begin{split}
-    \lambda &= \frac{\beta_A A + \beta_U (U + D + T) + \beta_T V}{N},
+    \lambda &= \frac{\beta_A A + \beta_U (U + D + T) + \beta_V V}{N},
     \\
     N &= S + R +  A + U + D + T + V,
     \\
-    \beta_x &= \eta \left[1 - (1 - \tau_x)^n\right]
-    \text{ for $x \in \{A, U, T\}$},
+    \beta_A &= \eta \left[1 - (1 - \tau_A)^n\right]
     \\
-    \tau_T &= \varepsilon \tau_U,
+    \beta_U &= \eta \left[1 - (1 - \tau_U)^n\right]
+    \\
+    \beta_V &= \eta \left[1 - (1 - \tau_V)^n\right]
+    \\
+    \tau_V &= \varepsilon \tau_U,
   \end{split}
 \end{equation}
-where $\eta$ is the transmission rate (\autoref{model_fitting}).
+where the $\tau$'s are the relative transmissibility of people with
+acute ($A$), unsuppressed ($U$ and $T$), and suppressed ($V$)
+infections, $n$ is the annual number of coital acts, and $\eta$ is the
+country-specific transmission rate (\autoref{model_fitting}).  For
+transmissibility during the acute phase, we sampled from
+$\Triangular$(0.0039, 0.0082, 0.0150)
+\cite{Skarbinski2015-ni,Wawer2005-us}, whereas, for transmissibility
+for unsuppressed people, we sampled from
+$\Triangular(0.00077, 0.0014, 0.00251)$ \cite{Hughes2012-so}.  The
+transmissibility of people with viral suppression relative to those
+without suppression has been estimated at 0.08 (95\% confidence
+interval 0.002, 0.57) \cite{Donnell2010-xo}: because of the extremely
+long left tail, we chose to sample the relative transmissibility
+$\varepsilon$ from $\BetaPERT(0.08, 0.002, 0.57)$ rather than a
+$\Triangular$ distribution.  (See \autoref{uncertainty} for a full
+description of $\BetaPERT(a, b, c)$.)  The annual number of coital $n$
+was sampled from $\Uniform(96, 108)$
+\cite{Wawer2005-us,Abdool_Karim2010-cm}.
 
-\comment{Describe transmissibilities.}
-
-\comment{Initial conditions.}
-The number of people aged 15--49 years \cite{The_World_Bank2016-fd}
-and the proportion diagnosed, treated, and with viral suppression
-(\autoref{data_sources}) were used to initialize the model for year
-2015.  Due to a lack of data on acute infections, and since the acute
-phase is so much shorter than the other stages, we assumed that
-initially there were no acute infections.
+For year 2015, the number of people aged 15--49 years, $M(2015)$; the
+prevalence, $p_I(2015)$; the proportion diagnosed, $p_D(2015)$; the
+proportion treated, $p_T(2015)$; and proportion with viral
+suppression, $p_V(2015)$ (\autoref{data_sources}) were used to
+initialize the model.  Due to a lack of data on acute infections, and
+since the acute phase is so much shorter than the other stages, we
+assumed that initially there were no acute infections.  Due to a lack
+of comprehensive data on PLAIDS in each country, we assumed that the
+proportion of diagnosed, untreated people ($D + W$) who have AIDS
+($W$) in year 2015 was
+\begin{equation}
+  p_A = \frac{\sigma}{\sigma + \nu},
+\end{equation}
+which is the equilibrium fraction of diagnosed people ($D + W$) who
+have AIDS ($W$) in the absence of treatment and background mortality.
+The number initially vaccinated was set to 0.  The initial cumulative
+number of new infections and AIDS deaths were set to 0.  Thus, the
+model initial conditions are
+\begin{equation}
+  \label{initial_conditions}
+  \begin{split}
+    S(2015) &= \big(1 - p_I(2015)\big) M(2015), \\
+    R(2015) &= 0, \\
+    A(2015) &= 0, \\
+    U(2015) &= \big(1 - p_D(2015)\big) p_I(2015) M(2015), \\
+    D(2015) &= \big(1 - p_A\big) p_D(2015) \big(1 - p_T(2015)\big)
+    p_I(2015) M(2015), \\
+    T(2015) &= p_D(2015) p_T(2015) \big(1 - p_V(2015)\big)
+    p_I(2015) M(2015), \\
+    V(2015) &= p_D(2015) p_T(2015) p_V(2015) p_I(2015) M(2015), \\
+    W(2015) &= p_A p_D(2015) \big(1 - p_T(2015)\big) p_I(2015) M(2015), \\
+    Y(2015) &= 0, \\
+    Z(2015) &= 0.
+  \end{split}
+\end{equation}
 
 
 \section{Target rates}
@@ -323,7 +379,7 @@ and the desired target for the current level of diagnosis is
 $p_D^*(t)$.  For the rate of new diagnosis, we used the function
 \begin{equation}
   \label{diagnosis_rate}
-  \alpha(t) = \alpha_{\max} H\!\left(p_D^*(t) - p_D(t)\right),
+  \alpha(t) = \alpha_{\max} H\big(p_D^*(t) - p_D(t)\big),
 \end{equation}
 where $H(x)$ is the Heaviside-like function
 \begin{equation}
@@ -336,14 +392,15 @@ where $H(x)$ is the Heaviside-like function
     1 & \text{if $x > \chi$},
   \end{cases}
 \end{equation}
-with $\chi = 0.001$.  The linear segment connecting $H = 0$ and
+with $\chi = 0.001$, which rapidly switches from $H = 0$ when $x < 0$
+to $H = 1$ when $x > 0$.  The linear segment connecting $H = 0$ and
 $H = 1$ was used to avoid difficulties in computing numerical
-solutions that occur when using a discontinuous function.  This
-function allows new diagnoses ($\alpha(t) > 0$) when the current
-diagnosis level is below the target (i.e., when $p_D^*(t) > p_D(t)$),
-and stops new diagnoses ($\alpha(t) = 0$) when the current diagnosis
-level is at or above target.  We took
-$\alpha_{\max} = 1\;\text{y$^{-1}$}$.
+solutions that occur when using a discontinuous function.  The
+function for the rate of new diagnoses \eqref{diagnosis_rate} allows
+new diagnoses ($\alpha(t) > 0$) when the current diagnosis level is
+below the target ($p_D^*(t) > p_D(t)$), and stops new
+diagnoses ($\alpha(t) = 0$) when the current diagnosis level is at or
+above target.  We took $\alpha_{\max} = 1\;\text{y$^{-1}$}$.
   
 The proportion of diagnosed people who are treated is
 \begin{equation}
@@ -353,7 +410,7 @@ Like the rate of new diagnosis, the rate of enrolling new people in
 treatment is
 \begin{equation}
   \label{treatment_rate}
-  \phi(t) = \phi_{\max} H\!\left(p_T^*(t) - p_T(t)\right),
+  \phi(t) = \phi_{\max} H\big(p_T^*(t) - p_T(t)\big),
 \end{equation}
 with $\phi_{\max} = 10$, allowing new treatment ($\phi(t) > 0$) when
 the current treatment level is below the target ($p_T^*(t) > p_T(t)$)
@@ -367,7 +424,7 @@ The proportion of people on ART who have achieved viral suppression is
 The rate of people relapsing to untreated is
 \begin{equation}
   \label{relapse_rate}
-  \psi(t) = \psi_{\max} H\!\left(p_V(t) - p_V^*(t)\right),
+  \psi(t) = \psi_{\max} H\big(p_V(t) - p_V^*(t)\big),
 \end{equation}
 with $\psi_{\max} = 1$, which, unlike diagnosis and treatment rates,
 prevents relapses ($\psi(t) = 0$) when the current level of viral
@@ -375,8 +432,8 @@ suppression is below the target ($p_V^*(t) > p_V(t)$) and allows
 relapses ($\psi(t) > 0$) when the current level of viral suppression
 is at or above target.  We chose to vary the relapse rate to achieve
 the desired level of viral suppression because achieving viral
-suppression seems to depend on the time on treatment (parametrized by
-our rate $\gamma$), while relapse rates are difficult to estimate.
+suppression seems to depend on the time on treatment (i.e.,
+$1 / \gamma$), while relapse rates are difficult to estimate.
 
 The proportion of susceptible people vaccinated is
 \begin{equation}
@@ -385,38 +442,212 @@ The proportion of susceptible people vaccinated is
 Like diagnosis and treatment, the vaccination rate is
 \begin{equation}
   \label{vaccination_rate}
-  \zeta(t) = \zeta_{\max} H\!\left(p_R^*(t) - p_R(t)\right),
+  \zeta(t) = \zeta_{\max} H\big(p_R^*(t) - p_R(t)\big),
 \end{equation}
 with $\zeta_{\max} = 1$, allowing vaccination ($\zeta(t) > 0$) when
 the current vaccine coverage level is below the target
 ($p_R^*(t) > p_R(t)$) and stopping vaccination ($\zeta(t) = 0$) when
 the current vaccine coverage is at or above target.
 
-The targets for the proportions $p_D$, $p_T$, and $p_V$ in the
-achievement of 90--90--90 all operate under the following assumption:
-if the initial level $p_x(0)$ is less than $90\%$, the proportion will
-increase linearly in the first 5 years and then stay at $90\%$ for the
-remaining time; and if the initial level is at $90\%$ or above, the
-proportion will remain constant for the duration of the study:
-\begin{equation}
-  p_x^*(t)
-  = p_x(0) + \left[
-    \max\left\{0.9, p_x(0)\right\} - p_x(0)
-  \right]
-  \min\left\{\frac{t}{5}, 1\right\},
-\end{equation}
-for $x \in \{D, T, V\}$.
+We modeled 3 different targets for the proportion diagnosed ($p_D$), the
+proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
+\begin{description}
+\item[Status quo] Given initial proportions $p_D(2015)$, $p_T(2015)$,
+  and $p_V(2015)$, the targets are for the proportion to remain fixed
+  at that level for all times:
+  \begin{equation}
+    \label{status_quo_target}
+    \begin{split}
+      p_D^*(t) &= p_D(2015), \\
+      p_T^*(t) &= p_T(2015), \\
+      p_V^*(t) &= p_V(2015).
+    \end{split}
+  \end{equation}
 
-We can implement the vaccination compartment in the same way as the
-other controls. When we begin vaccination in 2020 (also 2025 in
-scenario analysis), the initial vaccination level is 0\%. The coverage
-will increase linearly by 25\% per year (also 10\% per year in
-scenario analysis). The coverage will continue to increase linearly
-until it reaches 70\% coverage (50\% \& 90\% in scenario analysis) and
-then stay constant for the remainder of the time period.  95--95--95
-goal is implemented subsequently after meeting 90--90--90 by 2020 by
-increasing $p_D$, $p_T$, and $p_V$ to 95--95--95 levels by 2030
-linearly.
+\item[UNAIDS 90--90--90] The UNAIDS 90--90--90 target is for $p_D$,
+  $p_T$, and $p_V$ to all be raised to $90\%$ by 2020.  We implemented
+  this target as linear increases from the 2015 levels, each up to
+  $90\%$ in 2020, and constant at $90\%$ from 2020 to 2035, except if
+  an initial level is above $90\%$ then it remains constant from 2015
+  to 2035 so that meeting the UNAIDS target does not worsen any aspect
+  of the treatment cascade.  That is,
+  \begin{equation}
+    \label{unaids90_targets}
+    \begin{split}
+      p_D^*(t) &=
+      \begin{cases}
+        F\big(t, 2015, p_D(2015), 2020, 0.9\big)
+        & \text{if $p_D(2015) < 0.9$},
+        \\
+        p_D(2015) & \text{if $p_D(2015) \geq 0.9$}.
+      \end{cases}
+      \\
+      p_T^*(t) &=
+      \begin{cases}
+        F\big(t, 2015, p_T(2015), 2020, 0.9\big)
+        & \text{if $p_T(2015) < 0.9$},
+        \\
+        p_T(2015) & \text{if $p_T(2015) \geq 0.9$}.
+      \end{cases}
+      \\
+      p_V^*(t) &=
+      \begin{cases}
+        F\big(t, 2015, p_V(2015), 2020, 0.9\big)
+        & \text{if $p_V(2015) < 0.9$},
+        \\
+        p_V(2015) & \text{if $p_V(2015) \geq 0.9$}.
+      \end{cases}
+    \end{split}
+  \end{equation}
+  where
+  \begin{equation}
+    \label{F}
+    F(t, t_0, x_0, t_1, x_1) =
+    \begin{cases}
+      x_0 & \text{if $t < t_0$},
+      \\
+      x_0 + (x_1 - x_0) \frac{t - t_0}{t_1 - t_0} &
+      \text{if $t_0 \leq t < t_1$},
+      \\
+      x_1 & \text{if $t \geq t_1$},
+    \end{cases}
+  \end{equation}
+  is constant at $x_0$ for $t < t_0$, linearly connects $x_0$ at
+  $t_0$ to $x_1$ at $t_1$ for $t_0 \leq t < t_1$, and is constant at
+  $x_1$ for $t \geq t_1$.
+
+\item[UNAIDS 95--95--95] The UNAIDS 95--95--95 target is to achieve
+  90--90--90 by 2020 and then for $p_D$, $p_T$, and $p_V$ to all be
+  raised to $95\%$ by 2030.  We implemented this target as for
+  90--90--90 from 2015 to 2020, and then linear increases from the
+  2020 levels up to $95\%$ in 2030, again with the exception that if
+  an initial level is above $95\%$ then it remains constant from 2015
+  to 2035.  That is,
+  \begin{equation}
+    \label{unaids95_targets}
+    \begin{split}
+      p_D^*(t) &=
+      \begin{cases}
+        G\big(t, 2015, p_D(2015), 2020, 0.9, 2030, 0.95\big)
+        & \text{if $p_D(2015) < 0.9$},
+        \\
+        F\big(t, 2020, p_D(2015), 2030, 0.95\big)
+        & \text{if $0.9 \leq p_D(2015) < 0.95$},
+        \\
+        p_D(2015) & \text{if $p_D(2015) \geq 0.95$},
+      \end{cases}
+      \\
+      p_T^*(t) &=
+      \begin{cases}
+        G\big(t, 2015, p_T(2015), 2020, 0.9, 2030, 0.95\big)
+        & \text{if $p_T(2015) < 0.9$},
+        \\
+        F\big(t, 2020, p_T(2015), 2030, 0.95\big)
+        & \text{if $0.9 \leq p_T(2015) < 0.95$},
+        \\
+        p_T(2015) & \text{if $p_T(2015) \geq 0.95$},
+      \end{cases}
+      \\
+      p_V^*(t) &=
+      \begin{cases}
+        G\big(t, 2015, p_V(2015), 2020, 0.9, 2030, 0.95\big)
+        & \text{if $p_V(2015) < 0.9$},
+        \\
+        F\big(t, 2020, p_V(2015), 2030, 0.95\big)
+        & \text{if $0.9 \leq p_V(2015) < 0.95$},
+        \\
+        p_V(2015) & \text{if $p_V(2015) \geq 0.95$},
+      \end{cases}
+    \end{split}
+  \end{equation}
+  where
+  \begin{equation}
+    G(t, t_0, x_0, t_1, x_1, t_2, x_2) =
+    \begin{cases}
+      x_0 & \text{if $t < t_0$},
+      \\
+      x_0 + (x_1 - x_0) \frac{t - t_0}{t_1 - t_0} &
+      \text{if $t_0 \leq t < t_1$},
+      \\
+      x_1 + (x_2 - x_1) \frac{t - t_1}{t_2 - t_1} &
+      \text{if $t_1 \leq t < t_2$},
+      \\
+      x_2 & \text{if $t \geq t_2$},
+    \end{cases}
+  \end{equation}
+  is constant at $x_0$ for $t < t_0$, linearly connects $x_0$ at $t_0$
+  to $x_1$ at $t_1$ for $t_0 \leq t < t_1$, linearly connects $x_1$ at
+  $t_1$ to $x_2$ at $t_2$ for $t_1 \leq t < t_2$, and is constant at
+  $x_2$ for $t \geq t_2$, and $F$ is as in \eqref{F}.
+
+\end{description}
+
+For vaccination, we assume that vaccination rollout begins in year
+$t_V = 2020$ (or $t_V = 2025$ in vaccine scenario analysis,
+\autoref{uncertainty}), that rollout linearly increases the proportion
+of non-infected population covered from 0\% by $r_V = 25\%$ per year
+(or $r_V = 10\%$ per year) up to $c_V = 70\%$ (or $c_V = 50\%$ or
+$c_V = 90\%$) and staying constant thereafter.  Thus, the vaccination
+target is
+\begin{equation}
+  \label{vaccination_target}
+  p_R^*(t) =
+  \begin{cases}
+    0 & \text{if $t < t_V$},
+    \\
+    r_V (t - t_V) & \text{if $t_V \leq t < T_V$},
+    \\
+    c_V & \text{if $t \geq T_V$},
+  \end{cases}
+\end{equation}
+where $T_V = t_V + c_V / r_V$ is the time when rollout reaches
+the full coverage $c_V$.
+
+
+\section{Numerical solution}
+
+For accuracy and speed in numerically solving differential equations
+\eqref{model_eqns}, the variables $S$, $U$, $D$, $T$, $V$, and
+$W$---i.e., those that are not initially $0$---were log transformed
+and the differential equations were written in terms of
+the new log variables:
+\begin{equation}
+  \label{model_eqns_log}
+  \begin{split}
+    \frac{\md \log S}{\md t} &= \kappa N \me^{- \log S} - \lambda - \zeta - \mu,
+    \\
+    \frac{\md R}{\md t} & = \zeta \me^{\log S} - (1 - \rho) \lambda R - \mu R,
+    \\
+    \frac{\md A}{\md t} &= \lambda \me^{\log S} + (1 - \rho) \lambda R
+    - \delta A - \mu A,
+    \\
+    \frac{\md \log U}{\md t} &= \delta A \me^{- \log U} - \alpha - \mu - \sigma,
+    \\
+    \frac{\md \log D}{\md t} &=  \alpha \me^{\log U - \log D}
+    + \psi \me^{\log T - \log D} + \psi \me^{\log V - \log D} - \phi - \mu - \sigma,
+    \\
+    \frac{\md \log T}{\md t} &= \phi \me^{\log D - \log T} - \psi - \gamma - \mu
+    - \sigma,
+    \\
+    \frac{\md \log V}{\md t} &= \gamma \me^{\log T - \log V} - \psi
+    - \mu  - \theta,
+    \\
+    \frac{\md \log W}{\md t} &= \sigma \me^{\log U - \log W}
+    + \sigma \me^{\log D - \log W} + \sigma \me^{\log T - \log W}
+    + \theta \me^{\log V - \log W} - \nu,
+    \\
+    \frac{\md Y}{\md t} &= \lambda \left[\me^{\log S} + (1 - \rho) R\right],
+    \\
+    \frac{\md Z}{\md t} &= \nu \me^{\log W}.
+  \end{split}
+\end{equation}
+
+The model simulation and analysis tools, written in Python, are
+publicly available at
+\url{https://github.com/janmedlock/HIV-95-vaccine/}
+\cite{medlock2016-git}.  The differential equations were solved using
+\texttt{scipy.integrate.odeint()} \cite{scipy}.  See the source code
+for full details.
 
 
 \section{Uncertainty analysis}
@@ -424,26 +655,26 @@ linearly.
 
 Projections were generated for each country through model simulations
 using 1000 random samples from published parameter distributions
-(table S1, Supplementary text) and the country-specific estimated
-distribution of the transmission rate. We evaluated the global and
-country-level impacts of meeting the UNAIDS targets and vaccine
-deployment on four outcome measures: HIV incidence, PLHIV, PLAIDS, and
-AIDS-related deaths between 2015 and 2035. Our base-case scenario
-assumed maintenance of the status quo: that 2015 levels of the
-proportion of PLHIV diagnosed (pD), proportion of those diagnosed on
-ART (pT), and proportion of those on treatment who have achieved viral
-suppression (pV) continue unchanged until 2035. The intervention
-scenarios were (1.) the attainment of the 90–90–90 target by linear
-increases in pD, pT, and pV until 2020 followed by maintenance of
-those levels until 2035, and (2.) linear increase in the diagnosis and
-treatment levels to the 90–90–90 target by 2020, a linear increase
-from 90–90–90 to the 95–95–95 target by 2030, and maintenance of the
-95–95–95 levels to 2035. (For 90–90–90, if any initial level was above
-90\%, it was kept constant going forward so that the intervention did
-not worsen coverage.  Likewise, for 95–95–95, any initial level above
-95\% was kept constant.)  For vaccination, we assumed deployment of a
-vaccine with 50\% efficacy in 2020 with coverage increasing linearly
-by 25\% per year, continuing up to 70\% at 2.8 years post-rollout, and
+(table S1) and the country-specific estimated distribution of the
+transmission rate. We evaluated the global and country-level impacts
+of meeting the UNAIDS targets and vaccine deployment on four outcome
+measures: HIV incidence, PLHIV, PLAIDS, and AIDS-related deaths
+between 2015 and 2035. Our base-case scenario assumed maintenance of
+the status quo: that 2015 levels of the proportion of PLHIV diagnosed
+(pD), proportion of those diagnosed on ART (pT), and proportion of
+those on treatment who have achieved viral suppression (pV) continue
+unchanged until 2035. The intervention scenarios were (1.) the
+attainment of the 90–90–90 target by linear increases in pD, pT, and
+pV until 2020 followed by maintenance of those levels until 2035, and
+(2.) linear increase in the diagnosis and treatment levels to the
+90–90–90 target by 2020, a linear increase from 90–90–90 to the
+95–95–95 target by 2030, and maintenance of the 95–95–95 levels to
+2035. (For 90–90–90, if any initial level was above 90\%, it was kept
+constant going forward so that the intervention did not worsen
+coverage.  Likewise, for 95–95–95, any initial level above 95\% was
+kept constant.)  For vaccination, we assumed deployment of a vaccine
+with 50\% efficacy in 2020 with coverage increasing linearly by 25\%
+per year, continuing up to 70\% at 2.8 years post-rollout, and
 maintaining constant 70\% coverage thereafter.  We also performed a
 partial rank correlation coefficient (PRCC) sensitivity analysis for
 each model parameter and a scenario analysis to account for
@@ -511,13 +742,7 @@ density function
   \exp\left(- \frac{\left(\log x - \mu\right)^2}{2 \sigma^2}\right).
 \end{equation}
 
-
-
-\section{Source code}
-
-The source code for the model and analysis tools is publicly available
-at \url{https://github.com/janmedlock/HIV-95-vaccine/}
-\cite{medlock2016-git}.
+\comment{Vaccine scenarios.}
 
 
 \section{Data sources}
@@ -550,6 +775,15 @@ parametrize our mathematical modeling for 127 countries.  See
 Supplemental data files for full information on data sources for each
 country.  The data files are also available in the public source-code
 repository \cite{medlock2016-git}.
+
+A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—currently have
+low HIV prevalence but relatively high incidence, resulting in large
+estimated transmission rates, leading to rapid projected growth of
+their HIV epidemics by 2035. The apparent low prevalence and high
+incidence may, at least in part, be due to the resolution in UNAIDS
+data (0.1\% for prevalence, 0.01\% for annual per-capita incidence).
+Results for such countries should be considered in light of this
+limitation.
 
 
 \section{Model fitting}
@@ -739,7 +973,7 @@ year of availability (2025).
 \printbibliography
 
 
-\appendix
+\clearpage
 \newpage
 \vspace*{3in}
 \section{Model results by region and country}
