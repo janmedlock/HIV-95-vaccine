@@ -8,9 +8,9 @@
 \usepackage{graphicx}
 \usepackage{tikz}
 
-\usepackage[font = {sf}, labelfont = {bf},
-  labelsep = period, singlelinecheck = off]{caption}
-\usepackage[font = {sf}]{floatrow}
+\usepackage[font={sf}, labelfont={bf},
+  labelsep=period, singlelinecheck=off]{caption}
+\usepackage[font={sf}]{floatrow}
 \usepackage{tabularx}
 
 \usepackage[noblocks]{authblk}
@@ -21,7 +21,7 @@
 
 \usepackage[pdfborder={0 0 0}]{hyperref}
 
-\usepackage[style = science, article-title = true, maxnames = 100]{biblatex}
+\usepackage[style=science, article-title=true, maxnames=100]{biblatex}
 \addbibresource{supplementary_text.bib}
 \newcommand{\labeltitlepunc}{}
 \DeclareBibliographyDriver{incollection}{%
@@ -105,20 +105,26 @@
 
 \maketitle
 
+The model simulation and analysis tools, written in Python, are
+publicly available at\\
+\url{https://github.com/janmedlock/HIV-95-vaccine/}
+\cite{medlock2016-git}.
+
+
 \section{Mathematical model}
 
 We developed a continuous-time, compartmental model that divides
 people aged $15$\;y and older into non-overlapping HIV states.  We
 chose to consider only these ages because they are the vast majority
-of PLHIV, 93\% in 2014 \cite{UNICEF}, and because HIV and demographic
-data are often stratified into these ages, although some data used to
-parametrize the model was only available for ages $15$--$49$ rather
-than for ages $15$ and older.  The background mortality rate ($\mu$)
-in each of the 127 countries was collected from published estimates
-\cite{World_Development_Indicators2013-ee}.  The recruitment rate into
-ages $15\;\text{y}$ and older group ($\kappa$) was set by the difference
-between the country's population growth rate \cite{WorldBankpg} and
-its background mortality rate
+of PLHIV---93\% in 2014 \cite{UNICEF}---and because HIV and
+demographic data are often stratified into these ages, although some
+data used to parametrize the model was only available for ages
+$15$--$49$ rather than for ages $15$ and older.  The background
+mortality rate ($\mu$) in each of the 127 countries was collected from
+published estimates \cite{World_Development_Indicators2013-ee}.  The
+recruitment rate ($\kappa$) into the age $15\;\text{y}$ and older
+group was set by the difference between the country's population
+growth rate \cite{WorldBankpg} and its background mortality rate
 \cite{World_Development_Indicators2013-ee}, as would be true if the
 population was at its stable age structure.
 
@@ -452,9 +458,9 @@ the current vaccine coverage is at or above target.
 We modeled 3 different targets for the proportion diagnosed ($p_D$), the
 proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
 \begin{description}
-\item[Status quo] Given initial proportions $p_D(2015)$, $p_T(2015)$,
-  and $p_V(2015)$, the targets are for the proportion to remain fixed
-  at that level for all times:
+\item[Status quo] The status quo target is for the proportions $p_D$,
+  $p_T$, and $p_V$ to remain fixed at their initial levels going
+  forward:
   \begin{equation}
     \label{status_quo_target}
     \begin{split}
@@ -582,13 +588,12 @@ proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
 
 \end{description}
 
-For vaccination, we assume that vaccination rollout begins in year
-$t_V = 2020$ (or $t_V = 2025$ in vaccine scenario analysis,
-\autoref{uncertainty}), that rollout linearly increases the proportion
-of non-infected population covered from 0\% by $r_V = 25\%$ per year
-(or $r_V = 10\%$ per year) up to $c_V = 70\%$ (or $c_V = 50\%$ or
-$c_V = 90\%$) and staying constant thereafter.  Thus, the vaccination
-target is
+For vaccination, we assume that rollout begins in year $t_V = 2020$
+(or $t_V = 2025$ in vaccine scenario analysis, \autoref{uncertainty}),
+that rollout linearly increases the proportion of the non-infected
+population covered from 0\% by $r_V = 25\%$ per year (or $r_V = 10\%$
+per year) up to $c_V = 70\%$ (or $c_V = 50\%$ or $c_V = 90\%$) and
+staying constant thereafter.  Thus, the vaccination target is
 \begin{equation}
   \label{vaccination_target}
   p_R^*(t) =
@@ -601,144 +606,38 @@ target is
   \end{cases}
 \end{equation}
 where $T_V = t_V + c_V / r_V$ is the time when rollout reaches
-the full coverage $c_V$.
+the ultimate coverage $c_V$.
 
-
-\section{Uncertainty analysis}
-\label{uncertainty}
-
-Projections were generated for each country through model simulations
-using 1000 random samples from published parameter distributions
-(table S1) and the country-specific estimated distribution of the
-transmission rate. We evaluated the global and country-level impacts
-of meeting the UNAIDS targets and vaccine deployment on four outcome
-measures: HIV incidence, PLHIV, PLAIDS, and AIDS-related deaths
-between 2015 and 2035. Our base-case scenario assumed maintenance of
-the status quo: that 2015 levels of the proportion of PLHIV diagnosed
-(pD), proportion of those diagnosed on ART (pT), and proportion of
-those on treatment who have achieved viral suppression (pV) continue
-unchanged until 2035. The intervention scenarios were (1.) the
-attainment of the 90–90–90 target by linear increases in pD, pT, and
-pV until 2020 followed by maintenance of those levels until 2035, and
-(2.) linear increase in the diagnosis and treatment levels to the
-90–90–90 target by 2020, a linear increase from 90–90–90 to the
-95–95–95 target by 2030, and maintenance of the 95–95–95 levels to
-2035. (For 90–90–90, if any initial level was above 90\%, it was kept
-constant going forward so that the intervention did not worsen
-coverage.  Likewise, for 95–95–95, any initial level above 95\% was
-kept constant.)  For vaccination, we assumed deployment of a vaccine
-with 50\% efficacy in 2020 with coverage increasing linearly by 25\%
-per year, continuing up to 70\% at 2.8 years post-rollout, and
-maintaining constant 70\% coverage thereafter.  We also performed a
-partial rank correlation coefficient (PRCC) sensitivity analysis for
-each model parameter and a scenario analysis to account for
-uncertainty in the profile of the prospective vaccine.
-
-
-$\Uniform(a, b)$ is the uniform random variable with minimum $a$
-and maximum $b$: it has density function
-\begin{equation}
-  \label{uniform}
-  p_{\Uniform}(x) =
-  \begin{cases}
-    \frac{1}{b - a} & \text{if $a \leq x \leq b$,}
-    \\
-    0 & \text{otherwise.}
-  \end{cases}
-\end{equation}
-We defined the mode for the uniform distribution to be the midpoint
-$\frac{b - a}{2}$.
-%
-$\Triangular(a, b, c)$ is the triangular random variable
-distribution with minimum $a$, mode $b$, and maximum $c$: it has
-density function
-\begin{equation}
-  \label{triangular}
-  p_{\Triangular}(x) =
-  \begin{cases}
-    \frac{2 (x - a)}{(c - a)(b - a)} & \text{if $a \leq x \leq b$,}
-    \\
-    \frac{2 (c - x)}{(c - a)(c - b)} & \text{if $b \leq x \leq c$,}
-    \\
-    0 & \text{otherwise.}
-  \end{cases}
-\end{equation}
-$\BetaPERT(a, b, c)$ is the beta-PERT probability distribution
-\cite{malcom1959} with minimum $a$, mode $b$, and maximum $c$: it has
-density function
-\begin{equation}
-  \label{betaPERT}
-  p_{\BetaPERT}(x) =
-  \begin{cases}
-    \frac{(x - a)^{v - 1} (c - x)^{w - 1}}{(c - a)^{v + w - 2} B(v, w)}
-    & \text{if $a \leq x \leq c$,}
-    \\
-    0 & \text{otherwise,}
-  \end{cases}
-\end{equation}
-where
-\begin{equation}
-  \begin{split}
-    \mu &= \frac{a + \lambda b + c}{\lambda + 2},
-    \\
-    v &= \frac{(\mu - a)(2 b - a - c)}{(b - \mu) (c - a)},
-    \\
-    w &= \frac{v (a - \mu)}{\mu - c},
-  \end{split}
-\end{equation}
-and $B(v, w)$ is the standard beta function \cite[\S 6.2]{davis1972}.
-We used the standard value of $\lambda = 4$.
-%
-$\Lognormal(\mu, \sigma^2)$ is the lognormal random variable: it has
-density function
-\begin{equation}
-  p_{\Lognormal}(x) = \frac{1}{x \sigma \sqrt{2 \pi}}
-  \exp\left(- \frac{\left(\log x - \mu\right)^2}{2 \sigma^2}\right).
-\end{equation}
-
-\comment{Vaccine scenarios.}
+Target strategies were one of the three diagnosis and treatment
+targets (status quo, 90--90--90, or 95--95--95) combined with either
+no vaccination ($p_R^*(t) = 0$) or vaccination at some level of
+efficacy, ultimate coverage, start date of rollout, and speed of
+rollout.
 
 
 \section{Data sources}
 \label{data_sources}
 
-For 127 countries, we found sufficient data to parametrize our model:
-these data consisted of estimates of longitudinal HIV incidence and
-prevalence for ages 15–49 years starting as early as 1990 in some
-countries and running through 2015, along with basic demographics.
-
-Several sources provided information to parameterize our model at the
-country level. Demographic data, including population growth rate
-\cite{WorldBankpg}, death rate
-\cite{World_Development_Indicators2013-ee}, and number of people aged
-15--49 years \cite{The_World_Bank2016-fd} were obtained from the World
-Bank. Longitudinal HIV incidence and prevalence estimates for the
-15--49 age group, spanning from as early as 1990 to 2015, was
-primarily derived from the AIDSinfo database produced by UNAIDS
+For 127 countries, we found sufficient data to parametrize our model.
+Demographic data, including population growth rate \cite{WorldBankpg},
+death rate \cite{World_Development_Indicators2013-ee}, and number of
+people aged 15--49 years \cite{The_World_Bank2016-fd} were obtained
+from the World Bank. Longitudinal HIV incidence and prevalence
+estimates for ages 15--49, spanning from as early as 1990 to 2015,
+were primarily derived from the AIDSinfo database produced by UNAIDS
 \cite{Unaids2016-an}. Other sources included UNAIDS Country Progress
 Reports \cite{Unaids2016-am} published from 2012 to 2016 and AIDS Data
 Hub \cite{AIDSdatahub-fg}, which compiles data from UNAIDS, UNICEF,
 WHO, and the Asian Development Bank. These sources were also used to
-inform the initial conditions for the model: the number of people who
-have been diagnosed with HIV, who are on ART, and who have viral
+inform the initial conditions for the model: the number of people
+diagnosed with HIV, the number on ART, and the number who have viral
 suppression or have been retained on treatment for at least 12
 months. Where data were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
-ministry reports were consulted.  We found sufficient data to
-parametrize our mathematical modeling for 127 countries.  See
-Supplemental data files for full information on data sources for each
-country.  The data files are also available in the public source-code
-repository \cite{medlock2016-git}.
-
-A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—currently have
-low HIV prevalence but relatively high incidence, resulting in large
-estimated transmission rates, leading to rapid projected growth of
-their HIV epidemics by 2035. The apparent low prevalence and high
-incidence may, at least in part, be due to the resolution in UNAIDS
-data (0.1\% for prevalence, 0.01\% for annual per-capita incidence).
-Results for such countries should be considered in light of this
-limitation.
-
+ministry reports were consulted.  See Tables S2--S6 for full
+information on data sources for each country.  The data tables are
+also available in the public source-code repository
+\cite{medlock2016-git}.
 
 \section{Model fitting}
 \label{model_fitting}
@@ -833,8 +732,14 @@ that we use to simulate our model forward and project results up to 2035.
 \comment{Need to add stuff about how we generate distribution of
   transmission rates}
 
-
-
+A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—currently have
+low HIV prevalence but relatively high incidence, resulting in large
+estimated transmission rates, leading to rapid projected growth of
+their HIV epidemics by 2035. The apparent low prevalence and high
+incidence may, at least in part, be due to the resolution in UNAIDS
+data (0.1\% for prevalence, 0.01\% for annual per-capita incidence).
+Results for such countries should be considered in light of this
+limitation.
 
 \begin{figure}
   \centering
@@ -850,12 +755,100 @@ that we use to simulate our model forward and project results up to 2035.
 \end{figure}
 
 
-\section{Source code}
+\section{Uncertainty analysis}
+\label{uncertainty}
 
-The model simulation and analysis tools, written in Python, are
-publicly available at
-\url{https://github.com/janmedlock/HIV-95-vaccine/}
-\cite{medlock2016-git}.
+Projections were generated for each country through model simulations
+using 1000 random samples from published parameter distributions
+(\autoref{model_param}) and the country-specific estimated
+distribution of the transmission rate (\autoref{model_fitting}). We
+evaluated the global and country-level impacts of meeting the UNAIDS
+targets and vaccine deployment on four outcome measures: HIV
+incidence, PLHIV, PLAIDS, and AIDS-related deaths between 2015 and
+2035. Our base-case scenario assumed maintenance of the status quo:
+that 2015 levels of the proportion of PLHIV diagnosed (pD), proportion
+of those diagnosed on ART (pT), and proportion of those on treatment
+who have achieved viral suppression (pV) continue unchanged until
+2035. The intervention scenarios were (1.) the attainment of the
+90–90–90 target by linear increases in pD, pT, and pV until 2020
+followed by maintenance of those levels until 2035, and (2.) linear
+increase in the diagnosis and treatment levels to the 90–90–90 target
+by 2020, a linear increase from 90–90–90 to the 95–95–95 target by
+2030, and maintenance of the 95–95–95 levels to 2035. (For 90–90–90,
+if any initial level was above 90\%, it was kept constant going
+forward so that the intervention did not worsen coverage.  Likewise,
+for 95–95–95, any initial level above 95\% was kept constant.)  For
+vaccination, we assumed deployment of a vaccine with 50\% efficacy in
+2020 with coverage increasing linearly by 25\% per year, continuing up
+to 70\% at 2.8 years post-rollout, and maintaining constant 70\%
+coverage thereafter.  We also performed a partial rank correlation
+coefficient (PRCC) sensitivity analysis for each model parameter and a
+scenario analysis to account for uncertainty in the profile of the
+prospective vaccine.
+
+
+$\Uniform(a, b)$ is the uniform random variable with minimum $a$
+and maximum $b$: it has density function
+\begin{equation}
+  \label{uniform}
+  p_{\Uniform}(x) =
+  \begin{cases}
+    \frac{1}{b - a} & \text{if $a \leq x \leq b$,}
+    \\
+    0 & \text{otherwise.}
+  \end{cases}
+\end{equation}
+We defined the mode for the uniform distribution to be the midpoint
+$\frac{b - a}{2}$.
+%
+$\Triangular(a, b, c)$ is the triangular random variable
+distribution with minimum $a$, mode $b$, and maximum $c$: it has
+density function
+\begin{equation}
+  \label{triangular}
+  p_{\Triangular}(x) =
+  \begin{cases}
+    \frac{2 (x - a)}{(c - a)(b - a)} & \text{if $a \leq x \leq b$,}
+    \\
+    \frac{2 (c - x)}{(c - a)(c - b)} & \text{if $b \leq x \leq c$,}
+    \\
+    0 & \text{otherwise.}
+  \end{cases}
+\end{equation}
+$\BetaPERT(a, b, c)$ is the beta-PERT probability distribution
+\cite{malcom1959} with minimum $a$, mode $b$, and maximum $c$: it has
+density function
+\begin{equation}
+  \label{betaPERT}
+  p_{\BetaPERT}(x) =
+  \begin{cases}
+    \frac{(x - a)^{v - 1} (c - x)^{w - 1}}{(c - a)^{v + w - 2} B(v, w)}
+    & \text{if $a \leq x \leq c$,}
+    \\
+    0 & \text{otherwise,}
+  \end{cases}
+\end{equation}
+where
+\begin{equation}
+  \begin{split}
+    \mu &= \frac{a + \lambda b + c}{\lambda + 2},
+    \\
+    v &= \frac{(\mu - a)(2 b - a - c)}{(b - \mu) (c - a)},
+    \\
+    w &= \frac{v (a - \mu)}{\mu - c},
+  \end{split}
+\end{equation}
+and $B(v, w)$ is the standard beta function \cite[\S 6.2]{davis1972}.
+We used the standard value of $\lambda = 4$.
+%
+$\Lognormal(\mu, \sigma^2)$ is the lognormal random variable: it has
+density function
+\begin{equation}
+  p_{\Lognormal}(x) = \frac{1}{x \sigma \sqrt{2 \pi}}
+  \exp\left(- \frac{\left(\log x - \mu\right)^2}{2 \sigma^2}\right).
+\end{equation}
+
+\comment{Vaccine scenarios.}
 
 
 \section{Analysis}
