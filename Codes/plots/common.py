@@ -496,13 +496,19 @@ def savefig(fig, filename, title = None, **kwargs):
         fig.savefig(filename, **kwargs)
         pdfoptimize(filename)
         pdf_add_info(filename, **info)
+    elif filename.endswith('.png'):
+        if ('dpi' not in kwargs):
+            kwargs['dpi'] = 600
+        fig.savefig(filename, **kwargs)
+        # Use PIL etc to set metadata.
+        image_add_info(filename, **info)
+    elif (filename.endswith('.tiff') or filename.endswith('.tif')):
+        if ('dpi' not in kwargs):
+            kwargs['dpi'] = 600
+        fig.savefig(filename, **kwargs)
+        # Use PIL etc to set metadata.
+        image_add_info(filename, **info)
     else:
-        savekwds = {}
-        if (('dpi' not in kwargs)
-            and (filename.lower().endswith('.tiff')
-                 or filename.lower().endswith('.tif'))):
-            # kwargs['dpi'] = 600
-            kwargs['dpi'] = 300
         fig.savefig(filename, **kwargs)
         # Use PIL etc to set metadata.
         image_add_info(filename, **info)
