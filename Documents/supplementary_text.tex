@@ -125,8 +125,6 @@ demographic data are often stratified into ages $15$--$49$, and to
 capture the continuing burden of infections in people ages $50$ and
 older.
 
-
-
 The background mortality rate ($\mu$) in each of the
 127 countries was collected from published estimates
 \cite{World_Development_Indicators2013-ee}.  The recruitment rate
@@ -343,8 +341,8 @@ infected people are
 \end{equation}
 where the $\tau$'s are the relative transmissibilities of people with
 acute ($A$), unsuppressed ($U$ and $T$), and suppressed ($V$)
-infections, $n$ is the annual number of coital acts, and $\epsilon$ is the
-relative transmissibility with viral suppression.  For
+infections, $n$ is the annual number of coital acts, and $\varepsilon$
+is the relative transmissibility with viral suppression.  For
 transmissibility during the acute phase, we sampled $\tau_A$ from
 $\Triangular$(0.0039, 0.0082, 0.0150)
 \cite{Wawer2005-us, Skarbinski2015-ni}, whereas, for transmissibility
@@ -352,26 +350,28 @@ for unsuppressed people, we sampled $\tau_U$ from
 $\Triangular(0.00077, 0.0014, 0.00251)$ \cite{Hughes2012-so}.  The
 transmissibility of people with viral suppression relative to those
 without suppression has been estimated at 0.08 (95\% confidence
-interval 0.002, 0.57) \cite{Donnell2010-xo}: due to the extremely
-long left tail, we chose to sample the relative transmissibility
+interval 0.002, 0.57) \cite{Donnell2010-xo}: due to the extremely long
+left tail, we chose to sample the relative transmissibility
 $\varepsilon$ from $\BetaPERT(0.08, 0.002, 0.57)$ rather than a
 $\Triangular$ distribution.  (See \autoref{uncertainty} for a full
 description of $\BetaPERT(a, b, c)$.)  The annual number of coital
 acts $n$ was sampled from $\Uniform(96, 108)$
-\cite{Wawer2005-us, Abdool_Karim2010-cm}.
+\cite{Wawer2005-us, Abdool_Karim2010-cm}.  The country-specific
+transmission rate $\eta$ was estimated from each country's
+longitudinal HIV prevalence and incidence (\autoref{model_fitting}).
 
 For year 2015, the number of people aged 15--49 years, $M(2015)$; the
 prevalence, $p_I(2015)$; the proportion diagnosed, $p_D(2015)$; the
 proportion treated, $p_T(2015)$; and proportion with viral
 suppression, $p_V(2015)$ were used to initialize the model
-(\autoref{data_sources}). Although the initial population fell in the 15--49 age group
-to account for available data, model projections allowed for analysis of aging beyond 50 years.
-Due to a lack of data on acute infections,
-and since the acute phase is so much shorter than the other stages, we
-assumed that initially there were no acute infections.  Due to a lack
-of comprehensive data on PLAIDS in each country, we assumed that the
-proportion of diagnosed, untreated people ($D + W$) who have AIDS
-($W$) in year 2015 was
+(\autoref{data_sources}).  Although the initial population used ages
+15--49 due to data availability, model projections allowed for
+analysis of infected people aging beyond age 50.  Due to a lack of
+data on acute infections, and since the acute phase is so much shorter
+than the other stages, we assumed that initially there were no acute
+infections.  Due to a lack of comprehensive data on PLAIDS in each
+country, we assumed that the proportion of diagnosed, untreated people
+($D + W$) who have AIDS ($W$) in year 2015 was
 \begin{equation}
   p_A = \frac{\sigma}{\sigma + \nu},
 \end{equation}
@@ -711,7 +711,9 @@ incidence (Tables S3 and S4), and published transmissibility estimates
 \cite{Wawer2005-us,Donnell2010-xo,Hughes2012-so,Skarbinski2015-ni}, we
 estimated an average country-specific transmission rate, which then
 informs the acute, unsuppressed, and suppressed transmission rates.
-
+This calibration method provided a recent estimate of country-specific
+transmission, while using historical data to smooth out short-term
+variations.
 
 For each country, we first estimated rates of HIV transmission for
 each of the available historical data points for prevalence and
@@ -744,13 +746,10 @@ data by
 \end{equation}
 
 To reflect the uncertainty in $\beta(t)$, we assumed that it follows a
-lognormal distribution (\autoref{uncertainty}). For the parameters $\mu$ and
-$\sigma^2$ of the lognormal distribution we used the exponentially
-weighted mean and variance \cite{holt2004} over time (with half-life
-1\;y) of $\log \beta(t)$ for the year 2015. The approach captured the recent
-transmission behavior while still allowing for the use of less-recent
-data to smooth short-term variations,
-(\autoref{transmission_rate}).  That is,
+lognormal distribution (\autoref{uncertainty}). For the parameters
+$\mu$ and $\sigma^2$ of the lognormal distribution we used the
+exponentially weighted mean and variance \cite{holt2004} over time
+(with half-life 1\;y) of $\log \beta(t)$ for the year 2015.  That is,
 \begin{equation}
   \begin{split}
     \mu &= \frac{\sum_{i = 1}^n  2^{t_i}
@@ -767,7 +766,9 @@ data to smooth short-term variations,
 A half-life of 1\;y means that the estimate of the transmission rate
 from year $i$ is weighted half as much as the estimate from year
 $i + 1$, a quarter as much as the estimate from year $i + 2$, and so
-on.
+on.  This approach captured the recent country-level transmission
+behavior while still allowing for the use of less-recent data to
+smooth short-term variations (\autoref{transmission_rate}).
 
 \begin{figure}
   \centering
@@ -812,7 +813,7 @@ limitation.
 \label{uncertainty}
 
 Projections were generated for each country through model simulations
-using 1000 random draws from published parameter distributions
+using 1000 random samples from published parameter distributions
 (\autoref{model_param}) and the country-specific estimated
 distribution of the transmission rate (\autoref{model_fitting}). The
 parameters were sampled using Latin hypercube sampling
@@ -820,8 +821,8 @@ parameters were sampled using Latin hypercube sampling
 running different interventions with the same parameter samples, i.e.,
 one set of sample parameter values is drawn, status quo and
 intervention scenarios are all run with those sample values and
-compared, and this process is repeated for each of the 1000
-parameter sets \cite{shechter2006}.
+compared, and this process is repeated for each of the 1000 sample
+sets of parameters \cite{shechter2006}.
 
 The model outcomes were summarized using the median, 1st and 3rd
 quartiles (i.e., 25th and 75th percentiles), and 5th and 95th
@@ -844,8 +845,8 @@ infections from 2015 to 2035 (\autoref{PRCCs}).
 
 Given that vaccine parameters have not yet been quantified, we
 restricted the number of unknowns by keeping vaccine efficacy constant
-over time. This assumption is based on proposed vaccine regimens that
-include boosters for sustaining immunogenicity. We chose plausible
+over time.  This assumption is based on proposed vaccine regimens that
+include boosters for sustaining immunogenicity.  We chose plausible
 baseline values for the included vaccine parameters (efficacy 50\%,
 ultimate coverage 70\%, speed of rollout 25\% per year, year vaccine
 is first available 2020) and examined uncertainty by simulating 6
