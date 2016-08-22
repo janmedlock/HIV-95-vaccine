@@ -5,6 +5,7 @@ Upload figures etc to Google Drive.
 
 import os.path
 import sys
+import time
 
 sys.path.append('..')
 import drive
@@ -31,7 +32,12 @@ folderId = '0B_53qFSHU3XKNjc0d3lTV2s4cWM'
 
 
 if __name__ == '__main__':
+    first = True
     with drive.Driver(parent = folderId) as d:
+        if not first:
+            time.sleep(1)
+        else:
+            first = False
         for f in files:
             try:
                 d.upload_if_newer(f)
