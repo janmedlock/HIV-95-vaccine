@@ -125,6 +125,8 @@ demographic data are often stratified into ages $15$--$49$, and to
 capture the continuing burden of infections in people ages $50$ and
 older.
 
+
+
 The background mortality rate ($\mu$) in each of the
 127 countries was collected from published estimates
 \cite{World_Development_Indicators2013-ee}.  The recruitment rate
@@ -147,7 +149,7 @@ Transitions between model states are governed by a series of
 differential equations parametrized using values estimated from other
 studies and from incidence and prevalence data
 (\autoref{model_param}).  The model is deterministic, but uncertainty
-in the parameters is treated by running the model many times with
+in the parameters is treated by running the model 1000 times with
 samples from the parameter distributions (\autoref{uncertainty}) and
 summarizing the model outcomes using the median, 1st and 3rd quartiles
 (i.e., 25th and 75th percentiles), and 5th and 95th percentiles.  Each
@@ -207,14 +209,14 @@ regional outcomes
       $\phi$ & Treatment rate & See eq.~(\ref{treatment_rate}) & --- \\
       $\psi$ & Rate of relapse to untreated & See eq.~(\ref{relapse_rate})
       & --- \\
-      $\zeta$ & Vaccination rate & See eqs.~(\ref{vaccination_rate}) & --- \\
+      $\zeta$ & Vaccination rate & See eq.~(\ref{vaccination_rate}) & --- \\
       \hline
     \end{tabularx}
     \caption{Model parameters. $\Triangular$, $\Uniform$, and
       $\BetaPERT$ are sampling distributions: see
       \autoref{uncertainty} for a full description.  For vaccine
       efficacy, $50\%$ was the baseline, and $30\%$ and $70\%$ were
-      also used in scenario analysis.}
+      also used in a scenario analysis.}
     \label{model_param}
   \end{center}
 \end{table}
@@ -341,8 +343,8 @@ infected people are
 \end{equation}
 where the $\tau$'s are the relative transmissibilities of people with
 acute ($A$), unsuppressed ($U$ and $T$), and suppressed ($V$)
-infections, $n$ is the annual number of coital acts, and $\eta$ is the
-country-specific transmission rate (\autoref{model_fitting}).  For
+infections, $n$ is the annual number of coital acts, and $\epsilon$ is the
+relative transmissibility with viral suppression.  For
 transmissibility during the acute phase, we sampled $\tau_A$ from
 $\Triangular$(0.0039, 0.0082, 0.0150)
 \cite{Wawer2005-us, Skarbinski2015-ni}, whereas, for transmissibility
@@ -350,7 +352,7 @@ for unsuppressed people, we sampled $\tau_U$ from
 $\Triangular(0.00077, 0.0014, 0.00251)$ \cite{Hughes2012-so}.  The
 transmissibility of people with viral suppression relative to those
 without suppression has been estimated at 0.08 (95\% confidence
-interval 0.002, 0.57) \cite{Donnell2010-xo}: because of the extremely
+interval 0.002, 0.57) \cite{Donnell2010-xo}: due to the extremely
 long left tail, we chose to sample the relative transmissibility
 $\varepsilon$ from $\BetaPERT(0.08, 0.002, 0.57)$ rather than a
 $\Triangular$ distribution.  (See \autoref{uncertainty} for a full
@@ -362,7 +364,9 @@ For year 2015, the number of people aged 15--49 years, $M(2015)$; the
 prevalence, $p_I(2015)$; the proportion diagnosed, $p_D(2015)$; the
 proportion treated, $p_T(2015)$; and proportion with viral
 suppression, $p_V(2015)$ were used to initialize the model
-(\autoref{data_sources}).  Due to a lack of data on acute infections,
+(\autoref{data_sources}). Although the initial population fell in the 15--49 age group
+to account for available data, model projections allowed for analysis of aging beyond 50 years.
+Due to a lack of data on acute infections,
 and since the acute phase is so much shorter than the other stages, we
 assumed that initially there were no acute infections.  Due to a lack
 of comprehensive data on PLAIDS in each country, we assumed that the
@@ -466,7 +470,7 @@ new diagnoses ($\alpha(t) > 0$) when the current diagnosis level is
 below the target ($p_D^*(t) > p_D(t)$), and stops new
 diagnoses ($\alpha(t) = 0$) when the current diagnosis level is at or
 above target.  We took $\alpha_{\max} = 1\;\text{y$^{-1}$}$.
-  
+
 The proportion of diagnosed people who are treated is
 \begin{equation}
   p_T(t) = \frac{T(t) + V(t) + W(t)}{D(t) + T(t) + V(t) + W(t)}.
@@ -519,7 +523,7 @@ proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
 \begin{description}
 \item[Status quo] The status quo target is for the proportions $p_D$,
   $p_T$, and $p_V$ to remain fixed at their initial levels (Table S5)
-  going forward:
+  going forward. That is,
   \begin{equation}
     \label{status_quo_target}
     \begin{split}
@@ -707,9 +711,7 @@ incidence (Tables S3 and S4), and published transmissibility estimates
 \cite{Wawer2005-us,Donnell2010-xo,Hughes2012-so,Skarbinski2015-ni}, we
 estimated an average country-specific transmission rate, which then
 informs the acute, unsuppressed, and suppressed transmission rates.
-This calibration method provided a recent snapshot of country-specific
-transmission, while using historical data to smooth out short-term
-variations.
+
 
 For each country, we first estimated rates of HIV transmission for
 each of the available historical data points for prevalence and
@@ -741,13 +743,13 @@ data by
   \beta(t) \approx \frac{i(t)}{p(t)(1-p(t))}.
 \end{equation}
 
-To capture the uncertainty in $\beta(t)$, we assumed that it follows a
-lognormal distribution (\autoref{uncertainty}).  To capture the recent
-transmission behavior while still allowing for the use of less-recent
-data to smooth short-term variations, for the parameters $\mu$ and
+To reflect the uncertainty in $\beta(t)$, we assumed that it follows a
+lognormal distribution (\autoref{uncertainty}). For the parameters $\mu$ and
 $\sigma^2$ of the lognormal distribution we used the exponentially
-weighted mean and variance \cite{holt2004} over time, with half-life
-1\;y, of $\log \beta(t)$ for the year 2015
+weighted mean and variance \cite{holt2004} over time (with half-life
+1\;y) of $\log \beta(t)$ for the year 2015. The approach captured the recent
+transmission behavior while still allowing for the use of less-recent
+data to smooth short-term variations,
 (\autoref{transmission_rate}).  That is,
 \begin{equation}
   \begin{split}
@@ -806,7 +808,7 @@ limitation.
 \label{uncertainty}
 
 Projections were generated for each country through model simulations
-using 1000 random samples from published parameter distributions
+using 1000 random draws from published parameter distributions
 (\autoref{model_param}) and the country-specific estimated
 distribution of the transmission rate (\autoref{model_fitting}). The
 parameters were sampled using Latin hypercube sampling
@@ -814,8 +816,8 @@ parameters were sampled using Latin hypercube sampling
 running different interventions with the same parameter samples, i.e.,
 one set of sample parameter values is drawn, status quo and
 intervention scenarios are all run with those sample values and
-compared, and this process is repeated for each of the 1000 sample
-sets of parameters \cite{shechter2006}.
+compared, and this process is repeated for each of the 1000
+parameter sets \cite{shechter2006}.
 
 The model outcomes were summarized using the median, 1st and 3rd
 quartiles (i.e., 25th and 75th percentiles), and 5th and 95th
@@ -836,15 +838,18 @@ infections from 2015 to 2035 (\autoref{PRCCs}).
   \label{PRCCs}
 \end{figure}
 
-Given that vaccine parameters have not yet been quantified, we chose
-plausible baseline values (efficacy 50\%, ultimate coverage 70\%,
-speed of rollout 25\% per year, year vaccine is first available 2020)
-and examined uncertainty by simulating 6 additional vaccine scenarios,
-varying efficacy (30\%, 70\%), ultimate coverage (50\%, 90\%), speed
-of rollout (10\% coverage per year), and first year of availability
-(2025; Figure 4).  The vaccine scenario analysis was done using the
-modes from the parameter distributions, not samples from these
-distributions, to reduce the computation time.
+Given that vaccine parameters have not yet been quantified, we
+restricted the number of unknowns by keeping vaccine efficacy constant
+over time. This assumption is based on proposed vaccine regimens that
+include boosters for sustaining immunogenicity. We chose plausible
+baseline values for the included vaccine parameters (efficacy 50\%,
+ultimate coverage 70\%, speed of rollout 25\% per year, year vaccine
+is first available 2020) and examined uncertainty by simulating 6
+additional vaccine scenarios, varying efficacy (30\%, 70\%), ultimate
+coverage (50\%, 90\%), speed of rollout (10\% coverage per year), and
+first year of availability (2025; Figure 4). The vaccine scenario
+analysis was done using the modes from the parameter distributions,
+not samples from these distributions, to reduce the computation time.
 
 We used several probability distributions to quantify the parameters.
 \begin{description}
