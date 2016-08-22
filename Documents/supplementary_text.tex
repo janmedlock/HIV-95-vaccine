@@ -751,14 +751,15 @@ weighted mean and variance \cite{holt2004} over time, with half-life
 (\autoref{transmission_rate}).  That is,
 \begin{equation}
   \begin{split}
-    \mu &= \frac{\sum_{i = 1}^n  0.5^{2015 - t_i} \log \beta(t_i)}
-    {\sum_{i = 1}^n 0.5^{2015 - t_i}},
+    \mu &= \frac{\sum_{i = 1}^n  2^{t_i}
+      \log \beta(t_i)}
+    {\sum_{i = 1}^n 2^{t_i}},
     \\
-    \sigma^2 &= \frac{\left[\sum_{i = 1}^n 0.5^{2015 - t_i}\right]
-      \left[\sum_{i = 1}^n  0.5^{2015 - t_i}
+    \sigma^2 &= \frac{\big(\sum_{i = 1}^n 2^{t_i}\big)
+      \left[\sum_{i = 1}^n  2^{t_i}
         \big(\log \beta(t_i) - \mu\big)^2\right]}
-    {\left[\sum_{i = 1}^n 0.5^{2015 - t_i}\right]^2
-      - \sum_{i = 1}^n \left(0.5^{2015 - t_i}\right)^2}.
+    {\big(\sum_{i = 1}^n 2^{t_i}\big)^2
+      - \sum_{i = 1}^n 2^{2 t_i}}.
   \end{split}
 \end{equation}
 
