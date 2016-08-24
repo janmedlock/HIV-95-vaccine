@@ -1,5 +1,8 @@
 '''
 Load data from the datafile.
+
+.. todo:: Stop doing country name translation here.
+          Move it all to plotting and mapping.
 '''
 
 import collections.abc

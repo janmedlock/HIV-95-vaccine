@@ -26,6 +26,12 @@ class Simulation(container.Container):
     :class:`scipy.integrate.ode` integrator---``'lsoda'``,
     ``'vode'``, ``'dopri5'``, ``'dop853'``---or
     ``'odeint'`` to use :func:`scipy.integrate.odeint`.
+
+    .. todo:: Only store .state, and compute 'susceptible' etc from that,
+              or use pandas.DataFrames or numpy.records or similar for
+              handling the attributes.
+              Implement dumping and loading that to/from an npy file.
+              Implement moving that to Multisims, too.
     '''
 
     _keys = ['susceptible', 'vaccinated', 'acute', 'undiagnosed',
