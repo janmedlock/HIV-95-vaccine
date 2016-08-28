@@ -1,8 +1,8 @@
 '''
 Load data from the datafile.
 
-.. todo:: Stop doing country name translation here.
-          Move it all to plotting and mapping.
+.. todo:: Report which countries have been updated when there's
+          a new version of the datasheet.
 '''
 
 import collections.abc
@@ -19,48 +19,6 @@ datafile = '../data_sheet.xlsx'
 # It's relative to this module file,
 # not files that might import it.
 datapath = os.path.join(os.path.dirname(__file__), datafile)
-
-
-country_replacements = {
-    'Bolivia (Plurinational State of)': 'Bolivia',
-    'Bahamas': 'The Bahamas',
-    'Congo': 'Republic of Congo',
-    "Côte d'Ivoire": 'Ivory Coast',
-    'Iran (Islamic Republic of)': 'Iran',
-    "Lao People's Democratic Republic": 'Laos',
-    'Republic of Moldova': 'Moldova',
-    'Russian Federation': 'Russia',
-    'Timor-Leste': 'East Timor',
-    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
-    'Venezuela (Bolivarian Republic of)': 'Venezuela',
-    'Viet Nam': 'Vietnam',
-    # Some screwed up regions.
-    'Eastern and Southern Africa': 'East and Southern Africa',
-    'Asia and The Pacific': 'Asia Pacific',
-    'The Caribbean': 'Caribbean',
-    'Western and Central Europe': 'Western Europe',
-}
-
-country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
-
-
-def convert_country(country, inverse = False):
-    '''
-    Convert country names used in the datasheet to those used in the maps
-    or vice versa.
-    '''
-    if inverse:
-        return country_replacements_inv.get(country, country)
-    else:
-        return country_replacements.get(country, country)
-
-
-def convert_countries(countries, inverse = False):
-    '''
-    Convert multiple country names used in the datasheet
-    to those used in the maps or vice versa.
-    '''
-    return [convert_country(c, inverse = inverse) for c in countries]
 
 
 def isyear(x):
@@ -85,11 +43,6 @@ class Sheet:
     def get_index(cls, sheet):
         return cls.parameter_names
 
-    @staticmethod
-    def get_columns(sheet):
-        # Convert country names.
-        return convert_countries(sheet.columns)
-
     @classmethod
     def get_all(cls, wb = None):
         '''
@@ -100,7 +53,6 @@ class Sheet:
         sheet_ = wb.parse(cls.sheetname, index_col = 0)
         sheet = cls.clean(sheet_)
         sheet.index = cls.get_index(sheet)
-        sheet.columns = cls.get_columns(sheet)
         return sheet
 
     @classmethod
@@ -323,16 +275,6 @@ class IncidencePrevalence(Sheet):
         return sheet.index
 
     @staticmethod
-    def get_columns(sheet):
-        '''
-        Convert country names and add data type (incidence or prevalence).
-        '''
-        tuples = []
-        for (country, datatype) in sheet.columns.values:
-            tuples.append((convert_country(country), datatype))
-        return pandas.MultiIndex.from_tuples(tuples)
-
-    @staticmethod
     def get_empty():
         return pandas.DataFrame(columns = ['prevalence',
                                            'incidence_per_capita'])
@@ -462,8 +404,6 @@ class CountryData:
         `allow_missing = None` uses Sheet defaults.
         '''
         self.country = country
-        self.country_on_datasheet = convert_country(self.country,
-                                                    inverse = True)
 
         if wb is None:
             wb = pandas.ExcelFile(datapath)
