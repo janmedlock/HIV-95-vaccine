@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Run simulations with parameter samples.
+
+.. todo:: Update to use results.dump.
 '''
 
 import model

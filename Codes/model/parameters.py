@@ -255,8 +255,6 @@ class _Super:
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
-        # Entries are states S, Q, A, U, D, T, V, W, Z,
-        # but not R.
         disability = numpy.array((0,            # S
                                   0,            # Q
                                   0.16,         # A
@@ -265,9 +263,11 @@ class _Super:
                                   disability_T, # T
                                   disability_V, # V
                                   0.582,        # W
-                                  1))           # Z
+                                  1,            # Z
+                                  0))           # R
 
         self.QALY_rates_per_person = 1 - disability
+        self.QALY_rates_per_person[-1] = 0  # R doesn't count.
 
         self.DALY_rates_per_person = disability
 

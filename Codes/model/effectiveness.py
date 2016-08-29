@@ -25,34 +25,27 @@ import unittest
 import numpy
 from scipy import integrate
 
+from . import simulation
 
-def QALYs(simulation):
-    # A component of Sphinx chokes on the '@'.
-    # QALYs_rate = (simulation.state[:, : -1]
-    #               @ simulation.parameters.QALY_rates_per_person)
-    QALYs_rate = numpy.dot(simulation.state[:, : -1],
-                           simulation.parameters.QALY_rates_per_person)
+
+def QALYs(sim):
+    QALYs_rate = sim.state @ sim.parameters.QALY_rates_per_person
     return integrate.simps(QALYs_rate, simulation.t)
 
 
-def DALYs(simulation):
-    # A component of Sphinx chokes on the '@'.
-    # DALYs_rate = (simulation.state[:, : -1]
-    #               @ simulation.parameters.DALY_rates_per_person)
-    DALYs_rate = numpy.dot(simulation.state[:, : -1],
-                           simulation.parameters.DALY_rates_per_person)
+def DALYs(sim):
+    DALYs_rate = sim.state @ sim.parameters.DALY_rates_per_person
     return integrate.simps(DALYs_rate, simulation.t)
 
 
 class TestDALYsQALYs(unittest.TestCase):
     def test_DALYs_QALYs(self):
-        from .parameters import Parameters
-        from .simulation import Simulation
-        from . import targets
+        from . import parameters
+        from . import target
         country = 'Nigeria'
-        parameters = Parameters(country).mode()
-        simulation = Simulation(parameters, targets.UNAIDS90())
+        params = parameters.Parameters(country).mode()
+        targ = target.UNAIDS90()
+        sim = simulation.Simulation(params, targ)
         self.assertTrue(numpy.isclose(
-            integrate.simps(simulation.alive + simulation.dead, simulation.t)
-            - simulation.DALYs,
-            simulation.QALYs))
+            integrate.simps(sim.alive + sim.dead, simulation.t) - sim.DALYs,
+            sim.QALYs))

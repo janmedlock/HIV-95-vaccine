@@ -29,18 +29,21 @@ def _add_ODE_vars_as_attrs(cls):
     '''
     Add ODE variables as attributes.
     '''
-    for v in ODEs.variables:
+    def _getter(v):
         def getter(self):
             try:
                 return ODEs.get_variable(self.state, v)
             except ValueError:
                 raise AttributeError
-        setattr(cls, v, property(getter))
+        return getter
+    
+    for v in ODEs.variables:
+        setattr(cls, v, property(_getter(v)))
     return cls
     
 
 @_add_ODE_vars_as_attrs
-class _SimBase:
+class _Super:
     '''
     Superclass for Simulation and MultiSim.
     '''
@@ -55,7 +58,7 @@ class _SimBase:
 
     @property
     def proportions(self):
-        return proportions.Proportions(self.state)
+        return proportions.get(self.state)
 
     # @property
     # def cost(self):
@@ -105,7 +108,7 @@ class _SimBase:
 
     @property
     def target_values(self):
-        return self.target(self.parameters, self.t)
+        return self.target(self.parameters, t)
 
     @property
     def control_rates(self):
@@ -117,7 +120,7 @@ class _SimBase:
 
     @property
     def incidence(self):
-        return incidence.compute(self.t, self.new_infections)
+        return incidence.compute(self.new_infections)
 
     @property
     def incidence_per_capita(self):
@@ -139,11 +142,10 @@ class _SimBase:
         return obj
 
 
-class Simulation(_SimBase):
+class Simulation(_Super):
     '''
     A class to hold the simulation information.
     '''
-
     def __init__(self, params, target):
         self.parameters = params
         self.target = target
@@ -153,10 +155,10 @@ class Simulation(_SimBase):
         self.state = ODEs.solve(t, self.target, self.parameters)
 
     def plot(self, *args, **kwargs):
-        plot.simulation(self, *args, **kwargs)
+        plot.simulation_(self, *args, **kwargs)
 
 
-class MultiSim(_SimBase):
+class MultiSim(_Super):
     '''
     A class to hold the multi-simulation information.
     '''

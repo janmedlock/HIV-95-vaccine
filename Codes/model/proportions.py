@@ -6,7 +6,6 @@ import warnings
 
 import numpy
 
-from . import container
 from . import ODEs
 
 
@@ -23,29 +22,31 @@ def _safe_divide(a, b, fill_value = 0):
                                            'true_divide'))
         return numpy.where((a == 0) & (b == 0), 0, numpy.divide(a, b))
 
-class Proportions(container.Container):
+
+def get(state):
     '''
     Get the proportions diagnosed, treated, viral suppressed, and vaccinated
     from the current number of people in the model compartments.
     '''
 
-    _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
+    S, Q, A, U, D, T, V, W, Z, R = ODEs.split_state(state)
 
-    def __init__(self, state):
-        S, Q, A, U, D, T, V, W, Z, R = ODEs.split_state(state)
+    # (D + T + V + W) / (A + U + D + T + V + W)
+    diagnosed = _safe_divide(D + T + V + W,
+                             A + U + D + T + V + W)
 
-        # (D + T + V + W) / (A + U + D + T + V + W)
-        self.diagnosed = _safe_divide(D + T + V + W,
-                                      A + U + D + T + V + W)
+    # (T + V + W) / (D + T + V + W)
+    treated = _safe_divide(T + V + W,
+                           D + T + V + W)
 
-        # (T + V + W) / (D + T + V + W)
-        self.treated = _safe_divide(T + V + W,
-                                    D + T + V + W)
+    # V / (T + V)
+    suppressed = _safe_divide(V,
+                              T + V)
 
-        # V / (T + V)
-        self.suppressed = _safe_divide(V,
-                                       T + V)
+    # Q / (S + Q)
+    vaccinated = _safe_divide(Q,
+                              S + Q)
 
-        # Q / (S + Q)
-        self.vaccinated = _safe_divide(Q,
-                                       S + Q)
+    return numpy.rec.fromarrays(
+        [diagnosed, treated, suppressed, vaccinated],
+        names = ['diagnosed', 'treated', 'suppressed', 'vaccinated'])

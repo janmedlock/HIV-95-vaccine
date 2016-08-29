@@ -5,12 +5,12 @@ and vaccination from the overall target goals.
 
 import numpy
 
-from . import container
 from . import control_rates
 from . import proportions
+from . import simulation
 
 
-class TargetZero:
+class OneTargetZero:
     '''
     Fixed at 0.
     '''
@@ -18,7 +18,7 @@ class TargetZero:
         return numpy.zeros_like(t, dtype = float)
 
 
-class TargetStatusQuo:
+class OneTargetStatusQuo:
     '''
     Fixed at the `initial_proportion`.
     '''
@@ -26,7 +26,7 @@ class TargetStatusQuo:
         return initial_proportion * numpy.ones_like(t, dtype = float)
 
 
-class TargetLinear:
+class OneTargetLinear:
     '''
     Linearly go from the `initial_proportion` to
     `max(target_value, initial_proportion)` between `time_to_start` and
@@ -50,7 +50,8 @@ class TargetLinear:
         return (initial_proportion
                 + (target_value_ - initial_proportion) * amount_implemented)
 
-class Target90(TargetLinear):
+
+class OneTarget90(OneTargetLinear):
     '''
     Linearly go from the `initial_proportion` to the
     `target_value = max(90%, initial_proportion)` between 2015 and
@@ -65,7 +66,7 @@ class Target90(TargetLinear):
         pass
 
 
-class Target95:
+class OneTarget95:
     '''
     Linearly go from the `initial_proportion` to
     `target_value_0 = max(90%, initial_proportion)` between 2015 and
@@ -100,12 +101,16 @@ class Target95:
                 + (target_value_1_ - target_value_0_) * amount_implemented_1)
 
 
-class Targets(container.Container):
+class Target:
     '''
     Base type for targets for diagnosis, treatment, viral suppression,
     and vaccination.
     '''
-    _keys = ('diagnosed', 'treated', 'suppressed', 'vaccinated')
+
+    diagnosed = None
+    treated = None
+    suppressed = None
+    vaccinated = None
 
     vaccine_efficacy = 0
 
@@ -121,86 +126,84 @@ class Targets(container.Container):
                                 self.__class__.__name__)
 
 
-class _TargetValues(container.Container):
+class _TargetValues:
     '''
     Hold numerical values for the targets at different points in time.
     '''
-    _keys = Targets._keys
-
     def __init__(self, targets, parameters, t):
         self.t = numpy.asarray(t)
         self.parameters = parameters
-        initial_proportions = proportions.Proportions(
+        initial_proportions = proportions.get(
             self.parameters.initial_conditions)
-        for k in self.keys():
-            target = getattr(targets, k)
-            ip = getattr(initial_proportions, k)
-            setattr(self, k, target(ip, self.t))
+        for n in initial_proportions.dtype.names:
+            target = getattr(targets, n)
+            ip = getattr(initial_proportions, n)
+            setattr(self, n, target(ip, self.t))
 
     def control_rates(self, state):
         '''
         Get the control rates given the current state.
         '''
-        return control_rates.ControlRates(self.t, state, self, self.parameters)
+        return control_rates.get(self.t, state, self, self.parameters)
 
 
-class Zero(Targets):
+class Zero(Target):
     '''
     All zero.
     '''
-    diagnosed = TargetZero()
-    treated = TargetZero()
-    suppressed = TargetZero()
-    vaccinated = TargetZero()
+    diagnosed = OneTargetZero()
+    treated = OneTargetZero()
+    suppressed = OneTargetZero()
+    vaccinated = OneTargetZero()
 
     @staticmethod
     def __str__():
         return 'All Zeroes'
 
 
-class StatusQuo(Targets):
+class StatusQuo(Target):
     '''
     Fixed at the initial proportion with no vaccination.
     '''
-    diagnosed = TargetStatusQuo()
-    treated = TargetStatusQuo()
-    suppressed = TargetStatusQuo()
-    vaccinated = TargetZero()
+    diagnosed = OneTargetStatusQuo()
+    treated = OneTargetStatusQuo()
+    suppressed = OneTargetStatusQuo()
+    vaccinated = OneTargetZero()
 
     @staticmethod
     def __str__():
         return 'Status Quo'
 
 
-class UNAIDS90(Targets):
+class UNAIDS90(Target):
     '''
     90--90--90 targets with no vaccination.
     '''
-    diagnosed = Target90()
-    treated = Target90()
-    suppressed = Target90()
-    vaccinated = TargetZero()
+    diagnosed = OneTarget90()
+    treated = OneTarget90()
+    suppressed = OneTarget90()
+    vaccinated = OneTargetZero()
 
     @staticmethod
     def __str__():
         return '90–90–90'
 
 
-class UNAIDS95(Targets):
+class UNAIDS95(Target):
     '''
     95--95--95 targets with no vaccination.
     '''
-    diagnosed = Target95()
-    treated = Target95()
-    suppressed = Target95()
-    vaccinated = TargetZero()
+    diagnosed = OneTarget95()
+    treated = OneTarget95()
+    suppressed = OneTarget95()
+    vaccinated = OneTargetZero()
 
     @staticmethod
     def __str__():
         return '95–95–95'
 
 
-class Vaccine(Targets):
+class Vaccine(Target):
     '''
     Vaccine plus the `treatment_targets`.
     '''
@@ -225,15 +228,15 @@ class Vaccine(Targets):
 
         time_to_target = (self._coverage / 0.5 * self._time_to_fifty_percent
                           + self._time_to_start)
-        self.vaccinated = TargetLinear(self._coverage,
-                                       self._time_to_start,
-                                       time_to_target)
+        self.vaccinated = OneTargetLinear(self._coverage,
+                                          self._time_to_start,
+                                          time_to_target)
         self.vaccinated.time_to_fifty_percent = self._time_to_fifty_percent
 
     def __repr__(self):
-        if isinstance(self._treatment_targets, Targets):
+        if isinstance(self._treatment_targets, Target):
             treatment_str = repr(self._treatment_targets)
-        elif issubclass(self._treatment_targets, Targets):
+        elif issubclass(self._treatment_targets, Target):
             treatment_str = '{}.{}'.format(self._treatment_targets.__module__,
                                            self._treatment_targets.__name__)
         else:
@@ -251,9 +254,9 @@ class Vaccine(Targets):
                                   ', '.join(params))
 
     def __str__(self):
-        if isinstance(self._treatment_targets, Targets):
+        if isinstance(self._treatment_targets, Target):
             treatment_str = str(self._treatment_targets)
-        elif issubclass(self._treatment_targets, Targets):
+        elif issubclass(self._treatment_targets, Target):
             treatment_str = self._treatment_targets.__str__()
         else:
             raise ValueError

@@ -4,7 +4,6 @@ Compute the value of the control rates.
 
 import numpy
 
-from . import container
 from . import proportions
 
 
@@ -36,7 +35,7 @@ def ramp(x, tol = 0.001):
     return numpy.clip(x / tol, 0, 1)
 
 
-class ControlRates(container.Container):
+def get(t, state, target_values, parameters):
     r'''
     Calculate control rates from the current proportions diagnosed, etc.
 
@@ -91,23 +90,24 @@ class ControlRates(container.Container):
     that smooths the transition in a tiny region.
     '''
 
-    _keys = ('diagnosis', 'treatment', 'nonadherence', 'vaccination')
+    proportions_ = proportions.get(state)
 
-    def __init__(self, t, state, target_values, parameters):
-        proportions_ = proportions.Proportions(state)
+    diagnosis = (ControlRatesMax.diagnosis
+                 * ramp(target_values.diagnosed
+                        - proportions_.diagnosed))
 
-        self.diagnosis = (ControlRatesMax.diagnosis
-                          * ramp(target_values.diagnosed
-                                 - proportions_.diagnosed))
+    treatment = (ControlRatesMax.treatment
+                 * ramp(target_values.treated
+                        - proportions_.treated))
 
-        self.treatment = (ControlRatesMax.treatment
-                          * ramp(target_values.treated
-                                 - proportions_.treated))
+    nonadherence = (ControlRatesMax.nonadherence
+                    * ramp(proportions_.suppressed
+                           - target_values.suppressed))
 
-        self.nonadherence = (ControlRatesMax.nonadherence
-                             * ramp(proportions_.suppressed
-                                    - target_values.suppressed))
+    vaccination = (ControlRatesMax.vaccination
+                   * ramp(target_values.vaccinated
+                          - proportions_.vaccinated))
 
-        self.vaccination = (ControlRatesMax.vaccination
-                            * ramp(target_values.vaccinated
-                                   - proportions_.vaccinated))
+    return numpy.rec.fromarrays(
+        [diagnosis, treatment, nonadherence, vaccination],
+        names = ['diagnosis', 'treatment', 'nonadherence', 'vaccination'])
