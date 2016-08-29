@@ -245,6 +245,13 @@ def _solve_ode(t, targets, parameters, Y0, fcn, integrator):
 
 def solve(t, targets, parameters,
           integrator = 'odeint', use_log = True):
+    '''
+    `integrator` is a
+    :class:`scipy.integrate.ode` integrator---``'lsoda'``,
+    ``'vode'``, ``'dopri5'``, ``'dop853'``---or
+    ``'odeint'`` to use :func:`scipy.integrate.odeint`.
+    '''
+
     assert numpy.isfinite(parameters.R0)
     assert not numpy.all(parameters.initial_conditions == 0)
 

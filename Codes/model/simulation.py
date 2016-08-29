@@ -25,11 +25,6 @@ t = numpy.linspace(t_start, t_end,
 class Simulation:
     '''
     A class to hold the simulation information.
-
-    `integrator` is a
-    :class:`scipy.integrate.ode` integrator---``'lsoda'``,
-    ``'vode'``, ``'dopri5'``, ``'dop853'``---or
-    ``'odeint'`` to use :func:`scipy.integrate.odeint`.
     '''
 
     def __init__(self, parameters, targets):
