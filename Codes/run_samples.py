@@ -6,7 +6,7 @@ Run simulations with parameter samples.
 import model
 
 
-countries = model.get_country_list()
+countries = model.datasheet.get_country_list()
 # Move these to the front.
 countries_to_plot = ['United States of America',
                      'South Africa',

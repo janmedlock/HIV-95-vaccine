@@ -12,7 +12,7 @@ import tables
 import model
 
 
-regions_and_countries = model.regions.all_ + model.get_country_list()
+regions_and_countries = model.regions.all_ + model.datasheet.get_country_list()
 
 targets = model.targets.all_
 

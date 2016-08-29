@@ -17,7 +17,7 @@ _stats_to_dump = ['new_infections', 'infected', 'incidence_per_capita',
 
 def _main():
     with model.results.samples.h5.open_() as h5file:
-        countries = model.regions.all_ + model.get_country_list()
+        countries = model.regions.all_ + model.datasheet.get_country_list()
         for country in countries:
             for target in model.targets.all_:
                 target = str(target)

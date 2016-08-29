@@ -127,7 +127,7 @@ def _get_infections_per_capita(country, target):
 
 
 def _get_infections_per_capita_averted():
-    countries = model.get_country_list()
+    countries = model.datasheet.get_country_list()
     infections_per_capita_averted = pandas.DataFrame(
         columns = interventions,
         index = countries)

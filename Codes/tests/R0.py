@@ -10,7 +10,7 @@ import model
 
 
 def _main():
-    for country in model.get_country_list():
+    for country in model.datasheet.get_country_list():
         p = model.parameters.Parameters(country).mode()
         print('{}: R_0 = {:g}'.format(country, p.R0))
 

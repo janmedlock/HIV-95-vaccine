@@ -27,7 +27,7 @@ def _main():
     samples = model.results.samples.open_()
     patch = tables.open_file(patchfile, mode = 'w', filters = filters)
 
-    countries = model.regions.all_ + model.get_country_list()
+    countries = model.regions.all_ + model.datasheet.get_country_list()
     for (country, target) in itertools.product(countries, model.targets.all_):
         target = str(target)
         group = '/{}/{}'.format(country, target)

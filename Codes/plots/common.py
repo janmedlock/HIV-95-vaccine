@@ -87,7 +87,7 @@ matplotlib.rc('axes.grid', which = 'major')
 
 all_regions = model.regions.all_
 # all_regions is already sorted by 'Global', then alphabetical.
-all_countries = model.get_country_list()
+all_countries = model.datasheet.get_country_list()
 # all_countries needs to be sorted by the name on graph.
 def country_sort_key(x):
     return unicodedata.normalize('NFKD', x)

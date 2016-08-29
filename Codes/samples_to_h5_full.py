@@ -43,7 +43,7 @@ def _main():
             samples = model.samples.load()
             _dump(h5file, '/', 'samples', samples)
 
-        countries = model.get_country_list()
+        countries = model.datasheet.get_country_list()
         for country in countries:
             for target in model.targets.all_:
                 target = str(target)

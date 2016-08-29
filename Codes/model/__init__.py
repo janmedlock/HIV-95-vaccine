@@ -12,5 +12,3 @@ from . import results
 from . import samples
 from . import simulation
 from . import targets
-
-from .datasheet import get_country_list
