@@ -30,9 +30,6 @@ class Simulation:
     :class:`scipy.integrate.ode` integrator---``'lsoda'``,
     ``'vode'``, ``'dopri5'``, ``'dop853'``---or
     ``'odeint'`` to use :func:`scipy.integrate.odeint`.
-
-    .. todo:: Implement dumping and loading that to/from an npy file.
-              Implement moving that to Multisims, too.
     '''
 
     def __init__(self, parameters, targets):
