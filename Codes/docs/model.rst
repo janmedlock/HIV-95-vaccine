@@ -22,10 +22,6 @@ effectiveness
 -------------
 .. automodule:: model.effectiveness
 
-h5
---
-.. automodule:: model.h5
-
 incidence
 ---------
 .. automodule:: model.incidence
@@ -37,10 +33,6 @@ latin_hypercube_sampling
 multicountry
 ------------
 .. automodule:: model.multicountry
-
-multisim
---------
-.. automodule:: model.multisim
 
 net_benefit
 -----------
@@ -90,17 +82,13 @@ results
 -------
 .. automodule:: model.results
 
-samples
--------
-.. automodule:: model.samples
-
 simulation
 ----------
 .. automodule:: model.simulation
 
-targets
--------
-.. automodule:: model.targets
+target
+------
+.. automodule:: model.target
 
 test
 ----

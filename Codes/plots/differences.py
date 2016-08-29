@@ -27,8 +27,8 @@ import model
 
 
 # Pairs (baseline, baseline + vaccine)
-targets = [model.targets.all_[i : i + 2]
-           for i in range(0, len(model.targets.all_), 2)]
+targets = [model.target.all_[i : i + 2]
+           for i in range(0, len(model.target.all_), 2)]
 
 
 def _get_plot_info(results, country, targs, stat):

@@ -16,8 +16,8 @@ import model
 
 countries = common.all_regions_and_countries
 
-baseline = model.targets.StatusQuo()
-targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+baseline = model.target.StatusQuo()
+targets = [baseline, model.target.Vaccine(treatment_targets = baseline)]
 targets = list(map(str, targets))
 
 attrs = ['new_infections', 'infected', 'AIDS']

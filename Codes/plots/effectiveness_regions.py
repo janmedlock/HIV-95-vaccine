@@ -28,7 +28,7 @@ regions = model.regions.all_
 if 'Global' in regions:
     regions.remove('Global')
 
-targets = model.targets.all_
+targets = model.target.all_
 
 region_labels = {
     'Global': 'Global',

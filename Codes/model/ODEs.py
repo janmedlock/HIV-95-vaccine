@@ -72,7 +72,7 @@ def split_state(state):
     return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
 
 
-def rhs(t, state, targets, parameters):
+def rhs(t, state, target, parameters):
     # Force the state variables to be non-negative.
     # The last two state variables, dead from AIDS and new infections,
     # are cumulative numbers that are set to 0 at t = 0: these
@@ -84,7 +84,7 @@ def rhs(t, state, targets, parameters):
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
 
-    control_rates = targets(parameters, t).control_rates(state)
+    control_rates = target(parameters, t).control_rates(state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -97,11 +97,11 @@ def rhs(t, state, targets, parameters):
           - parameters.death_rate * S)
 
     dQ = (control_rates.vaccination * S
-          - (1 - targets.vaccine_efficacy) * force_of_infection * Q
+          - (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
     
     dA = (force_of_infection * S
-          + (1 - targets.vaccine_efficacy) * force_of_infection * Q
+          + (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
           - parameters.death_rate * A)
 
@@ -134,12 +134,12 @@ def rhs(t, state, targets, parameters):
     dZ = parameters.death_rate_AIDS * W
 
     dR = (force_of_infection * S
-          + (1 - targets.vaccine_efficacy) * force_of_infection * Q)
+          + (1 - target.vaccine_efficacy) * force_of_infection * Q)
 
     return [dS, dQ, dA, dU, dD, dT, dV, dW, dZ, dR]
 
 
-def rhs_log(t, state_trans, targets, parameters):
+def rhs_log(t, state_trans, target, parameters):
     state = transform_inv(state_trans)
     S, Q, A, U, D, T, V, W, Z, R = state
     (S_log, U_log, D_log, T_log, V_log, W_log) = state_trans[vars_log]
@@ -148,7 +148,7 @@ def rhs_log(t, state_trans, targets, parameters):
     N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
-    control_rates = targets(parameters, t).control_rates(state)
+    control_rates = target(parameters, t).control_rates(state)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A / N
@@ -164,11 +164,11 @@ def rhs_log(t, state_trans, targets, parameters):
               - parameters.death_rate)
 
     dQ = (control_rates.vaccination * numpy.exp(S_log)
-          - (1 - targets.vaccine_efficacy) * force_of_infection * Q
+          - (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
 
     dA = (force_of_infection * numpy.exp(S_log)
-          + (1 - targets.vaccine_efficacy) * force_of_infection * Q
+          + (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
           - parameters.death_rate * A)
 
@@ -205,22 +205,22 @@ def rhs_log(t, state_trans, targets, parameters):
     dZ = parameters.death_rate_AIDS * numpy.exp(W_log)
 
     dR = (force_of_infection * numpy.exp(S_log)
-          + (1 - targets.vaccine_efficacy) * force_of_infection * Q)
+          + (1 - target.vaccine_efficacy) * force_of_infection * Q)
 
     dstate = [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]
     return dstate
 
 
-def _solve_odeint(t, targets, parameters, Y0, fcn):
-    def fcn_swap_Yt(Y, t, targets, parameters):
-        return fcn(t, Y, targets, parameters)
+def _solve_odeint(t, target, parameters, Y0, fcn):
+    def fcn_swap_Yt(Y, t, target, parameters):
+        return fcn(t, Y, target, parameters)
     return integrate.odeint(fcn_swap_Yt, Y0, t,
-                            args = (targets, parameters),
+                            args = (target, parameters),
                             mxstep = 2000,
                             mxhnil = 1)
 
 
-def _solve_ode(t, targets, parameters, Y0, fcn, integrator):
+def _solve_ode(t, target, parameters, Y0, fcn, integrator):
     solver = integrate.ode(fcn)
     if integrator == 'lsoda':
         kwds = dict(max_hnil = 1)
@@ -229,7 +229,7 @@ def _solve_ode(t, targets, parameters, Y0, fcn, integrator):
     solver.set_integrator(integrator,
                           nsteps = 2000,
                           **kwds)
-    solver.set_f_params(targets, parameters)
+    solver.set_f_params(target, parameters)
     solver.set_initial_value(Y0, t[0])
     Y = numpy.empty((len(t), len(Y0)))
     Y[0] = Y0
@@ -243,7 +243,7 @@ def _solve_ode(t, targets, parameters, Y0, fcn, integrator):
     return Y
 
 
-def solve(t, targets, parameters,
+def solve(t, target, parameters,
           integrator = 'odeint', use_log = True):
     '''
     `integrator` is a
@@ -264,20 +264,20 @@ def solve(t, targets, parameters,
 
     # Scale time to start at 0 to avoid some solver warnings.
     t_scaled = t - t[0]
-    def fcn_scaled(t_scaled, Y, targets, parameters):
-        return fcn(t_scaled + t[0], Y, targets, parameters)
+    def fcn_scaled(t_scaled, Y, target, parameters):
+        return fcn(t_scaled + t[0], Y, target, parameters)
 
     if integrator == 'odeint':
-        Y = _solve_odeint(t_scaled, targets, parameters, Y0, fcn_scaled)
+        Y = _solve_odeint(t_scaled, target, parameters, Y0, fcn_scaled)
     else:
-        Y = _solve_ode(t_scaled, targets, parameters, Y0, fcn_scaled)
+        Y = _solve_ode(t_scaled, target, parameters, Y0, fcn_scaled)
 
     if numpy.any(numpy.isnan(Y)):
         msg = ("country = '{}': NaN in solution!").format(parameters.country)
         if use_log:
             msg += "  Re-running with use_log = False."
             warnings.warn(msg)
-            return solve(t, targets, parameters,
+            return solve(t, target, parameters,
                          integrator = integrator,
                          use_log = False)
         else:

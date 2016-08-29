@@ -2,6 +2,8 @@
 Parameter data.
 '''
 
+import os.path
+
 import numpy
 import pandas
 from scipy import stats
@@ -11,6 +13,21 @@ from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
 from . import transmission_rate
+
+
+# nsamples = 1000
+nsamples = 2 # For testing.
+samplesfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           '../samples.npy')
+
+
+def _get_samples():
+    if not os.path.exists(samplesfile):
+        samples = Parameters.generate_samples(nsamples)
+        numpy.save(samplesfile, samples)
+    else:
+        samples = numpy.load(samplesfile)
+    return samples
 
 
 def uniform(minimum, maximum):
@@ -308,11 +325,18 @@ class Sample(_Super):
 
         super().__init__(parameters)
 
-    @classmethod
-    def from_samples(cls, country, samples):
-        parameters = Parameters(country)
-        for s in samples:
-            yield cls(parameters, s)
+
+class Samples:
+    def __init__(self, country):
+        self.country = country
+    
+    def __iter__(self):
+        self._parameters = Parameters(self.country)
+        self._samples = iter(_get_samples())
+        return self
+
+    def __next__(self):
+        return Sample(self._parameters, next(self._samples))
 
 
 class Mode(_Super):

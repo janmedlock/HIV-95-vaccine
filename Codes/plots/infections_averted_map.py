@@ -20,11 +20,11 @@ sys.path.append('..')
 import model
 
 
-baseline = model.targets.StatusQuo()
+baseline = model.target.StatusQuo()
 interventions = (
-    model.targets.UNAIDS95(),
-    model.targets.Vaccine(treatment_targets = model.targets.StatusQuo()),
-    model.targets.Vaccine(treatment_targets = model.targets.UNAIDS95()))
+    model.target.UNAIDS95(),
+    model.target.Vaccine(treatment_targets = model.target.StatusQuo()),
+    model.target.Vaccine(treatment_targets = model.target.UNAIDS95()))
 
 baseline = str(baseline)
 interventions = list(map(str, interventions))

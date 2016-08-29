@@ -13,26 +13,25 @@ resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           '../results')
 
 
-def get_path(country, targets, suffix = None):
-    if suffix is None:
+def get_path(country, target, parameters_type = 'sample'):
+    if parameters_type == 'sample' :
         suffix = ''
-    filename = '{}{}.npy'.format(str(targets), suffix)
+    else:
+        suffix = parameters_type
+    filename = '{}{}.npy'.format(str(target), suffix)
     return os.path.join(resultsdir, country, filename)
 
 
-def dump(obj, suffix = None):
-    path = get_path(obj.parameters.country, obj.targets, suffix = suffix)
+def dump(obj, parameters_type = 'sample'):
+    path = get_path(obj.parameters.country, obj.target,
+                    parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
         os.mkdirs(os.path.dirname(path))
     return numpy.save(path, obj.state)
 
 
-def load(country, targets, suffix = None):
-    path = get_path(country, targets, suffix = suffix)
+def load(country, target, parameters_type = 'sample'):
+    path = get_path(country, target,
+                    parameters_type = parameters_type)
     state = numpy.load(path)
-    if state.ndim == 2:
-        return simulation.Simulation._from_state(country, targets, state)
-    elif numpy.ndim == 3:
-        return multisim.Multisim._from_state(country, targets, state)
-    else:
-        raise ValueError('Unknown state.ndim == {}!'.format(state.ndim))
+    return simulation._from_state(country, target, state, parameters_type)

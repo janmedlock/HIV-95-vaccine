@@ -4,6 +4,7 @@ Simulation of the HIV model.
 
 import copy
 
+import joblib
 import numpy
 
 # from . import cost
@@ -11,8 +12,10 @@ from . import effectiveness
 from . import incidence
 # from . import net_benefit
 from . import ODEs
+from . import parameters
 from . import plot
 from . import proportions
+from . import results
 
 
 t_start = 2015
@@ -22,18 +25,25 @@ t = numpy.linspace(t_start, t_end,
                    numpy.abs(t_end - t_start) * pts_per_year + 1)
 
 
-class Simulation:
+def _add_ODE_vars_as_attrs(cls):
     '''
-    A class to hold the simulation information.
+    Add ODE variables as attributes.
     '''
+    for v in ODEs.variables:
+        def getter(self):
+            try:
+                return ODEs.get_variable(self.state, v)
+            except ValueError:
+                raise AttributeError
+        setattr(cls, v, property(getter))
+    return cls
+    
 
-    def __init__(self, parameters, targets):
-        self.parameters = parameters
-        self.targets = targets
-        self.solve()
-
-    def solve(self):
-        self.state = ODEs.solve(t, self.targets, self.parameters)
+@_add_ODE_vars_as_attrs
+class _SimBase:
+    '''
+    Superclass for Simulation and MultiSim.
+    '''
 
     @property
     def alive(self):
@@ -95,7 +105,7 @@ class Simulation:
 
     @property
     def target_values(self):
-        return self.targets(self.parameters, self.t)
+        return self.target(self.parameters, self.t)
 
     @property
     def control_rates(self):
@@ -117,29 +127,69 @@ class Simulation:
     def R0(self):
         return self.parameters.R0
 
-    def plot(self, *args, **kwargs):
-        plot.simulation(self, *args, **kwargs)
+    def dump(self, parameters_type):
+        return results.dump(self, parameters_type = parameters_type)
 
     @classmethod
-    def _from_state(cls, country, targets, state):
-        obj = super().__new__(cls)
-        obj.country = country
-        obj.targets = targets
+    def _from_state(cls, params, target, state):
+        obj = cls.__new__(cls)
+        obj.parameters = params
+        obj.target = target
         obj.state = state
         return obj
 
+
+class Simulation(_SimBase):
+    '''
+    A class to hold the simulation information.
+    '''
+
+    def __init__(self, params, target):
+        self.parameters = params
+        self.target = target
+        self.solve()
+
+    def solve(self):
+        self.state = ODEs.solve(t, self.target, self.parameters)
+
+    def plot(self, *args, **kwargs):
+        plot.simulation(self, *args, **kwargs)
+
+
+class MultiSim(_SimBase):
+    '''
+    A class to hold the multi-simulation information.
+    '''
+    def __init__(self, params, target):
+        self.parameters = params
+        self.target = target
+        self.solve()
+
+    def solve(self):
+        with joblib.Parallel(n_jobs = -1, verbose = 5) as parallel:
+            simulations = parallel(joblib.delayed(Simulation)(p, self.target)
+                                   for p in self.parameters)
+        self.state = numpy.array([s.state for s in simulations])
+
+    def dump(self):
+        return super().dump(parameters_type = 'sample')
+
     @classmethod
-    def _add_variables_as_attrs(cls):
-        '''
-        Add ODE variables as attributes.
-        '''
-        for v in ODEs.variables:
-            def getter(self):
-                try:
-                    return ODEs.get_variable(self.state, v)
-                except ValueError:
-                    raise AttributeError
-            setattr(cls, v, property(getter))
+    def load(cls, country, target, state):
+        params = parameters.Samples(country)
+        return cls._from_state(params, target, state)
 
 
-Simulation._add_variables_as_attrs()
+def _from_state(country, target, state, parameters_type):
+    '''
+    Factory to rebuild a Simulation or MultiSims object from state.
+    '''
+    if parameters_type == 'sample':
+        params = parameters.Samples(country)
+        return MultiSim._from_state(params, target, state)
+    elif parameters_type == 'mode':
+        params = parameters.Mode.from_country(country)
+        return Simulation._from_state(params, target, state)
+    else:
+        raise ValueError("Unknown parameters_type '{}'!".format(
+            parameters_type))

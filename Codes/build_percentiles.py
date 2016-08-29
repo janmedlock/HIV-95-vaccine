@@ -14,7 +14,7 @@ import model
 
 regions_and_countries = model.regions.all_ + model.datasheet.get_country_list()
 
-targets = model.targets.all_
+targets = model.target.all_
 
 _stats_to_dump = ['new_infections', 'infected', 'incidence_per_capita',
                   'AIDS', 'dead']
