@@ -146,13 +146,17 @@ class Simulation(_Super):
     '''
     A class to hold the simulation information.
     '''
-    def __init__(self, params, target):
+    def __init__(self, params, target, *args, **kwargs):
         self.parameters = params
         self.target = target
+        self.args = args
+        self.kwargs = kwargs
         self.solve()
 
     def solve(self):
-        self.state = ODEs.solve(t, self.target, self.parameters)
+        self.state = ODEs.solve(t, self.target, self.parameters,
+                                *self.args,
+                                **self.kwargs)
 
     def plot(self, *args, **kwargs):
         plot.simulation_(self, *args, **kwargs)
@@ -162,15 +166,19 @@ class MultiSim(_Super):
     '''
     A class to hold the multi-simulation information.
     '''
-    def __init__(self, params, target):
+    def __init__(self, params, target, *args, **kwargs):
         self.parameters = params
         self.target = target
+        self.args = args
+        self.kwargs = kwargs
         self.solve()
 
     def solve(self):
         with joblib.Parallel(n_jobs = -1, verbose = 5) as parallel:
-            simulations = parallel(joblib.delayed(Simulation)(p, self.target)
-                                   for p in self.parameters)
+            simulations = parallel(
+                joblib.delayed(Simulation)(p, self.target,
+                                           *self.args, **self.kwargs)
+                for p in self.parameters)
         self.state = numpy.array([s.state for s in simulations])
 
     def dump(self):
