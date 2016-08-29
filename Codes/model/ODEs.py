@@ -2,24 +2,50 @@
 ODEs representing the HIV model.
 '''
 
+import warnings
+
 import numpy
+from scipy import integrate
 
 
-# S is susceptible.
-# Q is vaccinated.
-# A is acute infection.
-# U is undiagnosed.
-# D is diagnosed but not treated.
-# T is treated but not viral suppressed.
-# V is viral suppressed.
-# W is AIDS.
-# Z is dead from AIDS.
-# R is new infectons.
+variables = (
+    'susceptible',        # S
+    'vaccinated',         # Q
+    'acute',              # A
+    'undiagnosed',        # U
+    'diagnosed',          # D
+    'treated',            # T
+    'viral_suppression',  # V
+    'AIDS',               # W
+    'dead',               # Z
+    'new_infections',     # R
+)
+
+alive = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
+         'diagnosed', 'treated', 'viral_suppression', 'AIDS')
+
+infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
+            'viral_suppression', 'AIDS')
+
+
+def get_variable(state, name):
+    i = variables.index(name)
+    return state[..., i]
+
+
+def get_alive(state):
+    return sum(get_variable(state, k) for k in alive)
+
+
+def get_infected(state):
+    return sum(get_variable(state, k) for k in infected)
+
 
 # Variables to log transform: S, U, D, T, V, W
 vars_log = [0, 3, 4, 5, 6, 7]
 # Variables to not log transform: Q, A, Z, R
 vars_nonlog = [1, 2, 8, 9]
+
 
 def transform(state, _log0 = -20):
     '''
@@ -30,6 +56,7 @@ def transform(state, _log0 = -20):
         _log0)
     state_trans[..., vars_nonlog] = state[..., vars_nonlog]
     return state_trans
+
 
 def transform_inv(state_trans):
     '''
@@ -182,3 +209,73 @@ def rhs_log(t, state_trans, targets, parameters):
 
     dstate = [dS_log, dQ, dA, dU_log, dD_log, dT_log, dV_log, dW_log, dZ, dR]
     return dstate
+
+
+def _solve_odeint(t, targets, parameters, Y0, fcn):
+    def fcn_swap_Yt(Y, t, targets, parameters):
+        return fcn(t, Y, targets, parameters)
+    return integrate.odeint(fcn_swap_Yt, Y0, t,
+                            args = (targets, parameters),
+                            mxstep = 2000,
+                            mxhnil = 1)
+
+
+def _solve_ode(t, targets, parameters, Y0, fcn, integrator):
+    solver = integrate.ode(fcn)
+    if integrator == 'lsoda':
+        kwds = dict(max_hnil = 1)
+    else:
+        kwds = {}
+    solver.set_integrator(integrator,
+                          nsteps = 2000,
+                          **kwds)
+    solver.set_f_params(targets, parameters)
+    solver.set_initial_value(Y0, t[0])
+    Y = numpy.empty((len(t), len(Y0)))
+    Y[0] = Y0
+    for i in range(1, len(t)):
+        Y[i] = solver.integrate(t[i])
+        if not use_log:
+            # Force to be non-negative.
+            Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
+            solver.set_initial_value(Y[i], t[i])
+        assert solver.successful()
+    return Y
+
+
+def solve(t, targets, parameters,
+          integrator = 'odeint', use_log = True):
+    assert numpy.isfinite(parameters.R0)
+    assert not numpy.all(parameters.initial_conditions == 0)
+
+    Y0 = parameters.initial_conditions.copy().values
+    if use_log:
+        Y0 = transform(Y0)
+        fcn = rhs_log
+    else:
+        fcn = rhs
+
+    # Scale time to start at 0 to avoid some solver warnings.
+    t_scaled = t - t[0]
+    def fcn_scaled(t_scaled, Y, targets, parameters):
+        return fcn(t_scaled + t[0], Y, targets, parameters)
+
+    if integrator == 'odeint':
+        Y = _solve_odeint(t_scaled, targets, parameters, Y0, fcn_scaled)
+    else:
+        Y = _solve_ode(t_scaled, targets, parameters, Y0, fcn_scaled)
+
+    if numpy.any(numpy.isnan(Y)):
+        msg = ("country = '{}': NaN in solution!").format(parameters.country)
+        if use_log:
+            msg += "  Re-running with use_log = False."
+            warnings.warn(msg)
+            return solve(t, targets, parameters,
+                         integrator = integrator,
+                         use_log = False)
+        else:
+            raise ValueError(msg)
+    elif use_log:
+        return transform_inv(Y)
+    else:
+        return Y

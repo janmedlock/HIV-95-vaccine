@@ -1,5 +1,7 @@
 '''
 Run multiple simulations in parallel.
+
+.. todo:: Use the new style of simulation and results.
 '''
 
 import joblib

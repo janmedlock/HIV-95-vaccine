@@ -483,7 +483,7 @@ _shelf = CountryDataShelf()
 
 
 def get_country_data(country):
-    return _shelf(country)
+    return _shelf[country]
 
 
 def _get_country_list(sheet = 'all', wb = None):

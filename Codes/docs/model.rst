@@ -90,34 +90,6 @@ results
 -------
 .. automodule:: model.results
 
-common
-~~~~~~
-.. automodule:: model.results.common
-
-modes
-~~~~~
-.. automodule:: model.results.modes
-
-samples
-~~~~~~~
-.. automodule:: model.results.samples
-
-cache
-+++++
-.. automodule:: model.results.samples.cache
-
-h5
-++
-.. automodule:: model.results.samples.h5
-
-results
-+++++++
-.. automodule:: model.results.samples.results
-
-stats
-+++++
-.. automodule:: model.results.samples.stats
-
 samples
 -------
 .. automodule:: model.samples
