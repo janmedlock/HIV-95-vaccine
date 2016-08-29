@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-Test :mod:`model.targets`.
+Test :mod:`model.target`.
 '''
 
 import sys
@@ -11,17 +11,15 @@ sys.path.append('..')
 import model
 
 
-def _print_container(c):
-    print('\n'.join('{} = {}'.format(k, v)
-                    for (k, v) in c.items()))
-
-
 if __name__ == '__main__':
     parameters = model.parameters.Parameters('South Africa')
-    targets = model.targets.Vaccine()
+    target = model.target.Vaccine()
     times = [2015, 2020, 2021, 2022, 2023, 2025, 2030]
-    target_values = targets(parameters, times)
-    _print_container(target_values)
+    target_values = target(parameters, times)
+    print(list(zip(target_values.diagnosed,
+                   target_values.treated,
+                   target_values.suppressed,
+                   target_values.vaccinated)))
     state = numpy.vstack(len(times) * (parameters.mode().initial_conditions, ))
     control_rates = target_values.control_rates(state)
-    _print_container(control_rates)
+    print(control_rates)
