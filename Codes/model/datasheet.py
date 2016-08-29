@@ -479,7 +479,11 @@ class CountryDataShelf(collections.abc.Mapping):
         return iter(self._shelf)
 
 
-data = CountryDataShelf()
+_shelf = CountryDataShelf()
+
+
+def get_country_data(country):
+    return _shelf(country)
 
 
 def _get_country_list(sheet = 'all', wb = None):
@@ -513,7 +517,7 @@ def _get_country_list(sheet = 'all', wb = None):
 
 def get_country_list(sheet = 'all', wb = None):
     if sheet == 'all':
-        return sorted(data.keys())
+        return sorted(_shelf.keys())
     else:
         return _get_country_list(sheet = sheet, wb = wb)
 

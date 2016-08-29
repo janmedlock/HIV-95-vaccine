@@ -98,8 +98,8 @@ class Parameters:
     def __init__(self, country):
         self.country = country
 
-        data = datasheet.data[country]
-        # Import attributes from cd into self.
+        data = datasheet.get_country_data(country)
+        # Import attributes from country data into self.
         for k in dir(data):
             a = getattr(data, k)
             if ((not k.startswith('_')) and (not callable(a))):

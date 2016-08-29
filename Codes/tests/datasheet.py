@@ -22,7 +22,7 @@ def test_all():
     '''
     Test loading all data from the datasheet.
     '''
-    for country in model.datasheet.get_country_list():
+    for country in model.get_country_list():
         print(country)
         model.parameters.Parameters(country)
 

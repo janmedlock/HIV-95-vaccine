@@ -44,9 +44,8 @@ def plot_all(**kwargs):
                                           **kwargs)
             filebase = os.path.join(path, region_or_country.replace(' ', '_'))
             filename = '{}.pdf'.format(filebase)
-            label = common.get_country_label(region_or_country)
             common.savefig(fig, filename,
-                           title = '{} effectiveness'.format(label))
+                           title = '{} effectiveness'.format(region_or_country))
             pyplot.close(fig)
 
 
@@ -60,7 +59,6 @@ def combine(prefix = '../Codes/plots'):
             filename = os.path.join(prefix, path,
                                     '{}.pdf'.format(filebase))
             filename = os.path.normpath(filename)
-            label = common.get_country_label(region_or_country)
             if isfirst:
                 isfirst = False
             else:
@@ -68,7 +66,7 @@ def combine(prefix = '../Codes/plots'):
             fd.write(template[1 : ].format(
                 figfile = filename,
                 base = filebase,
-                region_or_country = label))
+                region_or_country = region_or_country))
 
 
 if __name__ == '__main__':
