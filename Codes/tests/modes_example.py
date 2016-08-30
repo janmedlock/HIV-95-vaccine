@@ -18,7 +18,7 @@ import seaborn_quiet as seaborn
 
 if __name__ == '__main__':
     country = 'South Africa'
-    targets = model.target.StatusQuo()
+    target = model.target.StatusQuo()
 
     results = model.results.load(country, target, 'mode')
 
@@ -32,5 +32,5 @@ if __name__ == '__main__':
     x = getattr(results, stat)
     pyplot.plot(t, x, label = country)
     pyplot.ylabel(stat.capitalize())
-    pyplot.legend(loc = 'upper right', frameon = False)
+    pyplot.legend(loc = 'upper left', frameon = False)
     pyplot.show()
