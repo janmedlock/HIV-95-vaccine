@@ -18,7 +18,7 @@ def get_path(country, target, parameters_type = 'sample'):
         suffix = ''
     else:
         suffix = parameters_type
-    filename = '{}{}.npy'.format(str(target), suffix)
+    filename = '{}{}.npz'.format(str(target), suffix)
     return os.path.join(resultsdir, country, filename)
 
 
@@ -27,11 +27,11 @@ def dump(obj, parameters_type = 'sample'):
                     parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
         os.mkdirs(os.path.dirname(path))
-    return numpy.save(path, obj.state)
+    return numpy.savez_compressed(path, obj.state)
 
 
 def load(country, target, parameters_type = 'sample'):
     path = get_path(country, target,
                     parameters_type = parameters_type)
-    state = numpy.load(path)
+    state = numpy.load(path)[0]
     return simulation._from_state(country, target, state, parameters_type)
