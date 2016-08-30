@@ -28,9 +28,9 @@ from . import locators
 
 # Change cartopy cache from ~/.local/share
 # to a subdirectory so it'll go in Google Drive.
-cartopy.config['data_dir'] = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '_cartopy')
+cartopy.config['data_dir'] = os.path.normpath(os.path.join(
+    os.path.dirname(__file__),
+    '_cartopy'))
 
 
 _east_hemis = shapely.geometry.box(180, -90, 0, 90)

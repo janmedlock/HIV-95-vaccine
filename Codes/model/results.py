@@ -11,8 +11,8 @@ from . import parameters
 from . import simulation
 
 
-resultsdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          '../results')
+resultsdir = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                           '../results'))
 
 
 def get_path(country, target, parameters_type = 'sample'):

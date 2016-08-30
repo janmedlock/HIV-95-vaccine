@@ -17,8 +17,8 @@ from . import transmission_rate
 
 # nsamples = 1000
 nsamples = 2 # For testing.
-samplesfile = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           '../samples.npy')
+samplesfile = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                            '../samples.npy'))
 
 
 def _get_samples():
