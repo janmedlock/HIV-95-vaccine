@@ -4,8 +4,10 @@ Dump and load simulation results.
 
 import os
 
-import numpy
+import joblib
 
+from . import ODEs
+from . import parameters
 from . import simulation
 
 
@@ -18,7 +20,8 @@ def get_path(country, target, parameters_type = 'sample'):
         suffix = ''
     else:
         suffix = parameters_type
-    filename = '{}{}.npz'.format(str(target), suffix)
+    # filename = '{}{}.npz'.format(str(target), suffix)
+    filename = '{}{}.pkl.z'.format(str(target), suffix)
     return os.path.join(resultsdir, country, filename)
 
 
@@ -27,11 +30,11 @@ def dump(obj, parameters_type = 'sample'):
                     parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
         os.mkdirs(os.path.dirname(path))
-    return numpy.savez_compressed(path, obj.state)
+    return joblib.dump(obj.state, path, compress = 3)
 
 
 def load(country, target, parameters_type = 'sample'):
     path = get_path(country, target,
                     parameters_type = parameters_type)
-    state = numpy.load(path)[0]
+    state = joblib.load(path)
     return simulation._from_state(country, target, state, parameters_type)
