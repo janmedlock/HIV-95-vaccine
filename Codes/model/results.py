@@ -19,8 +19,7 @@ def get_path(country, target, parameters_type = 'samples'):
     if parameters_type == 'samples' :
         suffix = ''
     else:
-        suffix = parameters_type
-    # filename = '{}{}.npz'.format(str(target), suffix)
+        suffix = '-' + parameters_type
     filename = '{}{}.pkl.z'.format(str(target), suffix)
     return os.path.join(resultsdir, country, filename)
 
