@@ -44,3 +44,9 @@ def load(country, target, parameters_type = 'samples'):
                     parameters_type = parameters_type)
     state = joblib.load(path)
     return simulation._from_state(country, target, state, parameters_type)
+
+
+def exists(country, target, parameters_type = 'samples'):
+    path = get_path(obj.parameters.country, obj.target,
+                    parameters_type = parameters_type)
+    return os.path.exists(path)

@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Run simulations with parameter samples.
-
-.. todo:: Update to use results.dump.
 '''
 
 import model
@@ -37,9 +35,9 @@ def _main():
 
     for country in countries:
         for target in model.targets.all_:
-            if not model.results.samples.exists(country, target):
+            if not model.results.exists(country, target):
                 results = _run_country(country, target, samples)
-                model.results.samples.dump(country, target, results)
+                model.results.dump(results)
 
 
 if __name__ == '__main__':
