@@ -7,6 +7,8 @@ import warnings
 import numpy
 from scipy import integrate
 
+from . import control_rates
+
 
 variables = (
     'susceptible',        # S
@@ -84,7 +86,7 @@ def rhs(t, state, target, parameters):
     # Total sexually active population.
     N = S + Q + A + U + D + T + V
 
-    control_rates = target(parameters, t).control_rates(state)
+    control_rates_ =  control_rates.get(t, state, target, parameters)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A
@@ -92,11 +94,11 @@ def rhs(t, state, target, parameters):
         + parameters.transmission_rate_suppressed * V) / N
 
     dS = (parameters.birth_rate * N
-          - control_rates.vaccination * S
+          - control_rates_.vaccination * S
           - force_of_infection * S
           - parameters.death_rate * S)
 
-    dQ = (control_rates.vaccination * S
+    dQ = (control_rates_.vaccination * S
           - (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
     
@@ -106,24 +108,24 @@ def rhs(t, state, target, parameters):
           - parameters.death_rate * A)
 
     dU = (parameters.progression_rate_acute * A
-          - control_rates.diagnosis * U
+          - control_rates_.diagnosis * U
           - parameters.death_rate * U
           - parameters.progression_rate_unsuppressed * U)
 
-    dD = (control_rates.diagnosis * U
-          + control_rates.nonadherence * (T + V)
-          - control_rates.treatment * D
+    dD = (control_rates_.diagnosis * U
+          + control_rates_.nonadherence * (T + V)
+          - control_rates_.treatment * D
           - parameters.death_rate * D
           - parameters.progression_rate_unsuppressed * D)
 
-    dT = (control_rates.treatment * D
-          - control_rates.nonadherence * T
+    dT = (control_rates_.treatment * D
+          - control_rates_.nonadherence * T
           - parameters.suppression_rate * T
           - parameters.death_rate * T
           - parameters.progression_rate_unsuppressed * T)
 
     dV = (parameters.suppression_rate * T
-          - control_rates.nonadherence * V
+          - control_rates_.nonadherence * V
           - parameters.death_rate * V
           - parameters.progression_rate_suppressed * V)
 
@@ -148,7 +150,7 @@ def rhs_log(t, state_trans, target, parameters):
     N = S + Q + A + U + D + T + V
     N_log = numpy.log(N)
 
-    control_rates = target(parameters, t).control_rates(state)
+    control_rates_ =  control_rates.get(t, state, target, parameters)
 
     force_of_infection = (
         parameters.transmission_rate_acute * A / N
@@ -159,11 +161,11 @@ def rhs_log(t, state_trans, target, parameters):
         + parameters.transmission_rate_suppressed * numpy.exp(V_log - N_log))
 
     dS_log = (parameters.birth_rate * numpy.exp(N_log - S_log)
-              - control_rates.vaccination
+              - control_rates_.vaccination
               - force_of_infection
               - parameters.death_rate)
 
-    dQ = (control_rates.vaccination * numpy.exp(S_log)
+    dQ = (control_rates_.vaccination * numpy.exp(S_log)
           - (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
 
@@ -173,25 +175,25 @@ def rhs_log(t, state_trans, target, parameters):
           - parameters.death_rate * A)
 
     dU_log = (parameters.progression_rate_acute * A * numpy.exp(- U_log)
-              - control_rates.diagnosis
+              - control_rates_.diagnosis
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dD_log = (control_rates.diagnosis * numpy.exp(U_log - D_log)
-              + control_rates.nonadherence * (numpy.exp(T_log - D_log)
-                                              + numpy.exp(V_log - D_log))
-              - control_rates.treatment
+    dD_log = (control_rates_.diagnosis * numpy.exp(U_log - D_log)
+              + control_rates_.nonadherence * (numpy.exp(T_log - D_log)
+                                               + numpy.exp(V_log - D_log))
+              - control_rates_.treatment
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
-    dT_log = (control_rates.treatment * numpy.exp(D_log - T_log)
-              - control_rates.nonadherence
+    dT_log = (control_rates_.treatment * numpy.exp(D_log - T_log)
+              - control_rates_.nonadherence
               - parameters.suppression_rate
               - parameters.death_rate
               - parameters.progression_rate_unsuppressed)
 
     dV_log = (parameters.suppression_rate * numpy.exp(T_log - V_log)
-              - control_rates.nonadherence
+              - control_rates_.nonadherence
               - parameters.death_rate
               - parameters.progression_rate_suppressed)
 

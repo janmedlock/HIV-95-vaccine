@@ -31,22 +31,23 @@ def get(state):
 
     S, Q, A, U, D, T, V, W, Z, R = ODEs.split_state(state)
 
+    names = []
+    arrays = []
+
+    names.append('diagnosed')
     # (D + T + V + W) / (A + U + D + T + V + W)
-    diagnosed = _safe_divide(D + T + V + W,
-                             A + U + D + T + V + W)
+    arrays.append(_safe_divide(D + T + V + W, A + U + D + T + V + W))
 
+    names.append('treated')
     # (T + V + W) / (D + T + V + W)
-    treated = _safe_divide(T + V + W,
-                           D + T + V + W)
+    arrays.append(_safe_divide(T + V + W, D + T + V + W))
 
+    names.append('suppressed')
     # V / (T + V)
-    suppressed = _safe_divide(V,
-                              T + V)
+    arrays.append(_safe_divide(V, T + V))
 
+    names.append('vaccinated')
     # Q / (S + Q)
-    vaccinated = _safe_divide(Q,
-                              S + Q)
+    arrays.append(_safe_divide(Q, S + Q))
 
-    return numpy.rec.fromarrays(
-        [diagnosed, treated, suppressed, vaccinated],
-        names = ['diagnosed', 'treated', 'suppressed', 'vaccinated'])
+    return numpy.rec.fromarrays(arrays, names = names)

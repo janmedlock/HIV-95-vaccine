@@ -7,6 +7,7 @@ import copy
 import joblib
 import numpy
 
+from . import control_rates
 # from . import cost
 from . import effectiveness
 from . import incidence
@@ -108,11 +109,11 @@ class _Super:
 
     @property
     def target_values(self):
-        return self.target(self.parameters, t)
+        return self.target(t, self.parameters)
 
     @property
     def control_rates(self):
-        return self.target_values.control_rates(self.state)
+        return control_rates.get(t, self.state, self.target, self.parameters)
 
     @property
     def prevalence(self):

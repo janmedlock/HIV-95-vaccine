@@ -22,10 +22,11 @@ def simulation_(sim, show = True):
 
     (fig0, ax0) = pyplot.subplots(2, 1)
 
-    for n in sim.proportions.dtype.names:
-        pv = getattr(sim.proportions, n)
-        tv = getattr(sim.target_values, n)
-        l = ax0[0].plot(simulation.t, pv, label = n)
+    for (pn, tn) in zip(sim.proportions.dtype.names,
+                        sim.target_values.dtype.names):
+        pv = getattr(sim.proportions, pn)
+        tv = getattr(sim.target_values, tn)
+        l = ax0[0].plot(simulation.t, pv, label = pn)
         ax0[0].plot(simulation.t, tv, color = l[0].get_color(),
                     linestyle = ':')
     ax0[0].legend(loc = 'lower right')

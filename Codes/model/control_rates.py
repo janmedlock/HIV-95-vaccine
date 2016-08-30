@@ -35,7 +35,7 @@ def ramp(x, tol = 0.001):
     return numpy.clip(x / tol, 0, 1)
 
 
-def get(t, state, target_values, parameters):
+def get(t, state, target, parameters):
     r'''
     Calculate control rates from the current proportions diagnosed, etc.
 
@@ -89,25 +89,31 @@ def get(t, state, target_values, parameters):
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
-
     proportions_ = proportions.get(state)
 
-    diagnosis = (ControlRatesMax.diagnosis
-                 * ramp(target_values.diagnosed
-                        - proportions_.diagnosed))
+    target_values = target(t, parameters)
 
-    treatment = (ControlRatesMax.treatment
-                 * ramp(target_values.treated
-                        - proportions_.treated))
+    names = []
+    arrays = []
+    
+    names.append('diagnosis')
+    arrays.append(ControlRatesMax.diagnosis
+                  * ramp(target_values.diagnosed
+                         - proportions_.diagnosed))
 
-    nonadherence = (ControlRatesMax.nonadherence
-                    * ramp(proportions_.suppressed
-                           - target_values.suppressed))
+    names.append('treatment')
+    arrays.append(ControlRatesMax.treatment
+                  * ramp(target_values.treated
+                         - proportions_.treated))
 
-    vaccination = (ControlRatesMax.vaccination
-                   * ramp(target_values.vaccinated
-                          - proportions_.vaccinated))
+    names.append('nonadherence')
+    arrays.append(ControlRatesMax.nonadherence
+                  * ramp(proportions_.suppressed
+                         - target_values.suppressed))
 
-    return numpy.rec.fromarrays(
-        [diagnosis, treatment, nonadherence, vaccination],
-        names = ['diagnosis', 'treatment', 'nonadherence', 'vaccination'])
+    names.append('vaccination')
+    arrays.append(ControlRatesMax.vaccination
+                  * ramp(target_values.vaccinated
+                         - proportions_.vaccinated))
+
+    return numpy.rec.fromarrays(arrays, names = names)
