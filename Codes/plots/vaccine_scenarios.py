@@ -33,7 +33,7 @@ def _get_args(target):
 
 
 def get_target_label(treatment_target, target):
-    baseline = model.target.Vaccine(treatment_targets = treatment_target)
+    baseline = model.target.Vaccine(treatment_target = treatment_target)
     args_baseline = _get_args(str(baseline))
     args = _get_args(target)
     diff = []
@@ -59,8 +59,8 @@ def get_target_label(treatment_target, target):
 
 def _get_targets(treatment_target):
     return [str(t) for t in model.target.vaccine_scenarios
-            if hasattr(t, '_treatment_targets')
-            and (str(t._treatment_targets) == str(treatment_target))]
+            if hasattr(t, '_treatment_target')
+            and (str(t._treatment_target) == str(treatment_target))]
 
 
 def _get_kwds(label):
