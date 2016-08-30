@@ -131,7 +131,7 @@ class _Super:
     def R0(self):
         return self.parameters.R0
 
-    def dump(self, parameters_type):
+    def dump(self, parameters_type = None):
         return results.dump(self, parameters_type = parameters_type)
 
     @classmethod
