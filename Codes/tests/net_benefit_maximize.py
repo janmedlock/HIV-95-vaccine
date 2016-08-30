@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Test the :mod:`model.optimization`.
+
+.. todo:: Not working.
 '''
 
 import sys
@@ -12,7 +14,7 @@ import model
 def _main(parallel = True, debug = True, **kwargs):
     country = 'South Africa'
 
-    parameters = model.parameters.Parameters(country).mode()
+    parameters = model.parameters.Mode.from_country(country)
 
     # 0 is just cost.
     # inf is just DALYs.
