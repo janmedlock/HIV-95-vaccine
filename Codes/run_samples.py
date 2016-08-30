@@ -34,7 +34,7 @@ def _main():
     samples = model.samples.load()
 
     for country in countries:
-        for target in model.targets.all_:
+        for target in model.target.all_:
             if not model.results.exists(country, target):
                 results = _run_country(country, target, samples)
                 model.results.dump(results)
