@@ -17,31 +17,20 @@ import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':
-    with model.results.modes.open_() as results:
-        # The data look like results[country][target][stat]
+    country = 'South Africa'
+    targets = model.target.StatusQuo()
 
-        countries = results.keys()
-        print('countries =', countries)
+    results = model.results.load(country, target, 'mode')
 
-        country = 'South Africa'
-        targets = results[country].keys()
-        print('targets =', targets)
+    print('prevalence =', results.prevalence)
 
-        target = targets[5]
-        stats = results[country][target].keys()
-        print('stats =', stats)
+    # You can programmatically get different statistics using getattr.
+    stat = 'infected'
+    print(stat, '=', getattr(results, stat))
 
-        # You need '[:]' or '.read()' at the end to get the actual values.
-        print('prevalence =', results[country][target]['prevalence'][:])
-
-        # Again, you need '[:]' or '.read()' at the end to get the
-        # actual values.
-        stat = 'infected'
-        print(stat, '=', results[country][target][stat][:])
-
-        t = results[country][target]['t']
-        x = results[country][target][stat]
-        pyplot.plot(t, x, label = country)
-        pyplot.ylabel(stat.capitalize())
-        pyplot.legend(loc = 'upper right', frameon = False)
-        pyplot.show()
+    t = model.simulation.t
+    x = getattr(results, stat)
+    pyplot.plot(t, x, label = country)
+    pyplot.ylabel(stat.capitalize())
+    pyplot.legend(loc = 'upper right', frameon = False)
+    pyplot.show()
