@@ -20,6 +20,8 @@ if __name__ == '__main__':
     country = 'South Africa'
     target = model.target.StatusQuo()
 
+    # Replace 'mode' with 'samples' (or remove)
+    # to load results from the samples.
     results = model.results.load(country, target, 'mode')
 
     print('prevalence =', results.prevalence)

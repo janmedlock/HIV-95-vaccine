@@ -23,8 +23,8 @@ import model
 baseline = model.target.StatusQuo()
 interventions = (
     model.target.UNAIDS95(),
-    model.target.Vaccine(treatment_targets = model.target.StatusQuo()),
-    model.target.Vaccine(treatment_targets = model.target.UNAIDS95()))
+    model.target.Vaccine(treatment_target = model.target.StatusQuo()),
+    model.target.Vaccine(treatment_target = model.target.UNAIDS95()))
 
 baseline = str(baseline)
 interventions = list(map(str, interventions))
