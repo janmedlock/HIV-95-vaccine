@@ -42,6 +42,8 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
         parameter_names = ['parameter[{}]'.format(i) for i in range(n)]
 
     rho = stats.prcc(parameter_samples, outcome_samples)
+    CI = stats.prcc_CI(rho, len(outcome_samples))
+    xerr = numpy.vstack((rho - CI[:, 0], CI[:, 1] - rho))
 
     ix = numpy.argsort(numpy.abs(rho))
 
@@ -49,11 +51,16 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
     c = [colors[l] for l in labels]
 
     h = range(n)
-    patches = ax.barh(h, rho[ix],
+    patches = ax.barh(h, rho[ix], xerr = xerr,
                       height = 1, left = 0,
                       align = 'center',
                       color = c,
-                      edgecolor = c)
+                      edgecolor = c,
+                      error_kw = dict(ecolor = 'black',
+                                      elinewidth = 1,
+                                      capthick = 1,
+                                      capsize = 2,
+                                      alpha = 0.1))
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:g}'))
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.tick_params(labelsize = pyplot.rcParams['font.size'] + 1)

@@ -49,3 +49,15 @@ def pcc(X, y):
 
 def prcc(X, y):
     return pcc(rankdata(X), rankdata(y))
+
+
+def pcc_CI(rho, N, alpha = 0.05):
+    p = 1
+    z = numpy.arctanh(rho)
+    z_crit = scipy.stats.norm.ppf([alpha / 2, 1 - alpha / 2])
+    z_CI = z[..., numpy.newaxis] + z_crit / numpy.sqrt(N - p - 3)
+    return numpy.tanh(z_CI)
+
+
+def prcc_CI(rho, N, alpha = 0.05):
+    return pcc_CI(rho, N, alpha = alpha)
