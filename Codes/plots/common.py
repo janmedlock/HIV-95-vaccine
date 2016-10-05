@@ -100,7 +100,7 @@ all_regions_and_countries = all_regions + all_countries
 
 
 effectiveness_measures = ['new_infections', 'incidence_per_capita',
-                          'infected', 'AIDS', 'dead']
+                          'infected', 'dead']
 
 
 t = numpy.linspace(2015, 2035, 20 * 120 +1)
