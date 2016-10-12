@@ -120,10 +120,10 @@ publicly available at\\
 We developed a country-level continuous-time, compartmental model that
 divides people aged $15$\;y and older into non-overlapping HIV states.
 We chose to consider only these ages because they are the vast
-majority of global PLHIV---93\% in 2014 \cite{UNICEF}, because HIV and
-demographic data are often stratified into ages $15$--$49$, and to
-capture the continuing burden of infections in people ages $50$ and
-older.
+majority of global PLHIV, 93\% in 2014 \cite{UNICEF}; because
+population-level HIV estimates and demographic data are often
+stratified into ages $15$--$49$; and to capture the continuing burden
+of infections in people ages $50$ and older.
 
 The background mortality rate ($\mu$) in each of the
 127 countries was collected from published estimates
@@ -144,14 +144,14 @@ AIDS ($W$).  Viral suppression is defined as a viral load of less than
 extends survival but also dramatically reduces transmission
 \cite{vernazza2000, ioannidis2001, attia2009, May2014-gp}.
 Transitions between model states are governed by a series of
-differential equations parametrized using values estimated from other
-studies and from incidence and prevalence data
-(\autoref{model_param}).  The model is deterministic, but uncertainty
-in the parameters is treated by running the model 1000 times with
-samples from the parameter distributions (\autoref{uncertainty}) and
-summarizing the model outcomes using the median, 1st and 3rd quartiles
-(i.e., 25th and 75th percentiles), and 5th and 95th percentiles.  Each
-country was modeled separately
+differential equations parametrized using values found in other
+studies, along with transmission rates derived from UNAIDS estimates
+of incidence and prevalence (\autoref{model_param}).  The model is
+deterministic, but uncertainty in the parameters is treated by running
+the model 1000 times with samples from the parameter distributions
+(\autoref{uncertainty}) and summarizing the model outcomes using the
+median, 1st and 3rd quartiles (i.e., 25th and 75th percentiles), and
+5th and 95th percentiles.  Each country was modeled separately
 (\hyperref[effectiveness_Afghanistan]{Figures
   \ref*{effectiveness_Afghanistan}}--\ref{effectiveness_Zimbabwe}) and
 the country simulations were aggregated to calculate global and
@@ -233,7 +233,7 @@ durations to rates like $1 / 2.90\;\text{month$^{-1}$} \approx
 $\Triangular(2, 4.14, 9.6)\;\text{y$^{-1}$}$ to capture the
 uncertainty in its value.  See \autoref{uncertainty} for the
 definition of $\Triangular(a, b, c)$ and other distributions.)  We
-assumed that people remain undiagnosed during their acute infection
+assumed that people remain undiagnosed during their acute-infection
 phase. After acute infection, people move into the chronic undiagnosed
 class ($U$).  People in the undiagnosed class will be diagnosed at the
 rate $\alpha$, which is determined by the country's current diagnosis
@@ -357,19 +357,21 @@ $\Triangular$ distribution.  (See \autoref{uncertainty} for a full
 description of $\BetaPERT(a, b, c)$.)  The annual number of coital
 acts $n$ was sampled from $\Uniform(96, 108)$
 \cite{Wawer2005-us, Abdool_Karim2010-cm}.  The country-specific
-transmission rate $\eta$ was estimated from each country's
-longitudinal HIV prevalence and incidence (\autoref{model_fitting}).
+transmission rate $\eta$ was derived from UNAIDS estimates of each
+country's longitudinal HIV prevalence and incidence
+(\autoref{model_fitting}).
 
-For year 2015, the number of people aged 15--49 years, $M(2015)$; the
-prevalence, $p_I(2015)$; the proportion diagnosed, $p_D(2015)$; the
-proportion treated, $p_T(2015)$; and proportion with viral
-suppression, $p_V(2015)$ were used to initialize the model
+For year 2015, estimates of the number of people aged 15--49 years,
+$M(2015)$; the prevalence, $p_I(2015)$; the proportion diagnosed,
+$p_D(2015)$; the proportion treated, $p_T(2015)$; and proportion with
+viral suppression, $p_V(2015)$ were used to initialize the model
 (\autoref{data_sources}).  Although the initial population used ages
-15--49 due to data availability, model projections allowed for
-analysis of infected people aging beyond age 50.  Due to a lack of
-data on acute infections, and since the acute phase is so much shorter
-than the other stages, we assumed that initially there were no acute
-infections.  Due to a lack of comprehensive data on PLAIDS in each
+15--49 due to the availability of published estimates, model
+projections allowed for analysis of infected people aging beyond age
+50.  Due to a lack of published estimates of acute infections, and
+since the acute phase is so much shorter than the other stages, we
+assumed that initially there were no acute infections.  Due to a lack
+of comprehensive estimates of the number of people with AIDS in each
 country, we assumed that the proportion of diagnosed, untreated people
 ($D + W$) who have AIDS ($W$) in year 2015 was
 \begin{equation}
@@ -399,7 +401,7 @@ model initial conditions are
 \end{equation}
 
 The parametrized differential equations were solved numerically
-\cite[see][]{medlock2016-git} and five effectiveness outcomes were
+\cite[see][]{medlock2016-git} and four effectiveness outcomes were
 computed from the solutions.
 \begin{description}
 \item[New infections] New infections from 2015 to time $t$ are given
@@ -422,8 +424,6 @@ computed from the solutions.
     A(t) + U(t) + D(t) + T(t) + V(t) + W(t).
   \end{equation}
 
-\item[PLAIDS] PLAIDS is given by $W(t)$.
-
 \item[AIDS-related deaths] AIDS-related deaths from 2015 to time $t$
   are given by $Z(t)$.
 
@@ -432,8 +432,8 @@ computed from the solutions.
 The results from the country simulations were aggregated to the
 regional and global levels by adding the numbers of people in each
 compartment over time and then new infections, per-capita incidence,
-PLHIV, PLAIDS, and HIV-related deaths were calculated from the
-aggregates.  (See Table S6 for the definitions of UNAIDS regions.)
+PLHIV, and HIV-related deaths were calculated from the aggregates.
+(See Table S6 for the definitions of UNAIDS regions.)
 
 
 \section{Target rates}
@@ -647,7 +647,7 @@ proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
   is constant at $x_0$ for $t < t_0$, linearly connects $x_0$ at $t_0$
   to $x_1$ at $t_1$ for $t_0 \leq t < t_1$, linearly connects $x_1$ at
   $t_1$ to $x_2$ at $t_2$ for $t_1 \leq t < t_2$, and is constant at
-  $x_2$ for $t \geq t_2$, and $F$ is as in \eqref{F}.
+  $x_2$ for $t \geq t_2$, and $F$ is as in eq.~\eqref{F}.
 
 \end{description}
 
@@ -672,7 +672,7 @@ where $T_V = t_V + c_V / r_V$ is the time when rollout reaches
 the ultimate coverage $c_V$.
 
 Target strategies were one of the three diagnosis and treatment
-targets (status quo, 90--90--90, or 95--95--95) combined with either
+targets (status quo, 90--90--90, or 95--95--95), combined with either
 no vaccination ($p_R^*(t) = 0$) or vaccination at some level of
 efficacy, ultimate coverage, start date of rollout, and speed of
 rollout.
@@ -681,44 +681,46 @@ rollout.
 \section{Data sources}
 \label{data_sources}
 
-For 127 countries, we found sufficient data to parametrize our model.
-Demographic data, including population growth rate \cite{WorldBankpg},
-death rate \cite{World_Development_Indicators2013-ee}, and number of
-people aged 15--49 years \cite{The_World_Bank2016-fd} were obtained
-from the World Bank (Table S2). Longitudinal HIV prevalence (Table S3)
-and incidence (Table S4) estimates for ages 15--49, spanning from as
-early as 1990 to 2015, were primarily derived from the AIDSinfo
-database produced by UNAIDS \cite{Unaids2016-an}. Other sources
-included UNAIDS Country Progress Reports \cite{Unaids2016-am}
-published from 2012 to 2016 and AIDS Data Hub \cite{AIDSdatahub-fg},
-which compiles data from UNAIDS, UNICEF, WHO, and the Asian
-Development Bank. These sources were also used to inform the initial
-conditions for the model: the number of people diagnosed with HIV, the
-number on ART, and the number who have viral suppression or have been
-retained on treatment for at least 12 months (Table S5). Where data
-were not available from these sources, alternative resources such as
-peer-reviewed journal articles and country health ministry reports
-were consulted.  See Tables S2--S5 for full information on data
-sources for each country.  The data tables are also available in the
-public source-code repository \cite{medlock2016-git}.
+For 127 countries, we found sufficient published estimates and data to
+parametrize our model.  Demographic data, including population growth
+rate \cite{WorldBankpg}, death rate
+\cite{World_Development_Indicators2013-ee}, and number of people aged
+15--49 years \cite{The_World_Bank2016-fd} were obtained from the World
+Bank (Table S2). Longitudinal HIV prevalence (Table S3) and incidence
+(Table S4) estimates for ages 15--49, spanning from as early as 1990
+to 2015, were primarily obtained from the AIDSinfo database produced
+by UNAIDS \cite{Unaids2016-an}. Other sources included UNAIDS Country
+Progress Reports \cite{Unaids2016-am} published from 2012 to 2016 and
+AIDS Data Hub \cite{AIDSdatahub-fg}, which compiles data from UNAIDS,
+UNICEF, WHO, and the Asian Development Bank. These sources were also
+used to inform the initial conditions for the model: the number of
+people diagnosed with HIV, the number on ART, and the number who have
+viral suppression or have been retained on treatment for at least 12
+months (Table S5). Where estimates or data were not available from
+these sources, alternative resources such as peer-reviewed journal
+articles and country health ministry reports were consulted.  See
+Tables S2--S5 for full information on the sources used for each
+country.  These source tables are also available in the public
+source-code repository \cite{medlock2016-git}.
 
 
 \section{Model fitting}
 \label{model_fitting}
 
-Using available historical country-level data for prevalence and
-incidence (Tables S3 and S4), and published transmissibility estimates
+Using available historical country-level estimates of prevalence and
+incidence (Tables S3 and S4), and published estimates of
+transmissibility
 \cite{Wawer2005-us,Donnell2010-xo,Hughes2012-so,Skarbinski2015-ni}, we
-estimated an average country-specific transmission rate, which then
+derived an average country-specific transmission rate, which then
 informs the acute, unsuppressed, and suppressed transmission rates.
 This calibration method provided a recent estimate of country-specific
 transmission, while using historical data to smooth out short-term
 variations.
 
-For each country, we first estimated rates of HIV transmission for
-each of the available historical data points for prevalence and
-incidence.  The calculation involved approximating the simplified
-force of infection
+For each country, we first derived time-dependent rates of HIV
+transmission for each of the available points in the historical
+estimates of prevalence and incidence.  The calculation involved
+approximating the simplified force of infection
 \begin{align}
   \label{foi}
   \begin{split}
@@ -728,18 +730,18 @@ force of infection
     \approx  \beta(t) \frac{I(t)}{N(t)},
   \end{split}
 \end{align}
-where $\beta$ is the estimated time-independent aggregate transmission
+where $\beta$ is the estimated time-dependent aggregate transmission
 rate under the approximation that there is no difference in
 transmission risk among acute, unsuppressed, suppressed, and AIDS
-classes, and $I = A + U + D + T + V + W$ is the total number of
-PLHIV.  Therefore, the per-capita incidence is
+classes, and $I = A + U + D + T + V + W$ is the total number of PLHIV.
+Therefore, the per-capita incidence is
 \begin{equation}
 i(t) = \lambda(t) \frac{S(t)}{N(t)}
 \approx \beta(t) \frac{I(t)}{N(t)} \frac{S(t)}{N(t)} =\beta(t) p(t) (1-p(t)),
 \end{equation}
-where $p(t)$ is the prevalence. Thus, we estimated the transmission
+where $p(t)$ is the prevalence. Thus, we calculated the transmission
 rate at each historical time point using the incidence and prevalence
-data by
+estimates by
 \begin{equation}
   \label{trans_rate}
   \beta(t) \approx \frac{i(t)}{p(t)(1-p(t))}.
@@ -751,6 +753,7 @@ $\mu$ and $\sigma^2$ of the lognormal distribution we used the
 exponentially weighted mean and variance \cite{holt2004} over time
 (with half-life 1\;y) of $\log \beta(t)$ for the year 2015.  That is,
 \begin{equation}
+  \label{lognormal_params}
   \begin{split}
     \mu &= \frac{\sum_{i = 1}^n  2^{t_i}
       \log \beta(t_i)}
@@ -767,46 +770,53 @@ A half-life of 1\;y means that the estimate of the transmission rate
 from year $i$ is weighted half as much as the estimate from year
 $i + 1$, a quarter as much as the estimate from year $i + 2$, and so
 on.  This approach captured the recent country-level transmission
-behavior while still allowing for the use of less-recent data to
+behavior while still allowing for the use of less-recent estimates to
 smooth short-term variations (\autoref{transmission_rate}).
 
 \begin{figure}
   \centering
   \includegraphics{../Codes/plots/transmission_rate.pdf}
   \caption{Country-specific distributions of transmission rate,
-    $\beta$, calculated based on historical country prevalence and
-    incidence.  See \autoref{model_fitting}.}
+    $\bar{\beta}$, calculated based on UNAIDS historical estimates of
+    country prevalence and incidence.  See \autoref{model_fitting}.}
   \label{transmission_rate}
 \end{figure}
 
 For each of the 1000 model parameter samples, the country-level
-aggregate transmission rate $\beta$ was sampled, along with the
+aggregate transmission rate $\bar{\beta}$ was sampled from
+$\Lognormal(\mu, \sigma^2)$ with the parameters given by
+eqs.~\eqref{lognormal_params}, and samples were also drawn for the
 transmissibilities for acute and unsuppressed infected people,
 $\tau_A$ and $\tau_U$; the transmission reduction by suppression,
 $\varepsilon$; and the annual number of coital acts, $n$
 (\autoref{model}).  From the latter samples, the relative transmission
 rates for the acute phase ($\beta_A$), for unsuppressed chronic
 infections ($\beta_U$), and for chronic infections with viral
-suppression ($\beta_V$) were calculated by
-eqs.~\eqref{force_of_infection}.  The sample value of the
-country-level transmission rate was then computed by
+suppression ($\beta_V$) were calculated by eqs.~\eqref{betas}.  The
+sample value of the country-level transmission rate was then computed
+by
 \begin{equation}
   \label{eta}
-  \eta = \frac{\beta I(2015)}{
+  \eta = \frac{\bar{\beta} I(2015)}{
     \beta_A A(2015) + \beta_U \big(U(2015) + D(2015) + T(2015)\big)
     + \beta_V V(2015)},
 \end{equation}
 derived by rearranging eq.~\eqref{foi}, and uses the model initial
-conditions eq.~\eqref{initial_conditions}.
+conditions eq.~\eqref{initial_conditions}.  This estimate of $\eta$ is
+derived for the 2015 estimates of the proportion of PLHIV divided
+among acute infections; undiagnosed, diagnosed, or treated infections;
+and virally suppressed infections.  Using the estimate of $\eta$ in
+projections for future times, when these proportions may change, may
+introduce bias.
 
-A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—currently have
-low HIV prevalence but relatively high incidence, resulting in large
-estimated transmission rates, leading to rapid projected growth of
-their HIV epidemics by 2035. The apparent low prevalence and high
-incidence may, at least in part, be due to the resolution in UNAIDS
-data (0.1\% for prevalence, 0.01\% for annual per-capita incidence).
-Results for such countries should be considered in light of this
-limitation.
+A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—are currently
+estimated by UNAIDS to have low HIV prevalence but relatively high
+incidence, resulting in large estimated transmission rates, leading to
+rapid projected growth of their HIV epidemics by 2035. The apparent
+low prevalence and high incidence may, at least in part, be due to the
+resolution in UNAIDS estimates (0.1\% for prevalence, 0.01\% for
+annual per-capita incidence).  Results for such countries should be
+considered in light of this limitation.
 
 
 \section{Uncertainty analysis}
