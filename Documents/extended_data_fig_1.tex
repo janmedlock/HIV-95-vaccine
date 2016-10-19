@@ -1,0 +1,22 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{geometry}
+
+\usepackage{graphicx}
+
+\usepackage[font={sf}, labelfont={bf},
+            labelsep=space, singlelinecheck=off]{caption}
+\usepackage[font={sf}]{floatrow}
+
+\usepackage[pdfborder={0 0 0}]{hyperref}
+
+\renewcommand{\thefigure}{1.\arabic{figure}}
+\renewcommand{\figurename}{Extended Data Fig.}
+
+\begin{document}
+
+\input{../Codes/plots/effectiveness_all/all.tex}
+
+\end{document}
