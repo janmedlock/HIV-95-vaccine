@@ -58,9 +58,9 @@ country_labels_short = {
 matplotlib.rc('mathtext', fontset = 'stixsans')
 
 # Science style
-width_1column = 2.25  # inches
-width_2column = 4.75  # inches
-width_3column = 3 * width_1column + 2 * (width_2column - 2 * width_1column)
+# Nature style
+width_1column = 89 * 0.039370079 # inches
+width_2column = 183 * 0.039370079 # inches
 
 fontdict = {'family': 'sans-serif', 'size': 7}
 fontdict_part = {'size': 9, 'weight': 'bold'}
