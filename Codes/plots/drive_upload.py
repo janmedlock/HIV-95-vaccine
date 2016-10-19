@@ -12,7 +12,7 @@ import drive
 
 
 files = (
-    '../../Documents/supplementary_text.pdf',
+    '../../Documents/supplementary_information.pdf',
     '../../Documents/diagram_standalone.pdf',
     '../../Documents/diagram_standalone.png',
     'effectiveness.pdf',
