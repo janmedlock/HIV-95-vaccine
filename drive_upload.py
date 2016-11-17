@@ -7,24 +7,24 @@ import os.path
 import sys
 import time
 
-sys.path.append('..')
+sys.path.append('Codes')
 import drive
 
 
 files = (
-    '../../Documents/supplementary_information.pdf',
-    '../../Documents/diagram_standalone.pdf',
-    '../../Documents/diagram_standalone.png',
-    'effectiveness.pdf',
-    'effectiveness.png',
-    'effectiveness_regions.pdf',
-    'effectiveness_regions.png',
-    'infections_averted_map.pdf',
-    'infections_averted_map.png',
-    'initial_prevalence_map.pdf',
-    'initial_prevalence_map.png',
-    'vaccine_scenarios.pdf',
-    'vaccine_scenarios.png',
+    'Documents/supplementary_information.pdf',
+    'Documents/diagram_standalone.pdf',
+    'Documents/diagram_standalone.png',
+    'Codes/plots/effectiveness.pdf',
+    'Codes/plots/effectiveness.png',
+    'Codes/plots/effectiveness_regions.pdf',
+    'Codes/plots/effectiveness_regions.png',
+    'Codes/plots/infections_averted_map.pdf',
+    'Codes/plots/infections_averted_map.png',
+    'Codes/plots/initial_prevalence_map.pdf',
+    'Codes/plots/initial_prevalence_map.png',
+    'Codes/plots/vaccine_scenarios.pdf',
+    'Codes/plots/vaccine_scenarios.png',
 )
        
 # 'Effectiveness of HIV vaccine files' folder
