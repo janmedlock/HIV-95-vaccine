@@ -72,6 +72,27 @@
 
 \maketitle
 
+We developed a country-level mathematical model of HIV transmission
+and progression that stratifies HIV infection into acute, chronic
+undiagnosed, chronic diagnosed, chronic treated, chronic virally
+suppressed, and AIDS, along with uninfected unvaccinated and
+vaccinated people (\autoref{model} \&
+\hyperref[model_diag]{Extended Data Fig.~\ref*{model_diag}}).
+Simulations of our country-level model project the number of people in
+each HIV stratum from 2015 to 2035, from which statistics such as
+prevalence and incidence were calculated.  Model transition rates were
+adjusted dynamically to meet intervention goals for diagnosis,
+treatment, viral suppression, and vaccination coverage
+(\autoref{targets}).  Data and estimates from many sources were used
+to parametrize the model (\autoref{data_sources}).  Country-specific
+transmission rates were fitted to historical estimates of the
+trajectories of incidence and prevalence, spanning from as early as
+1990 for some countries (\autoref{model_fitting}). For every scenario
+of intervention combinations, we conducted 1000 model simulations,
+sampling values of model parameters from empirical distributions for
+each simulation, and summarized the results with median and
+percentiles (\autoref{uncertainty}).
+
 The model simulation and analysis tools, written in Python, are
 publicly available \autocite{medlock2016-git}.
 
@@ -97,6 +118,8 @@ load of less than 1000 viral RNA copies per mL of blood.  Viral
 suppression not only extends survival but also dramatically reduces
 transmission
 \autocite{vernazza2000, ioannidis2001, attia2009, May2014-gp}.
+Simulations of our model project the number of people in each HIV
+stratum from 2015 to 2035.
 
 Transitions between model states are governed by a system of
 differential equations parametrized using values found in other
@@ -360,9 +383,10 @@ model initial conditions are
   \end{split}
 \end{equation}
 
-The parametrized differential equations were solved numerically using
-the LSODA routine \autocite{odepack, scipy, medlock2016-git} and four
-effectiveness outcomes were computed from the solutions.
+The parametrized differential equations were solved numerically from
+year 2015 to year 2035 using the LSODA routine
+\autocite{odepack, scipy, medlock2016-git} and four effectiveness
+outcomes were computed from the solutions.
 \begin{description}
 \item[New infections] New infections from 2015 to time $t$ are given
   by $Y(t)$.
