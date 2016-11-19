@@ -11,8 +11,10 @@
 \usepackage{enumitem}
 \setlist{topsep=1ex}
 
-\usepackage[font={sf}, labelfont={bf},
-            labelsep=space, singlelinecheck=off]{caption}
+\usepackage[font={sf},
+            labelfont={bf},
+            labelsep=space,
+            singlelinecheck=off]{caption}
 \usepackage[font={sf}]{floatrow}
 \usepackage{tabularx}
 
@@ -44,11 +46,12 @@
 \DeclareMathOperator{\BetaPERT}{Beta-PERT}
 
 \renewcommand{\thesection}{S\arabic{section}}
+\newcommand{\sectionname}{Section}
+\renewcommand{\sectionautorefname}{\sectionname}
 \renewcommand{\figurename}{Supplementary Fig.}
 \renewcommand{\figureautorefname}{\figurename}
 \renewcommand{\tablename}{Supplementary Table}
 \renewcommand{\tableautorefname}{\tablename}
-
 
 \title{Supplementary Methods for\\
   \emph{Effectiveness of UNAIDS targets and HIV vaccination across 127
@@ -57,7 +60,8 @@
 \author{Jan Medlock}
 \affil{Department of Biomedical Sciences, Oregon State University, 106
   Dryden Hall, Corvallis, OR, 97331-4801, USA,
-  \href{mailto:jan.medlock@oregonstate.edu}{\texttt{jan.medlock@oregonstate.edu}}}
+  \href{mailto:jan.medlock@oregonstate.edu}
+  {\texttt{jan.medlock@oregonstate.edu}}}
 \author{Abhishek Pandey} \author{Alyssa S.~Parpia} \author{Amber Tang}
 \author{Laura A.~Skrip} \author{Alison P.~Galvani}
 \affil{Center for Infectious Disease Modeling and Analysis, Yale
@@ -75,25 +79,15 @@ publicly available \autocite{medlock2016-git}.
 \section{Mathematical model}
 \label{model}
 
-We developed a country-level continuous-time, compartmental model that
+We developed a country-level continuous-time mathematical model that
 divides people aged $15$\;y and older into non-overlapping HIV states.
-We chose to consider only these ages because they are the vast
-majority of global PLHIV \autocite{UNICEF}, 93\% in 2014; because
-population-level HIV estimates and demographic data are often
-stratified into ages $15$--$49$; and to capture the continuing burden
-of infections in people ages $50$ and older.
+We focus on this age group because it accounts for the vast majority
+of global PLHIV \autocite{UNICEF}, 93\% in 2014; because
+population-level HIV estimates and demographic data are typically only
+estimated for ages $15$--$49$; and to capture the continuing burden of
+infections in people ages $50$ and older.
 
-The background mortality rate ($\mu$) in each of the
-127 countries was collected from published estimates
-\autocite{World_Development_Indicators2013-ee}.  The recruitment rate
-($\kappa$) into the age $15\;\text{y}$ and older group was set by the
-difference between the country's population growth rate
-\autocite{WorldBankpg} and its background mortality rate
-\autocite{World_Development_Indicators2013-ee}, as would be true if the
-population was at its stable age structure.
-
-Our model has 8 HIV states
-(\hyperref[model_diag]{Extended Data Figs.~\ref*{model_diag}}):
+Our model has 8 HIV states (Extended Data Fig.~\ref*{model_diag}):
 susceptible to HIV infection ($S$ is the number of people
 susceptible), vaccinated against HIV ($R$), acute HIV infection ($A$),
 undiagnosed HIV infection ($U$), diagnosed but untreated HIV infection
@@ -103,21 +97,30 @@ load of less than 1000 viral RNA copies per mL of blood.  Viral
 suppression not only extends survival but also dramatically reduces
 transmission
 \autocite{vernazza2000, ioannidis2001, attia2009, May2014-gp}.
-Transitions between model states are governed by a series of
+
+Transitions between model states are governed by a system of
 differential equations parametrized using values found in other
 studies, along with transmission rates derived from UNAIDS estimates
 of incidence and prevalence (\autoref{model_param}).  The model is
-deterministic, but uncertainty in the parameters is treated by running
-the model 1000 times with samples from the parameter distributions
-(\autoref{uncertainty}) and summarizing the model outcomes using the
-median, 1st and 3rd quartiles (i.e., 25th and 75th percentiles), and
-5th and 95th percentiles.  Each country was modeled separately
-(\hyperref[effectiveness_Afghanistan]{Extended Data
-  Figs.~\ref*{effectiveness_Afghanistan}}--\ref{effectiveness_Zimbabwe})
+deterministic, but uncertainty in the parameters was treated by
+running the model 1000 times with samples from the parameter
+distributions (\autoref{uncertainty}) and summarizing the model
+outcomes using the median and percentiles.  Each country was modeled
+separately (Extended Data
+Figs.~\ref*{effectiveness_Afghanistan}--\ref*{effectiveness_Zimbabwe})
 and the country simulations were aggregated to calculate global and
-regional outcomes
-(\hyperref[effectiveness_Global]{Extended Data
-  Figs.~\ref*{effectiveness_Global}}--\ref{effectiveness_Western_Europe}).
+regional outcomes (Extended Data
+Figs.~\ref*{effectiveness_Global}--\ref*{effectiveness_Western_Europe}).
+
+The background mortality rate ($\mu$) in each of the 127 countries was
+collected from published estimates
+\autocite{World_Development_Indicators2013-ee}.  The recruitment rate
+($\kappa$) into the age $15\;\text{y}$ and older group was set by the
+difference between the country's population growth rate
+\autocite{WorldBankpg} and its background mortality rate
+\autocite{World_Development_Indicators2013-ee}, as would be true if
+the population was at its stable age structure.  (More on these data
+sources is in \autoref{data_sources}.)
 
 \begin{table}
   \begin{center}
@@ -165,26 +168,26 @@ regional outcomes
       & --- \\
       $\zeta$ & Vaccination rate & See eq.~(\ref{vaccination_rate}) & --- \\
       \hline
+      \vspace*{-2.5em}
     \end{tabularx}
     \caption{Model parameters. $\Triangular$, $\Uniform$, and
-      $\BetaPERT$ are sampling distributions: see
-      \autoref{uncertainty} for a full description.  For vaccine
-      efficacy, $50\%$ was the baseline, and $30\%$ and $70\%$ were
-      also used in a scenario analysis.}
+      $\BetaPERT$ are sampling distributions (\autoref{uncertainty}).
+      For vaccine efficacy, $50\%$ was the baseline, and $30\%$ and
+      $70\%$ were also used in a scenario analysis.}
     \label{model_param}
   \end{center}
 \end{table}
 
 People susceptible to HIV ($S$) progress to acute infection ($A$)
-according to the force of infection ($\lambda$,
-eq.~\eqref{force_of_infection}), which depends on the HIV transmission
-rate, estimated from the country-specific incidence and prevalence
-data (\autoref{model_fitting}), adjusted for the current number of
-acutely infected, untreated or ineffectively treated, and viral
-suppression PLHIV.  Acute infection is characterized by high viral
-loads and lasts an average of 2.90 [95\% confidence interval 1.23,
-6.00]\;months \autocite{Hollingsworth2008-iy}.  (We converted these
-durations to rates like $1 / 2.90\;\text{month$^{-1}$} \approx
+according to the force of infection ($\lambda$), which depends on the
+HIV transmission rate, estimated from the country-specific incidence
+and prevalence data (\autoref{model_fitting}), adjusted for the
+current number of acutely infected, untreated or ineffectively
+treated, and viral suppression PLHIV.  Acute infection is
+characterized by high viral loads and lasts an average of 2.90 [95\%
+confidence interval 1.23, 6.00]\;months
+\autocite{Hollingsworth2008-iy}.  (We converted these durations to
+rates like $1 / 2.90\;\text{month$^{-1}$} \approx
 4.14\;\text{y$^{-1}$}$ and set the parameter using random samples from
 $\Triangular(2, 4.14, 9.6)\;\text{y$^{-1}$}$ to capture the
 uncertainty in its value.  See \autoref{uncertainty} for the
@@ -201,14 +204,14 @@ treated people then transition to the viral-suppression class ($V$),
 at the rate $\gamma$.  We took $\gamma$ as a random sample from
 $\Uniform(0.5, 1.5)\;\text{y$^{-1}$}$, that is, viral suppression
 occurs after between 8 months and 2 years on treatment
-\autocite{Currie2009-yz}.  Disengagement from treatment moves people from
-treated ($T$) and viral suppression ($V$) at the rate $\psi$,
+\autocite{Currie2009-yz}.  Disengagement from treatment moves people
+from treated ($T$) and viral suppression ($V$) at the rate $\psi$,
 dependent on the current level of viral suppression and the country's
 target (\autoref{targets}), back to the diagnosed class ($D$).
 
 PLHIV without viral suppression (compartments $U$, $D$, and $T$)
 develop AIDS (compartment $W$) after an average duration of 10.4 years
-\autocite{Morgan2002-cq}, i.e., with transition rate
+\autocite{Morgan2002-cq}, i.e. with transition rate
 $\sigma = 0.1064\;\text{y$^{-1}$}$.  People who have achieved viral
 suppression ($V$) develop AIDS at rate $\theta$, slower than PLHIV
 without viral suppression.  People with viral suppression are
@@ -280,8 +283,8 @@ with force of infection
   \lambda =
   \frac{\eta \big[\beta_A A + \beta_U (U + D + T) + \beta_V V\big]}{N},
 \end{equation}
-sexually active population size $N = S + R + A + U + D + T + V$.  We
-assumed that people with AIDS ($W$) are too sick to be sexually
+and sexually active population size $N = S + R + A + U + D + T + V$.
+We assumed that people with AIDS ($W$) are too sick to be sexually
 active.
 
 The relative transmission rates of acute, unsuppressed, and suppressed
@@ -357,9 +360,9 @@ model initial conditions are
   \end{split}
 \end{equation}
 
-The parametrized differential equations were solved numerically
-\autocite[see][]{medlock2016-git} and four effectiveness outcomes were
-computed from the solutions.
+The parametrized differential equations were solved numerically using
+the LSODA routine \autocite{odepack, scipy, medlock2016-git} and four
+effectiveness outcomes were computed from the solutions.
 \begin{description}
 \item[New infections] New infections from 2015 to time $t$ are given
   by $Y(t)$.
@@ -458,7 +461,7 @@ suppression is below the target ($p_V^*(t) > p_V(t)$) and allows
 relapses ($\psi(t) > 0$) when the current level of viral suppression
 is at or above target.  We chose to vary the relapse rate to achieve
 the desired level of viral suppression because achieving viral
-suppression seems to depend on the time on treatment (i.e.,
+suppression seems to depend on the time on treatment (i.e.
 $1 / \gamma$), while relapse rates are difficult to estimate.
 
 The proportion of susceptible people vaccinated is
@@ -645,21 +648,21 @@ rate \autocite{WorldBankpg}, death rate
 aged 15--49 years \autocite{The_World_Bank2016-fd} were obtained from
 the World Bank (Supplementary Table 2). Longitudinal HIV prevalence
 (Supplementary Table 3) and incidence (Supplementary Table 4)
-estimates for ages 15--49, spanning from as early as 1990 to 2015,
-were primarily obtained from the AIDSinfo database produced by UNAIDS
-\autocite{Unaids2016-an}. Other sources included UNAIDS Country
-Progress Reports \autocite{Unaids2016-am} published from 2012 to 2016
-and AIDS Data Hub \autocite{AIDSdatahub-fg}, which compiles data from
-UNAIDS, UNICEF, WHO, and the Asian Development Bank. These sources
-were also used to inform the initial conditions for the model: the
-number of people diagnosed with HIV, the number on ART, and the number
-who have viral suppression or have been retained on treatment for at
-least 12 months (Supplementary Table 5). Where estimates or data were
-not available from these sources, alternative resources such as
-peer-reviewed journal articles and country health ministry reports
-were consulted.  See Supplementary Tables 2--5 for full information on
-the sources used for each country.  These source tables are also
-available in the public source-code repository
+estimates for ages 15--49, spanning from as early as 1990 for some
+countries to 2015, were primarily obtained from the AIDSinfo database
+produced by UNAIDS \autocite{Unaids2016-an}. Other sources included
+UNAIDS Country Progress Reports \autocite{Unaids2016-am} published
+from 2012 to 2016 and AIDS Data Hub \autocite{AIDSdatahub-fg}, which
+compiles data from UNAIDS, UNICEF, WHO, and the Asian Development
+Bank. These sources were also used to inform the initial conditions
+for the model: the number of people diagnosed with HIV, the number on
+ART, and the number who have viral suppression or have been retained
+on treatment for at least 12 months (Supplementary Table 5). Where
+estimates or data were not available from these sources, alternative
+resources such as peer-reviewed journal articles and country health
+ministry reports were consulted.  See Supplementary Tables 2--5 for
+full information on the sources used for each country.  These source
+tables are also available in the public source-code repository
 \autocite{medlock2016-git}.
 
 
@@ -768,7 +771,7 @@ and virally suppressed infections.  Using the estimate of $\eta$ in
 projections for future times, when these proportions may change, may
 introduce bias.
 
-A few countries—e.g., Bulgaria, Timor-Leste, and Yemen—are currently
+A few countries—e.g. Bulgaria, Timor-Leste, and Yemen—are currently
 estimated by UNAIDS to have low HIV prevalence but relatively high
 incidence, resulting in large estimated transmission rates, leading to
 rapid projected growth of their HIV epidemics by 2035. The apparent
@@ -787,19 +790,18 @@ using 1000 random samples from published parameter distributions
 distribution of the transmission rate (\autoref{model_fitting}). The
 parameters were sampled using Latin hypercube sampling
 \autocite{blower1994}.  We also used the variance reduction technique of
-running different interventions with the same parameter samples, i.e.,
+running different interventions with the same parameter samples, i.e.
 one set of sample parameter values is drawn, status quo and
 intervention scenarios are all run with those sample values and
 compared, and this process is repeated for each of the 1000 sample
 sets of parameters \autocite{shechter2006}.
 
 The model outcomes were summarized using the median, 1st and 3rd
-quartiles (i.e., 25th and 75th percentiles), and 5th and 95th
+quartiles (i.e. 25th and 75th percentiles), and 5th and 95th
 percentiles.  We calculated partial rank correlation coefficients
-(PRCC) \autocite{blower1994} to measure the independent effect of
-each non-vaccine parameter on model projections of global new HIV
-infections from 2015 to 2035
-(\hyperref[PRCCs]{Extended Data Fig.~\ref*{PRCCs}}).
+(PRCC) \autocite{blower1994} to measure the independent effect of each
+non-vaccine parameter on model projections of global new HIV
+infections from 2015 to 2035 (Extended Data Fig.~\ref*{PRCCs}).
 
 Given that vaccine parameters have not yet been quantified, we
 restricted the number of unknowns by keeping vaccine efficacy constant
@@ -868,7 +870,8 @@ We used several probability distributions to quantify the parameters.
       w &= \frac{v (a - \mu)}{\mu - c},
     \end{split}
   \end{equation}
-  and $B(v, w)$ is the standard beta function \autocite[\S 6.2]{davis1972}.
+  and $B(v, w)$ is the standard beta function \autocite{davis1972}.
+  % \cite[\S6.2]{davis1972}
   We used the standard value of $\lambda = 4$.
 
 \item[Lognormal] $\Lognormal(\mu, \sigma^2)$ is the lognormal random

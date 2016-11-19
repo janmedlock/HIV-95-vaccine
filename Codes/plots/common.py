@@ -63,7 +63,6 @@ width_1column = 89 * 0.039370079 # inches
 width_2column = 183 * 0.039370079 # inches
 
 fontdict = {'family': 'sans-serif', 'size': 7}
-fontdict_part = {'size': 9, 'weight': 'bold'}
 matplotlib.rc('font', **fontdict)
 matplotlib.rc('figure', titlesize = fontdict['size'] + 1)
 matplotlib.rc('axes', titlesize = fontdict['size'] + 1,
