@@ -29,6 +29,11 @@
 \usepackage[style=nature]{biblatex}
 \addbibresource{supplementary_information.bib}
 
+% For Nature, no page numbers.
+\pagestyle{empty}
+\usepackage{etoolbox}
+\apptocmd{\maketitle}{\thispagestyle{empty}}{}{}
+
 \usepackage{xr}
 \externaldocument{extended_data_fig_1}
 \externaldocument{extended_data_fig_2}
@@ -102,21 +107,19 @@ publicly available \autocite{medlock2016-git}.
 
 We developed a country-level continuous-time mathematical model that
 divides people aged $15$\;y and older into non-overlapping HIV states.
-We focus on this age group because it accounts for the vast majority
+We focused on this age group because it accounts for the vast majority
 of global PLHIV \autocite{UNICEF}, 93\% in 2014; because
 population-level HIV estimates and demographic data are typically only
 estimated for ages $15$--$49$; and to capture the continuing burden of
-infections in people ages $50$ and older.
-
-Our model has 8 HIV states (Extended Data Fig.~\ref*{model_diag}):
-susceptible to HIV infection ($S$ is the number of people
-susceptible), vaccinated against HIV ($R$), acute HIV infection ($A$),
-undiagnosed HIV infection ($U$), diagnosed but untreated HIV infection
-($D$), treated without viral suppression ($T$), viral suppression
-($V$), and having AIDS ($W$).  Viral suppression is defined as a viral
-load of less than 1000 viral RNA copies per mL of blood.  Viral
-suppression not only extends survival but also dramatically reduces
-transmission
+infections in people ages $50$ and older.  Our model has 8 HIV states
+(Extended Data Fig.~\ref*{model_diag}): susceptible to HIV infection
+($S$ is the number of people susceptible), vaccinated against HIV
+($R$), acute HIV infection ($A$), undiagnosed HIV infection ($U$),
+diagnosed but untreated HIV infection ($D$), treated without viral
+suppression ($T$), viral suppression ($V$), and having AIDS ($W$).
+Viral suppression is defined as a viral load of less than 1000 viral
+RNA copies per mL of blood.  Viral suppression not only extends
+survival but also dramatically reduces transmission
 \autocite{vernazza2000, ioannidis2001, attia2009, May2014-gp}.
 Simulations of our model project the number of people in each HIV
 stratum from 2015 to 2035.
