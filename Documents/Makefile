@@ -1,5 +1,5 @@
-all: diagram_standalone.pdf diagram_standalone.png supplementary_text.pdf \
-	cover_letter.pdf
+all: diagram_standalone.pdf diagram_standalone.png \
+	supporting_information.pdf cover_letter.pdf
 
 
 diagram_standalone.pdf:	diagram_standalone.tex diagram.tex
@@ -8,7 +8,7 @@ diagram_standalone.pdf:	diagram_standalone.tex diagram.tex
 diagram_standalone.png:	diagram_standalone.pdf
 	convert -density 600 $< $@
 
-supplementary_text.pdf:	supplementary_text.tex
+supporting_information.pdf:	supporting_information.tex
 	pdflatex $<
 	biber $<
 	pdflatex $<

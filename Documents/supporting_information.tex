@@ -27,22 +27,9 @@
 \usepackage[pdfborder={0 0 0}]{hyperref}
 
 % \usepackage[style=nature]{biblatex}
-% \addbibresource{supplementary_information.bib}
-\usepackage[sort&compress]{natbib}
+% \addbibresource{supporting_information.bib}
+\usepackage[numbers, round, comma, sort&compress]{natbib}
 \usepackage{hypernat}
-\citestyle{nature}
-
-% For Nature, add 27 to reference numbers to start after
-% last number in manuscript.
-\usepackage{etoolbox}
-\makeatletter
-\apptocmd{\thebibliography}{\global\c@NAT@ctr 27\relax}{}{}
-\makeatother
-
-% For Nature, no page numbers.
-\pagestyle{empty}
-\usepackage{etoolbox}
-\apptocmd{\maketitle}{\thispagestyle{empty}}{}{}
 
 \usepackage{xr}
 \externaldocument{extended_data_fig_1}
@@ -63,12 +50,10 @@
 \renewcommand{\thesection}{S\arabic{section}}
 \newcommand{\sectionname}{Section}
 \renewcommand{\sectionautorefname}{\sectionname}
-\renewcommand{\figurename}{Supplementary Fig.}
-\renewcommand{\figureautorefname}{\figurename}
-\renewcommand{\tablename}{Supplementary Table}
-\renewcommand{\tableautorefname}{\tablename}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
 
-\title{Supplementary Methods for\\
+\title{Supporting Information for\\
   \emph{Effectiveness of UNAIDS targets and HIV vaccination across 127
     countries}}
 
@@ -153,10 +138,10 @@ Figs.~\ref*{effectiveness_Global}--\ref*{effectiveness_Western_Europe}).
       & Definition & Value & References \\
       \hline
       $\mu$ & Background death rate
-      & Country specific, Supplementary Table 2
+      & Country specific, Data Table 2
       & \cite{World_Development_Indicators2013-ee} \\
       $\kappa$ & Recruitment rate
-      & Country specific, Supplementary Table 2
+      & Country specific, Data Table 2
       & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
       $\delta$	& Rate of progression from acute infection
       & $\Triangular$(2, 4.14, 9.6)\;y$^{-1}$
@@ -432,7 +417,7 @@ The results from the country simulations were aggregated to the
 regional and global levels by adding the numbers of people in each
 compartment over time and then new infections, per-capita incidence,
 PLHIV, and HIV-related deaths were calculated from the aggregates.
-(See Supplementary Table 6 for the definitions of UNAIDS regions.)
+(See Data Table 6 for the definitions of UNAIDS regions.)
 
 
 \section{Target rates}
@@ -683,8 +668,8 @@ model for 127 countries.  Demographic data, including population
 growth rate,\cite{WorldBankpg} death
 rate,\cite{World_Development_Indicators2013-ee} and number of people
 aged 15--49 years\cite{The_World_Bank2016-fd} were obtained from the
-World Bank (Supplementary Table 2). Longitudinal HIV prevalence
-(Supplementary Table 3) and incidence (Supplementary Table 4)
+World Bank (Data Table 2). Longitudinal HIV prevalence
+(Data Table 3) and incidence (Data Table 4)
 estimates for ages 15--49, spanning from as early as 1990 for some
 countries to 2015, were primarily obtained from the AIDSinfo database
 produced by UNAIDS.\cite{Unaids2016-an} Other sources included UNAIDS
@@ -694,11 +679,11 @@ UNAIDS, UNICEF, WHO, and the Asian Development Bank.  These sources
 were also used to inform the initial conditions for the model
 regarding the number of people diagnosed with HIV, the number on ART,
 and the number who have viral suppression or have been retained on
-treatment for at least 12 months (Supplementary Table 5).  Where data
+treatment for at least 12 months (Data Table 5).  Where data
 or estimates were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  Full information on the sources used
-for each country is provided in Supplementary Tables 2--5.  These
+for each country is provided in Data Tables 2--5.  These
 source tables are also available in our public source-code
 repository.\cite{medlock2016-git}
 
@@ -708,7 +693,7 @@ repository.\cite{medlock2016-git}
 
 We tailored our model to each of the 127 countries separately.  Using
 available historical country-specific estimates of prevalence and
-incidence (Supplementary Tables 3 and 4), and published estimates of
+incidence (Data Tables 3 \& 4), and published estimates of
 transmissibility per coital
 act,\cite{Wawer2005-us, Donnell2010-xo, Hughes2012-so,
   Skarbinski2015-ni}
@@ -930,7 +915,7 @@ computation time.
 
 
 % \printbibliography
-\bibliography{supplementary_information}
-\bibliographystyle{naturemag}
+\bibliography{supporting_information}
+\bibliographystyle{pnas2011}
 
 \end{document}
