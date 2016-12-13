@@ -5,23 +5,32 @@
 \usepackage{geometry}
 
 \usepackage{amsmath}
-\usepackage{graphicx}
+\usepackage{graphics}
 \usepackage{tikz}
 
+% Tweak spacing of descriptions.
 \usepackage{enumitem}
-\setlist{topsep=1ex}
+\setlist[description]{topsep=1ex, labelsep=0.6ex}
 
-\usepackage[font={sf},
-            labelfont={bf},
-            labelsep=space,
+% Tweak captions.
+\usepackage[font=sf,
+            labelfont=bf,
+            labelsep=period,
             singlelinecheck=off]{caption}
-\usepackage[font={sf}]{floatrow}
+
+% Make float text and math sans serif.
+\usepackage[font=sf]{floatrow}
+\usepackage{sansmath}
+\usepackage{etoolbox}
+\AtBeginEnvironment{table}{\sansmath}
+\AtBeginEnvironment{figure}{\sansmath}
+\floatsetup[table]{capposition=top,  % Table captions on top.
+                   justification=justified}  % Don't center by default.
+
+% Nice formatting for \textwidth tables.
 \usepackage{tabularx}
 
-\usepackage[blocks]{authblk}
-\renewcommand{\Authsep}{, }
-\renewcommand{\Authand}{ \& }
-\renewcommand{\Authands}{, }
+\usepackage[noblocks]{authblk}
 \renewcommand{\Affilfont}{\small}
 
 \usepackage[pdfborder={0 0 0}]{hyperref}
@@ -30,45 +39,58 @@
 % \addbibresource{supporting_information.bib}
 \usepackage[numbers, round, comma, sort&compress]{natbib}
 \usepackage{hypernat}
+% PNAS style: no brackets in reference list.
+\makeatletter 
+\renewcommand\@biblabel[1]{#1.} 
+\makeatother
+
+% PNAS style: square brackets around equation labels and all in
+% boldface, boldface equation number in references.
+\usepackage{mathtools}
+\newtagform{brackets}{\bf[}{]}
+\usetagform{brackets}
+\renewcommand{\eqref}[1]{\textbf{\ref{#1}}}
+
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
+\newcommand{\sectionname}{Section}
+\renewcommand{\sectionautorefname}{\sectionname}
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\figureautorefname}{\figurename}
 
 \usepackage{xr}
 \externaldocument{extended_data_fig_1}
-\externaldocument{extended_data_fig_2}
-\externaldocument{extended_data_fig_3}
 
-\newcommand{\comment}[1]{\textbf{[#1]}}
 \newcommand{\md}{\mathrm{d}}
-\newcommand{\mT}{\mathrm{T}}
-\renewcommand{\vec}[1]{\mathbf{#1}}
-\newcommand{\mat}[1]{\mathbf{#1}}
-\newcommand{\me}{\mathrm{e}}
 \DeclareMathOperator{\Uniform}{Uniform}
 \DeclareMathOperator{\Triangular}{Triangular}
 \DeclareMathOperator{\Lognormal}{Lognormal}
 \DeclareMathOperator{\BetaPERT}{Beta-PERT}
 
-\renewcommand{\thesection}{S\arabic{section}}
-\newcommand{\sectionname}{Section}
-\renewcommand{\sectionautorefname}{\sectionname}
-\renewcommand{\thefigure}{S\arabic{figure}}
-\renewcommand{\thetable}{S\arabic{table}}
-
 \title{Supporting Information for\\
   \emph{Effectiveness of UNAIDS targets and HIV vaccination across 127
     countries}}
 
-\author{Jan Medlock}
-\affil{Department of Biomedical Sciences, Oregon State University, 106
-  Dryden Hall, Corvallis, OR, 97331-4801, USA,
-  \href{mailto:jan.medlock@oregonstate.edu}
-  {\texttt{jan.medlock@oregonstate.edu}}}
-\author{Abhishek Pandey}
-\author{Alyssa S.~Parpia}
-\author{Amber Tang}
-\author{Laura A.~Skrip}
-\author{Alison P.~Galvani}
-\affil{Center for Infectious Disease Modeling and Analysis, Yale
-  School of Public Health, 135 College Street, New Haven, USA}
+\author[a,1]{Jan Medlock}
+\affil[a]{Department of Biomedical Sciences,
+  Oregon State University,
+  106 Dryden Hall,
+  Corvallis, OR 97331-4801,
+  USA}
+\author[b]{Abhishek Pandey}
+\author[b]{Alyssa S.~Parpia}
+\author[b]{Amber Tang}
+\author[b]{Laura A.~Skrip}
+\author[b]{Alison P.~Galvani}
+\affil[b]{Center for Infectious Disease Modeling and Analysis,
+  Yale School of Public Health,
+  135 College Street,
+  New Haven, CT 06510-2483,
+  USA}
+\affil[1]{To whom correspondence should be addressed.
+  Email: \href{mailto:jan.medlock@oregonstate.edu}
+  {\texttt{jan.medlock@oregonstate.edu}}.}
 
 
 \begin{document}
@@ -79,7 +101,7 @@ We developed a mathematical model of HIV transmission and progression
 that stratifies HIV infection into acute, chronic undiagnosed, chronic
 diagnosed, chronic treated, chronic virally suppressed, and AIDS,
 along with uninfected unvaccinated and vaccinated people
-(\autoref{model} \& Extended Data Fig.~\ref*{model_diag}), tailored to
+(\autoref{model} \& \autoref{model_diag}), tailored to
 each of 127 countries.  Simulations of our model project the number of
 people in each HIV stratum from 2015 to 2035, from which statistics
 such as prevalence and incidence were calculated.  To evaluate the
@@ -97,8 +119,15 @@ model parameters from empirical distributions for each simulation, and
 reported the results with median and percentiles
 (\autoref{uncertainty}).
 
+\begin{figure}
+  \centering
+  \input{diagram}
+  \caption{Model diagram.}
+  \label{model_diag}
+\end{figure}
+
 The model simulation and analysis tools, written in Python, are
-publicly available.\cite{medlock2016-git}
+publicly available \cite{medlock2016-git}.
 
 
 \section{Model structure}
@@ -106,16 +135,16 @@ publicly available.\cite{medlock2016-git}
 
 Within each country, our model divides people aged $15$\;years and
 older into non-overlapping HIV states.  We focused on this age group
-because it accounts for the vast majority of global
-PLHIV,\cite{UNICEF} 93\% in 2014; because population-level HIV
-estimates and demographic data are typically only estimated for ages
-$15$--$49$; and to capture the continuing burden of infections in
-people ages $50$ and older.  Our model has 8 HIV states (Extended Data
-Fig.~\ref*{model_diag}): susceptible to HIV infection ($S$ is the
-number of people susceptible), vaccinated against HIV ($R$), acute HIV
-infection ($A$), undiagnosed HIV infection ($U$), diagnosed but
-untreated HIV infection ($D$), treated without viral suppression
-($T$), viral suppression ($V$), and having AIDS ($W$).
+because it accounts for the vast majority of global PLHIV
+\cite{UNICEF}, 93\% in 2014; because population-level HIV estimates
+and demographic data are typically only estimated for ages $15$--$49$;
+and to capture the continuing burden of infections in people ages $50$
+and older.  Our model has 8 HIV states (\autoref{model_diag}):
+susceptible to HIV infection ($S$ is the number of people
+susceptible), vaccinated against HIV ($R$), acute HIV infection ($A$),
+undiagnosed HIV infection ($U$), diagnosed but untreated HIV infection
+($D$), treated without viral suppression ($T$), viral suppression
+($V$), and having AIDS ($W$).
 
 Transitions between model states are governed by a system of
 differential equations parametrized using values found in other
@@ -132,59 +161,74 @@ regional outcomes (Extended Data
 Figs.~\ref*{effectiveness_Global}--\ref*{effectiveness_Western_Europe}).
 
 \begin{table}
-  \begin{center}
-    \begin{tabularx}{\textwidth}{lXlll}
-      \hline
-      & Definition & Value & References \\
-      \hline
-      $\mu$ & Background death rate
-      & Country specific, Data Table 2
-      & \cite{World_Development_Indicators2013-ee} \\
-      $\kappa$ & Recruitment rate
-      & Country specific, Data Table 2
-      & \cite{World_Development_Indicators2013-ee, WorldBankpg} \\
-      $\delta$	& Rate of progression from acute infection
-      & $\Triangular$(2, 4.14, 9.6)\;y$^{-1}$
-      & \cite{Hollingsworth2008-iy} \\
-      $\sigma$	& Rate of developing AIDS without viral suppression
-      & 0.1064\;y$^{-1}$ & \cite{Morgan2002-cq} \\
-      $\theta$ & Rate of developing AIDS with viral suppression
-      & Eq.~(\ref{theta}) & --- \\
-      $\gamma$ & Rate of viral suppression
-      & $\Uniform$(0.5, 1.5)\;y$^{-1}$
-      & \cite{Currie2009-yz} \\
-      $\nu$ & Death rate from AIDS & 0.5\;y$^{-1}$
-      & \cite{Morgan2002-cq} \\
-      $\rho$ & Vaccine efficacy & 50\%\,[30\%, 70\%] & --- \\
-      $\omega$	& Reduction in life expectancy with viral suppression
-      & $\Uniform$(5, 8)\;y
-      & \cite{Samji2013-kf, Unaids2014-ue} \\
-      $\tau_{A}$ & Transmissibility during acute phase
-      & $\Triangular$(0.0039, 0.0082, 0.0150)
-      & \cite{Wawer2005-us, Skarbinski2015-ni}\\
-      $\tau_{U}$ & Transmissibility after acute phase
-      & $\Triangular$(0.00077, 0.0014, 0.00251)
-      & \cite{Hughes2012-so} \\
-      $\epsilon$ & Relative transmissibility with
-      viral suppression & $\BetaPERT$(0.08, 0.002, 0.57)
-      & \cite{Donnell2010-xo, attia_2009, wilson_2012, jia_2013,
-        rodger_2016} \\
-      $n$ & Coital acts per year & $\Uniform$(96, 108)
-      & \cite{Wawer2005-us, Abdool_Karim2010-cm}\\
-      $\alpha$ & Diagnosis rate & See eq.~(\ref{diagnosis_rate}) & --- \\
-      $\phi$ & Treatment rate & See eq.~(\ref{treatment_rate}) & --- \\
-      $\psi$ & Rate of relapse to untreated & See eq.~(\ref{relapse_rate})
-      & --- \\
-      $\zeta$ & Vaccination rate & See eq.~(\ref{vaccination_rate}) & --- \\
-      \hline
-      \vspace*{-2.5em}
-    \end{tabularx}
-    \caption{Model parameters. $\Triangular$, $\Uniform$, and
-      $\BetaPERT$ are sampling distributions (\autoref{uncertainty}).
-      For vaccine efficacy, $50\%$ was the baseline, and $30\%$ and
-      $70\%$ were also assessed in sensitivity analysis.}
-    \label{model_param}
-  \end{center}
+  \caption{Model parameters.}
+  \label{model_param}
+  \begin{tabularx}{\textwidth}{lXlll}
+    \hline
+    & Definition & Value & References
+    \\ \hline
+    $\mu$ & Background death rate
+    & Country specific, Data Set 2
+    & \cite{World_Development_Indicators2013-ee}
+    \\
+    $\kappa$ & Recruitment rate
+    & Country specific, Data Set 2
+    & \cite{World_Development_Indicators2013-ee, WorldBankpg}
+    \\
+    $\delta$ & Rate of progression from acute infection
+    & $\Triangular(2, 4.14, 9.6)\;\text{y$^{-1}$}$
+    & \cite{Hollingsworth2008-iy}
+    \\
+    $\sigma$ & Rate of developing AIDS without viral suppression
+    & $0.1064\;\text{y$^{-1}$}$ & \cite{Morgan2002-cq}
+    \\
+    $\theta$ & Rate of developing AIDS with viral suppression
+    & Eq.~\eqref{theta} & ---
+    \\
+    $\gamma$ & Rate of viral suppression
+    & $\Uniform(0.5, 1.5)\;\text{y$^{-1}$}$
+    & \cite{Currie2009-yz}
+    \\
+    $\nu$ & Death rate from AIDS & $0.5\;\text{y$^{-1}$}$
+    & \cite{Morgan2002-cq}
+    \\
+    $\rho$ & Vaccine efficacy & 50\%\,[30\%, 70\%] & ---
+    \\
+    $\omega$ & Reduction in life expectancy with viral suppression
+    & $\Uniform(5, 8)\;\text{y}$
+    & \cite{Samji2013-kf, Unaids2014-ue}
+    \\
+    $\tau_{A}$ & Transmissibility per coital act during acute phase
+    & $\Triangular(0.0039, 0.0082, 0.0150)$
+    & \cite{Wawer2005-us, Skarbinski2015-ni}
+    \\
+    $\tau_{U}$ & Transmissibility per coital act after acute phase
+    & $\Triangular(0.00077, 0.0014, 0.00251)$
+    & \cite{Hughes2012-so}
+    \\
+    $\epsilon$ & Relative transmissibility per coital act with
+    viral suppression & $\BetaPERT(0.08, 0.002, 0.57)$
+    & \cite{Donnell2010-xo, attia_2009, wilson_2012, jia_2013,
+      rodger_2016}
+    \\
+    $n$ & Coital acts per year & $\Uniform(96, 108)$
+    & \cite{Wawer2005-us, Abdool_Karim2010-cm}
+    \\
+    $\alpha$ & Diagnosis rate & Eq.~\eqref{diagnosis_rate} & ---
+    \\
+    $\phi$ & Treatment rate & Eq.~\eqref{treatment_rate} & ---
+    \\
+    $\psi$ & Rate of relapse to untreated & Eq.~\eqref{relapse_rate} & ---
+    \\
+    $\zeta$ & Vaccination rate & Eq.~\eqref{vaccination_rate} & ---
+    \\ \hline
+  \end{tabularx}
+  \\[5pt]
+  $\Triangular$, $\Uniform$, and $\BetaPERT$ are sampling
+  distributions (\autoref{uncertainty}).
+  \\
+  For vaccine efficacy, $50\%$ was the baseline, and $30\%$ and $70\%$
+  were also assessed in sensitivity analysis.
 \end{table}
 
 People susceptible to HIV ($S$) are at risk of becoming infected
@@ -195,7 +239,7 @@ current number of acutely infected, untreated or ineffectively
 treated, and virally suppressed PLHIV.  Upon infection, people
 transition into acute infection ($A$), characterized by high viral
 loads for an average of 2.90 [95\% confidence interval 1.23,
-6.00]\;months.\cite{Hollingsworth2008-iy}  (We converted these
+6.00]\;months \cite{Hollingsworth2008-iy}.  (We converted these
 durations to rates like $1 / 2.90\;\text{month$^{-1}$} \approx
 4.14\;\text{y$^{-1}$}$ and set the parameter using random samples from
 $\Triangular(2, 4.14, 9.6)\;\text{y$^{-1}$}$ to capture the
@@ -212,7 +256,7 @@ and its treatment target (\autoref{targets}).  Treated people
 transition to the viral suppression ($V$) at the rate $\gamma$,
 sampled from $\Uniform(0.5, 1.5)\;\text{y$^{-1}$}$: thus, viral
 suppression occurs after between 8 months and 2 years on
-treatment.\cite{Currie2009-yz}  Disengagement from treatment moves
+treatment \cite{Currie2009-yz}.  Disengagement from treatment moves
 people from treated ($T$) and viral suppression ($V$) back to the
 diagnosed class ($D$) at the rate $\psi$, dependent on the current
 level of viral suppression and the country's target
@@ -220,11 +264,11 @@ level of viral suppression and the country's target
 
 PLHIV without viral suppression (compartments $U$, $D$, and $T$)
 develop AIDS (compartment $W$) after an average duration of 10.4
-years,\cite{Morgan2002-cq} i.e.~with transition rate
+years \cite{Morgan2002-cq}, i.e.~with transition rate
 $\sigma = 0.1064\;\text{y$^{-1}$}$.  Viral suppression greatly reduces
 the rate of progression to AIDS ($\theta$) and improves longevity,
 such that life expectancy is only $5$--$8$\;y shorter than average
-country-specific life expectancy.\cite{Samji2013-kf, Unaids2014-ue}
+country-specific life expectancy \cite{Samji2013-kf, Unaids2014-ue}.
 This reduction in life expectancy was quantified by randomly sampling
 the parameter $\omega$ from $\Uniform(5, 8)\;\text{y}$. Thus, in the
 absence of relapse to untreated, the duration of viral suppression is
@@ -256,11 +300,11 @@ efficacy over time.  Without vaccine, $\zeta = 0$.
 
 The background mortality rate ($\mu$) in each of the 127 countries was
 collected from published
-estimates.\cite{World_Development_Indicators2013-ee} The recruitment
+estimates \cite{World_Development_Indicators2013-ee}.  The recruitment
 rate ($\kappa$) into the age $15\;\text{y}$ and older group was set by
 the difference between the country's population growth
-rate\cite{WorldBankpg} and its background mortality
-rate,\cite{World_Development_Indicators2013-ee} as would be true if
+rate \cite{WorldBankpg} and its background mortality
+rate \cite{World_Development_Indicators2013-ee}, as would be true if
 the population was at its stable age structure.  (More on these data
 sources is in \autoref{data_sources}.)
 
@@ -324,21 +368,21 @@ relative transmissibility per coital act with viral suppression.  For
 transmissibility per coital act during the acute phase, we sampled
 $\tau_A$ from
 $\Triangular(0.0039, 0.0082,
-0.0150)$.\cite{Wawer2005-us,
-  Skarbinski2015-ni}
+0.0150)$ \cite{Wawer2005-us,
+  Skarbinski2015-ni}.
 Transmissibility per coital act for unsuppressed people, $\tau_U$, was
 sampled from
-$\Triangular(0.00077, 0.0014, 0.00251)$.\cite{Hughes2012-so} The
+$\Triangular(0.00077, 0.0014, 0.00251)$ \cite{Hughes2012-so}.  The
 transmissibility per coital act of people with viral suppression
 relative to those without suppression has been estimated at 0.08 (95\%
-confidence interval 0.002, 0.57).\cite{Donnell2010-xo} Due to the
+confidence interval 0.002, 0.57) \cite{Donnell2010-xo}.  Due to the
 extremely long left tail of this confidence interval, we sampled the
 relative transmissibility per coital act $\epsilon$ from
 $\BetaPERT(0.08, 0.002, 0.57)$ rather than a $\Triangular$
 distribution.  (See \autoref{uncertainty} for a full description of
 $\BetaPERT(a, b, c)$.)  The annual number of coital acts per person
 $n$ was sampled from $\Uniform(96, 108)$ based on survey
-studies.\cite{Wawer2005-us, Abdool_Karim2010-cm}  The country-specific
+studies \cite{Wawer2005-us, Abdool_Karim2010-cm}.  The country-specific
 transmission rate $\xi$ was derived from country-specific longitudinal
 trends in HIV prevalence and incidence, primarily from UNAIDS
 estimates (\autoref{model_fitting}).
@@ -386,9 +430,9 @@ model initial conditions are
 
 The parametrized differential equations were solved numerically from
 2015 to 2035 using the LSODA
-routine\cite{odepack, scipy, medlock2016-git} and four effectiveness
+routine \cite{odepack, scipy, medlock2016-git} and four effectiveness
 outcomes were computed from the solutions.
-\begin{description}[labelsep=0.6ex]
+\begin{description}
 \item[Cumulative new infections] from 2015 to time $t$ was given by
   $Y(t)$.
 
@@ -417,7 +461,7 @@ The results from the country simulations were aggregated to the
 regional and global levels by adding the numbers of people in each
 compartment over time and then new infections, per-capita incidence,
 PLHIV, and HIV-related deaths were calculated from the aggregates.
-(See Data Table 6 for the definitions of UNAIDS regions.)
+(See Data Set 6 for the definitions of UNAIDS regions.)
 
 
 \section{Target rates}
@@ -486,8 +530,7 @@ suppression is below the target ($p_V^*(t) > p_V(t)$) and allows
 relapses ($\psi(t) > 0$) when the current level of viral suppression
 is at or above target.  We varied the relapse rate to achieve the
 target level of viral suppression because achieving viral suppression
-depends on the time on treatment\cite{Currie2009-yz}
-(i.e.~$1 / \gamma$).
+depends on the time on treatment \cite{Currie2009-yz}.
 
 The proportion of susceptible people vaccinated is
 \begin{equation}
@@ -504,7 +547,7 @@ current vaccine coverage level is below the target
 
 We modeled 3 different targets for the proportion diagnosed ($p_D$), the
 proportion treated ($p_T$), and the proportion with viral suppression ($p_V$).
-\begin{description}[labelsep=0.6ex]
+\begin{description}
 \item[Status quo] is maintenance of the proportions $p_D$, $p_T$, and
   $p_V$ at their initial levels going forward.  That is,
   \begin{equation}
@@ -665,27 +708,27 @@ rollout.
 
 We found sufficient published estimates and data to parametrize our
 model for 127 countries.  Demographic data, including population
-growth rate,\cite{WorldBankpg} death
-rate,\cite{World_Development_Indicators2013-ee} and number of people
-aged 15--49 years\cite{The_World_Bank2016-fd} were obtained from the
-World Bank (Data Table 2). Longitudinal HIV prevalence
-(Data Table 3) and incidence (Data Table 4)
+growth rate \cite{WorldBankpg}, death
+rate \cite{World_Development_Indicators2013-ee}, and number of people
+aged 15--49 years \cite{The_World_Bank2016-fd} were obtained from the
+World Bank (Data Set 2). Longitudinal HIV prevalence
+(Data Set 3) and incidence (Data Set 4)
 estimates for ages 15--49, spanning from as early as 1990 for some
 countries to 2015, were primarily obtained from the AIDSinfo database
-produced by UNAIDS.\cite{Unaids2016-an} Other sources included UNAIDS
-Country Progress Reports\cite{Unaids2016-am} published from 2012 to
-2016 and AIDS Data Hub,\cite{AIDSdatahub-fg} which compiles data from
+produced by UNAIDS \cite{Unaids2016-an}. Other sources included UNAIDS
+Country Progress Reports \cite{Unaids2016-am} published from 2012 to
+2016 and AIDS Data Hub \cite{AIDSdatahub-fg}, which compiles data from
 UNAIDS, UNICEF, WHO, and the Asian Development Bank.  These sources
 were also used to inform the initial conditions for the model
 regarding the number of people diagnosed with HIV, the number on ART,
 and the number who have viral suppression or have been retained on
-treatment for at least 12 months (Data Table 5).  Where data
+treatment for at least 12 months (Data Set 5).  Where data
 or estimates were not available from these sources, alternative
 resources such as peer-reviewed journal articles and country health
 ministry reports were consulted.  Full information on the sources used
-for each country is provided in Data Tables 2--5.  These
+for each country is provided in Data Sets 2--5.  These
 source tables are also available in our public source-code
-repository.\cite{medlock2016-git}
+repository \cite{medlock2016-git}.
 
 
 \section{Model fitting}
@@ -693,10 +736,10 @@ repository.\cite{medlock2016-git}
 
 We tailored our model to each of the 127 countries separately.  Using
 available historical country-specific estimates of prevalence and
-incidence (Data Tables 3 \& 4), and published estimates of
+incidence (Data Sets 3 \& 4), and published estimates of
 transmissibility per coital
-act,\cite{Wawer2005-us, Donnell2010-xo, Hughes2012-so,
-  Skarbinski2015-ni}
+act \cite{Wawer2005-us, Donnell2010-xo, Hughes2012-so,
+  Skarbinski2015-ni},
 we derived an average country-specific transmission rate, taking into
 account the differential contributions from the proportions of acute,
 unsuppressed, and suppressed of the infected population in each
@@ -737,7 +780,7 @@ estimates by
 To reflect the uncertainty in $\beta(t)$, we assumed that it follows a
 lognormal distribution (\autoref{uncertainty}). For the parameters
 $\mu$ and $\sigma^2$ of the lognormal distribution we used the
-exponentially weighted mean and variance\cite{holt2004} over time
+exponentially weighted mean and variance \cite{holt2004} over time
 (with half-life 1\;year) of $\log \beta(t)$ for the year 2015.  That
 is,
 \begin{equation}
@@ -763,8 +806,9 @@ behavior while simultaneously allowing the use of historical estimates
 to smooth short-term variations (\autoref{transmission_rate}).
 
 \begin{figure}
-  \centering
-  \includegraphics{../Codes/plots/transmission_rate.pdf}
+  \begin{center}
+    \includegraphics{../Codes/plots/transmission_rate.pdf}
+  \end{center}
   \caption{Country-specific distributions of transmission rate,
     $\bar{\beta}$, calculated based on UNAIDS historical estimates of
     country prevalence and incidence.  See \autoref{model_fitting}.}
@@ -809,7 +853,7 @@ of this limitation.
 \section{Sensitivity and uncertainty analysis}
 \label{uncertainty}
 
-Latin hypercube sampling\cite{blower1994} was used to draw parameter
+Latin hypercube sampling \cite{blower1994} was used to draw parameter
 samples from published parameter distributions (\autoref{model_param})
 and the country-specific estimated distribution of the transmission
 rate (\autoref{model_fitting}) 1000 times for each country.
@@ -818,17 +862,28 @@ these parameter sets.  To compare interventions, as well as status quo
 projections, we implemented the variance-reduction technique of using
 the same set of sample parameter values for all interventions,
 repeating this process for each of the 1000 simulations in every
-country.\cite{shechter2006}  We report the median, 1st and 3rd
+country \cite{shechter2006}.  We report the median, 1st and 3rd
 quartiles (i.e.~25th and 75th percentiles), and 5th and 95th
 percentiles for each model outcome.  We also calculated partial rank
-correlation coefficients (PRCC)\cite{blower1994} to measure the
+correlation coefficients (PRCC) \cite{blower1994} to measure the
 independent effect of each non-vaccine parameter on model projections
-of global HIV incidence from 2015 to 2035 (Extended Data
-Fig.~\ref*{PRCCs}).
+of global HIV incidence from 2015 to 2035 (\autoref{PRCCs}).
+
+\begin{figure}
+   \centering
+   \includegraphics{../Codes/plots/prcc.pdf}
+   \caption{Sensitivity of global HIV incidence from 2015 to 2035 to
+     model parameters.  Left is the sensitivity of infections averted
+     by 95--95--95, relative to status quo.  Right is the sensitivity
+     of vaccination with status quo levels of diagnosis and treatment,
+     relative to status quo.  Sensitivity is measured by the partial
+     rank correlation coefficient (PRCC).}
+   \label{PRCCs}
+\end{figure}
 
 We used several probability distributions to capture the uncertainty
 in the parameters.  (See \autoref{model} for more on each parameter.)
-\begin{description}[labelsep=0.6ex]
+\begin{description}
 \item[Uniform] was used for parameters where only a broad range was
   indicated in the literature.  $\Uniform(a, b)$, with minimum $a$ and
   maximum $b$, has density function
@@ -862,10 +917,10 @@ in the parameters.  (See \autoref{model} for more on each parameter.)
 
 \item[Beta-PERT] was used for the efficacy of viral suppression at
   reducing transmission, $\epsilon$, because the confidence interval
-  had an extremely long right tail\cite{Donnell2010-xo}, which would
+  had an extremely long right tail \cite{Donnell2010-xo}, which would
   strongly skew the mean and median of a Triangular distribution to
   the right.  $\BetaPERT(a, b, c)$, the Beta-PERT probability
-  distribution\cite{malcom1959} with minimum $a$, mode $b$, and
+  distribution \cite{malcom1959} with minimum $a$, mode $b$, and
   maximum $c$, has density function
   \begin{equation}
     \label{BetaPERT}
@@ -887,8 +942,8 @@ in the parameters.  (See \autoref{model} for more on each parameter.)
       w &= \frac{v (a - \mu)}{\mu - c},
     \end{split}
   \end{equation}
-  and $B(v, w)$ is the standard beta function.\cite{davis1972}
-  % \cite[\S6.2]{davis1972}
+  and $B(v, w)$ is the standard beta function
+  \cite[\S6.2]{davis1972}.
   We used the standard value of $\lambda = 4$.
 
 \item[Lognormal] was used for the country-specific aggregate
@@ -901,7 +956,7 @@ in the parameters.  (See \autoref{model} for more on each parameter.)
 \end{description}
 
 Based on proposed vaccine regimens that include boosters for
-sustaining immunogenicity\cite{gray_2016}, we made the simplifying
+sustaining immunogenicity \cite{gray_2016}, we made the simplifying
 assumption that vaccine efficacy remains constant over time. We chose
 plausible baseline values for efficacy (50\%), ultimate coverage
 (70\%), speed of rollout (25\% per year), and date of rollout
