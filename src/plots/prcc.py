@@ -71,11 +71,11 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:g}'))
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.tick_params(labelsize = pyplot.rcParams['font.size'] + 1)
-    ax.tick_params(axis = 'y', pad = 6)
+    ax.tick_params(axis = 'y', pad = 35)
 
     ax.set_yticks(h)
     ax.set_ylim(- 0.5, n - 0.5)
-    ax.set_yticklabels(labels)
+    ax.set_yticklabels(labels, horizontalalignment = 'center')
 
     ax.grid(False, axis = 'y', which = 'both')
 
