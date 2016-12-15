@@ -1,0 +1,19 @@
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{microtype}
+
+% Tweak captions.
+\RequirePackage[font=sf,
+                labelfont=bf,
+                labelsep=period,
+                singlelinecheck=off]{caption}
+
+% Make float text and math sans serif.
+\RequirePackage[font=sf]{floatrow}
+\RequirePackage{sansmath}
+\RequirePackage{etoolbox}
+\AtBeginEnvironment{table}{\sansmath}
+\AtBeginEnvironment{figure}{\sansmath}
+\floatsetup[table]{capposition=top,          % Table captions on top.
+                   justification=justified}  % Don't center by default.
+
+\RequirePackage[pdfborder={0 0 0}]{hyperref}

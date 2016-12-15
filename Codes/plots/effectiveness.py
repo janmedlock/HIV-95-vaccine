@@ -37,7 +37,7 @@ def _plot_cell(ax, results, country, targets, stat,
                scale = None, units = None,
                country_label = None, stat_label = None,
                colors = None, alpha = 0.35,
-               jitter = 0.6):
+               jitter = 0.6, plotevery = 1):
     if colors is None:
         colors = seaborn.color_palette()
 
@@ -76,7 +76,9 @@ def _plot_cell(ax, results, country, targets, stat,
         except tables.NoSuchNodeError:
             pass
         else:
-            l = ax.plot(common.t, numpy.asarray(v['median']) / info.scale,
+            t = common.t[ : : plotevery]
+            y = numpy.asarray(v['median'])[ : : plotevery] / info.scale
+            l = ax.plot(t, y,
                         label = common.get_target_label(target),
                         color = colors[i],
                         alpha = alpha0,
@@ -95,9 +97,9 @@ def _plot_cell(ax, results, country, targets, stat,
                 #             alpha = alpha0,
                 #             zorder = 2)
                 # Shade interior of CI, with low alpha.
-                ax.fill_between(common.t,
-                                numpy.asarray(CI[0]) / info.scale,
-                                numpy.asarray(CI[1]) / info.scale,
+                y1 = numpy.asarray(CI[0])[ : : plotevery] / info.scale
+                y2 = numpy.asarray(CI[1])[ : : plotevery] / info.scale
+                ax.fill_between(t, y1, y2,
                                 facecolor = colors[i],
                                 linewidth = 0,
                                 alpha = alpha)

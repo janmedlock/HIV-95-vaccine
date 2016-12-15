@@ -57,12 +57,21 @@ country_labels_short = {
 
 matplotlib.rc('mathtext', fontset = 'stixsans')
 
-# Science style
-# Nature style
-width_1column = 89 * 0.039370079 # inches
-width_2column = 183 * 0.039370079 # inches
+# Use Type 1 fonts instead of Type 3.
+matplotlib.rc('pdf', fonttype = 42)
+matplotlib.rc('ps', fonttype = 42)
 
-fontdict = {'family': 'sans-serif', 'size': 7}
+
+# PNAS style
+width_1column = 20.5 / 6    # inches
+width_1_5column = 27 / 6    # inches
+width_2column = 42.125 / 6  # inches
+height_max = 54 / 6         # inches
+
+
+fontdict = {'family': 'sans-serif',
+            'sans-serif': 'Latin Modern Sans',
+            'size': 7}
 matplotlib.rc('font', **fontdict)
 matplotlib.rc('figure', titlesize = fontdict['size'] + 1)
 matplotlib.rc('axes', titlesize = fontdict['size'] + 1,
@@ -493,21 +502,13 @@ def savefig(fig, filename, title = None, **kwargs):
 
     if filename.endswith('.pdf'):
         fig.savefig(filename, **kwargs)
-        pdfoptimize(filename)
+        # pdfoptimize(filename)
         pdf_add_info(filename, **info)
-    elif filename.endswith('.png'):
-        if ('dpi' not in kwargs):
-            kwargs['dpi'] = 600
+    elif filename.endswith('.pgf'):
         fig.savefig(filename, **kwargs)
-        # Use PIL etc to set metadata.
-        image_add_info(filename, **info)
-    elif (filename.endswith('.tiff') or filename.endswith('.tif')):
-        if ('dpi' not in kwargs):
-            kwargs['dpi'] = 600
-        fig.savefig(filename, **kwargs)
-        # Use PIL etc to set metadata.
-        image_add_info(filename, **info)
     else:
+        if ('dpi' not in kwargs):
+            kwargs['dpi'] = 600
         fig.savefig(filename, **kwargs)
         # Use PIL etc to set metadata.
         image_add_info(filename, **info)

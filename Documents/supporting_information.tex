@@ -1,39 +1,21 @@
 \documentclass{article}
 
-\usepackage[utf8]{inputenc}
-\usepackage{microtype}
+\usepackage{common}
+
 \usepackage{geometry}
 
 \usepackage{amsmath}
-\usepackage{graphics}
 \usepackage{tikz}
 
 % Tweak spacing of descriptions.
 \usepackage{enumitem}
 \setlist[description]{topsep=1ex, labelsep=0.6ex}
 
-% Tweak captions.
-\usepackage[font=sf,
-            labelfont=bf,
-            labelsep=period,
-            singlelinecheck=off]{caption}
-
-% Make float text and math sans serif.
-\usepackage[font=sf]{floatrow}
-\usepackage{sansmath}
-\usepackage{etoolbox}
-\AtBeginEnvironment{table}{\sansmath}
-\AtBeginEnvironment{figure}{\sansmath}
-\floatsetup[table]{capposition=top,  % Table captions on top.
-                   justification=justified}  % Don't center by default.
-
 % Nice formatting for \textwidth tables.
 \usepackage{tabularx}
 
 \usepackage[noblocks]{authblk}
 \renewcommand{\Affilfont}{\small}
-
-\usepackage[pdfborder={0 0 0}]{hyperref}
 
 % \usepackage[style=nature]{biblatex}
 % \addbibresource{supporting_information.bib}
@@ -68,7 +50,7 @@
 \DeclareMathOperator{\Lognormal}{Lognormal}
 \DeclareMathOperator{\BetaPERT}{Beta-PERT}
 
-\title{Supporting Information for\\
+\title{Supporting information for\\
   \emph{Effectiveness of UNAIDS targets and HIV vaccination across 127
     countries}}
 
@@ -76,8 +58,7 @@
 \affil[a]{Department of Biomedical Sciences,
   Oregon State University,
   106 Dryden Hall,
-  Corvallis, OR 97331-4801,
-  USA}
+  Corvallis, OR 97331-4801}
 \author[b]{Abhishek Pandey}
 \author[b]{Alyssa S.~Parpia}
 \author[b]{Amber Tang}
@@ -86,8 +67,7 @@
 \affil[b]{Center for Infectious Disease Modeling and Analysis,
   Yale School of Public Health,
   135 College Street,
-  New Haven, CT 06510-2483,
-  USA}
+  New Haven, CT 06510-2483}
 \affil[1]{To whom correspondence should be addressed.
   Email: \href{mailto:jan.medlock@oregonstate.edu}
   {\texttt{jan.medlock@oregonstate.edu}}.}
@@ -807,7 +787,7 @@ to smooth short-term variations (\autoref{transmission_rate}).
 
 \begin{figure}
   \begin{center}
-    \includegraphics{../Codes/plots/transmission_rate.pdf}
+    \input{../Codes/plots/transmission_rate.pgf}
   \end{center}
   \caption{Country-specific distributions of transmission rate,
     $\bar{\beta}$, calculated based on UNAIDS historical estimates of
@@ -871,7 +851,7 @@ of global HIV incidence from 2015 to 2035 (\autoref{PRCCs}).
 
 \begin{figure}
    \centering
-   \includegraphics{../Codes/plots/prcc.pdf}
+   \input{../Codes/plots/prcc.pgf}
    \caption{Sensitivity of global HIV incidence from 2015 to 2035 to
      model parameters.  Left is the sensitivity of infections averted
      by 95--95--95, relative to status quo.  Right is the sensitivity
@@ -971,6 +951,6 @@ computation time.
 
 % \printbibliography
 \bibliography{supporting_information}
-\bibliographystyle{pnas2011}
+\bibliographystyle{pnas-new}
 
 \end{document}

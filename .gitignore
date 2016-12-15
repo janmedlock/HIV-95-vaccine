@@ -1,6 +1,7 @@
 __pycache__/
 *.npy
 *.pkl
+/upload/
 /Codes/README.html
 /Codes/old/
 /Codes/results/
@@ -11,6 +12,7 @@ __pycache__/
 /Codes/plots/mapplot/_shelve/
 /Codes/plots/Drive
 /Codes/plots/**/*.pdf
+/Codes/plots/**/*.pgf
 /Codes/plots/**/*.png
 /Codes/plots/**/*.mp4
 /Codes/plots/**/*.csv

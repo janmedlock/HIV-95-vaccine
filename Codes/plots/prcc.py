@@ -131,6 +131,7 @@ def tornados():
     fig.tight_layout(h_pad = 0, w_pad = 1)
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()), title = 'PRCC')
+    common.savefig(fig, '{}.pgf'.format(common.get_filebase()), title = 'PRCC')
     common.savefig(fig, '{}.png'.format(common.get_filebase()), title = 'PRCC')
 
 

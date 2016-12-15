@@ -7,7 +7,6 @@ import os.path
 import sys
 
 from matplotlib import pyplot
-from matplotlib.backends import backend_pdf
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -20,7 +19,7 @@ import model
 template = r'''
 \begin{{figure}}[H]
   \centering
-  \includegraphics{{{figfile:}}}
+  \input{{{figfile:}}}
   \caption{{{region_or_country:} model outcomes under the different
     diagnosis, treatment, and vaccination scenarios.  Central curves
     show the medians over model runs with 1000 samples from parameter
@@ -34,16 +33,17 @@ template = r'''
 '''
 
 
-def plot_all(**kwargs):
+def plot_all(plotevery = 10, **kwargs):
     path = common.get_filebase()
     with model.results.samples.stats.open_() as results:
         for region_or_country in common.all_regions_and_countries:
             print(region_or_country)
             fig = effectiveness._plot_one(results,
                                           region_or_country,
+                                          plotevery = plotevery,
                                           **kwargs)
             filebase = os.path.join(path, region_or_country.replace(' ', '_'))
-            filename = '{}.pdf'.format(filebase)
+            filename = '{}.pgf'.format(filebase)
             label = common.get_country_label(region_or_country)
             common.savefig(fig, filename,
                            title = '{} effectiveness'.format(label))
@@ -58,7 +58,7 @@ def combine(prefix = '../Codes/plots'):
         for region_or_country in common.all_regions_and_countries:
             filebase = region_or_country.replace(' ', '_')
             filename = os.path.join(prefix, path,
-                                    '{}.pdf'.format(filebase))
+                                    '{}.pgf'.format(filebase))
             filename = os.path.normpath(filename)
             label = common.get_country_label(region_or_country)
             if isfirst:
