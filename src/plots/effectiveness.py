@@ -37,7 +37,8 @@ def _plot_cell(ax, results, country, targets, stat,
                scale = None, units = None,
                country_label = None, stat_label = None,
                colors = None, alpha = 0.35,
-               jitter = 0.6, plotevery = 1):
+               jitter = 0.6, plotevery = 1,
+               space_to_newline = False):
     if colors is None:
         colors = seaborn.color_palette()
 
@@ -119,7 +120,8 @@ def _plot_cell(ax, results, country, targets, stat,
                 # Allow errorbar to draw outside of axes.
                 _set_clip_on(eb, False)
 
-    common.format_axes(ax, country, info, country_label, stat_label)
+    common.format_axes(ax, country, info, country_label, stat_label,
+                       space_to_newline = space_to_newline)
 
 
 def _make_legend(fig, **kwargs):
@@ -223,14 +225,19 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
                                ci_bar = ci_bar,
                                country_label = country_label,
                                stat_label = stat_label,
+                               space_to_newline = True,
                                **kwargs)
 
                     ax.xaxis.set_tick_params(labelsize = 5)
                     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
-                    if country_label is not None:
-                        t = ax.set_title(ax.get_title().replace(' ', '\n'),
-                                         va = 'center')
-                        t.set_y(1.07)
+
+                    if stat_label is not None:
+                        if stat == 'new_infections':
+                            ax.yaxis.labelpad -= 2
+                        elif stat == 'infected':
+                            ax.yaxis.labelpad -= 6
+                        elif stat == 'dead':
+                            ax.yaxis.labelpad -= 5
 
             _make_legend(fig)
 

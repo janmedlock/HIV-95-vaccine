@@ -77,7 +77,8 @@ def _get_kwds(label):
 def _plot_cell(ax, results, country, treatment_target, stat,
                country_label = None,
                country_label_short = True,
-               stat_label = 'ylabel'):
+               stat_label = 'ylabel',
+               space_to_newline = True):
     '''
     Plot one axes of  figure.
     '''
@@ -111,7 +112,8 @@ def _plot_cell(ax, results, country, treatment_target, stat,
                     **_get_kwds(label))
 
     common.format_axes(ax, country, info, country_label, stat_label,
-                       country_label_short = country_label_short)
+                       country_label_short = country_label_short,
+                       space_to_newline = space_to_newline)
 
 
 def _make_legend(fig, treatment_target):
@@ -204,14 +206,19 @@ def plot_some(treatment_target = model.targets.StatusQuo()):
 
                     _plot_cell(ax, results, country, treatment_target, stat,
                                country_label = country_label,
-                               stat_label = stat_label)
+                               stat_label = stat_label,
+                               space_to_newline = True)
 
                     ax.xaxis.set_tick_params(labelsize = 5)
                     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
-                    if country_label is not None:
-                        t = ax.set_title(ax.get_title().replace(' ', '\n'),
-                                         va = 'center')
-                        t.set_y(1.07)
+
+                    if stat_label is not None:
+                        if stat == 'new_infections':
+                            ax.yaxis.labelpad -= 2
+                        elif stat == 'infected':
+                            ax.yaxis.labelpad -= 6
+                        elif stat == 'dead':
+                            ax.yaxis.labelpad -= 5
 
             _make_legend(fig, treatment_target)
 

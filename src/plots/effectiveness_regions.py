@@ -146,6 +146,10 @@ def plot(confidence_level = 0.5, **kwargs):
                 for (ax, stat) in zip(axes, effectiveness_measures):
                     _plot_stat(ax, results, regions_sorted, stat,
                                confidence_level, **kwargs)
+                    ax.tick_params(axis = 'x', pad = 11)
+                    labels = ax.get_xticklabels()
+                    ax.set_xticklabels(labels, verticalalignment = 'center')
+
                     seaborn.despine(ax = ax, bottom = True, left = True)
                 _make_legend(fig)
 
