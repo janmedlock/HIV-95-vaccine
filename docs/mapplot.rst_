@@ -1,0 +1,24 @@
+mapplot
+-------
+.. automodule:: plots.mapplot
+
+basemap
+~~~~~~~
+.. automodule:: plots.mapplot.basemap
+
+cartopy_quiet
+~~~~~~~~~~~~~
+.. automodule:: mapplot.cartopy_quiet
+
+cmap
+~~~~
+.. automodule:: mapplot.cmap
+
+locators
+~~~~~~~~
+.. automodule:: mapplot.locators
+   :inherited-members:
+
+test
+~~~~
+.. automodule:: plots.mapplot.test
