@@ -227,7 +227,10 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
 
                     ax.xaxis.set_tick_params(labelsize = 5)
                     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
-                    ax.title.set_verticalalignment('bottom')
+                    if country_label is not None:
+                        t = ax.set_title(ax.get_title().replace(' ', '\n'),
+                                         va = 'center')
+                        t.set_y(1.07)
 
             _make_legend(fig)
 

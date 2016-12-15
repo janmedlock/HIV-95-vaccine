@@ -50,7 +50,7 @@ def plot_all(plotevery = 10, **kwargs):
             pyplot.close(fig)
 
 
-def combine(prefix = '../Codes/plots'):
+def combine(prefix = '../src/plots'):
     path = common.get_filebase()
     outfile = os.path.join(path, 'all.tex')
     with open(outfile, 'w') as fd:
