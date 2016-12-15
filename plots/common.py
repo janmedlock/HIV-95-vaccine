@@ -358,7 +358,8 @@ def format_axes(ax, country, info,
                 country_label, stat_label,
                 country_label_short = True,
                 plot_hist = False,
-                tick_interval = 10):
+                tick_interval = 10,
+                space_to_newline = False):
     '''
     Do common formatting.
     '''
@@ -381,6 +382,8 @@ def format_axes(ax, country, info,
     # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
     country_str = get_country_label(country, short = country_label_short)
+    if space_to_newline:
+        country_str = country_str.replace(' ', '\n')
 
     ylabel = None
     title = None
@@ -394,11 +397,11 @@ def format_axes(ax, country, info,
         title = info.label
 
     if ylabel is not None:
-        ax.set_ylabel(ylabel, va = 'baseline', ha = 'center',
-                      labelpad = 5)
+        ax.set_ylabel(ylabel, va = 'baseline', ha = 'center')
 
     if title is not None:
-        ax.set_title(title, va = 'center', ha = 'center')
+        title_ = ax.set_title(title, va = 'center', ha = 'center')
+        title_.set_y(1.07)
 
 
 def _get_title(filename):
