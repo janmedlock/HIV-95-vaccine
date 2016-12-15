@@ -9,10 +9,6 @@ differences
 -----------
 .. automodule:: plots.differences
 
-drive_upload
-------------
-.. automodule:: drive_upload
-
 effectiveness
 -------------
 .. automodule:: plots.effectiveness

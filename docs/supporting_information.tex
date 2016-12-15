@@ -41,14 +41,12 @@
 \renewcommand{\figurename}{Fig.}
 \renewcommand{\figureautorefname}{\figurename}
 
-\usepackage{xr}
-\externaldocument{extended_data_fig_1}
-
 \newcommand{\md}{\mathrm{d}}
 \DeclareMathOperator{\Uniform}{Uniform}
 \DeclareMathOperator{\Triangular}{Triangular}
 \DeclareMathOperator{\Lognormal}{Lognormal}
 \DeclareMathOperator{\BetaPERT}{Beta-PERT}
+\DeclareMathOperator{\Beta}{B}
 
 \title{Supporting information for\\
   \emph{Effectiveness of UNAIDS targets and HIV vaccination across 127
@@ -81,13 +79,13 @@ We developed a mathematical model of HIV transmission and progression
 that stratifies HIV infection into acute, chronic undiagnosed, chronic
 diagnosed, chronic treated, chronic virally suppressed, and AIDS,
 along with uninfected unvaccinated and vaccinated people
-(\autoref{model} \& \autoref{model_diag}), tailored to
-each of 127 countries.  Simulations of our model project the number of
-people in each HIV stratum from 2015 to 2035, from which statistics
-such as prevalence and incidence were calculated.  To evaluate the
-impact of the 90--90--90 and 95--95--95 UNAIDS goals, model transition
-rates were adjusted dynamically to meet intervention goals for
-diagnosis, treatment, viral suppression, and vaccination coverage
+(\autoref{model} \& \autoref{model_diag}), tailored to each of 127
+countries.  Simulations of our model project the number of people in
+each HIV stratum from 2015 to 2035, from which statistics such as
+prevalence and incidence were calculated.  To evaluate the impact of
+the 90--90--90 and 95--95--95 UNAIDS goals, model transition rates
+were adjusted dynamically to meet intervention goals for diagnosis,
+treatment, viral suppression, and vaccination coverage
 (\autoref{targets}).  Data and estimates from many sources, including
 The World Bank and UNAIDS, were used to parametrize the model
 (\autoref{data_sources}).  Country-specific transmission rates were
@@ -97,7 +95,9 @@ prevalence, spanning from as early as 1990 for some countries
 combinations, we conducted 1000 model simulations, sampling values of
 model parameters from empirical distributions for each simulation, and
 reported the results with median and percentiles
-(\autoref{uncertainty}).
+(\autoref{uncertainty}).  The effectiveness of the UNAIDS goals and
+vaccination was estimated for each of the 127 countries and aggregated
+by region and globally (\autoref{effectiveness_all_plots}).
 
 \begin{figure}
   \centering
@@ -134,11 +134,11 @@ deterministic, but uncertainty in the parameters was treated by
 running the model 1000 times with samples from the parameter
 distributions (\autoref{uncertainty}) and summarizing the model
 outcomes using the median and percentiles.  Each country was modeled
-separately (Extended Data
-Figs.~\ref*{effectiveness_Afghanistan}--\ref*{effectiveness_Zimbabwe})
+separately
+(\hyperref[effectiveness_Afghanistan]{Figs.~\ref*{effectiveness_Afghanistan}}--\ref{effectiveness_Zimbabwe})
 and the country simulations were aggregated to calculate global and
-regional outcomes (Extended Data
-Figs.~\ref*{effectiveness_Global}--\ref*{effectiveness_Western_Europe}).
+regional outcomes
+(\hyperref[effectiveness_Global]{Figs.~\ref*{effectiveness_Global}}--\ref*{effectiveness_Western_Europe}).
 
 \begin{table}
   \caption{Model parameters.}
@@ -787,11 +787,13 @@ to smooth short-term variations (\autoref{transmission_rate}).
 
 \begin{figure}
   \begin{center}
-    \input{../Codes/plots/transmission_rate.pgf}
+    \input{../src/plots/transmission_rate.pgf}
   \end{center}
   \caption{Country-specific distributions of transmission rate,
     $\bar{\beta}$, calculated based on UNAIDS historical estimates of
-    country prevalence and incidence.  See \autoref{model_fitting}.}
+    country prevalence and incidence.  The colored shapes are the
+    sampling distributions and the black bars are the modes of these
+    distributions.  See \autoref{model_fitting}.}
   \label{transmission_rate}
 \end{figure}
 
@@ -851,7 +853,7 @@ of global HIV incidence from 2015 to 2035 (\autoref{PRCCs}).
 
 \begin{figure}
    \centering
-   \input{../Codes/plots/prcc.pgf}
+   \input{../src/plots/prcc.pgf}
    \caption{Sensitivity of global HIV incidence from 2015 to 2035 to
      model parameters.  Left is the sensitivity of infections averted
      by 95--95--95, relative to status quo.  Right is the sensitivity
@@ -906,7 +908,7 @@ in the parameters.  (See \autoref{model} for more on each parameter.)
     \label{BetaPERT}
     f_{\BetaPERT}(x) =
     \begin{cases}
-      \frac{(x - a)^{v - 1} (c - x)^{w - 1}}{(c - a)^{v + w - 2} B(v, w)}
+      \frac{(x - a)^{v - 1} (c - x)^{w - 1}}{(c - a)^{v + w - 2} \Beta(v, w)}
       & \text{if $a \leq x \leq c$,}
       \\
       0 & \text{otherwise,}
@@ -922,7 +924,7 @@ in the parameters.  (See \autoref{model} for more on each parameter.)
       w &= \frac{v (a - \mu)}{\mu - c},
     \end{split}
   \end{equation}
-  and $B(v, w)$ is the standard beta function
+  and $\Beta(v, w)$ is the standard beta function
   \cite[\S6.2]{davis1972}.
   We used the standard value of $\lambda = 4$.
 
@@ -952,5 +954,15 @@ computation time.
 % \printbibliography
 \bibliography{supporting_information}
 \bibliographystyle{pnas-new}
+
+
+\newpage
+\vspace*{3in}
+\section{Global, regional, and per-country effectiveness}
+\label{effectiveness_all_plots}
+\newpage
+
+\input{../src/plots/effectiveness_all/all}
+
 
 \end{document}

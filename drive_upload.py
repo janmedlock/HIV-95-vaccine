@@ -4,10 +4,8 @@ Upload figures etc to Google Drive.
 '''
 
 import os
-import sys
 import time
 
-sys.path.append('Codes')
 import drive
 
 

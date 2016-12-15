@@ -256,7 +256,7 @@ if __name__ == '__main__':
     # plot_one('South Africa')
     plot_transmission_rates(
         common.all_countries,
-        fig = pyplot.figure(figsize = (5.95, 6.5)))
+        fig = pyplot.figure(figsize = (8.5 * 0.7, 6.5)))
     pyplot.show()
 
     # plot_all()

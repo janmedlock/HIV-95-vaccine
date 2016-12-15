@@ -13,10 +13,6 @@ data_sheet_report
 -----------------
 .. automodule:: data_sheet_report
 
-drive_download
---------------
-.. automodule:: drive_download
-
 generate_samples
 ----------------
 .. automodule:: generate_samples

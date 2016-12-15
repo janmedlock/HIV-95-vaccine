@@ -7,8 +7,9 @@ import drive
 
 xlsx_mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 files = (
-    {'filename': 'data_sheet',
-     'mimeType': xlsx_mime},
+    dict(filename = 'data_sheet',
+         mimeType = xlsx_mime,
+         path = 'src'),
 )
        
 

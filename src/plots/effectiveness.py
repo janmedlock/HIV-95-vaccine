@@ -137,7 +137,7 @@ def _make_legend(fig, **kwargs):
 
 
 def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
-              figsize = (5.95, 6.4), **kwargs):
+              figsize = (8.5 * 0.7, 6.5), **kwargs):
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     fig, axes = pyplot.subplots(nrows, ncols,
@@ -209,7 +209,7 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
             ncols = len(common.countries_to_plot)
             nrows = len(common.effectiveness_measures)
             fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_2column, 4),
+                                        figsize = (common.width_1_5column, 4),
                                         sharex = 'all', sharey = 'none')
             for (col, country) in enumerate(common.countries_to_plot):
                 for (row, stat) in enumerate(common.effectiveness_measures):

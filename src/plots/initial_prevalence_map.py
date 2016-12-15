@@ -52,9 +52,9 @@ def _main():
 
     ticklabels = cbar.ax.get_xticklabels()
     if prevalence.min() < vmin:
-        ticklabels[0].set_text('≤' + ticklabels[0].get_text())
+        ticklabels[0].set_text(r'$\leq\!$' + ticklabels[0].get_text())
     if prevalence.max() > vmax:
-        ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
+        ticklabels[-1].set_text(r'$\geq\!$' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
     cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'])
 

@@ -97,9 +97,9 @@ def plot(infections_per_capita_averted):
 
     ticklabels = cbar.ax.get_xticklabels()
     if infections_per_capita_averted.min().min() < vmin * scale:
-        ticklabels[0].set_text('≤' + ticklabels[0].get_text())
+        ticklabels[0].set_text(r'$\leq\!$' + ticklabels[0].get_text())
     if infections_per_capita_averted.max().max() > vmax * scale:
-        ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
+        ticklabels[-1].set_text(r'$\geq\!$' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
 
     w, h = fig.get_size_inches()

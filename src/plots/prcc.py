@@ -32,7 +32,7 @@ def get_outcome_samples(results, country, targets, stat, times):
 
 
 def tornado(ax, results, country, targets, outcome, t, parameter_samples,
-            colors, parameter_names = None):
+            colors, parameter_names = None, errorbars = False):
     outcome_samples = get_outcome_samples(results, country, targets,
                                           outcome, t)
 
@@ -51,16 +51,23 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
     c = [colors[l] for l in labels]
 
     h = range(n)
-    patches = ax.barh(h, rho[ix], xerr = xerr[:, ix],
+    if errorbars:
+        kwds = dict(xerr = xerr[:, ix],
+                    error_kw = dict(ecolor = 'black',
+                                    elinewidth = 1.5,
+                                    capthick = 1.5,
+                                    capsize = 5,
+                                    alpha = 0.9))
+    else:
+        kwds = dict()
+
+    patches = ax.barh(h, rho[ix],
                       height = 1, left = 0,
                       align = 'center',
                       color = c,
                       edgecolor = c,
-                      error_kw = dict(ecolor = 'black',
-                                      elinewidth = 1.5,
-                                      capthick = 1.5,
-                                      capsize = 5,
-                                      alpha = 0.9))
+                      **kwds)
+        
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:g}'))
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.tick_params(labelsize = pyplot.rcParams['font.size'] + 1)
@@ -87,7 +94,7 @@ def tornados():
     targets = [[str(x) for x in t] for t in targets]
     time = 2035
 
-    figsize = (5.95, 6.5)
+    figsize = (8.5 * 0.7, 6.5)
     palette = 'Dark2'
 
     parameter_samples = model.samples.load()

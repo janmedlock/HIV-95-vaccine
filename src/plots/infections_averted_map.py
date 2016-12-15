@@ -49,7 +49,7 @@ def plot(infections_averted):
     countries = infections_averted.index
     interventions = infections_averted.columns
 
-    fig = pyplot.figure(figsize = (common.width_2column, 6))
+    fig = pyplot.figure(figsize = (common.width_1_5column, 6))
     nrows = len(interventions)
     for (i, intv) in enumerate(interventions):
         if i <  nrows - 1:
@@ -94,9 +94,9 @@ def plot(infections_averted):
 
     ticklabels = cbar.ax.get_xticklabels()
     if infections_averted.min().min() < vmin * scale:
-        ticklabels[0].set_text('≤' + ticklabels[0].get_text())
+        ticklabels[0].set_text(r'$\leq\!$' + ticklabels[0].get_text())
     if infections_averted.max().max() > vmax * scale:
-        ticklabels[-1].set_text('≥' + ticklabels[-1].get_text())
+        ticklabels[-1].set_text(r'$\geq\!$' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
     cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'])
 
