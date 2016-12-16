@@ -149,12 +149,12 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
     gs = gridspec.GridSpec(nrows, ncols,
-                           top = 0.97, bottom = 0.075,
+                           top = 0.975, bottom = 0.075,
                            left = 0.09, right = 0.98,
                            wspace = 0.15)
 
     country_name = common.get_country_label(country)
-    fig.suptitle(country_name, size = 10, va = 'center', x = 0.535)
+    fig.suptitle(country_name, size = 10, va = 'baseline', x = 0.535)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
     CIBkey = 'CI{:g}'.format(100 * ci_bar)
@@ -215,8 +215,8 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                        **kwargs)
 
             if stat_label == 'ylabel':
-                if stat == 'infections':
-                    offset = -0.15
+                if stat == 'infected':
+                    offset = -0.165
                 else:
                     offset = -0.2
                 ax.yaxis.set_label_coords(offset, 0.5)
