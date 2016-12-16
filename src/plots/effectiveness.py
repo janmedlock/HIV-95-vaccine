@@ -6,6 +6,7 @@ Plot the effectiveness of interventions.
 import os.path
 import sys
 
+from matplotlib import gridspec
 from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker
@@ -131,27 +132,34 @@ def _make_legend(fig, **kwargs):
     for (t, c) in zip(model.targets.all_, colors):
         handles.append(lines.Line2D([], [], color = c, alpha = alpha0))
         labels.append(common.get_target_label(t))
+    if 'loc' not in kwargs:
+        kwargs['loc'] = 'lower center'
+    if 'ncol' not in kwargs:
+        kwargs['ncol'] = len(labels) // 2
+    if 'frameon' not in kwargs:
+        kwargs['frameon'] = False
     return fig.legend(handles, labels,
-                      loc = 'lower center',
-                      ncol = len(labels) // 2,
-                      frameon = False,
                       **kwargs)
 
 
 def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
-              figsize = (8.5 * 0.7, 6.5), **kwargs):
+              figsize = (8.5 * 0.7, 6.5),
+              **kwargs):
+    fig = pyplot.figure(figsize = figsize)
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.targets.all_) / 2))
-    fig, axes = pyplot.subplots(nrows, ncols,
-                                figsize = figsize,
-                                sharex = 'all', sharey = 'row')
+    gs = gridspec.GridSpec(nrows, ncols,
+                           top = 0.97, bottom = 0.075,
+                           left = 0.09, right = 0.98,
+                           wspace = 0.15)
 
     country_name = common.get_country_label(country)
-    fig.suptitle(country_name, size = 10, va = 'center')
+    fig.suptitle(country_name, size = 10, va = 'center', x = 0.535)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
     CIBkey = 'CI{:g}'.format(100 * ci_bar)
 
+    axes = []
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
         info = common.get_stat_info(stat)
@@ -174,8 +182,22 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
         if info.units is None:
             info.autounits(data)
 
+        axes.append([])
         for col in range(ncols):
-            ax = axes[row, col]
+            if row == 0:
+                sharex = None
+            else:
+                sharex = axes[0][col]
+            if col == 0:
+                sharey = None
+            else:
+                sharey = axes[row][0]
+
+            ax = fig.add_subplot(gs[row, col],
+                                 sharex = sharex,
+                                 sharey = sharey)
+            axes[row].append(ax)
+
             targs = model.targets.all_[2 * col : 2 * (col + 1)]
             colors = common.colors_paired[2 * col : 2 * (col + 1)]
 
@@ -192,10 +214,27 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                        scale = info.scale, units = info.units,
                        **kwargs)
 
-    with seaborn.color_palette(common.colors_paired):
-        _make_legend(fig)
+            if stat_label == 'ylabel':
+                if stat == 'infections':
+                    offset = -0.15
+                else:
+                    offset = -0.2
+                ax.yaxis.set_label_coords(offset, 0.5)
 
-    fig.tight_layout(rect = (0, 0.055, 1, 0.985))
+            if not ax.is_last_row():
+                for label in ax.get_xticklabels():
+                    label.set_visible(False)
+                ax.xaxis.offsetText.set_visible(False)
+
+            if not ax.is_first_col():
+                for label in ax.get_yticklabels():
+                    label.set_visible(False)
+                ax.yaxis.offsetText.set_visible(False)
+
+    with seaborn.color_palette(common.colors_paired):
+        _make_legend(fig,
+                     loc = (0.132, 0),
+                     columnspacing = 6.8)
 
     return fig
 
