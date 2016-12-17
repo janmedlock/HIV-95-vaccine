@@ -17,8 +17,6 @@
 \usepackage[noblocks]{authblk}
 \renewcommand{\Affilfont}{\small}
 
-% \usepackage[style=nature]{biblatex}
-% \addbibresource{supporting_information.bib}
 \usepackage[numbers, round, comma, sort&compress]{natbib}
 \usepackage{hypernat}
 % PNAS style: no brackets in reference list.
@@ -951,9 +949,10 @@ distributions, not samples from these distributions, to reduce the
 computation time.
 
 
-% \printbibliography
-\bibliography{supporting_information}
-\bibliographystyle{pnas-new}
+%\bibliography{\jobname}
+%\bibliographystyle{pnas-jm}
+% The reference list was hand editted!
+\input{\jobname.bbl}
 
 
 \newpage
