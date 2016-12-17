@@ -1,2 +1,2 @@
 github:
-	git subtree push -P Codes github github
+	git subtree push -P src github github
