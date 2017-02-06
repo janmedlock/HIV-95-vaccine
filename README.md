@@ -57,21 +57,21 @@ etc. mentioned below are covered in this documentation.
 * [run_modes.py](run_modes.py) runs simulations using the modal
   parameter values.  This is fairly fast, tens of seconds for each
   country-target combination, approximately 10 cpu-hours for 127
-  countries and 6 targets.  The result will be in *results/modes.h5*,
+  countries and 6 targets.  The result will be in *sim_data/modes.h5*,
   which is around 200MB for 127 countries and 6 targets.
 
 * [run_vaccine_scenarios.py](run_vaccine_scenarios.py) runs different
   vaccine scenarios using the modal parameter values.  Again, this is
   as fast as [run_modes.py](run_modes.py) per country-target, but has
   7 targets instead of 6, so takes a little bit longer to run.  The
-  result will be in *results/vaccine_sensitivity.h5*, which is around
+  result will be in *sim_data/vaccine_sensitivity.h5*, which is around
   450MB for 127 countries and 6 targets.
 
 * [run_samples.py](run_samples.py) runs simulations using parameter
   samples.  **This is very slow**: it is only tens of seconds per
   sample-country-target, but the default is 1000 samples, so it takes
   tens of cpu-**days** to run everything.  The data from the runs will
-  be in *results/*, under a directory for each country, with a *.pkl*
+  be in *sim_data/*, under a directory for each country, with a *.pkl*
   file for each target.  **The resulting total data generated for 127
   countries and 6 targets is around 315GB.**
 
@@ -81,12 +81,12 @@ simulation data we have generated.
 ### Post-processing
 
 * [build_regionals.py](build_regionals.py) sums the results to built
-  results for regions and globally.  These are built in *results/*
+  results for regions and globally.  These are built in *sim_data/*
   directories for each region, one *.pkl* file for each target.
 
 * [build_percentiles.py](build_percentiles.py) summarizes the median
   and a few percentiles of selected outcomes from the *.pkl* data from
-  [runs_samples.py](runs_samples.py) to *results/samples_stats.h5*
+  [runs_samples.py](runs_samples.py) to *sim_data/samples_stats.h5*
   for easier post-processing and plotting.  The resulting file is
   around 1GB for 127 countries and 6 targets.  Run
   [build_regionals.py](build_regionals.py) first to ensure that the
