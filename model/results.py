@@ -15,8 +15,8 @@ resultsdir = os.path.normpath(os.path.join(os.path.dirname(__file__),
                                            '../results'))
 
 
-def get_path(country, target, parameters_type = 'samples'):
-    if parameters_type == 'samples' :
+def get_path(country, target, parameters_type = 'sample'):
+    if parameters_type == 'sample' :
         suffix = ''
     else:
         suffix = '-' + parameters_type
@@ -28,7 +28,7 @@ def dump(obj, parameters_type = None):
     if parameters_type is None:
         # Try to guess.
         if isinstance(obj.parameters, parameters.Samples):
-            parameters_type = 'samples'
+            parameters_type = 'sample'
         elif isinstance(obj.parameters, parameters.Mode):
             parameters_type = 'mode'
 
@@ -39,14 +39,14 @@ def dump(obj, parameters_type = None):
     return joblib.dump(obj.state, path, compress = 3)
 
 
-def load(country, target, parameters_type = 'samples'):
+def load(country, target, parameters_type = 'sample'):
     path = get_path(country, target,
                     parameters_type = parameters_type)
     state = joblib.load(path)
     return simulation._from_state(country, target, state, parameters_type)
 
 
-def exists(country, target, parameters_type = 'samples'):
+def exists(country, target, parameters_type = 'sample'):
     path = get_path(obj.parameters.country, obj.target,
                     parameters_type = parameters_type)
     return os.path.exists(path)
