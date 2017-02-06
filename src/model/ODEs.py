@@ -71,7 +71,7 @@ def transform_inv(state_trans):
 
 
 def split_state(state):
-    return map(numpy.squeeze, numpy.hsplit(state, state.shape[-1]))
+    return map(numpy.squeeze, numpy.split(state, state.shape[-1], -1))
 
 
 def rhs(t, state, target, parameters):
