@@ -12,7 +12,7 @@ from . import simulation
 
 
 resultsdir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                           '../results'))
+                                           '../sim_data'))
 
 
 def get_path(country, target, parameters_type = 'sample'):
