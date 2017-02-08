@@ -35,7 +35,7 @@ def dump(obj, parameters_type = None, compress = False):
     path = get_path(obj.parameters.country, obj.target,
                     parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
-        os.mkdirs(os.path.dirname(path))
+        os.mkdir(os.path.dirname(path))
     return joblib.dump(obj.state, path, compress = compress)
 
 
