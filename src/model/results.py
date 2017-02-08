@@ -42,7 +42,7 @@ def dump(obj, parameters_type = None):
 def load(country, target, parameters_type = 'sample'):
     path = get_path(country, target,
                     parameters_type = parameters_type)
-    state = joblib.load(path)
+    state = joblib.load(path, mmap_mode = 'r')
     return simulation._from_state(country, target, state, parameters_type)
 
 
