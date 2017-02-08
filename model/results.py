@@ -20,11 +20,11 @@ def get_path(country, target, parameters_type = 'sample'):
         suffix = ''
     else:
         suffix = '-' + parameters_type
-    filename = '{}{}.pkl.z'.format(str(target), suffix)
+    filename = '{}{}.pkl'.format(str(target), suffix)
     return os.path.join(resultsdir, country, filename)
 
 
-def dump(obj, parameters_type = None):
+def dump(obj, parameters_type = None, compress = False):
     if parameters_type is None:
         # Try to guess.
         if isinstance(obj.parameters, parameters.Samples):
@@ -36,7 +36,7 @@ def dump(obj, parameters_type = None):
                     parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
         os.mkdirs(os.path.dirname(path))
-    return joblib.dump(obj.state, path, compress = 3)
+    return joblib.dump(obj.state, path, compress = compress)
 
 
 def load(country, target, parameters_type = 'sample'):
