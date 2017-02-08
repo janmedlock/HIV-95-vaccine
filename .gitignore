@@ -1,7 +1,5 @@
 __pycache__/
-*.npy
 *.pkl
-*.pkl.z
 /src/README.html
 /src/sim_data/
 /src/docs/_build/
