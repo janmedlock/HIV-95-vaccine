@@ -431,14 +431,14 @@ class CountryDataShelf(collections.abc.Mapping):
     '''
     def __init__(self):
         root, _ = os.path.splitext(datapath)
-        self._shelfpath = '{}.pkl.z'.format(root)
+        self._shelfpath = '{}.pkl'.format(root)
         # Delay opening shelf.
         # self._open_shelf()
 
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = joblib.load(self._shelfpath)
+            self._shelf = joblib.load(self._shelfpath, mmap_mode = 'r')
         else:
             self._build_all()
 
@@ -454,7 +454,7 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 wb = wb,
                                                 allow_missing = True)
                            for country in countries}
-            joblib.dump(self._shelf, self._shelfpath, compress = 3)
+            joblib.dump(self._shelf, self._shelfpath)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)
