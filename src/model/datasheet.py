@@ -159,7 +159,7 @@ class GDP(Sheet):
 
 
 class IncidencePrevalence(Sheet):
-    sheetname = 'Incidence/Prevalence'
+    sheetname = 'IncidencePrevalence'
 
     _incidence_start_string = 'INCIDENCE (15-49)'
     _prevalence_start_string = 'PREVALENCE (15-49)'
@@ -438,7 +438,7 @@ class CountryDataShelf(collections.abc.Mapping):
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = joblib.load(self._shelfpath, mmap_mode = 'r')
+            self._shelf = joblib.load(self._shelfpath, mmap_mode = None)
         else:
             self._build_all()
 

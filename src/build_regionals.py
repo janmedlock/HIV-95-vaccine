@@ -8,11 +8,18 @@ import model
 
 def _main():
     for region in model.regions.all_:
-        for target in model.targets.all_:
-            if not model.results.samples.exists(region, target):
-                results = model.results.samples.open_(region, target)
-                results._load_data()
-                model.results.samples.dump(region, target, results)
+        for target in model.target.all_:
+            if not model.results.exists(region, target):
+                print('{}: {}'.format(region, target))
+                data = {country: model.results.load(country, target)
+                        for country in model.regions.regions[region]}
+                if region == 'Global':
+                    results = model.multicountry.Global(target, data)
+                else:
+                    results = model.multicountry.MultiCountry(region,
+                                                              target,
+                                                              data)
+                model.results.dump(results)
 
 
 if __name__ == '__main__':

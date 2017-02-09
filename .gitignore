@@ -1,10 +1,10 @@
 __pycache__/
 *.pkl
+/drive/client_secret.json
+/drive/credentials.json
 /src/README.html
 /src/sim_data/
 /src/docs/_build/
-/src/drive/client_secret.json
-/src/drive/credentials.json
 /src/plots/mapplot/_cartopy/
 /src/plots/mapplot/_shelve/
 /src/plots/Drive
