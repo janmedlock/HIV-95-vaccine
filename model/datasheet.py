@@ -8,9 +8,9 @@ Load data from the datafile.
 import collections.abc
 import itertools
 import os.path
+import pickle
 import sys
 
-import joblib
 import numpy
 import pandas
 
@@ -438,7 +438,7 @@ class CountryDataShelf(collections.abc.Mapping):
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = joblib.load(self._shelfpath, mmap_mode = None)
+            self._shelf = pickle.load(self._shelfpath)
         else:
             self._build_all()
 
@@ -454,7 +454,7 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 wb = wb,
                                                 allow_missing = True)
                            for country in countries}
-            joblib.dump(self._shelf, self._shelfpath)
+            pickle.dump(self._shelf, self._shelfpath, protocol = -1)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)
