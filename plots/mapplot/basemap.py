@@ -4,7 +4,6 @@ Make nice graphs on maps.
 
 from collections import abc
 import itertools
-import os.path
 
 import cartopy
 from matplotlib import animation
@@ -19,20 +18,12 @@ import shapely.ops
 from . import locators
 
 
-# Change cartopy cache from ~/.local/share
-# to a subdirectory so it'll go in Google Drive.
-cartopy.config['data_dir'] = os.path.normpath(os.path.join(
-    os.path.dirname(__file__),
-    '_cartopy'))
-
-
 _east_hemis = shapely.geometry.box(180, -90, 0, 90)
 _west_hemis = shapely.geometry.box(-180, -90, 0, 90)
 
 
 country_replacements = {
     'Bolivia (Plurinational State of)': 'Bolivia',
-    'Bahamas': 'The Bahamas',
     'Congo': 'Republic of Congo',
     "Côte d'Ivoire": 'Ivory Coast',
     'Iran (Islamic Republic of)': 'Iran',
@@ -43,11 +34,6 @@ country_replacements = {
     'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
     'Venezuela (Bolivarian Republic of)': 'Venezuela',
     'Viet Nam': 'Vietnam',
-    # Some screwed up regions.
-    'Eastern and Southern Africa': 'East and Southern Africa',
-    'Asia and The Pacific': 'Asia Pacific',
-    'The Caribbean': 'Caribbean',
-    'Western and Central Europe': 'Western Europe',
 }
 
 country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
