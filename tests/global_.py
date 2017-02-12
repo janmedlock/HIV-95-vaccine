@@ -11,10 +11,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
-
-# import seaborn
-sys.path.append('../plots')
-import seaborn_quiet as seaborn
+import seaborn
 
 sys.path.append('..')
 import model

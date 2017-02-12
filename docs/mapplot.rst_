@@ -6,10 +6,6 @@ basemap
 ~~~~~~~
 .. automodule:: plots.mapplot.basemap
 
-cartopy_quiet
-~~~~~~~~~~~~~
-.. automodule:: mapplot.cartopy_quiet
-
 cmap
 ~~~~
 .. automodule:: mapplot.cmap

@@ -2,13 +2,8 @@
 Locators to get the coordinates of a country.
 '''
 
+import cartopy
 import numpy
-
-# import cartopy
-import os.path
-import sys
-sys.path.append(os.path.dirname(__file__))  # For Sphinx
-import cartopy_quiet as cartopy
 
 
 class _Locator:
@@ -25,7 +20,7 @@ class _Locator:
 
         coords = numpy.vstack(map(self.get_location, countries)).T
         return coords
-    
+
 
 class GeocodeLocator(_Locator):
     '''

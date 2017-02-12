@@ -7,13 +7,10 @@ the parameter distributions.
 import sys
 
 from matplotlib import pyplot
+import seaborn
 
 sys.path.append('..')
 import model
-
-# import seaborn
-sys.path.append('../plots')
-import seaborn_quiet as seaborn
 
 
 if __name__ == '__main__':

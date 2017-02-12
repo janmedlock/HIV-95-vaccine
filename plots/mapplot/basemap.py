@@ -5,23 +5,16 @@ Make nice graphs on maps.
 from collections import abc
 import itertools
 import os.path
-import sys
 
+import cartopy
 from matplotlib import animation
 from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 import numpy
+import seaborn
 import shapely.geometry
 import shapely.ops
-
-# import cartopy
-sys.path.append(os.path.dirname(__file__))  # For Sphinx
-import cartopy_quiet as cartopy
-
-sys.path.append('..')
-# import seaborn
-import seaborn_quiet as seaborn
 
 from . import locators
 

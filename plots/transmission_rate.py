@@ -13,15 +13,13 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 sys.path.append('..')
 import model
 from model import transmission_rate
-
-# import seaborn
-import seaborn_quiet as seaborn
 
 
 def plot_transmission_rates(countries, fig = None,
