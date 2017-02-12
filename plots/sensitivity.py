@@ -214,8 +214,8 @@ def tornado(X, y, outcome, parameter_names = None, colors = None):
 if __name__ == '__main__':
     country = 'Global'
     outcome = 'new_infections'
-    baseline = model.targets.StatusQuo()
-    targets = [baseline, model.targets.Vaccine(treatment_target = baseline)]
+    baseline = model.target.StatusQuo()
+    targets = [baseline, model.target.Vaccine(treatment_target = baseline)]
     targets = list(map(str, targets))
     time = 2035
 

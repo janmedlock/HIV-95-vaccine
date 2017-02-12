@@ -53,19 +53,23 @@ country_short_names = {
 }
 
 
-def get_country_short_name(c):
-    return country_short_names.get(v, v)
-
-
 matplotlib.rc('mathtext', fontset = 'stixsans')
 
-# Science style
-width_1column = 2.25  # inches
-width_2column = 4.75  # inches
-width_3column = 3 * width_1column + 2 * (width_2column - 2 * width_1column)
+# Use Type 1 fonts instead of Type 3.
+matplotlib.rc('pdf', fonttype = 42)
+matplotlib.rc('ps', fonttype = 42)
 
-fontdict = {'family': 'sans-serif', 'size': 7}
-fontdict_part = {'size': 9, 'weight': 'bold'}
+
+# PNAS style
+width_1column = 20.5 / 6    # inches
+width_1_5column = 27 / 6    # inches
+width_2column = 42.125 / 6  # inches
+height_max = 54 / 6         # inches
+
+
+fontdict = {'family': 'sans-serif',
+            'sans-serif': 'Latin Modern Sans',
+            'size': 7}
 matplotlib.rc('font', **fontdict)
 matplotlib.rc('figure', titlesize = fontdict['size'] + 1)
 matplotlib.rc('axes', titlesize = fontdict['size'] + 1,
@@ -83,18 +87,26 @@ matplotlib.rc('lines', linewidth = 1.25)
 matplotlib.rc('axes.grid', which = 'major')
 
 
+def get_country_label(c, short = False):
+    # Convert back to original UNAIDS names.
+    v = model.datasheet.country_replacements_inv.get(c, c)
+    if short:
+        v = country_labels_short.get(v, v)
+    return v
+
+
 all_regions = model.regions.all_
 # all_regions is already sorted by 'Global', then alphabetical.
 all_countries = model.datasheet.get_country_list()
 # all_countries needs to be sorted by the name on graph.
 def country_sort_key(x):
-    return unicodedata.normalize('NFKD', x)
+    return unicodedata.normalize('NFKD', get_country_label(x))
 all_countries.sort(key = country_sort_key)
 all_regions_and_countries = all_regions + all_countries
 
 
 effectiveness_measures = ['new_infections', 'incidence_per_capita',
-                          'infected', 'AIDS', 'dead']
+                          'infected', 'dead']
 
 
 t = numpy.linspace(2015, 2035, 20 * 120 +1)
@@ -342,9 +354,10 @@ data_getter = DataGetter()
 
 def format_axes(ax, country, info,
                 country_label, stat_label,
-                country_short_name = True,
+                country_label_short = True,
                 plot_hist = False,
-                tick_interval = 10):
+                tick_interval = 10,
+                space_to_newline = False):
     '''
     Do common formatting.
     '''
@@ -366,10 +379,9 @@ def format_axes(ax, country, info,
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    if country_name_short:
-        country_str = get_country_short_name(country)
-    else:
-        country_str = country
+    country_str = get_country_label(country, short = country_label_short)
+    if space_to_newline:
+        country_str = country_str.replace(' ', '\n')
 
     ylabel = None
     title = None
@@ -383,11 +395,11 @@ def format_axes(ax, country, info,
         title = info.label
 
     if ylabel is not None:
-        ax.set_ylabel(ylabel, va = 'baseline', ha = 'center',
-                      labelpad = 5)
+        ax.set_ylabel(ylabel, va = 'baseline', ha = 'center')
 
     if title is not None:
-        ax.set_title(title, va = 'center', ha = 'center')
+        title_ = ax.set_title(title, va = 'center', ha = 'center')
+        title_.set_y(1.07)
 
 
 def _get_title(filename):
@@ -491,21 +503,13 @@ def savefig(fig, filename, title = None, **kwargs):
 
     if filename.endswith('.pdf'):
         fig.savefig(filename, **kwargs)
-        pdfoptimize(filename)
+        # pdfoptimize(filename)
         pdf_add_info(filename, **info)
-    elif filename.endswith('.png'):
-        if ('dpi' not in kwargs):
-            kwargs['dpi'] = 600
+    elif filename.endswith('.pgf'):
         fig.savefig(filename, **kwargs)
-        # Use PIL etc to set metadata.
-        image_add_info(filename, **info)
-    elif (filename.endswith('.tiff') or filename.endswith('.tif')):
-        if ('dpi' not in kwargs):
-            kwargs['dpi'] = 600
-        fig.savefig(filename, **kwargs)
-        # Use PIL etc to set metadata.
-        image_add_info(filename, **info)
     else:
+        if ('dpi' not in kwargs):
+            kwargs['dpi'] = 600
         fig.savefig(filename, **kwargs)
         # Use PIL etc to set metadata.
         image_add_info(filename, **info)
