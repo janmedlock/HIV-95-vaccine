@@ -2,6 +2,7 @@ __pycache__/
 *.pkl
 /drive/client_secret.json
 /drive/credentials.json
+/upload/
 /src/README.html
 /src/sim_data/
 /src/docs/_build/
@@ -9,6 +10,7 @@ __pycache__/
 /src/plots/mapplot/_shelve/
 /src/plots/Drive
 /src/plots/**/*.pdf
+/src/plots/**/*.pgf
 /src/plots/**/*.png
 /src/plots/**/*.mp4
 /src/plots/**/*.csv

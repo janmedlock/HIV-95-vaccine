@@ -97,7 +97,7 @@ class Driver:
         try:
             mtime_local = os.path.getmtime(localfilename)
         except FileNotFoundError:
-            return False
+            return True
         else:
             mtime_drive = self._get_mtime_fileId(drivefileId)
             return (mtime_local < mtime_drive)
@@ -149,24 +149,28 @@ class Driver:
     def upload_if_newer(self, filename):
         return self.upload(filename, only_if_local_is_newer = True)
 
-    def download(self, filename, only_if_drive_is_newer = False):
+    def download(self, filename, path = '',
+                 only_if_drive_is_newer = False):
         fileId = self.find_fileId(filename)
         if fileId is None:
             raise ValueError("No file '{}' in directory!".format(filename))
         elif ((not only_if_drive_is_newer)
               or (self._drive_is_newer_fileId(filename, fileId))):
-            print('{}: downloading from Drive.'.format(filename))
+            filepath = os.path.join(path, filename)
+            print('{}: downloading from Drive.'.format(filepath))
             job = self.drive_service.files().get_media(fileId = fileId)
             response = job.execute()
-            with open(filename, 'wb') as fd:
+            with open(filepath, 'wb') as fd:
                 fd.write(response)
         else:
             print('{}: up-to-date locally.'.format(filename))
 
-    def download_if_newer(self, filename):
-        return self.download(filename, only_if_drive_is_newer = True)
+    def download_if_newer(self, filename, path = ''):
+        return self.download(filename, path = path,
+                             only_if_drive_is_newer = True)
 
-    def export(self, filename, mimeType, only_if_drive_is_newer = False):
+    def export(self, filename, mimeType, path = '',
+               only_if_drive_is_newer = False):
         fileId = self.find_fileId(filename)
         if mimeType in mimetype_extensions:
             ext = mimetype_extensions[mimeType]
@@ -175,19 +179,21 @@ class Driver:
         if ext is None:
             ext = ''
         exportname = filename + ext
+        exportpath = os.path.join(path, exportname)
         if fileId is None:
             raise ValueError("No file '{}' in directory!".format(filename))
         elif ((not only_if_drive_is_newer)
-              or (self._drive_is_newer_fileId(exportname, fileId))):
-            print('{}: exporting from Drive.'.format(filename))
+              or (self._drive_is_newer_fileId(exportpath, fileId))):
+            print('{}: exporting from Drive.'.format(exportpath))
             job = self.drive_service.files().export(
                 fileId = fileId,
                 mimeType = mimeType)
             response = job.execute()
-            with open(exportname, 'wb') as fd:
+            with open(exportpath, 'wb') as fd:
                 fd.write(response)
         else:
-            print('{}: up-to-date locally.'.format(exportname))
+            print('{}: up-to-date locally.'.format(exportpath))
 
-    def export_if_newer(self, filename, mimeType):
-        return self.export(filename, mimeType, only_if_drive_is_newer = True)
+    def export_if_newer(self, filename, mimeType, path = ''):
+        return self.export(filename, mimeType, path = path,
+                           only_if_drive_is_newer = True)
