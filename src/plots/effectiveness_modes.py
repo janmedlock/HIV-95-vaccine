@@ -11,12 +11,11 @@ from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib.backends import backend_pdf
 import numpy
+import seaborn
 import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 

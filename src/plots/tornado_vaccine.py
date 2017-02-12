@@ -9,12 +9,11 @@ import sys
 from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
 import common
 import stats
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 

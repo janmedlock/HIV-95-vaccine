@@ -12,12 +12,11 @@ from matplotlib import patches
 from matplotlib import ticker
 import numpy
 import pandas
+import seaborn
 import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 

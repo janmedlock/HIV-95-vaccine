@@ -21,10 +21,8 @@ from matplotlib.backends import backend_pdf
 from matplotlib.backends import backend_cairo
 import numpy
 from PIL import Image
+import seaborn
 
-sys.path.append(os.path.dirname(__file__))  # For Sphinx.
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
