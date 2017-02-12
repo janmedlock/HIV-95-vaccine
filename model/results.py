@@ -8,7 +8,6 @@ import joblib
 
 from . import multicountry
 from . import ODEs
-from . import parameters
 from . import regions
 from . import simulation
 
@@ -27,6 +26,8 @@ def get_path(place, target, parameters_type = 'sample'):
 
 
 def dump(obj, parameters_type = None, compress = False):
+    # import parameters here so that it can use resultsdir.
+    from . import parameters
     if isinstance(obj, multicountry.MultiCountry):
         path = get_path(obj.region, obj.target)
     else:

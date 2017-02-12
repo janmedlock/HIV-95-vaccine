@@ -12,13 +12,12 @@ from scipy import optimize
 from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
+from . import results
 from . import transmission_rate
 
 
-# nsamples = 1000
-nsamples = 2 # For testing.
-samplesfile = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                            '../samples.npy'))
+nsamples = 1000
+samplesfile = os.path.join(results.resultsdir, 'samples.pkl')
 
 
 def _get_samples():

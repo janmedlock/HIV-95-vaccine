@@ -9,7 +9,6 @@ Documentation for 90-90-90
 .. toctree::
 
    scripts
-   drive
    model
    plots
    tests
