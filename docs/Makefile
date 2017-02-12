@@ -1,5 +1,5 @@
 all: diagram_standalone.pdf diagram_standalone.png \
-	supporting_information.pdf cover_letter.pdf figs.pdf
+	supporting_information.pdf cover_letter.pdf
 
 
 diagram_standalone.pdf:	diagram_standalone.tex diagram.tex
@@ -15,7 +15,4 @@ supporting_information.pdf:	supporting_information.tex
 	pdflatex $<
 
 cover_letter.pdf:	cover_letter.tex
-	pdflatex $<
-
-figs.pdf:	figs.tex
 	pdflatex $<
