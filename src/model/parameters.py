@@ -4,6 +4,7 @@ Parameter data.
 
 import os.path
 
+import joblib
 import numpy
 import pandas
 from scipy import stats
@@ -23,9 +24,9 @@ samplesfile = os.path.join(results.resultsdir, 'samples.pkl')
 def _get_samples():
     if not os.path.exists(samplesfile):
         samples = Parameters.generate_samples(nsamples)
-        numpy.save(samplesfile, samples)
+        joblib.dump(samples, samplesfile, protocol = -1)
     else:
-        samples = numpy.load(samplesfile)
+        samples = joblib.load(samplesfile, mmap_mode = 'r')
     return samples
 
 

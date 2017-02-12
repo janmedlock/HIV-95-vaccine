@@ -41,7 +41,7 @@ def dump(obj, parameters_type = None, compress = False):
                         parameters_type = parameters_type)
     if not os.path.exists(os.path.dirname(path)):
         os.mkdir(os.path.dirname(path))
-    return joblib.dump(obj.state, path, compress = compress)
+    return joblib.dump(obj.state, path, compress = compress, protocol = -1)
 
 
 def load(place, target, parameters_type = 'sample'):
