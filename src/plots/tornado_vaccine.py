@@ -103,7 +103,7 @@ def tornado(ax, results, country, targets, outcome, t, colors):
 def tornados():
     country = 'Global'
     outcome = 'new_infections'
-    targets = model.targets.vaccine_scenarios
+    targets = model.target.vaccine_scenarios
     time = 2035
 
     figsize = (5.95, 6.5)

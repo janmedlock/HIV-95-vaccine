@@ -139,11 +139,16 @@ def plot(confidence_level = 0.5, **kwargs):
         with seaborn.color_palette(common.colors_paired):
             with seaborn.axes_style('darkgrid'):
                 fig, axes = pyplot.subplots(nrows, ncols,
-                                            figsize = (common.width_2column, 4),
+                                            figsize = (common.width_1_5column,
+                                                       4),
                                             sharex = 'col', sharey = 'none')
                 for (ax, stat) in zip(axes, effectiveness_measures):
                     _plot_stat(ax, results, regions_sorted, stat,
                                confidence_level, **kwargs)
+                    ax.tick_params(axis = 'x', pad = 11)
+                    labels = ax.get_xticklabels()
+                    ax.set_xticklabels(labels, verticalalignment = 'center')
+
                     seaborn.despine(ax = ax, bottom = True, left = True)
                 _make_legend(fig)
 
