@@ -14,6 +14,9 @@ import sys
 import numpy
 import pandas
 
+from . import output_dir
+
+
 datafile = '../data_sheet.xlsx'
 # It's relative to this module file,
 # not files that might import it.
@@ -430,15 +433,18 @@ class CountryDataShelf(collections.abc.Mapping):
     Disk cache for :class:`CountryData` for speed.
     '''
     def __init__(self):
-        root, _ = os.path.splitext(datapath)
-        self._shelfpath = '{}.pkl'.format(root)
+        _, datafile = os.path.split(datapath)
+        root, _ = os.path.splitext(datafile)
+        filename = '{}.pkl'.format(root)
+        self._shelfpath = os.path.join(output_dir.output_dir, filename)
         # Delay opening shelf.
         # self._open_shelf()
 
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = pickle.load(self._shelfpath)
+            with open(self._shelfpath, 'rb') as fd:
+                self._shelf = pickle.load(fd)
         else:
             self._build_all()
 
@@ -454,7 +460,8 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 wb = wb,
                                                 allow_missing = True)
                            for country in countries}
-            pickle.dump(self._shelf, self._shelfpath, protocol = -1)
+            with open(self._shelfpath, 'wb') as fd:
+                pickle.dump(self._shelf, self._shelfpath, protocol = -1)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)

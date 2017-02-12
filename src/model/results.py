@@ -6,14 +6,12 @@ import os
 
 import joblib
 
+from . import output_dir
 from . import multicountry
 from . import ODEs
+from . import parameters
 from . import regions
 from . import simulation
-
-
-resultsdir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                           '../sim_data'))
 
 
 def get_path(place, target, parameters_type = 'sample'):
@@ -22,12 +20,10 @@ def get_path(place, target, parameters_type = 'sample'):
     else:
         suffix = '-' + parameters_type
     filename = '{}{}.pkl'.format(str(target), suffix)
-    return os.path.join(resultsdir, place, filename)
+    return os.path.join(output_dir.output_dir, place, filename)
 
 
 def dump(obj, parameters_type = None, compress = False):
-    # import parameters here so that it can use resultsdir.
-    from . import parameters
     if isinstance(obj, multicountry.MultiCountry):
         path = get_path(obj.region, obj.target)
     else:

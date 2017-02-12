@@ -12,13 +12,13 @@ from scipy import optimize
 
 from . import datasheet
 from . import latin_hypercube_sampling
+from . import output_dir
 from . import R0
-from . import results
 from . import transmission_rate
 
 
 nsamples = 1000
-samplesfile = os.path.join(results.resultsdir, 'samples.pkl')
+samplesfile = os.path.join(output_dir.output_dir, 'samples.pkl')
 
 
 def _get_samples():
@@ -80,7 +80,7 @@ class Parameters:
 
     # From Cirroe et al, 2009.
     suppression_rate = uniform(0.5, 1.5)
-    
+
     # From Morgan et al, 2002.
     # 2 years until death.
     death_rate_AIDS = 1 / 2

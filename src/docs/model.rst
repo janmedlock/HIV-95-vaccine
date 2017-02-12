@@ -38,6 +38,10 @@ ODEs
 ----
 .. automodule:: model.ODEs
 
+output_dir
+----------
+.. automodule:: model.output_dir
+
 parameters
 ----------
 .. automodule:: model.parameters
