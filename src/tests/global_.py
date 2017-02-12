@@ -2,7 +2,7 @@
 '''
 Test :mod:`model.global_`.
 
-This requires data from the simulation runs in the directory `./sim_data`.
+This requires data from the simulation runs.
 '''
 
 import sys

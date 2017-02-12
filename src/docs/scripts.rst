@@ -13,10 +13,6 @@ data_sheet_report
 -----------------
 .. automodule:: data_sheet_report
 
-drive_download
---------------
-.. automodule:: drive_download
-
 module_versions
 ---------------
 .. automodule:: module_versions

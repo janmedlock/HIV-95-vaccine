@@ -38,18 +38,6 @@ ODEs
 ----
 .. automodule:: model.ODEs
 
-optimization
-------------
-.. automodule:: model.optimization
-
-effectiveness
-~~~~~~~~~~~~~
-.. automodule:: model.optimization.effectiveness
-
-net_benefit
-~~~~~~~~~~~
-.. automodule:: model.optimization.net_benefit
-
 parameters
 ----------
 .. automodule:: model.parameters
