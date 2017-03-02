@@ -209,8 +209,8 @@ def plot_some(treatment_target = model.targets.StatusQuo()):
                                stat_label = stat_label,
                                space_to_newline = True)
 
-                    ax.xaxis.set_tick_params(labelsize = 5)
-                    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
+                    ax.xaxis.set_tick_params(labelsize = 4.5)
+                    # ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
 
                     if stat_label is not None:
                         if stat == 'new_infections':
@@ -223,7 +223,7 @@ def plot_some(treatment_target = model.targets.StatusQuo()):
             _make_legend(fig, treatment_target)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
-                     rect = (0, 0.05, 1, 1))
+                     rect = (0, 0.06, 1, 1))
 
     common.savefig(fig, '{}.pdf'.format(common.get_filebase()))
     common.savefig(fig, '{}.png'.format(common.get_filebase()))
