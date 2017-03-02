@@ -37,3 +37,4 @@ __pycache__/
 /docs/**/*.synctex.gz
 /docs/**/*.run.xml
 /docs/**/*.docx
+/docs/**/*.zip
