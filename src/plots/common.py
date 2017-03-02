@@ -55,11 +55,11 @@ country_labels_short = {
 }
 
 
-matplotlib.rc('mathtext', fontset = 'stixsans')
+matplotlib.rc('mathtext', fontset = 'dejavusans')
 
 # Use Type 1 fonts instead of Type 3.
-matplotlib.rc('pdf', fonttype = 42)
-matplotlib.rc('ps', fonttype = 42)
+# matplotlib.rc('pdf', fonttype = 42)
+# matplotlib.rc('ps', fonttype = 42)
 
 
 # PNAS style
@@ -70,8 +70,8 @@ height_max = 54 / 6         # inches
 
 
 fontdict = {'family': 'sans-serif',
-            'sans-serif': 'Latin Modern Sans',
-            'size': 7}
+            'sans-serif': 'DejaVu Sans',
+            'size': 6}
 matplotlib.rc('font', **fontdict)
 matplotlib.rc('figure', titlesize = fontdict['size'] + 1)
 matplotlib.rc('axes', titlesize = fontdict['size'] + 1,
@@ -373,6 +373,10 @@ def format_axes(ax, country, info,
         ticks = list(ticks) + [b]
     ax.set_xticks(ticks)
     ax.set_xlim(a, b)
+
+    a, b = ax.get_ylim()
+    if a < 0:
+        ax.set_ylim(0, b)
 
     ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
