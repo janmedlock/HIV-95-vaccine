@@ -329,7 +329,7 @@ class Sample(_Super):
 class Samples:
     def __init__(self, country):
         self.country = country
-    
+
     def __iter__(self):
         self._parameters = Parameters(self.country)
         self._samples = iter(_get_samples())
