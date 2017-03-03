@@ -3,7 +3,7 @@
 Using the modes of the parameter distributions,
 run simulations for the different vaccine sensitivity scenarios.
 
-.. todo:: Update to use results.dump.
+.. todo:: Doesn't work.  Update to use results.dump.
 '''
 
 import joblib
