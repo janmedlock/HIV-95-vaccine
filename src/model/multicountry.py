@@ -124,13 +124,14 @@ def build_regional(region, target_, parameters_type = 'sample'):
     '''
     if not results.exists(region, target, parameters_type):
         print('Building {}: {}'.format(region, target_))
-        data = {country: results.load(country, target_, 'mode')
+        data = {country: results.load(country, target_,
+                                      parameters_type = parameters_type)
                 for country in regions.regions[region]}
         if region == 'Global':
             obj = Global(target_, data)
         else:
             obj = MultiCountry(region, target_, data)
-        results.dump(obj)
+        results.dump(obj, parameters_type = parameters_type)
 
 
 def build_regionals(targets = target.all_,
