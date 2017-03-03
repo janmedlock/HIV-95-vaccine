@@ -108,7 +108,7 @@ class Basemap:
             central_longitude = central_longitude)
         self.ax = self.fig.add_axes(rect, projection = proj,
                                     anchor = 'N',
-                                    axis_bgcolor = 'none')
+                                    facecolor = 'none')
         self.ax.set_extent(extent, proj)
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
