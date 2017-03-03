@@ -21,10 +21,9 @@ from . import locators
 _east_hemis = shapely.geometry.box(180, -90, 0, 90)
 _west_hemis = shapely.geometry.box(-180, -90, 0, 90)
 
-
-country_replacements = {
+# The country names used in the maps are different than UNAIDS names.
+_map_names = {
     'Bolivia (Plurinational State of)': 'Bolivia',
-    'Congo': 'Republic of Congo',
     "Côte d'Ivoire": 'Ivory Coast',
     'Iran (Islamic Republic of)': 'Iran',
     "Lao People's Democratic Republic": 'Laos',
@@ -36,26 +35,21 @@ country_replacements = {
     'Viet Nam': 'Vietnam',
 }
 
-country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
 
-
-def convert_country(country, inverse = False):
+def _get_map_name(country):
     '''
     Convert country names used in the datasheet to those used in the maps
     or vice versa.
     '''
-    if inverse:
-        return country_replacements_inv.get(country, country)
-    else:
-        return country_replacements.get(country, country)
+    return _map_names.get(country, country)
 
 
-def convert_countries(countries, inverse = False):
+def _get_map_names(countries):
     '''
     Convert multiple country names used in the datasheet
     to those used in the maps or vice versa.
     '''
-    return [convert_country(c, inverse = inverse) for c in countries]
+    return [_get_map_name(c) for c in countries]
 
 
 def _in_west_hemis(p):
@@ -277,7 +271,7 @@ class Basemap:
 
     def draw_borders(self, countries, zorder = 0, facecolor = 'None',
                      *args, **kwargs):
-        for c in countries:
+        for c in _get_map_names(countries):
             try:
                 border = self.borders[c]
             except KeyError:
@@ -299,7 +293,7 @@ class Basemap:
         vmax = kwargs.pop('vmax', max(values))
         cmap_norm.set_clim(vmin, vmax)
         cmap_norm.set_array(values)
-        for (c, v) in zip(countries, values):
+        for (c, v) in zip(_get_map_names(countries), values):
             if numpy.isfinite(v):
                 color = cmap_norm.to_rgba(v)
                 try:
@@ -333,7 +327,7 @@ class Basemap:
     def choropleth_animate(self, countries, t, values,
                            label_coords = None,
                            *args, **kwargs):
-        self.choropleth_preinit(countries, t, values,
+        self.choropleth_preinit(_get_map_names(countries), t, values,
                                 label_coords = label_coords,
                                 *args, **kwargs)
         return animation.FuncAnimation(self.fig,
@@ -355,7 +349,7 @@ class Basemap:
         self.cmap_norm.set_clim(vmin = kwargs.pop('vmin', None),
                                 vmax = kwargs.pop('vmax', None))
         self.cmap_norm.set_array(values)
-        self._countries = countries
+        self._countries = _get_map_names(countries)
         self._t = t
         self._values = values
         self._artists = []
@@ -407,7 +401,7 @@ class Basemap:
         return retval
 
     def scatter(self, countries, *args, **kwargs):
-        x, y = self.locator.get_locations(countries)
+        x, y = self.locator.get_locations(_get_map_names(countries))
         self.ax.scatter(x, y,
                         transform = self.locator.crs,
                         *args,
@@ -420,7 +414,7 @@ class Basemap:
              counterclock = False,
              colors = 'bright',
              *args, **kwargs):
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         radius = numpy.sqrt(s) / numpy.pi
@@ -451,7 +445,7 @@ class Basemap:
              frame = False,
              *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -490,7 +484,7 @@ class Basemap:
               frame = False,
               *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -552,7 +546,7 @@ class Basemap:
                frame = False,
                *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -590,7 +584,7 @@ class Basemap:
              linewidth = 0,
              *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -645,7 +639,7 @@ class Basemap:
               scale = 1,
               *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -664,10 +658,10 @@ class Basemap:
                               color = 'black',
                               weight = 'bold'),
               *args, **kwargs):
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
-        for (xyz, country) in zip(coords_t, countries):
+        for (xyz, country) in zip(coords_t, _get_map_names(countries)):
             x, y, z = xyz
             if country in replace:
                 label = replace[country]
