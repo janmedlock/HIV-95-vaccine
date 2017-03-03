@@ -187,7 +187,7 @@ def plot_all(treatment_target = model.target.StatusQuo()):
                 pyplot.close(fig)
 
 
-def plot_some(treatment_target = model.targets.StatusQuo()):
+def plot_some(treatment_target = model.target.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)
