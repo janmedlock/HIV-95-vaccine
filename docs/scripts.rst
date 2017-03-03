@@ -1,10 +1,6 @@
 scripts
 =======
 
-build_regionals
----------------
-.. automodule:: build_regionals
-
 data_sheet_report
 -----------------
 .. automodule:: data_sheet_report

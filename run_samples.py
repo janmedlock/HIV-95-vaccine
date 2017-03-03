@@ -32,6 +32,8 @@ def _main():
             if not model.results.exists(country, target):
                 _run_one(country, target)
 
+    model.multicountry.build_regionals()
+
 
 if __name__ == '__main__':
     _main()
