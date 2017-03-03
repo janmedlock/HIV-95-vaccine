@@ -81,17 +81,10 @@ etc. mentioned below are covered in this documentation.
 We are currently exploring options for a public archive of the
 simulation data we have generated.
 
-### Post-processing
-
-* [build_regionals.py](build_regionals.py) sums the results to built
-  results for regions and globally.  These are built in *sim_data/*
-  directories for each region, one *.pkl* file for each target.
-
 ### Plotting
 
 The plotting scripts are in the [plots/](plots/) directory.  They
-require having run the simulations and post-processing tools unless otherwise
-noted.  A few highlights:
+require having run the simulations unless otherwise noted.  A few highlights:
 * [effectiveness.py](plots/effectiveness.py) makes graphs of selected
   outcomes globally and for a few selected countries.
 

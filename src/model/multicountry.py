@@ -6,7 +6,10 @@ import numpy
 
 from . import incidence
 from . import parameters
+from . import regions
+from . import results
 from . import simulation
+from . import target
 
 
 class MultiCountry(simulation._Super):
@@ -113,3 +116,28 @@ class Global(MultiCountry):
         obj = super()._from_state('Global', target, state)
         obj._normalize()
         return obj
+
+
+def build_regional(region, target_, parameters_type = 'sample'):
+    '''
+    From the results of the country simulations, build a regional result.
+    '''
+    if not results.exists(region, target, parameters_type):
+        print('Building {}: {}'.format(region, target_))
+        data = {country: results.load(country, target_, 'mode')
+                for country in regions.regions[region]}
+        if region == 'Global':
+            obj = Global(target_, data)
+        else:
+            obj = MultiCountry(region, target_, data)
+        results.dump(obj)
+
+
+def build_regionals(targets = target.all_,
+                    parameters_type = 'sample'):
+    '''
+    From the results of the country simulations, build the regional results.
+    '''
+    for region in regions.all_:
+        for target_ in targets:
+                build_regional(region, target_, parameters_type)
