@@ -75,7 +75,7 @@ def _get_kwds(label):
 
 def _plot_cell(ax, results, country, treatment_target, stat,
                country_label = None,
-               country_label_short = True,
+               country_short_name = True,
                stat_label = 'ylabel',
                space_to_newline = True):
     '''
@@ -111,7 +111,7 @@ def _plot_cell(ax, results, country, treatment_target, stat,
                     **_get_kwds(label))
 
     common.format_axes(ax, country, info, country_label, stat_label,
-                       country_label_short = country_label_short,
+                       country_short_name = country_short_name,
                        space_to_newline = space_to_newline)
 
 
@@ -150,7 +150,7 @@ def _plot_one(results, country, treatment_target):
             country_label = 'title' if ax.is_first_row() else None
             _plot_cell(ax, results, country, treatment_target, stat,
                        country_label = country_label,
-                       country_label_short = False)
+                       country_short_name = False)
 
         _make_legend(fig, treatment_target)
 

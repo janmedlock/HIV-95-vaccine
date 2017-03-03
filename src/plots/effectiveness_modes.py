@@ -26,7 +26,7 @@ alpha0 = 0.9
 def _plot_cell(ax, results, parameters, country, stat,
                plot_hist = True,
                country_label = None,
-               country_label_short = True,
+               country_short_name = True,
                stat_label = 'ylabel'):
     '''
     Plot one axes of simulation and historical data figure.
@@ -85,7 +85,7 @@ def _plot_cell(ax, results, parameters, country, stat,
 
     common.format_axes(ax, country, info, country_label, stat_label,
                        plot_hist = plot_hist,
-                       country_label_short = country_label_short)
+                       country_short_name = country_short_name)
 
 
 def _make_legend(fig, plot_hist = True):
@@ -125,7 +125,7 @@ def _plot_one(results, country, **kwargs):
             country_label = 'title' if ax.is_first_row() else None
             _plot_cell(ax, results, parameters, country, stat,
                        country_label = country_label,
-                       country_label_short = False,
+                       country_short_name = False,
                        **kwargs)
 
         _make_legend(fig)
