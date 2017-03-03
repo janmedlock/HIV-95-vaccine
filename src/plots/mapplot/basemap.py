@@ -412,7 +412,7 @@ class Basemap:
                         transform = self.locator.crs,
                         *args,
                         **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def pies(self, countries, values, s = 20,
              wedgeprops = dict(linewidth = 0),
@@ -441,7 +441,7 @@ class Basemap:
                             colors = self._get_colors(colors),
                             *args,
                             **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def bars(self, countries, values,
              color = 'bright',
@@ -480,7 +480,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def barhs(self, countries, values,
               color = 'bright',
@@ -519,7 +519,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def barh_coords(self, X, Y, values,
                     color = 'bright',
@@ -581,7 +581,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def pyramids(self, countries, values,
              color = 'bright',
@@ -607,7 +607,7 @@ class Basemap:
                          linewidth = linewidth,
                          *args,
                          **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def _star(self, values,
               center = (0, 0),
@@ -654,7 +654,7 @@ class Basemap:
                        center = (x, y),
                        scale = scale,
                        *args, **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def label(self, countries,
               horizontalalignment = 'center',
@@ -679,7 +679,7 @@ class Basemap:
                          fontdict = fontdict,
                          *args,
                          **kwargs)
-        # self.draw_borders(countries, *args, **kwargs)
+        # self.draw_borders(countries)
 
     def text_coords(self, X, Y, s,
                    *args, **kwargs):
