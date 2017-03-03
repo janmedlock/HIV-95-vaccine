@@ -444,7 +444,10 @@ class CountryDataShelf(collections.abc.Mapping):
         assert not hasattr(self, '_shelf')
         if self._is_current():
             with open(self._shelfpath, 'rb') as fd:
-                self._shelf = pickle.load(fd)
+                try:
+                    self._shelf = pickle.load(fd)
+                except:
+                    self._build_all()
         else:
             self._build_all()
 
@@ -461,7 +464,7 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 allow_missing = True)
                            for country in countries}
             with open(self._shelfpath, 'wb') as fd:
-                pickle.dump(self._shelf, self._shelfpath, protocol = -1)
+                pickle.dump(self._shelf, fd, protocol = -1)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)
