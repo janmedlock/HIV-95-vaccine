@@ -46,10 +46,6 @@ parameters
 ----------
 .. automodule:: model.parameters
 
-picklefile
-----------
-.. automodule:: model.picklefile
-
 plot
 ----
 .. automodule:: model.plot
