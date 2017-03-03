@@ -22,7 +22,7 @@ countries = countries_to_plot + countries
 def _run_country(country, target):
     print('Running {}, {!s}.'.format(country, target))
     parametersamples = model.parameters.Samples(country)
-    multisim = model.multisim.MultiSim(parametersamples, target)
+    multisim = model.simulation.MultiSim(parametersamples, target)
     return multisim
 
 
