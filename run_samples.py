@@ -19,24 +19,18 @@ for c in countries_to_plot:
 countries = countries_to_plot + countries
 
 
-def _run_country(country, target, samples):
+def _run_country(country, target):
     print('Running {}, {!s}.'.format(country, target))
-
-    parametersamples = model.parameters.Sample.from_samples(country,
-                                                            samples)
-
+    parametersamples = model.parameters.Samples(country)
     multisim = model.multisim.MultiSim(parametersamples, target)
-
     return multisim
 
 
 def _main():
-    samples = model.samples.load()
-
     for country in countries:
         for target in model.target.all_:
             if not model.results.exists(country, target):
-                results = _run_country(country, target, samples)
+                results = _run_country(country, target)
                 model.results.dump(results)
 
 
