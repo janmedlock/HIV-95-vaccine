@@ -16,14 +16,14 @@ def _run_one(country, target):
     model.results.dump(results)
 
 
-def _main(targets = None):
+def _main(targets = model.target.all_):
     joblib.Parallel(n_jobs = -1)(
         joblib.delayed(_run_one)(country, target)
         for country in model.datasheet.get_country_list()
-        for target in model.target.all_
+        for target in targets
         if not model.results.exists(country, target, 'mode'))
 
-    model.multicountry.build_regionals(parameters_type = 'mode')
+    model.multicountry.build_regionals(targets, 'mode')
 
 
 if __name__ == '__main__':
