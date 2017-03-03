@@ -59,8 +59,8 @@ def _main():
             widthscale = 4.5, heightscale = 1.5, color = colors)
 
     # Legend
-    X, Y = (-155, -30)
-    m.rectangle_coords(X - 5.5, Y - 7, 78, 14,
+    X, Y = (-158, -30)
+    m.rectangle_coords(X - 5.5, Y - 8.5, 87, 14,
                        facecolor = 'white', linewidth = 0.1)
     m.barh_coords(X, Y, [1, 0.9, 0.9 ** 2, 0.9 ** 3],
                   widthscale = 2 * 4.5, heightscale = 2 * 1.5,
@@ -70,7 +70,7 @@ def _main():
               'Proportion Treated',
               'Proportion with Viral Suppression')
     X_ = X + 6.5
-    Y_ = Y - 4.5
+    Y_ = Y - 6
     dY_ = 3
     for (l, c) in zip(labels, colors):
         m.text_coords(X_, Y_, l,
