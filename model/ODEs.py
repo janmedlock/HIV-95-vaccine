@@ -6,6 +6,7 @@ import warnings
 
 import numpy
 from scipy import integrate
+import pandas
 
 from . import control_rates
 
@@ -71,6 +72,8 @@ def transform_inv(state_trans):
 
 
 def split_state(state):
+    if isinstance(state, (pandas.Series, pandas.DataFrame)):
+        state = state.values
     return map(numpy.squeeze, numpy.split(state, state.shape[-1], -1))
 
 
