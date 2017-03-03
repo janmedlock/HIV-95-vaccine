@@ -6,6 +6,7 @@ Plot the effectiveness of interventions.
 import os.path
 import sys
 
+from matplotlib import gridspec
 from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker

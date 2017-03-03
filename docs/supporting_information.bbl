@@ -1,0 +1,167 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{Available at }
+
+\bibitem{medlock2016-git}
+Medlock J, et~al. (2016) {HIV-95-vaccine}.
+\newblock \urlprefix\url{https://github.com/janmedlock/HIV-95-vaccine/}.
+
+\bibitem{UNICEF}
+{UNICEF}. {UNICEF} statistics.
+\newblock \urlprefix\url{http://data.unicef.org/hiv-aids/global-trends.html}.
+Accessed August 18, 2016.
+
+\bibitem{World_Development_Indicators2013-ee}
+{The World Bank}. Death rate, crude (per 1,000 people) $|$ data.
+\newblock \urlprefix\url{http://data.worldbank.org/indicator/SP.DYN.CDRT.IN}.
+Accessed July 11, 2016.
+
+\bibitem{WorldBankpg}
+{The World Bank}. Population growth (annual \%) $|$ data.
+\newblock \urlprefix\url{http://data.worldbank.org/indicator/SP.POP.GROW}.
+Accessed July 11, 2016.
+
+\bibitem{Hollingsworth2008-iy}
+Hollingsworth TD, Anderson RM, Fraser C (2008) {HIV-1} transmission, by stage
+  of infection.
+\newblock \emph{J Infect Dis} 198(5):687--693.
+
+\bibitem{Morgan2002-cq}
+Morgan D, et~al. (2002) {HIV-1} infection in rural {Africa}: is there a
+  difference in median time to {AIDS} and survival compared with that in
+  industrialized countries?
+\newblock \emph{AIDS} 16(4):597--603.
+
+\bibitem{Currie2009-yz}
+Currie S, Rogstad KE, Piyadigamage A, Herman S (2009) Time taken to
+  undetectable viral load, following the initiation of {HAART}.
+\newblock \emph{Int J STD AIDS} 20(4):265--266.
+
+\bibitem{Samji2013-kf}
+Samji H, et~al. (2013) Closing the gap: increases in life expectancy among
+  treated {HIV-positive} individuals in the {United States} and {Canada}.
+\newblock \emph{PLoS ONE} 8(12):e81355.
+
+\bibitem{Unaids2014-ue}
+{UNAIDS} (2014) 90--90--90: Ambitious treatment target to help end the {AIDS}
+  epidemic.
+\newblock
+  \urlprefix\url{http://www.unaids.org/sites/default/files/media_asset/90-90-90_en_0.pdf}.
+
+\bibitem{Wawer2005-us}
+Wawer MJ, et~al. (2005) Rates of {HIV-1} transmission per coital act, by stage
+  of {HIV-1} infection, in {Rakai, Uganda}.
+\newblock \emph{J Infect Dis} 191(9):1403--1409.
+
+\bibitem{Skarbinski2015-ni}
+Skarbinski J, et~al. (2015) Human immunodeficiency virus transmission at each
+  step of the care continuum in the {United States}.
+\newblock \emph{JAMA Intern Med} 175(4):588--596.
+
+\bibitem{Hughes2012-so}
+Hughes JP, et~al. (2012) Determinants of per-coital-act {HIV-1} infectivity
+  among {African} {HIV-1}--serodiscordant couples.
+\newblock \emph{J Infect Dis} 205(3):358--365.
+
+\bibitem{Donnell2010-xo}
+Donnell D, et~al. (2010) Heterosexual {HIV-1} transmission after initiation of
+  antiretroviral therapy: a prospective cohort analysis.
+\newblock \emph{Lancet} 375(9731):2092--2098.
+
+\bibitem{attia_2009}
+Attia S, Egger M, M{\"u}ller M, Zwahlen M, Low N (2009) Sexual transmission of
+  {HIV} according to viral load and antiretroviral therapy: systematic review
+  and meta-analysis.
+\newblock \emph{AIDS} 23(11):1397--1404.
+
+\bibitem{wilson_2012}
+Wilson DP (2012) {HIV} treatment as prevention: natural experiments highlight
+  limits of antiretroviral treatment as {HIV} prevention.
+\newblock \emph{PLoS Med} 9(7):e1001231.
+
+\bibitem{jia_2013}
+Jia Z, et~al. (2013) Antiretroviral therapy to prevent {HIV} transmission in
+  serodiscordant couples in {China} (2003--11): a national observational cohort
+  study.
+\newblock \emph{Lancet} 382(9899):1195--1203.
+
+\bibitem{rodger_2016}
+Rodger AJ, et~al. (2016) Sexual activity without condoms and risk of {HIV}
+  transmission in serodifferent couples when the {HIV}-positive partner is
+  using suppressive antiretroviral therapy.
+\newblock \emph{JAMA} 316(2):171--181.
+
+\bibitem{Abdool_Karim2010-cm}
+Abdool~Karim Q, et~al. (2010) Effectiveness and safety of tenofovir gel, an
+  antiretroviral microbicide, for the prevention of {HIV} infection in women.
+\newblock \emph{Science} 329(5996):1168--1174.
+
+\bibitem{odepack}
+Hindmarsh AC. Brief description of {ODEPACK}: a systematized
+collection of {ODE} solvers.
+\newblock \urlprefix\url{http://www.netlib.org/odepack/opkd-sum}.
+Accessed June 12, 2008.
+
+\bibitem{scipy}
+Jones E, Oliphant T, Peterson P, et~al. {SciPy}: Open source
+scientific tools for {Python}.
+\newblock \urlprefix\url{https://www.scipy.org/}.
+Accessed August 20, 2016.
+
+\bibitem{The_World_Bank2016-fd}
+{The World Bank}. Health nutrition and population statistics:
+population estimates and projections $|$ {World DataBank}.
+\newblock
+  \urlprefix\url{http://databank.worldbank.org/data/reports.aspx?source=health-nutrition-and-population-statistics:-population-estimates-and-projections}.
+Accessed July 11, 2016.
+
+\bibitem{Unaids2016-an}
+{UNAIDS}. {AIDSinfo $|$ UNAIDS}.
+\newblock \urlprefix\url{http://aidsinfo.unaids.org/}.
+Accessed June 28, 2016.
+
+\bibitem{Unaids2016-am}
+{UNAIDS}. {Countries $|$ UNAIDS}.
+\newblock \urlprefix\url{http://www.unaids.org/en/regionscountries/countries/}.
+Accessed June 28, 2016.
+
+\bibitem{AIDSdatahub-fg}
+{HIV/AIDS Asia Pacific Research Statistical Data Information Resources AIDS
+  Data Hub}. Country profiles $|$ {AIDS}, {HIV}, data, reports,
+publications.
+\newblock \urlprefix\url{http://www.aidsdatahub.org/Country-Profiles}.
+Accessed June 28, 2016.
+
+\bibitem{holt2004}
+Holt CC (2004) Forecasting seasonals and trends by exponentially weighted
+  moving averages.
+\newblock \emph{Int J Forecast} 20(1):5--10.
+
+\bibitem{blower1994}
+Blower SM, Dowlatabadi H (1994) Sensitivity and uncertainty analysis of complex
+  models of disease transmission: an {HIV} model, as an example.
+\newblock \emph{Int Stat Rev} 62(2):229--243.
+
+\bibitem{shechter2006}
+Shechter SM, Schaefer AJ, Braithwaite RS, Roberts MS (2006) Increasing the
+  efficiency of {Monte Carlo} cohort simulations with variance reduction
+  techniques.
+\newblock \emph{Med Decis Making} 26(5):550--553.
+
+\bibitem{malcom1959}
+Malcolm DG, Roseboom JH, Clark CE, Fazar W (1959) Application of a technique
+  for research and development program evaluation.
+\newblock \emph{Oper Res} 7(5):646--669.
+
+\bibitem{davis1972}
+Davis PJ (1972) Gamma function and related functions.
+\newblock \emph{Handbook of Mathematical Functions with Formulas,
+  Graphs, and Mathematical Tables}, eds Abramowitz M, Stegun IA
+ (National Bureau of Standards, Washington, DC), pp 253--266.
+
+\bibitem{gray_2016}
+Gray GE, Laher F, Lazarus E, Ensoli B, Corey L (2016) Approaches to
+  preventative and therapeutic {HIV} vaccines.
+\newblock \emph{Curr Opin Virol} 17:104--109.
+
+\end{thebibliography}
