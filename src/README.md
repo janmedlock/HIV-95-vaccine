@@ -8,7 +8,7 @@ Abhishek Pandey, Alyssa S. Parpia, Amber Tang, Laura A. Skrip,
 Alison P. Galvani.
 [The Center for Infectious Disease Modeling and Analysis](http://cidma.yale.edu/).**
 
-**Copyright 2015–2016, Jan Medlock et al.  All rights reserved.
+**Copyright 2015–2017, Jan Medlock et al.  All rights reserved.
 Released under the [GNU AGPL 3](LICENSE).**
 
 This repository contains Python code and data used to simulate and
@@ -56,15 +56,19 @@ etc. mentioned below are covered in this documentation.
 * [run_modes.py](run_modes.py) runs simulations using the modal
   parameter values.  This is fairly fast, tens of seconds for each
   country-target combination, approximately 10 cpu-hours for 127
-  countries and 6 targets.  The result will be in *sim_data/modes.h5*,
-  which is around 200MB for 127 countries and 6 targets.
+  countries and 6 targets.  The resulting data will be in *sim_data/*,
+  under a directory for each country, with a *-mode.pkl* file for each target.
+  The resulting total data generated for 127 countries and 6 targets is
+  around 140MB.
 
 * [run_vaccine_scenarios.py](run_vaccine_scenarios.py) runs different
   vaccine scenarios using the modal parameter values.  Again, this is
   as fast as [run_modes.py](run_modes.py) per country-target, but has
   7 targets instead of 6, so takes a little bit longer to run.  The
-  result will be in *sim_data/vaccine_sensitivity.h5*, which is around
-  450MB for 127 countries and 6 targets.
+  resulting data will be in *sim_data/*, under a directory for each country,
+  with a *-mode.pkl* file for each target.    The resulting total data
+  generated for 127 countries and 7 targets is around 164MB.
+
 
 * [run_samples.py](run_samples.py) runs simulations using parameter
   samples.  **This is very slow**: it is only tens of seconds per
@@ -72,7 +76,7 @@ etc. mentioned below are covered in this documentation.
   tens of cpu-**days** to run everything.  The data from the runs will
   be in *sim_data/*, under a directory for each country, with a *.pkl*
   file for each target.  **The resulting total data generated for 127
-  countries and 6 targets is around 315GB.**
+  countries and 6 targets is around 136GB.**
 
 We are currently exploring options for a public archive of the
 simulation data we have generated.
