@@ -25,6 +25,7 @@ def get_path(place, target, parameters_type = 'sample'):
 
 def dump(obj, parameters_type = None, compress = False):
     if isinstance(obj, multicountry.MultiCountry):
+        # Guess.
         if parameters_type is None:
             parameters_type = 'sample'
         path = get_path(obj.region, obj.target, parameters_type)
