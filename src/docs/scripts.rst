@@ -1,10 +1,6 @@
 scripts
 =======
 
-build_percentiles
------------------
-.. automodule:: build_percentiles
-
 build_regionals
 ---------------
 .. automodule:: build_regionals
