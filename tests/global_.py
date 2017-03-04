@@ -54,11 +54,16 @@ def plotcell(ax, results, attr):
 
     t = model.simulation.t
     x = getattr(results, attr)
-    avg, CI = getstats(x)
-    lines = ax.plot(t, avg / scale, label = target,
-                    zorder = 2)
-    ax.fill_between(t, CI[0] / scale, CI[1] / scale,
-                    color = lines[0].get_color(),
+    if numpy.ndim(x) == 1:
+        lines = ax.plot(t, x / scale, label = target)
+    else:
+        # 2-dimensional, from samples.
+        avg, CI = getstats(x)
+        lines = ax.plot(t, avg / scale, label = target,
+                        zorder = 2)
+        ax.fill_between(t, CI[0] / scale, CI[1] / scale,
+                        color = lines[0].get_color(),
+                        alpha = 0.3)
 
     ax.set_ylabel(ylabel)
     ax.set_xlim(t[0], t[-1])
@@ -75,11 +80,7 @@ def plotcell(ax, results, attr):
         '{{x:g}}{}'.format(ytickappend)))
 
 
-if __name__ == '__main__':
-    target = model.target.StatusQuo()
-
-    results = model.results.load('Global', target)
-
+def plot(results):
     fig, axes = pyplot.subplots(1, 4,
                                 sharex = True)
     plotcell(axes[0], results, 'infected')
@@ -87,4 +88,10 @@ if __name__ == '__main__':
     plotcell(axes[2], results, 'incidence_per_capita')
     plotcell(axes[3], results, 'prevalence')
     fig.tight_layout()
+
+
+if __name__ == '__main__':
+    target = model.target.StatusQuo()
+    results = model.results.load('Global', target, 'mode')
+    plot(results)
     pyplot.show()
