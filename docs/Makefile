@@ -10,8 +10,8 @@ diagram_standalone.png:	diagram_standalone.pdf
 
 supporting_information.pdf:	supporting_information.tex
 	pdflatex $<
-	biber $<
-	pdflatex $<
+	#biber $<
+	#pdflatex $<
 	pdflatex $<
 
 cover_letter.pdf:	cover_letter.tex
