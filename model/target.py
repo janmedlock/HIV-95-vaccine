@@ -266,13 +266,16 @@ class Vaccine(Target):
 _all_baselines = [StatusQuo(),
                   UNAIDS90(),
                   UNAIDS95()]
+
 all_ = []
 for target in _all_baselines:
     all_.extend([target,
                  Vaccine(treatment_target = target)])
 
 
+# Build each of these and each of these + vaccine alternatives.
 _vaccine_scenarios_baselines = [StatusQuo()]
+
 vaccine_scenarios = []
 for target in _vaccine_scenarios_baselines:
     vaccine_scenarios.extend([
