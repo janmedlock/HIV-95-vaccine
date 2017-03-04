@@ -62,13 +62,11 @@ etc. mentioned below are covered in this documentation.
   around 151MB.
 
 * [run_vaccine_scenarios.py](run_vaccine_scenarios.py) runs different
-  vaccine scenarios using the modal parameter values.  Again, this is
-  as fast as [run_modes.py](run_modes.py) per country-target, but has
-  7 targets instead of 6, so takes a little bit longer to run.  The
-  resulting data will be in *sim_data/*, under a directory for each country,
-  with a *-mode.pkl* file for each target.    The resulting total data
-  generated for 127 countries and 7 targets is around 176MB.
-
+  vaccine scenarios using the modal parameter values.  This is about
+  as fast as [run_modes.py](run_modes.py).  The resulting data will be
+  in *sim_data/*, under a directory for each country, with a
+  *-mode.pkl* file for each target.  The resulting total data
+  generated for 127 countries and 6 targets is around 151MB.
 
 * [run_samples.py](run_samples.py) runs simulations using parameter
   samples.  **This is very slow**: it is only tens of seconds per
