@@ -92,6 +92,6 @@ def plot(results):
 
 if __name__ == '__main__':
     target = model.target.StatusQuo()
-    results = model.results.load('Global', target, 'mode')
+    results = model.results.load('Global', target)
     plot(results)
     pyplot.show()
