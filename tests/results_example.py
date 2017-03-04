@@ -27,9 +27,8 @@ if __name__ == '__main__':
     stat = 'infected'
     print(stat, '=', getattr(results, stat))
 
-    t = model.simulation.t
     x = getattr(results, stat)
-    pyplot.plot(t, x, label = country)
+    pyplot.plot(model.simulation.t, x, label = country)
     pyplot.ylabel(stat.capitalize())
     pyplot.legend(loc = 'upper left', frameon = False)
     pyplot.show()
