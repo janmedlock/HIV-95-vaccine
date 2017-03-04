@@ -29,7 +29,7 @@ class Driver:
         flow = oauth2client.client.flow_from_clientsecrets(
             client_secrets_path, self._oauth2_scope)
         credentials_path = os.path.join(self._path,
-                                        self._credentials_file) 
+                                        self._credentials_file)
         if os.path.exists(credentials_path):
             with open(credentials_path, 'r') as fd:
                 json = fd.read()
