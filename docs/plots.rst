@@ -29,6 +29,10 @@ infections_averted_map
 ----------------------
 .. automodule:: plots.infections_averted_map
 
+infections_per_capita_averted_map
+---------------------------------
+.. automodule:: plots.infections_per_capita_averted_map
+
 initial_prevalence_map
 ----------------------
 .. automodule:: plots.initial_prevalence_map
