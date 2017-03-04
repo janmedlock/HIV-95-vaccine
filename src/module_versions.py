@@ -81,13 +81,13 @@ def _main():
     basename, _ = os.path.splitext(__file__)
     outputfile = '{}.txt'.format(basename)
     with open(outputfile, 'wt') as fd:
-        fd.write('python, {}\n'.format(platform.python_version()))
+        fd.write('python {}\n'.format(platform.python_version()))
         for name in sorted(bases):
             if (not name.startswith('_')
                  and not _is_builtin(name)
                  and not _is_local(name)):
                 version = _get_version(name)
-                fd.write('{}, {}\n'.format(name, version))
+                fd.write('{} {}\n'.format(name, version))
 
 
 if __name__ == '__main__':
