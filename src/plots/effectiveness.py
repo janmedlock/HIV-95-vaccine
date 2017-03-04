@@ -12,7 +12,6 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import seaborn
-import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common

@@ -11,7 +11,6 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
-import tables
 
 sys.path.append(os.path.dirname(__file__))
 import common
