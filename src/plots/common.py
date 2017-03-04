@@ -105,7 +105,7 @@ effectiveness_measures = ['new_infections', 'incidence_per_capita',
                           'infected', 'dead']
 
 
-t = numpy.linspace(2015, 2035, 20 * 120 +1)
+t = model.simulation.t
 
 
 # historical_data_start_year = 1990
