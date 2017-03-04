@@ -44,7 +44,7 @@ class Global(MultiCountry):
     The aggregated simulation results are scaled so that the model
     current statistics match UNAIDS current estimates.
 
-    .. todo:: Adjust for ODE variables, infected, alive.
+    .. todo:: Adjust ODE variables.
     '''
     global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
