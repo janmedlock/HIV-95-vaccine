@@ -55,9 +55,10 @@ def get_target_info(baseline, target):
             return (x_b, x, label)
 
 
-def sensitivity(results, country, targets, stat, times):
+def sensitivity(country, targets, stat, times):
     baseline = targets[1]
-    y_b = numpy.asarray(getattr(results[country][str(baseline)], stat))
+    r = model.results.load(country, baseline, 'mode')
+    y_b = getattr(r, stat)
     y_b = numpy.interp(times, common.t, y_b)
     rho = []
     labels = []
@@ -65,7 +66,8 @@ def sensitivity(results, country, targets, stat, times):
         x_b, x, label = get_target_info(baseline, t)
         dx = x - x_b
         labels.append(label)
-        y = numpy.asarray(getattr(results[country][str(t)], stat))
+        r = model.results.load(country, t, 'mode')
+        y = getattr(r, stat)
         y = numpy.interp(times, common.t, y)
         dy = y - y_b
         # rho.append(dy / dx)
@@ -74,8 +76,8 @@ def sensitivity(results, country, targets, stat, times):
     return (numpy.asarray(rho), labels)
 
 
-def tornado(ax, results, country, targets, outcome, t, colors):
-    rho, labels = sensitivity(results, country, targets, outcome, t)
+def tornado(ax, country, targets, outcome, t, colors):
+    rho, labels = sensitivity(country, targets, outcome, t)
     n = len(rho)
 
     ix = numpy.argsort(numpy.abs(rho))
@@ -110,13 +112,12 @@ def tornados():
     palette = 'Dark2'
     colors = seaborn.color_palette(palette)
 
-    with model.results.modes.open_vaccine_scenarios() as results:
-        with seaborn.axes_style('whitegrid'):
-            fig, ax = pyplot.subplots(1, 1, figsize = figsize)
-            seaborn.despine(ax = ax, top = True, bottom = True)
-            ax.tick_params(labelsize = pyplot.rcParams['font.size'])
-            tornado(ax, results, country, targets, outcome, time, colors)
-            ax.set_xlabel('Sensitivity')
+    with seaborn.axes_style('whitegrid'):
+        fig, ax = pyplot.subplots(1, 1, figsize = figsize)
+        seaborn.despine(ax = ax, top = True, bottom = True)
+        ax.tick_params(labelsize = pyplot.rcParams['font.size'])
+        tornado(ax, country, targets, outcome, time, colors)
+        ax.set_xlabel('Sensitivity')
 
     fig.tight_layout(pad = 0)
 
@@ -128,5 +129,4 @@ def tornados():
 
 if __name__ == '__main__':
     tornados()
-
     pyplot.show()

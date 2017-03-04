@@ -4,7 +4,6 @@ Using the modes of the parameter distributions,
 make plots for sensitivity to vaccine parameters.
 '''
 
-import operator
 import os.path
 import sys
 
@@ -14,7 +13,6 @@ from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
 import seaborn
-import tables
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
@@ -73,7 +71,7 @@ def _get_kwds(label):
                     linestyle = 'solid')
 
 
-def _plot_cell(ax, results, country, treatment_target, stat,
+def _plot_cell(ax, country, treatment_target, stat,
                country_label = None,
                country_short_name = True,
                stat_label = 'ylabel',
@@ -88,25 +86,25 @@ def _plot_cell(ax, results, country, treatment_target, stat,
     data = []
     for target in targets:
         try:
-            v = getattr(results[country][str(target)], stat)
-        except tables.NoSuchNodeError:
-            pass
+            r = model.results.load(country, target, parameters_type = 'mode')
+        except FileNotFoundError:
+            v = None
         else:
-            data.append(v)
+            v = getattr(r, stat)
+        data.append(v)
     if info.scale is None:
         info.autoscale(data)
     if info.units is None:
         info.autounits(data)
 
     # Plot simulation data.
-    for target in targets:
-        try:
-            v = getattr(results[country][str(target)], stat)
-        except tables.NoSuchNodeError:
-            pass
+    for (v, target) in zip(data, targets):
+        if v is None:
+            # Pop a style.
+            next(ax._get_lines.prop_cycler)
         else:
             label = get_target_label(treatment_target, target)
-            ax.plot(common.t, numpy.asarray(v) / info.scale,
+            ax.plot(common.t, v / info.scale,
                     label = label,
                     **_get_kwds(label))
 
@@ -138,7 +136,7 @@ def _make_legend(fig, treatment_target):
                       frameon = False)
 
 
-def _plot_one(results, country, treatment_target):
+def plot_one(country, treatment_target = model.target.StatusQuo()):
     with seaborn.color_palette(colors):
         nrows = len(common.effectiveness_measures)
         ncols = 1
@@ -148,7 +146,7 @@ def _plot_one(results, country, treatment_target):
         for (row, stat) in enumerate(common.effectiveness_measures):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
-            _plot_cell(ax, results, country, treatment_target, stat,
+            _plot_cell(ax, country, treatment_target, stat,
                        country_label = country_label,
                        country_short_name = False)
 
@@ -159,67 +157,48 @@ def _plot_one(results, country, treatment_target):
     return fig
 
 
-def plot_one(country, treatment_target = model.target.StatusQuo()):
-    with model.results.modes.open_vaccine_scenarios() as results:
-        return _plot_one(results, country, treatment_target)
-
-
 def plot_all(treatment_target = model.target.StatusQuo()):
-    with model.results.modes.open_vaccine_scenarios() as results:
-        regions_and_countries = results.keys()
-        # Put regions first.
-        regions = []
-        for region in model.regions.all_:
-            if region in regions_and_countries:
-                regions.append(region)
-                regions_and_countries.remove(region)
-        # countries needs to be sorted by the name on graph.
-        countries = sorted(regions_and_countries,
-                           key = common.country_sort_key)
-        regions_and_countries = regions + countries
-
-        filename = '{}_all.pdf'.format(common.get_filebase())
-        with backend_pdf.PdfPages(filename) as pdf:
-            for region_or_country in regions_and_countries:
-                print(region_or_country)
-                fig = _plot_one(results, region_or_country, treatment_target)
-                pdf.savefig(fig)
-                pyplot.close(fig)
+    filename = '{}_all.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        for region_or_country in common.all_regions_and_countries:
+            print(region_or_country)
+            fig = plot_one(region_or_country, treatment_target)
+            pdf.savefig(fig)
+            pyplot.close(fig)
 
 
 def plot_some(treatment_target = model.target.StatusQuo()):
-    with model.results.modes.open_vaccine_scenarios() as results:
-        with seaborn.color_palette(colors):
-            ncols = len(common.countries_to_plot)
-            nrows = len(common.effectiveness_measures)
-            legend_height_ratio = 0.35
-            fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_1_5column, 4),
-                                        sharex = 'all', sharey = 'none')
-            for (col, country) in enumerate(common.countries_to_plot):
-                for (row, stat) in enumerate(common.effectiveness_measures):
-                    ax = axes[row, col]
+    with seaborn.color_palette(colors):
+        ncols = len(common.countries_to_plot)
+        nrows = len(common.effectiveness_measures)
+        legend_height_ratio = 0.35
+        fig, axes = pyplot.subplots(nrows, ncols,
+                                    figsize = (common.width_1_5column, 4),
+                                    sharex = 'all', sharey = 'none')
+        for (col, country) in enumerate(common.countries_to_plot):
+            for (row, stat) in enumerate(common.effectiveness_measures):
+                ax = axes[row, col]
 
-                    stat_label = 'ylabel' if ax.is_first_col() else None
-                    country_label = 'title' if ax.is_first_row() else None
+                stat_label = 'ylabel' if ax.is_first_col() else None
+                country_label = 'title' if ax.is_first_row() else None
 
-                    _plot_cell(ax, results, country, treatment_target, stat,
-                               country_label = country_label,
-                               stat_label = stat_label,
-                               space_to_newline = True)
+                _plot_cell(ax, country, treatment_target, stat,
+                           country_label = country_label,
+                           stat_label = stat_label,
+                           space_to_newline = True)
 
-                    ax.xaxis.set_tick_params(labelsize = 5)
-                    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
+                ax.xaxis.set_tick_params(labelsize = 5)
+                ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
 
-                    if stat_label is not None:
-                        if stat == 'new_infections':
-                            ax.yaxis.labelpad -= 2
-                        elif stat == 'infected':
-                            ax.yaxis.labelpad -= 6
-                        elif stat == 'dead':
-                            ax.yaxis.labelpad -= 5
+                if stat_label is not None:
+                    if stat == 'new_infections':
+                        ax.yaxis.labelpad -= 2
+                    elif stat == 'infected':
+                        ax.yaxis.labelpad -= 6
+                    elif stat == 'dead':
+                        ax.yaxis.labelpad -= 5
 
-            _make_legend(fig, treatment_target)
+        _make_legend(fig, treatment_target)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
                      rect = (0, 0.05, 1, 1))
