@@ -216,7 +216,7 @@ if __name__ == '__main__':
     country = 'Global'
     outcome = 'new_infections'
     baseline = model.targets.StatusQuo()
-    targets = [baseline, model.targets.Vaccine(treatment_targets = baseline)]
+    targets = [baseline, model.targets.Vaccine(treatment_target = baseline)]
     targets = list(map(str, targets))
     time = 2035
 

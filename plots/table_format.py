@@ -14,14 +14,17 @@ sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 
 
-country_label_replacements = {'United States of America': 'United States',
-                              'Democratic Republic of the Congo': 'DR Congo',
-                              'Bolivia (Plurinational State of)': 'Bolivia',
-                              'Iran (Islamic Republic of)': 'Iran',
-                              "Lao People's Democratic Republic": 'Laos',
-                              'Republic of Moldova': 'Moldova',
-                              'Venezuela (Bolivarian Republic of)': 'Venezuela'
-}
+country_name_replacements = {'United States of America': 'United States',
+                             'Democratic Republic of the Congo': 'DR Congo',
+                             'Bolivia (Plurinational State of)': 'Bolivia',
+                             'Iran (Islamic Republic of)': 'Iran',
+                             "Lao People's Democratic Republic": 'Laos',
+                             'Republic of Moldova': 'Moldova',
+                             'Venezuela (Bolivarian Republic of)': 'Venezuela'}
+
+
+def get_country_label(c):
+    return country_name_replacements.get(c, c)
 
 
 def _format_number(x):
@@ -34,11 +37,6 @@ def _format_number(x):
 def _format_target(t):
     return t.replace('%', '\%').replace('_', ' ')
 
-
-def normalize(c):
-    x = common.get_country_label(c)
-    y = country_label_replacements.get(x, x)
-    return y
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_NUMERIC, 'en_US.utf8')
@@ -82,7 +80,7 @@ if __name__ == '__main__':
 
                 if i == len(targets) - 1:
                     s = '\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '
-                    fd.write(s.format(normalize(c)))
+                    fd.write(s.format(get_country_label(c)))
                 else:
                     fd.write(' & ')
                 fd.write('{}'.format(_format_target(target)))

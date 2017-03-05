@@ -28,13 +28,55 @@ from . import locators
 
 # Change cartopy cache from ~/.local/share
 # to a subdirectory so it'll go in Google Drive.
-cartopy.config['data_dir'] = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    '_cartopy')
+cartopy.config['data_dir'] = os.path.normpath(os.path.join(
+    os.path.dirname(__file__),
+    '_cartopy'))
 
 
 _east_hemis = shapely.geometry.box(180, -90, 0, 90)
 _west_hemis = shapely.geometry.box(-180, -90, 0, 90)
+
+
+country_replacements = {
+    'Bolivia (Plurinational State of)': 'Bolivia',
+    'Bahamas': 'The Bahamas',
+    'Congo': 'Republic of Congo',
+    "Côte d'Ivoire": 'Ivory Coast',
+    'Iran (Islamic Republic of)': 'Iran',
+    "Lao People's Democratic Republic": 'Laos',
+    'Republic of Moldova': 'Moldova',
+    'Russian Federation': 'Russia',
+    'Timor-Leste': 'East Timor',
+    'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
+    'Venezuela (Bolivarian Republic of)': 'Venezuela',
+    'Viet Nam': 'Vietnam',
+    # Some screwed up regions.
+    'Eastern and Southern Africa': 'East and Southern Africa',
+    'Asia and The Pacific': 'Asia Pacific',
+    'The Caribbean': 'Caribbean',
+    'Western and Central Europe': 'Western Europe',
+}
+
+country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
+
+
+def convert_country(country, inverse = False):
+    '''
+    Convert country names used in the datasheet to those used in the maps
+    or vice versa.
+    '''
+    if inverse:
+        return country_replacements_inv.get(country, country)
+    else:
+        return country_replacements.get(country, country)
+
+
+def convert_countries(countries, inverse = False):
+    '''
+    Convert multiple country names used in the datasheet
+    to those used in the maps or vice versa.
+    '''
+    return [convert_country(c, inverse = inverse) for c in countries]
 
 
 def _in_west_hemis(p):

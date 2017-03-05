@@ -89,7 +89,7 @@ def tornados():
                 model.targets.UNAIDS95()],
                [model.targets.StatusQuo(),
                 model.targets.Vaccine(
-                    treatment_targets = model.targets.StatusQuo())]]
+                    treatment_target = model.targets.StatusQuo())]]
     titles = ['95–95–95', 'Vaccine']
     targets = [[str(x) for x in t] for t in targets]
     time = 2035

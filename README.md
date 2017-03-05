@@ -24,7 +24,6 @@ third-party libraries.  Most notably:
 [NumPy & SciPy](http://www.scipy.org/),
 [matplotlib](http://matplotlib.org/),
 [pandas](http://pandas.pydata.org/),
-[PyTables](http://www.pytables.org/),
 [cartopy](http://scitools.org.uk/cartopy/),
 [Seaborn](https://stanford.edu/~mwaskom/software/seaborn/),
 & [Sphinx](http://www.sphinx-doc.org/).
@@ -68,20 +67,13 @@ etc. mentioned below are covered in this documentation.
   result will be in *results/vaccine_sensitivity.h5*, which is around
   450MB for 127 countries and 6 targets.
 
-* [generate_samples.py](generate_samples.py) generates the common
-  random samples that are used in simulations.  These are stored in
-  *samples.npy*.  The default is 1000 samples.  This is a mere 63KB
-  for 1000 samples.
-
 * [run_samples.py](run_samples.py) runs simulations using parameter
-  samples.  (Make sure you run
-  [generate_samples.py](generate_samples.py) once first to build the
-  common random samples.)  **This is very slow**: it is only tens of
-  seconds per sample-country-target, but the default is 1000 samples,
-  so it takes tens of cpu-**days** to run everything.  The data from
-  the runs will be in *results/*, under a directory for each country,
-  with a *.pkl* file for each target.  **The resulting total data
-  generated for 127 countries and 6 targets is around 315GB.**
+  samples.  **This is very slow**: it is only tens of seconds per
+  sample-country-target, but the default is 1000 samples, so it takes
+  tens of cpu-**days** to run everything.  The data from the runs will
+  be in *results/*, under a directory for each country, with a *.pkl*
+  file for each target.  **The resulting total data generated for 127
+  countries and 6 targets is around 315GB.**
 
 We are currently exploring options for a public archive of the
 simulation data we have generated.
@@ -99,13 +91,6 @@ simulation data we have generated.
   around 1GB for 127 countries and 6 targets.  Run
   [build_regionals.py](build_regionals.py) first to ensure that the
   regional and global results also get converted.
-
-* [samples_to_h5.py](samples_to_h5.py) converts selected outcomes
-  from the *.pkl* data from [runs_samples.py](runs_samples.py) to a
-  single file *results/samples.h5* for easier post-processing and
-  plotting.  **The resulting file is around 50GB for 127 countries and
-  6 targets.** Run [build_regionals.py](build_regionals.py) first to
-  ensure that the regional and global results also get converted.
 
 ### Plotting
 

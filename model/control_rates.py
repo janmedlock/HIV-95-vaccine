@@ -4,7 +4,6 @@ Compute the value of the control rates.
 
 import numpy
 
-from . import container
 from . import proportions
 
 
@@ -36,7 +35,7 @@ def ramp(x, tol = 0.001):
     return numpy.clip(x / tol, 0, 1)
 
 
-class ControlRates(container.Container):
+def get(t, state, target, parameters):
     r'''
     Calculate control rates from the current proportions diagnosed, etc.
 
@@ -90,24 +89,31 @@ class ControlRates(container.Container):
     OK, so we actually use the piecewise linear function :func:`ramp`
     that smooths the transition in a tiny region.
     '''
+    proportions_ = proportions.get(state)
 
-    _keys = ('diagnosis', 'treatment', 'nonadherence', 'vaccination')
+    target_values = target(t, parameters)
 
-    def __init__(self, t, state, target_values, parameters):
-        proportions_ = proportions.Proportions(state)
+    names = []
+    arrays = []
+    
+    names.append('diagnosis')
+    arrays.append(ControlRatesMax.diagnosis
+                  * ramp(target_values.diagnosed
+                         - proportions_.diagnosed))
 
-        self.diagnosis = (ControlRatesMax.diagnosis
-                          * ramp(target_values.diagnosed
-                                 - proportions_.diagnosed))
+    names.append('treatment')
+    arrays.append(ControlRatesMax.treatment
+                  * ramp(target_values.treated
+                         - proportions_.treated))
 
-        self.treatment = (ControlRatesMax.treatment
-                          * ramp(target_values.treated
-                                 - proportions_.treated))
+    names.append('nonadherence')
+    arrays.append(ControlRatesMax.nonadherence
+                  * ramp(proportions_.suppressed
+                         - target_values.suppressed))
 
-        self.nonadherence = (ControlRatesMax.nonadherence
-                             * ramp(proportions_.suppressed
-                                    - target_values.suppressed))
+    names.append('vaccination')
+    arrays.append(ControlRatesMax.vaccination
+                  * ramp(target_values.vaccinated
+                         - proportions_.vaccinated))
 
-        self.vaccination = (ControlRatesMax.vaccination
-                            * ramp(target_values.vaccinated
-                                   - proportions_.vaccinated))
+    return numpy.rec.fromarrays(arrays, names = names)

@@ -4,60 +4,34 @@ Aggregate multi-country (e.g. Global or regional) results.
 
 import numpy
 
-from . import container
-from . import datasheet
 from . import incidence
-from . import multicountry
 from . import parameters
-from . import regions
+from . import simulation
 
 
-class MultiCountry(container.Container):
+class MultiCountry(simulation._Super):
     '''
     Class to hold the results of multiple countries,
     e.g. Global or regional.
     '''
-    _keys = ('AIDS', 'alive', 'dead', 'infected', 'new_infections')
-
     def __init__(self, data):
-        # self.t = None
-        self.t = numpy.linspace(
-            2015, 2035,
-            20 * 120 + 1)
-        for k in self.keys():
-            setattr(self, k, 0)
-
-        for (c, v) in data.items():
-            if self.t is None:
-                self.t = v.t
-            for k in self.keys():
-                # Do self.k += v.k
-                setattr(self, k,
-                        getattr(self, k) + numpy.asarray(getattr(v, k)))
+        self.state = 0
+        for v in data.values():
+            self.state += v.state
             try:
                 v.flush() # Free memory
             except AttributeError:
                 pass
 
-    @property
-    def prevalence(self):
-        return self.infected / self.alive
 
-    @property
-    def incidence(self):
-        return incidence.compute(self.t, self.new_infections)
-
-    @property
-    def incidence_per_capita(self):
-        return self.incidence / numpy.asarray(self.alive)
-
-
-class Global(multicountry.MultiCountry):
+class Global(MultiCountry):
     '''
     Class to hold global results.
 
     The aggregated simulation results are scaled so that the model
     current statistics match UNAIDS current estimates.
+
+    .. todo:: Adjust for ODE variables, infected, alive.
     '''
     global_alive = 7.2e9
     global_prevalence = 0.008  # CI (0.007, 0.009), UNAIDS 2014
@@ -87,12 +61,12 @@ class Global(multicountry.MultiCountry):
 
         # Compute death rate from slope.
         annual_AIDS_deaths = ((self.dead[..., 1] - self.dead[..., 0])
-                              / (self.t[1] - self.t[0]))
+                              / (simulation.t[1] - simulation.t[0]))
         scale_dead = self.global_annual_AIDS_deaths / annual_AIDS_deaths
         self.dead *= scale_dead[..., numpy.newaxis]
 
         # I need the second value because the first is NaN.
-        incidence0 = incidence.compute(self.t, self.new_infections)[..., 1]
+        incidence0 = incidence.compute(self.new_infections)[..., 1]
         scale_new_infections = self.global_incidence / incidence0
         self.new_infections *= scale_new_infections[..., numpy.newaxis]
 

@@ -153,8 +153,7 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                            left = 0.09, right = 0.98,
                            wspace = 0.15)
 
-    country_name = common.get_country_label(country)
-    fig.suptitle(country_name, size = 10, va = 'baseline', x = 0.535)
+    fig.suptitle(country, size = 10, va = 'baseline', x = 0.535)
 
     CIkey = 'CI{:g}'.format(100 * confidence_level)
     CIBkey = 'CI{:g}'.format(100 * ci_bar)

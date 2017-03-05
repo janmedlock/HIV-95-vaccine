@@ -2,6 +2,8 @@
 Parameter data.
 '''
 
+import os.path
+
 import numpy
 import pandas
 from scipy import stats
@@ -11,6 +13,21 @@ from . import datasheet
 from . import latin_hypercube_sampling
 from . import R0
 from . import transmission_rate
+
+
+# nsamples = 1000
+nsamples = 2 # For testing.
+samplesfile = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                            '../samples.npy'))
+
+
+def _get_samples():
+    if not os.path.exists(samplesfile):
+        samples = Parameters.generate_samples(nsamples)
+        numpy.save(samplesfile, samples)
+    else:
+        samples = numpy.load(samplesfile)
+    return samples
 
 
 def uniform(minimum, maximum):
@@ -98,8 +115,8 @@ class Parameters:
     def __init__(self, country):
         self.country = country
 
-        data = datasheet.data[country]
-        # Import attributes from cd into self.
+        data = datasheet.get_country_data(country)
+        # Import attributes from country data into self.
         for k in dir(data):
             a = getattr(data, k)
             if ((not k.startswith('_')) and (not callable(a))):
@@ -238,8 +255,6 @@ class _Super:
             + (years_in_symptomatic * self.progression_rate_suppressed
                * 0.157))
 
-        # Entries are states S, Q, A, U, D, T, V, W, Z,
-        # but not R.
         disability = numpy.array((0,            # S
                                   0,            # Q
                                   0.16,         # A
@@ -248,9 +263,11 @@ class _Super:
                                   disability_T, # T
                                   disability_V, # V
                                   0.582,        # W
-                                  1))           # Z
+                                  1,            # Z
+                                  0))           # R
 
         self.QALY_rates_per_person = 1 - disability
+        self.QALY_rates_per_person[-1] = 0  # R doesn't count.
 
         self.DALY_rates_per_person = disability
 
@@ -308,11 +325,18 @@ class Sample(_Super):
 
         super().__init__(parameters)
 
-    @classmethod
-    def from_samples(cls, country, samples):
-        parameters = Parameters(country)
-        for s in samples:
-            yield cls(parameters, s)
+
+class Samples:
+    def __init__(self, country):
+        self.country = country
+    
+    def __iter__(self):
+        self._parameters = Parameters(self.country)
+        self._samples = iter(_get_samples())
+        return self
+
+    def __next__(self):
+        return Sample(self._parameters, next(self._samples))
 
 
 class Mode(_Super):

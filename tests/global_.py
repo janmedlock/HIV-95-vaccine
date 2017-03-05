@@ -86,9 +86,9 @@ def plotcell(ax, results, attr):
 
 
 if __name__ == '__main__':
-    target = model.targets.StatusQuo()
+    target = model.target.StatusQuo()
 
-    results = model.results.samples.open_('Global', target)
+    results = model.results.load('Global', target)
 
     fig, axes = pyplot.subplots(1, 4,
                                 figsize = (8.5, 11),
