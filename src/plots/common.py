@@ -21,10 +21,8 @@ from matplotlib.backends import backend_pdf
 from matplotlib.backends import backend_cairo
 import numpy
 from PIL import Image
+import seaborn
 
-sys.path.append(os.path.dirname(__file__))  # For Sphinx.
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
@@ -53,10 +51,6 @@ country_short_names = {
     'United Republic of Tanzania': 'Tanzania',
     'Venezuela (Bolivarian Republic of)': 'Venezuela',
 }
-
-
-def get_country_short_name(c):
-    return country_short_names.get(v, v)
 
 
 matplotlib.rc('mathtext', fontset = 'dejavusans')
@@ -93,6 +87,10 @@ matplotlib.rc('lines', linewidth = 1.25)
 matplotlib.rc('axes.grid', which = 'major')
 
 
+def get_country_short_name(c):
+    return country_short_names.get(c, c)
+
+
 all_regions = model.regions.all_
 # all_regions is already sorted by 'Global', then alphabetical.
 all_countries = model.datasheet.get_country_list()
@@ -107,7 +105,7 @@ effectiveness_measures = ['new_infections', 'incidence_per_capita',
                           'infected', 'dead']
 
 
-t = numpy.linspace(2015, 2035, 20 * 120 +1)
+t = model.simulation.t
 
 
 # historical_data_start_year = 1990
@@ -256,7 +254,7 @@ class StatInfoEntry:
         if self.percent:
             self.scale = 1 / 100
             self.units = '%%'
-        
+
     def autoscale(self, data):
         if len(data) > 0:
             vmax = numpy.max(data)
@@ -272,7 +270,7 @@ class StatInfoEntry:
         else:
             self.scale = 1
             self.units = ''
-        
+
     def autounits(self, data):
         if len(data) > 0:
             vmax = numpy.nanmax(data) / self.scale
@@ -286,7 +284,7 @@ class StatInfoEntry:
                 self.units = ''
         else:
             self.units = ''
-        
+
 
 _stat_info = dict(
     infected = StatInfoEntry(label = 'PLHIV\n'),
@@ -411,44 +409,58 @@ def _get_title(filename):
     return title
 
 
+def _has_bin(binname):
+    '''
+    Test if a binary is present on the system.
+    '''
+    cp = subprocess.run(['which',binname], stdout = subprocess.PIPE)
+    return (cp.returncode == 0)
+
+
 def pdf_add_info(filename, **kwargs):
     '''
     Use pdftk to set PDF metadata.
     '''
-    if 'Author' not in kwargs:
-        kwargs['Author'] = author
-    if 'Title' not in kwargs:
-        kwargs['Title'] = _get_title(filename)
-    curtime = time.strftime('D:%Y%m%d%H%M%S')
-    for key in ['CreationDate', 'ModDate']:
-        if key not in kwargs:
-            kwargs[key] = curtime
+    if _has_bin('pdftk'):
+        if 'Author' not in kwargs:
+            kwargs['Author'] = author
+        if 'Title' not in kwargs:
+            kwargs['Title'] = _get_title(filename)
+        curtime = time.strftime('D:%Y%m%d%H%M%S')
+        for key in ['CreationDate', 'ModDate']:
+            if key not in kwargs:
+                kwargs[key] = curtime
 
-    # Build info in pdftk's required format.
-    def build_info_item(key, value):
-        return 'InfoBegin\nInfoKey: {}\nInfoValue: {}'.format(key, value)
-    infostr = '\n'.join(build_info_item(k, v) for (k, v) in kwargs.items())
+        # Build info in pdftk's required format.
+        def build_info_item(key, value):
+            return 'InfoBegin\nInfoKey: {}\nInfoValue: {}'.format(key, value)
+        infostr = '\n'.join(build_info_item(k, v) for (k, v) in kwargs.items())
 
-    # pdftk will write to a tempfile, then we'll replace to original file
-    # with the tempfile
-    tempfd, tempname = tempfile.mkstemp()
-    args = ['pdftk', filename, 'update_info_utf8', '-', 'output', tempname]
-    cp = subprocess.run(args, input = infostr.encode('utf-8'))
-    cp.check_returncode()  # Make sure it succeeded.
-    st = os.stat(filename)  # To preserve permissions
-    os.replace(tempname, filename)
-    os.chmod(filename, st.st_mode)  # Set permissions
+        # pdftk will write to a tempfile, then we'll replace to original file
+        # with the tempfile
+        tempfd, tempname = tempfile.mkstemp()
+        args = ['pdftk', filename, 'update_info_utf8', '-', 'output', tempname]
+        cp = subprocess.run(args, input = infostr.encode('utf-8'))
+        cp.check_returncode()  # Make sure it succeeded.
+        st = os.stat(filename)  # To preserve permissions
+        os.replace(tempname, filename)
+        os.chmod(filename, st.st_mode)  # Set permissions
+    else:
+        raise RuntimeWarning("'pdftk' not found.  PDF info not added.")
 
 
 def pdfoptimize(filename):
-    tempfd, tempname = tempfile.mkstemp()
-    args = ['pdftocairo', '-pdf', filename, tempname]
-    print('Optimizing {}.'.format(filename))
-    cp = subprocess.run(args)
-    cp.check_returncode()  # Make sure it succeeded.
-    st = os.stat(filename)  # To preserve permissions
-    os.replace(tempname, filename)
-    os.chmod(filename, st.st_mode)  # Set permissions
+    if _has_bin('pdftocairo'):
+        tempfd, tempname = tempfile.mkstemp()
+        args = ['pdftocairo', '-pdf', filename, tempname]
+        print('Optimizing {}.'.format(filename))
+        cp = subprocess.run(args)
+        cp.check_returncode()  # Make sure it succeeded.
+        st = os.stat(filename)  # To preserve permissions
+        os.replace(tempname, filename)
+        os.chmod(filename, st.st_mode)  # Set permissions
+    else:
+        raise RuntimeWarning("'pdftocairo' not found.  PDF not optimized.")
 
 
 _keymap = {'Author': 'Artist',

@@ -38,25 +38,13 @@ ODEs
 ----
 .. automodule:: model.ODEs
 
-optimization
-------------
-.. automodule:: model.optimization
-
-effectiveness
-~~~~~~~~~~~~~
-.. automodule:: model.optimization.effectiveness
-
-net_benefit
-~~~~~~~~~~~
-.. automodule:: model.optimization.net_benefit
+output_dir
+----------
+.. automodule:: model.output_dir
 
 parameters
 ----------
 .. automodule:: model.parameters
-
-picklefile
-----------
-.. automodule:: model.picklefile
 
 plot
 ----

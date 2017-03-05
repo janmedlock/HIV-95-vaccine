@@ -17,10 +17,6 @@ logmodel
 --------
 .. automodule:: tests.logmodel
 
-net_benefit_maximize
---------------------
-.. automodule:: tests.net_benefit_maximize
-
 profile_
 --------
 .. automodule:: tests.profile_

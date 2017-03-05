@@ -14,19 +14,6 @@ sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 
 
-country_name_replacements = {'United States of America': 'United States',
-                             'Democratic Republic of the Congo': 'DR Congo',
-                             'Bolivia (Plurinational State of)': 'Bolivia',
-                             'Iran (Islamic Republic of)': 'Iran',
-                             "Lao People's Democratic Republic": 'Laos',
-                             'Republic of Moldova': 'Moldova',
-                             'Venezuela (Bolivarian Republic of)': 'Venezuela'}
-
-
-def get_country_label(c):
-    return country_name_replacements.get(c, c)
-
-
 def _format_number(x):
     if not numpy.isnan(x):
         return locale.format('%d', x, grouping = True)
@@ -80,7 +67,7 @@ if __name__ == '__main__':
 
                 if i == len(targets) - 1:
                     s = '\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '
-                    fd.write(s.format(get_country_label(c)))
+                    fd.write(s.format(common.get_country_short_name(c)))
                 else:
                     fd.write(' & ')
                 fd.write('{}'.format(_format_target(target)))

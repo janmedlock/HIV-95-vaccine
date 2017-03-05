@@ -32,7 +32,7 @@ def _main():
     m.pies(countries, data_normalized,
            s = 40 * data[-1],
            wedgeprops = dict(linewidth = 0, zorder = 3))
-    
+
     pyplot.show()
 
 

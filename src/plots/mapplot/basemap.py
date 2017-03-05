@@ -4,43 +4,26 @@ Make nice graphs on maps.
 
 from collections import abc
 import itertools
-import os.path
-import sys
 
+import cartopy
 from matplotlib import animation
 from matplotlib import cm
 from matplotlib import patches
 from matplotlib import pyplot
 import numpy
+import seaborn
 import shapely.geometry
 import shapely.ops
 
-# import cartopy
-sys.path.append(os.path.dirname(__file__))  # For Sphinx
-import cartopy_quiet as cartopy
-
-sys.path.append('..')
-# import seaborn
-import seaborn_quiet as seaborn
-
 from . import locators
-
-
-# Change cartopy cache from ~/.local/share
-# to a subdirectory so it'll go in Google Drive.
-cartopy.config['data_dir'] = os.path.normpath(os.path.join(
-    os.path.dirname(__file__),
-    '_cartopy'))
 
 
 _east_hemis = shapely.geometry.box(180, -90, 0, 90)
 _west_hemis = shapely.geometry.box(-180, -90, 0, 90)
 
-
-country_replacements = {
+# The country names used in the maps are different than UNAIDS names.
+_map_names = {
     'Bolivia (Plurinational State of)': 'Bolivia',
-    'Bahamas': 'The Bahamas',
-    'Congo': 'Republic of Congo',
     "Côte d'Ivoire": 'Ivory Coast',
     'Iran (Islamic Republic of)': 'Iran',
     "Lao People's Democratic Republic": 'Laos',
@@ -50,33 +33,23 @@ country_replacements = {
     'United Kingdom of Great Britain and Northern Ireland': 'United Kingdom',
     'Venezuela (Bolivarian Republic of)': 'Venezuela',
     'Viet Nam': 'Vietnam',
-    # Some screwed up regions.
-    'Eastern and Southern Africa': 'East and Southern Africa',
-    'Asia and The Pacific': 'Asia Pacific',
-    'The Caribbean': 'Caribbean',
-    'Western and Central Europe': 'Western Europe',
 }
 
-country_replacements_inv = {v: k for (k, v) in country_replacements.items()}
 
-
-def convert_country(country, inverse = False):
+def _get_map_name(country):
     '''
     Convert country names used in the datasheet to those used in the maps
     or vice versa.
     '''
-    if inverse:
-        return country_replacements_inv.get(country, country)
-    else:
-        return country_replacements.get(country, country)
+    return _map_names.get(country, country)
 
 
-def convert_countries(countries, inverse = False):
+def _get_map_names(countries):
     '''
     Convert multiple country names used in the datasheet
     to those used in the maps or vice versa.
     '''
-    return [convert_country(c, inverse = inverse) for c in countries]
+    return [_get_map_name(c) for c in countries]
 
 
 def _in_west_hemis(p):
@@ -129,7 +102,7 @@ class Basemap:
             central_longitude = central_longitude)
         self.ax = self.fig.add_axes(rect, projection = proj,
                                     anchor = 'N',
-                                    axis_bgcolor = 'none')
+                                    facecolor = 'none')
         self.ax.set_extent(extent, proj)
         self.ax.background_patch.set_visible(False)
         self.ax.outline_patch.set_visible(False)
@@ -298,7 +271,7 @@ class Basemap:
 
     def draw_borders(self, countries, zorder = 0, facecolor = 'None',
                      *args, **kwargs):
-        for c in countries:
+        for c in _get_map_names(countries):
             try:
                 border = self.borders[c]
             except KeyError:
@@ -320,7 +293,7 @@ class Basemap:
         vmax = kwargs.pop('vmax', max(values))
         cmap_norm.set_clim(vmin, vmax)
         cmap_norm.set_array(values)
-        for (c, v) in zip(countries, values):
+        for (c, v) in zip(_get_map_names(countries), values):
             if numpy.isfinite(v):
                 color = cmap_norm.to_rgba(v)
                 try:
@@ -354,7 +327,7 @@ class Basemap:
     def choropleth_animate(self, countries, t, values,
                            label_coords = None,
                            *args, **kwargs):
-        self.choropleth_preinit(countries, t, values,
+        self.choropleth_preinit(_get_map_names(countries), t, values,
                                 label_coords = label_coords,
                                 *args, **kwargs)
         return animation.FuncAnimation(self.fig,
@@ -376,7 +349,7 @@ class Basemap:
         self.cmap_norm.set_clim(vmin = kwargs.pop('vmin', None),
                                 vmax = kwargs.pop('vmax', None))
         self.cmap_norm.set_array(values)
-        self._countries = countries
+        self._countries = _get_map_names(countries)
         self._t = t
         self._values = values
         self._artists = []
@@ -428,12 +401,12 @@ class Basemap:
         return retval
 
     def scatter(self, countries, *args, **kwargs):
-        x, y = self.locator.get_locations(countries)
+        x, y = self.locator.get_locations(_get_map_names(countries))
         self.ax.scatter(x, y,
                         transform = self.locator.crs,
                         *args,
                         **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def pies(self, countries, values, s = 20,
              wedgeprops = dict(linewidth = 0),
@@ -441,7 +414,7 @@ class Basemap:
              counterclock = False,
              colors = 'bright',
              *args, **kwargs):
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         radius = numpy.sqrt(s) / numpy.pi
@@ -462,7 +435,7 @@ class Basemap:
                             colors = self._get_colors(colors),
                             *args,
                             **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def bars(self, countries, values,
              color = 'bright',
@@ -472,7 +445,7 @@ class Basemap:
              frame = False,
              *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -501,7 +474,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def barhs(self, countries, values,
               color = 'bright',
@@ -511,7 +484,7 @@ class Basemap:
               frame = False,
               *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -540,7 +513,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def barh_coords(self, X, Y, values,
                     color = 'bright',
@@ -573,7 +546,7 @@ class Basemap:
                frame = False,
                *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -602,7 +575,7 @@ class Basemap:
                              linewidth = 0.5,
                              *args,
                              **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def pyramids(self, countries, values,
              color = 'bright',
@@ -611,7 +584,7 @@ class Basemap:
              linewidth = 0,
              *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -628,7 +601,7 @@ class Basemap:
                          linewidth = linewidth,
                          *args,
                          **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def _star(self, values,
               center = (0, 0),
@@ -666,7 +639,7 @@ class Basemap:
               scale = 1,
               *args, **kwargs):
         values = numpy.asarray(values)
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
         for (xyz, v) in zip(coords_t, values):
@@ -675,7 +648,7 @@ class Basemap:
                        center = (x, y),
                        scale = scale,
                        *args, **kwargs)
-        self.draw_borders(countries, *args, **kwargs)
+        self.draw_borders(countries)
 
     def label(self, countries,
               horizontalalignment = 'center',
@@ -685,10 +658,10 @@ class Basemap:
                               color = 'black',
                               weight = 'bold'),
               *args, **kwargs):
-        X, Y = self.locator.get_locations(countries)
+        X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
             self.locator.crs, X, Y)
-        for (xyz, country) in zip(coords_t, countries):
+        for (xyz, country) in zip(coords_t, _get_map_names(countries)):
             x, y, z = xyz
             if country in replace:
                 label = replace[country]
@@ -700,7 +673,7 @@ class Basemap:
                          fontdict = fontdict,
                          *args,
                          **kwargs)
-        # self.draw_borders(countries, *args, **kwargs)
+        # self.draw_borders(countries)
 
     def text_coords(self, X, Y, s,
                    *args, **kwargs):

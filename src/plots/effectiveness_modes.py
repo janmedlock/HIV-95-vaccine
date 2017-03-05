@@ -11,12 +11,10 @@ from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib.backends import backend_pdf
 import numpy
-import tables
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
@@ -24,10 +22,10 @@ import model
 alpha0 = 0.9
 
 
-def _plot_cell(ax, results, parameters, country, stat,
+def _plot_cell(ax, parameters, country, stat,
                plot_hist = True,
                country_label = None,
-               country_label_short = True,
+               country_short_name = True,
                stat_label = 'ylabel'):
     '''
     Plot one axes of simulation and historical data figure.
@@ -35,11 +33,13 @@ def _plot_cell(ax, results, parameters, country, stat,
     info = common.get_stat_info(stat)
 
     data = []
-    for target in model.targets.all_:
+    for target in model.target.all_:
         try:
-            v = results[country][str(target)][stat]
-        except tables.NoSuchNodeError:
+            r = model.results.load(country, target, parameters_type = 'mode')
+        except FileNotFoundError:
             v = None
+        else:
+            v = getattr(r, stat)
         data.append(v)
     if info.scale is None:
         info.autoscale(data)
@@ -56,14 +56,12 @@ def _plot_cell(ax, results, parameters, country, stat,
                         zorder = 2,
                         **common.historical_data_style)
 
-    for target in model.targets.all_:
-        try:
-            v = results[country][str(target)][stat]
-        except tables.NoSuchNodeError:
+    for (v, target) in zip(data, model.target.all_):
+        if v is None:
             # Pop a style.
             next(ax._get_lines.prop_cycler)
         else:
-            ax.plot(common.t, numpy.asarray(v) / info.scale,
+            ax.plot(common.t, v / info.scale,
                     label = common.get_target_label(target),
                     alpha = alpha0,
                     zorder = 1)
@@ -86,7 +84,7 @@ def _plot_cell(ax, results, parameters, country, stat,
 
     common.format_axes(ax, country, info, country_label, stat_label,
                        plot_hist = plot_hist,
-                       country_label_short = country_label_short)
+                       country_short_name = country_short_name)
 
 
 def _make_legend(fig, plot_hist = True):
@@ -99,7 +97,7 @@ def _make_legend(fig, plot_hist = True):
         # Blank spacer.
         handles.append(lines.Line2D([], [], linewidth = 0))
         labels.append(' ')
-    for (t, c) in zip(model.targets.all_, colors):
+    for (t, c) in zip(model.target.all_, colors):
         handles.append(lines.Line2D([], [], color = c, alpha = alpha0))
         labels.append(common.get_target_label(t))
     return fig.legend(handles, labels,
@@ -108,7 +106,7 @@ def _make_legend(fig, plot_hist = True):
                       frameon = False)
 
 
-def _plot_one(results, country, **kwargs):
+def plot_one(country, **kwargs):
     try:
         parameters = model.parameters.get_parameters(country)
     except KeyError:
@@ -124,9 +122,9 @@ def _plot_one(results, country, **kwargs):
         for (row, stat) in enumerate(common.effectiveness_measures):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
-            _plot_cell(ax, results, parameters, country, stat,
+            _plot_cell(ax, parameters, country, stat,
                        country_label = country_label,
-                       country_label_short = False,
+                       country_short_name = False,
                        **kwargs)
 
         _make_legend(fig)
@@ -136,57 +134,38 @@ def _plot_one(results, country, **kwargs):
     return fig
 
 
-def plot_one(country, **kwargs):
-    with model.results.modes.open_() as results:
-        return _plot_one(results, country, **kwargs)
-
-
 def plot_all(**kwargs):
-    with model.results.modes.open_() as results:
-        regions_and_countries = results.keys()
-        # Put regions first.
-        regions = []
-        for region in model.regions.all_:
-            if region in regions_and_countries:
-                regions.append(region)
-                regions_and_countries.remove(region)
-        # countries needs to be sorted by the name on graph.
-        countries = sorted(regions_and_countries,
-                           key = common.country_sort_key)
-        regions_and_countries = regions + countries
-
-        filename = '{}_all.pdf'.format(common.get_filebase())
-        with backend_pdf.PdfPages(filename) as pdf:
-            for region_or_country in regions_and_countries:
-                print(region_or_country)
-                fig = _plot_one(results, region_or_country, **kwargs)
-                pdf.savefig(fig)
-                pyplot.close(fig)
+    filename = '{}_all.pdf'.format(common.get_filebase())
+    with backend_pdf.PdfPages(filename) as pdf:
+        for region_or_country in common.all_regions_and_countries:
+            print(region_or_country)
+            fig = plot_one(region_or_country, **kwargs)
+            pdf.savefig(fig)
+            pyplot.close(fig)
 
 
 def plot_some(**kwargs):
-    with model.results.modes.open_() as results:
-        with seaborn.color_palette(common.colors_paired):
-            ncols = len(common.countries_to_plot)
-            nrows = len(common.effectiveness_measures)
-            fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_2column, 4.75),
-                                        sharex = 'all', sharey = 'none')
-            for (col, country) in enumerate(common.countries_to_plot):
-                parameters = model.parameters.get_parameters(country)
-                for (row, stat) in enumerate(common.effectiveness_measures):
-                    ax = axes[row, col]
+    with seaborn.color_palette(common.colors_paired):
+        ncols = len(common.countries_to_plot)
+        nrows = len(common.effectiveness_measures)
+        fig, axes = pyplot.subplots(nrows, ncols,
+                                    figsize = (common.width_2column, 4.75),
+                                    sharex = 'all', sharey = 'none')
+        for (col, country) in enumerate(common.countries_to_plot):
+            parameters = model.parameters.get_parameters(country)
+            for (row, stat) in enumerate(common.effectiveness_measures):
+                ax = axes[row, col]
 
-                    stat_label = 'ylabel' if ax.is_first_col() else None
-                    country_label = 'title' if ax.is_first_row() else None
+                stat_label = 'ylabel' if ax.is_first_col() else None
+                country_label = 'title' if ax.is_first_row() else None
 
-                    _plot_cell(ax, results, parameters, country, stat,
-                               country_label = country_label,
-                               stat_label = stat_label,
-                               plot_hist = False,
-                               **kwargs)
+                _plot_cell(ax, parameters, country, stat,
+                           country_label = country_label,
+                           stat_label = stat_label,
+                           plot_hist = False,
+                           **kwargs)
 
-            _make_legend(fig, plot_hist = False)
+        _make_legend(fig, plot_hist = False)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
                      rect = (0, 0.04, 1, 1))

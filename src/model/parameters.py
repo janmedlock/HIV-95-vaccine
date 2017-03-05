@@ -4,6 +4,7 @@ Parameter data.
 
 import os.path
 
+import joblib
 import numpy
 import pandas
 from scipy import stats
@@ -11,22 +12,21 @@ from scipy import optimize
 
 from . import datasheet
 from . import latin_hypercube_sampling
+from . import output_dir
 from . import R0
 from . import transmission_rate
 
 
-# nsamples = 1000
-nsamples = 2 # For testing.
-samplesfile = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                            '../samples.npy'))
+nsamples = 1000
+samplesfile = os.path.join(output_dir.output_dir, 'samples.pkl')
 
 
 def _get_samples():
     if not os.path.exists(samplesfile):
         samples = Parameters.generate_samples(nsamples)
-        numpy.save(samplesfile, samples)
+        joblib.dump(samples, samplesfile, protocol = -1)
     else:
-        samples = numpy.load(samplesfile)
+        samples = joblib.load(samplesfile, mmap_mode = 'r')
     return samples
 
 
@@ -80,7 +80,7 @@ class Parameters:
 
     # From Cirroe et al, 2009.
     suppression_rate = uniform(0.5, 1.5)
-    
+
     # From Morgan et al, 2002.
     # 2 years until death.
     death_rate_AIDS = 1 / 2
@@ -329,7 +329,7 @@ class Sample(_Super):
 class Samples:
     def __init__(self, country):
         self.country = country
-    
+
     def __iter__(self):
         self._parameters = Parameters(self.country)
         self._samples = iter(_get_samples())

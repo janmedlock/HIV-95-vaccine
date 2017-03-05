@@ -12,12 +12,11 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 from scipy import interpolate
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
 import common
 import stats
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
@@ -215,8 +214,8 @@ def tornado(X, y, outcome, parameter_names = None, colors = None):
 if __name__ == '__main__':
     country = 'Global'
     outcome = 'new_infections'
-    baseline = model.targets.StatusQuo()
-    targets = [baseline, model.targets.Vaccine(treatment_target = baseline)]
+    baseline = model.target.StatusQuo()
+    targets = [baseline, model.target.Vaccine(treatment_target = baseline)]
     targets = list(map(str, targets))
     time = 2035
 
