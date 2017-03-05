@@ -16,12 +16,10 @@ from matplotlib import pyplot
 from matplotlib import ticker
 from matplotlib.backends import backend_pdf
 import numpy
-import tables
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
@@ -52,7 +50,7 @@ def _get_plot_info(results, country, targs, stat):
         label = 'HIV-Related\nDeaths'
     else:
         raise ValueError("Unknown stat '{}'".format(stat))
-    
+
     v_base = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[0])],
                                    stat))
     v_intv = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[1])],

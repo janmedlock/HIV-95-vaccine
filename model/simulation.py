@@ -37,11 +37,11 @@ def _add_ODE_vars_as_attrs(cls):
             except ValueError:
                 raise AttributeError
         return getter
-    
+
     for v in ODEs.variables:
         setattr(cls, v, property(_getter(v)))
     return cls
-    
+
 
 @_add_ODE_vars_as_attrs
 class _Super:
@@ -64,7 +64,7 @@ class _Super:
     # @property
     # def cost(self):
     #     return cost.cost(self)
-    
+
     @property
     def DALYs(self):
         return effectiveness.DALYs(self)

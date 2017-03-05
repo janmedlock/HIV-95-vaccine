@@ -28,7 +28,7 @@ def _get_scripts():
                 and (path != mypath)):
                     scripts.append(path)
     return scripts
-       
+
 
 def _get_base(name):
     i = name.find('.')
@@ -38,8 +38,10 @@ def _get_base(name):
         return name[ : i]
 
 
-_builtin_path = os.path.join(sys.prefix, 'lib', 'python{ver[0]}.{ver[1]}'.format(
-    ver = platform.python_version_tuple()))
+_builtin_path = os.path.join(sys.prefix,
+                             'lib',
+                             'python{ver[0]}.{ver[1]}'.format(
+                                 ver = platform.python_version_tuple()))
 
 def _is_builtin(name):
     if name in sys.builtin_module_names:
@@ -61,8 +63,7 @@ def _get_version(name):
             return getattr(mod, attr)
     else:
         return None
-    
-    
+
 
 def _main():
     scripts = _get_scripts()
@@ -80,13 +81,13 @@ def _main():
     basename, _ = os.path.splitext(__file__)
     outputfile = '{}.txt'.format(basename)
     with open(outputfile, 'wt') as fd:
-        fd.write('python\t{}\n'.format(platform.python_version()))
+        fd.write('python {}\n'.format(platform.python_version()))
         for name in sorted(bases):
             if (not name.startswith('_')
                  and not _is_builtin(name)
                  and not _is_local(name)):
                 version = _get_version(name)
-                fd.write('{}\t{}\n'.format(name, version))
+                fd.write('{} {}\n'.format(name, version))
 
 
 if __name__ == '__main__':

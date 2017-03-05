@@ -15,7 +15,6 @@ from matplotlib import ticker
 import numpy
 import pandas
 from scipy import integrate
-import tables
 
 sys.path.append(os.path.dirname(__file__))
 import common
@@ -24,11 +23,11 @@ sys.path.append('..')
 import model
 
 
-baseline = model.targets.StatusQuo()
+baseline = model.target.StatusQuo()
 interventions = (
-    model.targets.UNAIDS95(),
-    model.targets.Vaccine(treatment_target = model.targets.StatusQuo()),
-    model.targets.Vaccine(treatment_target = model.targets.UNAIDS95()))
+    model.target.UNAIDS95(),
+    model.target.Vaccine(treatment_target = model.target.StatusQuo()),
+    model.target.Vaccine(treatment_target = model.target.UNAIDS95()))
 
 baseline = str(baseline)
 interventions = list(map(str, interventions))

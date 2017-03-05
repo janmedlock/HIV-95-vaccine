@@ -8,11 +8,14 @@ Load data from the datafile.
 import collections.abc
 import itertools
 import os.path
+import pickle
 import sys
 
-import joblib
 import numpy
 import pandas
+
+from . import output_dir
+
 
 datafile = '../data_sheet.xlsx'
 # It's relative to this module file,
@@ -159,7 +162,7 @@ class GDP(Sheet):
 
 
 class IncidencePrevalence(Sheet):
-    sheetname = 'Incidence/Prevalence'
+    sheetname = 'IncidencePrevalence'
 
     _incidence_start_string = 'INCIDENCE (15-49)'
     _prevalence_start_string = 'PREVALENCE (15-49)'
@@ -430,15 +433,21 @@ class CountryDataShelf(collections.abc.Mapping):
     Disk cache for :class:`CountryData` for speed.
     '''
     def __init__(self):
-        root, _ = os.path.splitext(datapath)
-        self._shelfpath = '{}.pkl.z'.format(root)
+        _, datafile = os.path.split(datapath)
+        root, _ = os.path.splitext(datafile)
+        filename = '{}.pkl'.format(root)
+        self._shelfpath = os.path.join(output_dir.output_dir, filename)
         # Delay opening shelf.
         # self._open_shelf()
 
     def _open_shelf(self):
         assert not hasattr(self, '_shelf')
         if self._is_current():
-            self._shelf = joblib.load(self._shelfpath)
+            with open(self._shelfpath, 'rb') as fd:
+                try:
+                    self._shelf = pickle.load(fd)
+                except:
+                    self._build_all()
         else:
             self._build_all()
 
@@ -454,7 +463,8 @@ class CountryDataShelf(collections.abc.Mapping):
                                                 wb = wb,
                                                 allow_missing = True)
                            for country in countries}
-            joblib.dump(self._shelf, self._shelfpath, compress = 3)
+            with open(self._shelfpath, 'wb') as fd:
+                pickle.dump(self._shelf, fd, protocol = -1)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)

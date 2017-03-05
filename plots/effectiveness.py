@@ -11,12 +11,10 @@ from matplotlib import lines
 from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
-import tables
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 

@@ -12,12 +12,11 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 from scipy import interpolate
+import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
 import common
 import stats
-# import seaborn
-import seaborn_quiet as seaborn
 sys.path.append('..')
 import model
 
@@ -67,7 +66,7 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
                       color = c,
                       edgecolor = c,
                       **kwds)
-        
+
     ax.xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:g}'))
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
     ax.tick_params(labelsize = pyplot.rcParams['font.size'] + 1)
@@ -85,11 +84,11 @@ def tornado(ax, results, country, targets, outcome, t, parameter_samples,
 def tornados():
     country = 'Global'
     outcome = 'new_infections'
-    targets = [[model.targets.StatusQuo(),
-                model.targets.UNAIDS95()],
-               [model.targets.StatusQuo(),
-                model.targets.Vaccine(
-                    treatment_target = model.targets.StatusQuo())]]
+    targets = [
+        [model.target.StatusQuo(),
+         model.target.UNAIDS95()],
+        [model.target.StatusQuo(),
+         model.target.Vaccine(treatment_targets = model.target.StatusQuo())]]
     titles = ['95–95–95', 'Vaccine']
     targets = [[str(x) for x in t] for t in targets]
     time = 2035

@@ -250,7 +250,7 @@ class Vaccine(Target):
             treatment_str = self._treatment_target.__str__()
         else:
             raise ValueError
-            
+
         params = [
             'efficacy={:g}%'.format(100 * self._efficacy),
             'coverage={:g}%'.format(100 * self._coverage),
@@ -263,22 +263,21 @@ class Vaccine(Target):
 
 
 # Build each of these and each of these + vaccine.
-all_baselines = [StatusQuo(),
-             UNAIDS90(),
-             UNAIDS95()]
+_all_baselines = [StatusQuo(),
+                  UNAIDS90(),
+                  UNAIDS95()]
+
 all_ = []
-for target in all_baselines:
+for target in _all_baselines:
     all_.extend([target,
                  Vaccine(treatment_target = target)])
 
 
-vaccine_scenarios_baselines = [
-    StatusQuo(),
-    # UNAIDS90(),
-    # UNAIDS95(),
-]
+# Build each of these and each of these + vaccine alternatives.
+_vaccine_scenarios_baselines = [StatusQuo()]
+
 vaccine_scenarios = []
-for target in vaccine_scenarios_baselines:
+for target in _vaccine_scenarios_baselines:
     vaccine_scenarios.extend([
         target,
         Vaccine(treatment_target = target),

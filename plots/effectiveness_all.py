@@ -45,7 +45,7 @@ def plot_all(plotevery = 10, **kwargs):
             filebase = os.path.join(path, region_or_country.replace(' ', '_'))
             filename = '{}.pgf'.format(filebase)
             common.savefig(fig, filename,
-                           title = '{} effectiveness'.format(region_or_country))
+                           title = '{} effectiveness'.format(region_of_country))
             pyplot.close(fig)
 
 
