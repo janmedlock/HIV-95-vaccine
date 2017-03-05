@@ -27,8 +27,7 @@ def get_residuals(Z, b):
     A = numpy.column_stack((numpy.ones_like(Z[..., 0]), Z))
     result = numpy.linalg.lstsq(A, b)
     coefs = result[0]
-    # residuals = b - A @ coefs  # Stupid Sphinx bug.
-    residuals = b - numpy.dot(A, coefs)
+    residuals = b - A @ coefs
     return residuals
 
 

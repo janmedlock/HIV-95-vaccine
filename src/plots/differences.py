@@ -27,8 +27,8 @@ import model
 
 
 # Pairs (baseline, baseline + vaccine)
-targets = [model.targets.all_[i : i + 2]
-           for i in range(0, len(model.targets.all_), 2)]
+targets = [model.target.all_[i : i + 2]
+           for i in range(0, len(model.target.all_), 2)]
 
 
 def _get_plot_info(results, country, targs, stat):
@@ -115,11 +115,10 @@ def _plot_cell(ax, results, country, targs, stat,
     ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
     ax.grid(True, which = 'both', axis = 'both')
 
-    country_str = common.get_country_label(country)
     if country_label == 'ylabel':
-        ax.set_ylabel(country_str, size = 'medium')
+        ax.set_ylabel(country, size = 'medium')
     elif country_label == 'title':
-        ax.set_title(country_str, size = 'medium')
+        ax.set_title(country, size = 'medium')
 
     if attr_label == 'ylabel':
         ax.set_ylabel(label, size = 'medium')
@@ -194,7 +193,6 @@ def plot_all():
                 for (i, country) in enumerate(common.countries_to_plot):
                     print('\t', country)
                     fig = pyplot.figure(figsize = (8.5, 11))
-                    title = common.get_country_label(country)
                     try:
                         for (row, attr) in enumerate(
                                 common.effectiveness_measures):

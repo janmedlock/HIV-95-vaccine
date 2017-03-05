@@ -33,7 +33,7 @@ def _get_args(target):
 
 
 def get_target_label(treatment_target, target):
-    baseline = model.targets.Vaccine(treatment_targets = treatment_target)
+    baseline = model.target.Vaccine(treatment_target = treatment_target)
     args_baseline = _get_args(str(baseline))
     args = _get_args(target)
     diff = []
@@ -58,9 +58,9 @@ def get_target_label(treatment_target, target):
 
 
 def _get_targets(treatment_target):
-    return [str(t) for t in model.targets.vaccine_scenarios
-            if hasattr(t, '_treatment_targets')
-            and (str(t._treatment_targets) == str(treatment_target))]
+    return [str(t) for t in model.target.vaccine_scenarios
+            if hasattr(t, '_treatment_target')
+            and (str(t._treatment_target) == str(treatment_target))]
 
 
 def _get_kwds(label):
@@ -160,12 +160,12 @@ def _plot_one(results, country, treatment_target):
     return fig
 
 
-def plot_one(country, treatment_target = model.targets.StatusQuo()):
+def plot_one(country, treatment_target = model.target.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         return _plot_one(results, country, treatment_target)
 
 
-def plot_all(treatment_target = model.targets.StatusQuo()):
+def plot_all(treatment_target = model.target.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         regions_and_countries = results.keys()
         # Put regions first.
@@ -188,7 +188,7 @@ def plot_all(treatment_target = model.targets.StatusQuo()):
                 pyplot.close(fig)
 
 
-def plot_some(treatment_target = model.targets.StatusQuo()):
+def plot_some(treatment_target = model.target.StatusQuo()):
     with model.results.modes.open_vaccine_scenarios() as results:
         with seaborn.color_palette(colors):
             ncols = len(common.countries_to_plot)

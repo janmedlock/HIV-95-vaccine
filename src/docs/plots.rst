@@ -61,6 +61,10 @@ table_format
 ------------
 .. automodule:: plots.table_format
 
+tornado_vaccine
+---------------
+.. automodule:: plots.tornado_vaccine
+
 transmission_rate
 -----------------
 .. automodule:: plots.transmission_rate

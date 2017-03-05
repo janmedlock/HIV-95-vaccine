@@ -16,19 +16,19 @@ import model
 
 def _main():
     country = 'South Africa'
-    targets = model.targets.UNAIDS90()
+    target = model.target.UNAIDS90()
 
     parameters = model.parameters.Parameters(country).mode()
 
     time0 = time.time()
-    simulation = model.simulation.Simulation(parameters, targets,
-                                             _use_log = False)
+    simulation = model.simulation.Simulation(parameters, target,
+                                             use_log = False)
     time1 = time.time()
     print('Non-log model took {} sec.'.format(time1 - time0))
 
     time0 = time.time()
-    simulation_log = model.simulation.Simulation(parameters, targets,
-                                                 _use_log = True)
+    simulation_log = model.simulation.Simulation(parameters, target,
+                                                 use_log = True)
     time1 = time.time()
     print('Log model took {} sec.'.format(time1 - time0))
 

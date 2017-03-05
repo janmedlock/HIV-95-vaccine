@@ -3,142 +3,63 @@ Simulation of the HIV model.
 '''
 
 import copy
-import warnings
 
+import joblib
 import numpy
-from scipy import integrate
 
-from . import container
+from . import control_rates
 # from . import cost
 from . import effectiveness
 from . import incidence
 # from . import net_benefit
 from . import ODEs
+from . import parameters
 from . import plot
 from . import proportions
+from . import results
 
 
-class Simulation(container.Container):
+t_start = 2015
+t_end = 2035
+pts_per_year = 120  # = 10 per month
+t = numpy.linspace(t_start, t_end,
+                   numpy.abs(t_end - t_start) * pts_per_year + 1)
+
+
+def _add_ODE_vars_as_attrs(cls):
     '''
-    A class to hold the simulation information.
+    Add ODE variables as attributes.
+    '''
+    def _getter(v):
+        def getter(self):
+            try:
+                return ODEs.get_variable(self.state, v)
+            except ValueError:
+                raise AttributeError
+        return getter
+    
+    for v in ODEs.variables:
+        setattr(cls, v, property(_getter(v)))
+    return cls
+    
 
-    `integrator` is a
-    :class:`scipy.integrate.ode` integrator---``'lsoda'``,
-    ``'vode'``, ``'dopri5'``, ``'dop853'``---or
-    ``'odeint'`` to use :func:`scipy.integrate.odeint`.
-
-    .. todo:: Only store .state, and compute 'susceptible' etc from that,
-              or use pandas.DataFrames or numpy.records or similar for
-              handling the attributes.
-              Implement dumping and loading that to/from an npy file.
-              Implement moving that to Multisims, too.
+@_add_ODE_vars_as_attrs
+class _Super:
+    '''
+    Superclass for Simulation and MultiSim.
     '''
 
-    _keys = ['susceptible', 'vaccinated', 'acute', 'undiagnosed',
-             'diagnosed', 'treated', 'viral_suppression',
-             'AIDS', 'dead', 'new_infections']
+    @property
+    def alive(self):
+        return ODEs.get_alive(self.state)
 
-    _alive = ('susceptible', 'vaccinated', 'acute', 'undiagnosed',
-              'diagnosed', 'treated', 'viral_suppression', 'AIDS')
-
-    _infected = ('acute', 'undiagnosed', 'diagnosed', 'treated',
-                 'viral_suppression', 'AIDS')
-
-    def __init__(self, parameters, targets,
-                 t_start = 2015, t_end = 2035,
-                 pts_per_year = 120, # = 10 per month
-                 integrator = 'odeint',
-                 _use_log = True,
-                 **kwargs):
-        self.parameters = parameters
-        self.country = self.parameters.country
-        self.targets = targets
-        self.pts_per_year = pts_per_year
-        self.integrator = integrator
-        self._use_log = _use_log
-        self.kwargs = kwargs
-
-        if len(self.kwargs) > 0:
-            self.parameters = copy.copy(self.parameters)
-            for (k, v) in self.kwargs.items():
-                setattr(self.parameters, k, v)
-
-        self.t = numpy.linspace(
-            t_start, t_end,
-            numpy.abs(t_end - t_start) * self.pts_per_year + 1)
-
-        self.simulate()
-
-    def simulate(self):
-        Y0 = self.parameters.initial_conditions.copy().values
-        if self._use_log:
-            Y0 = ODEs.transform(Y0)
-            fcn = ODEs.rhs_log
-        else:
-            fcn = ODEs.rhs
-
-        # Scale time to start at 0 to avoid some solver warnings.
-        t_scaled = self.t - self.t[0]
-        def fcn_scaled(t_scaled, Y, targets, parameters):
-            return fcn(t_scaled + self.t[0], Y, targets, parameters)
-
-        assert numpy.isfinite(self.parameters.R0)
-        assert not numpy.all(self.parameters.initial_conditions == 0)
-
-        if self.integrator == 'odeint':
-            def fcn_scaled_swap_Yt(Y, t_scaled, targets, parameters):
-                return fcn_scaled(t_scaled, Y, targets, parameters)
-            Y = integrate.odeint(fcn_scaled_swap_Yt,
-                                 Y0,
-                                 t_scaled,
-                                 args = (self.targets,
-                                         self.parameters),
-                                 mxstep = 2000,
-                                 mxhnil = 1)
-        else:
-            solver = integrate.ode(fcn_scaled)
-            if self.integrator == 'lsoda':
-                kwds = dict(max_hnil = 1)
-            else:
-                kwds = {}
-            solver.set_integrator(self.integrator,
-                                  nsteps = 2000,
-                                  **kwds)
-            solver.set_f_params(self.targets, self.parameters)
-            solver.set_initial_value(Y0, t_scaled[0])
-            Y = numpy.empty((len(t_scaled), len(Y0)))
-            Y[0] = Y0
-            for i in range(1, len(t_scaled)):
-                Y[i] = solver.integrate(t_scaled[i])
-                if not self._use_log:
-                    # Force to be non-negative.
-                    Y[i, : -2] = Y[i, : -2].clip(0, numpy.inf)
-                    solver.set_initial_value(Y[i], t_scaled[i])
-                assert solver.successful()
-
-        if numpy.any(numpy.isnan(Y)):
-            msg = ("country = '{}': NaN in solution!").format(self.country)
-            if self._use_log:
-                msg += "  Re-running with _use_log = False."
-                warnings.warn(msg)
-                self._use_log = False
-                retval = self.simulate()
-                self._use_log = True
-                return retval
-            else:
-                raise ValueError(msg)
-
-        if self._use_log:
-            self.state = ODEs.transform_inv(Y)
-        else:
-            self.state = Y
-
-        for (k, v) in zip(self.keys(), ODEs.split_state(self.state)):
-            setattr(self, k, v)
+    @property
+    def infected(self):
+        return ODEs.get_infected(self.state)
 
     @property
     def proportions(self):
-        return proportions.Proportions(self.state)
+        return proportions.get(self.state)
 
     # @property
     # def cost(self):
@@ -188,19 +109,11 @@ class Simulation(container.Container):
 
     @property
     def target_values(self):
-        return self.targets(self.parameters, self.t)
+        return self.target(t, self.parameters)
 
     @property
     def control_rates(self):
-        return self.target_values.control_rates(self.state)
-
-    @property
-    def infected(self):
-        return sum(getattr(self, k) for k in self._infected)
-
-    @property
-    def alive(self):
-        return sum(getattr(self, k) for k in self._alive)
+        return control_rates.get(t, self.state, self.target, self.parameters)
 
     @property
     def prevalence(self):
@@ -208,7 +121,7 @@ class Simulation(container.Container):
 
     @property
     def incidence(self):
-        return incidence.compute(self.t, self.new_infections)
+        return incidence.compute(self.new_infections)
 
     @property
     def incidence_per_capita(self):
@@ -218,25 +131,76 @@ class Simulation(container.Container):
     def R0(self):
         return self.parameters.R0
 
-    def plot(self, *args, **kwargs):
-        plot.simulation(self, *args, **kwargs)
-
-    def dump(self):
-        '''
-        .. todo:: Replace _build_keys() and dumping based on keys with
-                  this method.  Propagate to Regional, etc.
-        '''
-        raise NotImplementedError
+    def dump(self, parameters_type = None):
+        return results.dump(self, parameters_type = parameters_type)
 
     @classmethod
-    def _build_keys(cls):
-        '''
-        Build list of keys to dump.
-        '''
-        for attr in dir(cls):
-            if not attr.startswith('_'):
-                obj = getattr(cls, attr)
-                if not callable(obj):
-                    cls._keys.append(attr)
+    def _from_state(cls, params, target, state):
+        obj = cls.__new__(cls)
+        obj.parameters = params
+        obj.target = target
+        obj.state = state
+        return obj
 
-Simulation._build_keys()
+
+class Simulation(_Super):
+    '''
+    A class to hold the simulation information.
+    '''
+    def __init__(self, params, target, *args, **kwargs):
+        self.parameters = params
+        self.target = target
+        self.args = args
+        self.kwargs = kwargs
+        self.solve()
+
+    def solve(self):
+        self.state = ODEs.solve(t, self.target, self.parameters,
+                                *self.args,
+                                **self.kwargs)
+
+    def plot(self, *args, **kwargs):
+        plot.simulation_(self, *args, **kwargs)
+
+
+class MultiSim(_Super):
+    '''
+    A class to hold the multi-simulation information.
+    '''
+    def __init__(self, params, target, *args, **kwargs):
+        self.parameters = params
+        self.target = target
+        self.args = args
+        self.kwargs = kwargs
+        self.solve()
+
+    def solve(self):
+        with joblib.Parallel(n_jobs = -1, verbose = 5) as parallel:
+            simulations = parallel(
+                joblib.delayed(Simulation)(p, self.target,
+                                           *self.args, **self.kwargs)
+                for p in self.parameters)
+        self.state = numpy.array([s.state for s in simulations])
+
+    def dump(self):
+        return super().dump(parameters_type = 'sample')
+
+    @classmethod
+    def load(cls, country, target, state):
+        params = parameters.Samples(country)
+        return cls._from_state(params, target, state)
+
+
+def _from_state(country, target, state, parameters_type):
+    '''
+    Factory to rebuild a Simulation or MultiSims object from state.
+    '''
+    if parameters_type == 'sample':
+        params = parameters.Samples(country)
+        return MultiSim._from_state(params, target, state)
+    elif parameters_type == 'mode':
+        params = parameters.Mode.from_country(country)
+        return Simulation._from_state(params, target, state)
+    else:
+        raise ValueError("Unknown parameters_type '{}'!".format(
+            parameters_type))

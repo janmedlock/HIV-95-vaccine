@@ -40,7 +40,7 @@ countries_to_plot = ('Global',
                      'United States of America')
 
 
-country_labels_short = {
+country_short_names = {
     'Bolivia (Plurinational State of)': 'Bolivia',
     'Democratic Republic of the Congo': 'DR Congo',
     'Iran (Islamic Republic of)': 'Iran',
@@ -53,6 +53,10 @@ country_labels_short = {
     'United Republic of Tanzania': 'Tanzania',
     'Venezuela (Bolivarian Republic of)': 'Venezuela',
 }
+
+
+def get_country_short_name(c):
+    return country_short_names.get(v, v)
 
 
 matplotlib.rc('mathtext', fontset = 'dejavusans')
@@ -89,20 +93,12 @@ matplotlib.rc('lines', linewidth = 1.25)
 matplotlib.rc('axes.grid', which = 'major')
 
 
-def get_country_label(c, short = False):
-    # Convert back to original UNAIDS names.
-    v = model.datasheet.country_replacements_inv.get(c, c)
-    if short:
-        v = country_labels_short.get(v, v)
-    return v
-
-
 all_regions = model.regions.all_
 # all_regions is already sorted by 'Global', then alphabetical.
 all_countries = model.datasheet.get_country_list()
 # all_countries needs to be sorted by the name on graph.
 def country_sort_key(x):
-    return unicodedata.normalize('NFKD', get_country_label(x))
+    return unicodedata.normalize('NFKD', x)
 all_countries.sort(key = country_sort_key)
 all_regions_and_countries = all_regions + all_countries
 
@@ -356,7 +352,7 @@ data_getter = DataGetter()
 
 def format_axes(ax, country, info,
                 country_label, stat_label,
-                country_label_short = True,
+                country_short_name = True,
                 plot_hist = False,
                 tick_interval = 10,
                 space_to_newline = False):
@@ -385,16 +381,17 @@ def format_axes(ax, country, info,
     # ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
     # ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
 
-    country_str = get_country_label(country, short = country_label_short)
+    if country_short_name:
+        country = get_country_short_name(country)
     if space_to_newline:
-        country_str = country_str.replace(' ', '\n')
+        country = country.replace(' ', '\n')
 
     ylabel = None
     title = None
     if country_label == 'ylabel':
-        ylabel = country_str
+        ylabel = country
     elif country_label == 'title':
-        title = country_str
+        title = country
     if stat_label == 'ylabel':
         ylabel = info.label
     elif stat_label == 'title':

@@ -12,7 +12,7 @@ import model
 def _main(parallel = True):
     country = 'South Africa'
     parameters = model.parameters.Parameters(country).mode()
-    targets = [model.targets.StatusQuo(), model.targets.UNAIDS90()]
+    targets = [model.target.StatusQuo(), model.target.UNAIDS90()]
     results = {}
     for target in targets:
         target_ = str(target)

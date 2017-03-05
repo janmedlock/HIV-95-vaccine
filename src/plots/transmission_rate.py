@@ -56,7 +56,7 @@ def plot_transmission_rates(countries, fig = None,
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.05))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
-    yticklabels = (common.get_country_label(c, short = True).replace('&', '\&')
+    yticklabels = (common.get_country_short_name(c).replace('&', '\&')
                    for c in reversed(countries))
     ax.set_yticklabels(yticklabels, size = 5)
     ax.grid(False, axis = 'y')

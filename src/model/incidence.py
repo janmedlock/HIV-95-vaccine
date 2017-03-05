@@ -4,9 +4,12 @@ Compute the incidence.
 
 import numpy
 
+from . import simulation
 
-def compute(t, new_infections):
-    incidence = numpy.diff(numpy.asarray(new_infections)) / numpy.diff(t)
+
+def compute(new_infections):
+    incidence = (numpy.diff(numpy.asarray(new_infections))
+                 / numpy.diff(simulation.t))
     # Put NaNs in the first column to make it align with t.
     if numpy.ndim(new_infections) == 1:
         pad = numpy.nan
