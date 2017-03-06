@@ -6,6 +6,7 @@ This requires data from the simulation runs.
 '''
 
 import sys
+import warnings
 
 from matplotlib import pyplot
 from matplotlib import ticker
@@ -20,15 +21,17 @@ import model
 countries_to_plot = ('Global', )
 
 
-def getstats(x):
-    avg = numpy.median(x, axis = 0)
-    CIlevel = 0.5
-    CI = numpy.percentile(x,
-                          [100 * CIlevel / 2, 100 * (1 - CIlevel / 2)],
-                          axis = 0)
-    # avg = numpy.mean(x, axis = 0)
-    # std = numpy.std(x, axis = 0, ddof = 1)
-    # CI = [avg + std, avg - std]
+def getstats(x, CIlevel = 0.5):
+    # Ignore warnings about NaNs in x.
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        avg = numpy.median(x, axis = 0)
+        CI = numpy.percentile(x,
+                              [100 * CIlevel / 2, 100 * (1 - CIlevel / 2)],
+                              axis = 0)
+        # avg = numpy.mean(x, axis = 0)
+        # std = numpy.std(x, ddof = 1, axis = 0)
+        # CI = [avg + std, avg - std]
     return (avg, CI)
 
 
