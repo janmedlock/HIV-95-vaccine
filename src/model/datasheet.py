@@ -46,15 +46,18 @@ class Sheet:
         return cls.parameter_names
 
     @classmethod
-    def get_all(cls, wb = None):
+    def get_all(cls, alldata = None, wb = None):
         '''
         Read data for all countries from the Excel file.
         '''
-        if wb is None:
-            wb = pandas.ExcelFile(datapath)
-        sheet_ = wb.parse(cls.sheetname, index_col = 0)
-        sheet = cls.clean(sheet_)
-        sheet.index = cls.get_index(sheet)
+        if alldata is not None:
+            sheet = alldata[cls.__name__]
+        else:
+            if wb is None:
+                wb = CountryData._open_wb()
+            sheet_ = wb.parse(cls.sheetname, index_col = 0)
+            sheet = cls.clean(sheet_)
+            sheet.index = cls.get_index(sheet)
         return sheet
 
     @classmethod
@@ -80,13 +83,14 @@ class Sheet:
         return pandas.Series(index = cls.parameter_names)
 
     @classmethod
-    def get_country_data(cls, country, wb = None, allow_missing = None):
+    def get_country_data(cls, country, alldata = None, wb = None,
+                         allow_missing = None):
         '''
         `allow_missing = None` uses the class default.
         '''
         if allow_missing is None:
             allow_missing = cls.allow_missing
-        sheet = cls.get_all(wb = wb)
+        sheet = cls.get_all(alldata = alldata, wb = wb)
         try:
             data = sheet[country]
         except KeyError:
@@ -103,10 +107,10 @@ class Sheet:
             setattr(country_data, n, v)
 
     @classmethod
-    def get_country_data_and_set_attrs(cls, country_data, wb = None,
-                                       allow_missing = None):
+    def get_country_data_and_set_attrs(cls, country_data, alldata = None,
+                                       wb = None, allow_missing = None):
         country = country_data.country
-        data = cls.get_country_data(country, wb = wb,
+        data = cls.get_country_data(country, alldata = alldata, wb = wb,
                                     allow_missing = allow_missing)
         cls.set_attrs(country_data, data)
 
@@ -118,8 +122,8 @@ class Sheet:
         return sheet.notnull().all(0)
 
     @classmethod
-    def get_country_list(cls, wb = None):
-        sheet = cls.get_all(wb = wb)
+    def get_country_list(cls, alldata = None):
+        sheet = cls.get_all(alldata = alldata)
         hasdata = cls.has_data(sheet)
         return list(sheet.columns[hasdata])
 
@@ -297,8 +301,8 @@ class IncidencePrevalence(Sheet):
         return sheet.notnull().any(0).any(level = 0)
 
     @classmethod
-    def get_country_list(cls, wb = None):
-        sheet = cls.get_all(wb = wb)
+    def get_country_list(cls, alldata = None):
+        sheet = cls.get_all(alldata = alldata)
         hasdata = cls.has_data(sheet)
         countries = sheet.columns.levels[0]
         return list(countries[hasdata])
@@ -339,7 +343,7 @@ class AnnualSheet(Sheet):
         for population.
         '''
         return sheet.notnull().any(0)
-    
+
     @classmethod
     def get_empty(cls):
         return pandas.Series()
@@ -401,18 +405,35 @@ class CountryData:
     '''
     Data from the datasheet for a country.
     '''
-    def __init__(self, country, wb = None, allow_missing = None):
+    def __init__(self, country, alldata = None, allow_missing = None):
         '''
         `allow_missing = None` uses Sheet defaults.
         '''
         self.country = country
 
-        if wb is None:
-            wb = pandas.ExcelFile(datapath)
+        if alldata is None:
+            alldata = self._get_all()
 
         for cls in sheets:
-            cls.get_country_data_and_set_attrs(self, wb = wb,
+            cls.get_country_data_and_set_attrs(self, alldata = alldata,
                                                allow_missing = allow_missing)
+
+    @staticmethod
+    def _open_wb():
+        '''
+        Open the datasheet.
+        '''
+        return pandas.ExcelFile(datapath)
+
+    @classmethod
+    def _get_all(cls):
+        '''
+        For speed, load all the sheets at once.
+        '''
+        with cls._open_wb() as wb:
+            alldata = {cls.__name__: cls.get_all(wb = wb)
+                       for cls in sheets}
+        return alldata
 
     def __repr__(self):
         cls = self.__class__
@@ -457,14 +478,14 @@ class CountryDataShelf(collections.abc.Mapping):
 
     def _build_all(self):
         print('Rebuilding cache of {}.'.format(os.path.relpath(datapath)))
-        with pandas.ExcelFile(datapath) as wb:
-            countries = _get_country_list('all', wb = wb)
-            self._shelf = {country: CountryData(country,
-                                                wb = wb,
-                                                allow_missing = True)
-                           for country in countries}
-            with open(self._shelfpath, 'wb') as fd:
-                pickle.dump(self._shelf, fd, protocol = -1)
+        alldata = CountryData._get_all()
+        countries = _get_country_list('all', alldata = alldata)
+        self._shelf = {country: CountryData(country,
+                                            alldata = alldata,
+                                            allow_missing = True)
+                       for country in countries}
+        with open(self._shelfpath, 'wb') as fd:
+            pickle.dump(self._shelf, fd, protocol = -1)
 
     def _is_current(self):
         mtime_data = os.path.getmtime(datapath)
@@ -495,48 +516,48 @@ def get_country_data(country):
     return _shelf[country]
 
 
-def _get_country_list(sheet = 'all', wb = None):
+def _get_country_list(sheet = 'all', alldata = None):
+    if sheet in ('all', 'any'):
+        if alldata is None:
+            alldata = CountryData._get_all()
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
-        if wb is None:
-            wb = pandas.ExcelFile(datapath)
-        lists = (cls.get_country_list(wb = wb) for cls in sheets
+        lists = (cls.get_country_list(alldata = alldata) for cls in sheets
                  if not cls.allow_missing)
         sets = (set(l) for l in lists)
         intersection = set.intersection(*sets)
         return sorted(intersection)
     elif sheet == 'any':
         # Return countries that are in *any* sheet.
-        if wb is None:
-            wb = pandas.ExcelFile(datapath)
-        lists = (cls.get_country_list(wb = wb) for cls in sheets)
+        lists = (cls.get_country_list(alldata = alldata) for cls in sheets)
         sets = (set(l) for l in lists)
         union = set.union(*sets)
         return sorted(union)
     else:
+        # Use datasheet worksheet named in variable sheet.
         try:
             cls = getattr(sys.modules[__name__], sheet)
-            return cls.get_country_list(wb = wb)
+            return cls.get_country_list(alldata = alldata)
         except AttributeError:
             msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
                    + "Valid sheets are {}.").format(sheet, sheets)
             raise AttributeError(msg)
 
 
-def get_country_list(sheet = 'all', wb = None):
+def get_country_list(sheet = 'all', alldata = None):
     if sheet == 'all':
         return sorted(_shelf.keys())
     else:
-        return _get_country_list(sheet = sheet, wb = wb)
+        return _get_country_list(sheet = sheet, alldata = alldata)
 
 
-def whats_missing(country, wb = None):
-    if wb is None:
-        wb = pandas.ExcelFile(datapath)
+def whats_missing(country, alldata = None):
+    if alldata is None:
+        alldata = CountryData._get_all()
     missing = []
     for cls in sheets:
         if not cls.allow_missing:
-            if country not in cls.get_country_list(wb = wb):
+            if country not in cls.get_country_list(alldata = alldata):
                 missing.append(cls.__name__)
     return missing
