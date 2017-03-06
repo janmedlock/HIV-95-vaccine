@@ -386,15 +386,15 @@ class Mode(_Super):
 
 class GlobalParameters:
     def __init__(self):
-        with pandas.ExcelFile(datasheet.datapath) as wb:
+        with datasheet.CountryData._open_wb() as wb:
             pi = datasheet.IncidencePrevalence.get_country_data('Global',
                                                                 wb = wb)
             pop = datasheet.Population.get_country_data('Global',
                                                         wb = wb)
-            self.prevalence = pi.prevalence
-            self.incidence_per_capita = pi.incidence_per_capita
-            self.population = pop
-            self.drug_coverage = None
+        self.prevalence = pi.prevalence
+        self.incidence_per_capita = pi.incidence_per_capita
+        self.population = pop
+        self.drug_coverage = None
 
 
 def get_parameters(country):
