@@ -74,7 +74,7 @@ etc. mentioned below are covered in this documentation.
   tens of cpu-**days** to run everything.  The data from the runs will
   be in *sim_data/*, under a directory for each country, with a *.pkl*
   file for each target.  **The resulting total data generated for 127
-  countries and 6 targets is around 136GB.**
+  countries and 6 targets is around 147GB.**
 
 We are currently exploring options for a public archive of the
 simulation data we have generated.
