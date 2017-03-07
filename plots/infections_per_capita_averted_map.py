@@ -87,7 +87,7 @@ def plot(infections_per_capita_averted):
                         shrink = 0.8,
                         panchor = False,
                         ticks = ticker.LogLocator(subs = [1, 2.5, 5]),
-                        format = ticker.LogFormatter(labelOnlyBase = False))
+                        format = '%g')
     # Try to work around ugliness from viewer bugs.
     cbar.solids.set_edgecolor('face')
     cbar.solids.drawedges = False
