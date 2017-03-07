@@ -132,6 +132,17 @@ parameter_names = [_parameter_names_map[p]
                    for p in model.parameters.Parameters.get_rv_names()]
 
 
+def get_country_results(country, parameters_type = 'sample'):
+    results = collections.OrderedDict()
+    for target in model.target.all_:
+        try:
+            results[target] = model.results.load(
+                country, target, parameters_type = parameters_type)
+        except FileNotFoundError:
+            results[target] = None
+    return results
+
+
 def get_filebase():
     stack = inspect.stack()
     caller = stack[-1]
