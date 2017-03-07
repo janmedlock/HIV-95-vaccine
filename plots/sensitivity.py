@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Plot correlation between samples and outcomes.
-
-.. todo:: Clean up similarity with prcc.py.
 '''
 
 import os.path
@@ -21,9 +19,8 @@ sys.path.append('..')
 import model
 
 
-def get_outcome_samples(results, country, targets, stat, times):
-    x, y =  (numpy.asarray(getattr(results['/{}/{}'.format(country, t)], stat))
-             for t in targets)
+def get_outcome_samples(results, targets, stat, times):
+    x, y = (getattr(results[target], stat) for target in targets)
     z = x - y
     interp = interpolate.interp1d(common.t, z, axis = -1)
     outcome_samples = interp(times)
@@ -92,13 +89,13 @@ def plot_ranks(X, y, outcome, parameter_names = None, alpha = 0.7,
                                 numpy.abs(ax[1].get_ylim()))))
         for ax_ in (ax[0], ax[1]):
             ax_.autoscale_view('tight')
-    
+
     axes[0, 1].set_xlim(-maxlim, maxlim)
     axes[0, 1].set_ylim(-maxlim, maxlim)
 
     fig.tight_layout()
 
-    sps = axes[0, 0].get_subplotspec() 
+    sps = axes[0, 0].get_subplotspec()
     gs = sps.get_gridspec()
     bottoms, tops, lefts, rights = gs.get_grid_positions(fig)
     if parameter_names is not None:
@@ -163,10 +160,10 @@ def plot_samples(X, y, outcome, parameter_names = None, alpha = 0.7,
 
         for ax_ in (ax[0], ax[1]):
             ax_.autoscale_view('tight')
-    
+
     fig.tight_layout(w_pad = 8)
 
-    sps = axes[0, 0].get_subplotspec() 
+    sps = axes[0, 0].get_subplotspec()
     gs = sps.get_gridspec()
     bottoms, tops, lefts, rights = gs.get_grid_positions(fig)
     if parameter_names is not None:
@@ -180,52 +177,22 @@ def plot_samples(X, y, outcome, parameter_names = None, alpha = 0.7,
     common.savefig(fig, '{}.png'.format(common.get_filebase()))
 
 
-def tornado(X, y, outcome, parameter_names = None, colors = None):
-    n = numpy.shape(X)[-1]
-
-    if parameter_names is None:
-        parameter_names = ['parameter[{}]'.format(i) for i in range(n)]
-
-    rho = stats.prcc(parameter_samples, outcome_samples)
-
-    fig, ax = pyplot.subplots()
-    h = range(n, 0, - 1)
-    ax.barh(h, rho,
-            height = 1, left = 0,
-            align = 'center',
-            color = colors,
-            edgecolor = colors)
-    ax.set_xlabel('PRCC')
-    ax.set_ylim(0.5, n + 0.5)
-    ax.set_yticks(h)
-    ax.set_yticklabels(parameter_names,
-                       horizontalalignment = 'center')
-    ax.yaxis.set_tick_params(pad = 35)
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(n = 2))
-    ax.grid(True, which = 'both')
-    ax.yaxis.grid(False)
-
-    fig.tight_layout()
-
-    common.savefig(fig, '{}_tornado.pdf'.format(common.get_filebase()))
-    common.savefig(fig, '{}_tornado.png'.format(common.get_filebase()))
-
-
 if __name__ == '__main__':
     country = 'Global'
     outcome = 'new_infections'
     baseline = model.target.StatusQuo()
     targets = [baseline, model.target.Vaccine(treatment_target = baseline)]
-    targets = list(map(str, targets))
+    targets = [str(t) for t in targets]
     time = 2035
 
-    parameter_samples = model.samples.load()
+    parameter_samples = model.parameters._get_samples()
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.samples.h5.open_() as results:
-        outcome_samples = get_outcome_samples(results, country, targets,
-                                              outcome, time)
+    results = common.get_country_results(country, targets = targets)
+
+    outcome_samples = get_outcome_samples(results, targets,
+                                          outcome, time)
 
     # Order parameters by abs(prcc).
     rho = stats.prcc(parameter_samples, outcome_samples)
@@ -242,9 +209,5 @@ if __name__ == '__main__':
     plot_ranks(parameter_samples, outcome_samples, outcome,
                parameter_names = parameter_names,
                colors = colors)
-
-    # tornado(parameter_samples, outcome_samples, outcome,
-    #         parameter_names = parameter_names,
-    #         colors = colors)
 
     pyplot.show()

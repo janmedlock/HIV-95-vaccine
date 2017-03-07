@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Calculate PRCCs and make tornado plots.
-
-.. todo:: Clean up similarity with sensitivity.py.
 '''
 
 import os.path
@@ -16,22 +14,16 @@ import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # cwd for Sphinx.
 import common
+import sensitivity
 import stats
 sys.path.append('..')
 import model
 
 
-def get_outcome_samples(results, targets, stat, times):
-    x, y = (getattr(results[target], stat) for target in targets)
-    z = x - y
-    interp = interpolate.interp1d(common.t, z, axis = -1)
-    outcome_samples = interp(times)
-    return outcome_samples
-
-
 def tornado(ax, results, targets, outcome, t, parameter_samples,
             colors, parameter_names = None, errorbars = False):
-    outcome_samples = get_outcome_samples(results, targets, outcome, t)
+    outcome_samples = sensitivity.get_outcome_samples(results, targets,
+                                                      outcome, t)
 
     n = numpy.shape(parameter_samples)[-1]
 
@@ -104,8 +96,8 @@ def tornados():
     results = common.get_country_results(country, targets = targets_flat)
 
     # Order colors by order of prccs for 1st time.
-    outcome_samples = get_outcome_samples(results, targets[0],
-                                          outcome, time)
+    outcome_samples = sensitivity.get_outcome_samples(results, targets[0],
+                                                      outcome, time)
     rho = stats.prcc(parameter_samples, outcome_samples)
     ix = numpy.argsort(numpy.abs(rho))[ : : -1]
     labels = [parameter_names[i] for i in ix]
