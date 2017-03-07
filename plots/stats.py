@@ -2,8 +2,44 @@
 Calculate PRCCs, etc.
 '''
 
+import warnings
+
 import numpy
 import scipy.stats
+
+
+def median(X, axis = 0):
+    '''
+    Handle NaNs when finding median.
+    '''
+    X = numpy.ma.array(X, mask = numpy.isnan(X))
+    return numpy.ma.median(X, axis = axis).filled(numpy.nan)
+
+
+def quantile(X, q, axis = 0):
+    '''
+    Handle NaNs when finding quantiles.
+    '''
+    if not numpy.isscalar(q):
+        q = numpy.asarray(q)
+    # Suppress warnings about NaNs.
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        Y = numpy.percentile(X, 100 * q, axis = axis)
+    isnanX = numpy.all(numpy.isnan(X), axis = axis)
+    isnanY = numpy.isnan(Y)
+    if isnanY.ndim > isnanX.ndim:
+        isnanY = numpy.any(isnanY, axis = 0)
+    assert all(isnanX == isnanY)
+    return Y
+
+
+def confidence_interval(X, level, axis = 0):
+    '''
+    Finding confidence interval using quantiles.
+    '''
+    q = [(1 - level) / 2, (1 + level) / 2]
+    return quantile(X, q, axis = axis)
 
 
 def rankdata(X, axis = 0):
