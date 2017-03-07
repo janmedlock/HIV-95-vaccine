@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 '''
-Make maps of the infections averted at different times.
-
-.. todo:: This uses :func:`model.results.samples.open_` because `alive`
-          is not in :func:`model.results.samples.h5.open_` at the moment.
+Make maps of the infections per capita averted at different times.
 '''
 
 import os.path
@@ -14,6 +11,7 @@ from matplotlib import pyplot
 from matplotlib import ticker
 import numpy
 import pandas
+import stats
 from scipy import integrate
 
 sys.path.append(os.path.dirname(__file__))
@@ -109,33 +107,34 @@ def plot(infections_per_capita_averted):
 
 
 def _get_infections_per_capita(country, target):
-    try:
-        with model.results.samples.open_(country, target) as results:
-            alive = results.alive
-            new_infections = results.new_infections
-    except FileNotFoundError:
-        print('{}, {} failed!'.format(country, target))
-        return None
-    else:
-        person_years = integrate.trapz(alive, common.t)
-        # exposure is number of 20-person-years lived.
-        exposure = person_years / (common.t[-1] - common.t[0])
-        infections_per_capita = new_infections[:, -1] / exposure
-        return numpy.median(infections_per_capita)
+    r = model.results.load(country, target)
+    alive = r.alive
+    new_infections = r.new_infections
+    person_years = integrate.trapz(alive, common.t)
+    # exposure is number of 20-person-years lived.
+    exposure = person_years / (common.t[-1] - common.t[0])
+    infections_per_capita = new_infections[:, -1] / exposure
+    return infections_per_capita
 
 
 def _get_infections_per_capita_averted():
-    countries = model.datasheet.get_country_list()
     infections_per_capita_averted = pandas.DataFrame(
         columns = interventions,
-        index = countries)
-    for country in countries:
+        index = common.all_countries)
+    for country in common.all_countries:
         print(country)
-        x = _get_infections_per_capita(country, baseline)
-        if x is not None:
+        # The median should probably be after the (x - y) arithmetic.
+        try:
+            x = stats.median(_get_infections_per_capita(country, baseline))
+        except FileNotFoundError:
+            pass
+        else:
             for intv in interventions:
-                y = _get_infections_per_capita(country, intv)
-                if y is not None:
+                try:
+                    y = stats.median(_get_infections_per_capita(country, intv))
+                except FileNotFoundError:
+                    pass
+                else:
                     infections_per_capita_averted.loc[country, intv] = x - y
     return infections_per_capita_averted
 
