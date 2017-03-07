@@ -20,20 +20,20 @@ baseline = model.target.StatusQuo()
 targets = [baseline, model.target.Vaccine(treatment_target = baseline)]
 targets = list(map(str, targets))
 
-attrs = ['new_infections', 'infected', 'AIDS']
+stats = ['new_infections', 'infected', 'AIDS']
 
-attr_names = dict(new_infections = 'New HIV Infections',
+stat_names = dict(new_infections = 'Cumulative incidence',
                   infected = 'PLHIV',
-                  AIDS = 'People living with AIDS')
+                  AIDS = 'PLAIDS')
 
 # Time points for comparison.
 times = [2025, 2035]
 
-stats = ('median', 'CI0', 'CI1')
+summaries = ('median', 'CI0', 'CI1')
 alpha = 0.5
 
 
-def _get_stats(x, alpha = 0.05):
+def _get_summaries(x, alpha = 0.05):
     y = numpy.asarray(x).copy()
 
     # Set columns with NaNs to 0.
@@ -56,36 +56,30 @@ def _get_stats(x, alpha = 0.05):
 
 
 def _main():
-    tuples = []
-    for c in countries:
-        for t in targets:
-            tuples.append((c, t))
-    ix = pandas.MultiIndex.from_tuples(tuples)
-
-    tuples = []
-    for t in times:
-        for a in attrs:
-            for s in stats:
-                tuples.append((t, attr_names[a], s))
-    cix = pandas.MultiIndex.from_tuples(tuples)
-
-    df = pandas.DataFrame(index = ix, columns = cix)
-    with model.results.samples.h5.open_() as results:
-        for country in countries:
-            for attr in attrs:
-                for target in targets:
-                    x = getattr(results[country][target], attr)
-                    avg, CI = _get_stats(x, alpha = alpha)
-
-                    for (v, s) in zip((avg, CI[0], CI[1]), stats):
-                        z = numpy.interp(times, common.t, v)
-                        for (i, t_) in enumerate(times):
-                            df.loc[(country, target),
-                                   (t_, attr_names[attr], s)] = z[i]
+    ix = pandas.MultiIndex.from_product((countries, targets))
+    cix = pandas.MultiIndex.from_product((times,
+                                          [stat_names[s] for s in stats],
+                                          summaries))
+    df = pandas.DataFrame(index = ix.sort_values(),
+                          columns = cix.sort_values())
+    for country in countries:
+        print(country)
+        for target in targets:
+            results = model.results.load(country, target)
+            for stat in stats:
+                x = getattr(results, stat)
+                avg, CI = _get_summaries(x, alpha = alpha)
+                for (v, s) in zip((avg, CI[0], CI[1]), summaries):
+                    z = numpy.interp(times, common.t, v)
+                    df.loc[(country, target),
+                           (slice(None), stat_names[stat], s)] = z
 
     # Round.
     # df = df.round()
     df = df.applymap(numpy.round)
+
+    # Reorder.
+    df = df.loc[ix].loc[:, cix]
 
     filename = '{}.csv'.format(common.get_filebase())
     df.to_csv(filename)
