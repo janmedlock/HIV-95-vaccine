@@ -152,42 +152,6 @@ def get_filebase():
     return filebase
 
 
-def getstats(x, alpha = 0.05):
-    y = numpy.asarray(x).copy()
-
-    # Set columns with NaNs to 0.
-    ix = numpy.any(numpy.isnan(y), axis = 0)
-    y[..., ix] = 0
-
-    avg = numpy.median(y, axis = 0)
-    CI = numpy.percentile(y,
-                          [100 * alpha / 2, 100 * (1 - alpha / 2)],
-                          axis = 0)
-    # avg = numpy.mean(y, axis = 0)
-    # std = numpy.std(y, axis = 0, ddof = 1)
-    # CI = numpy.vstack((avg - std, avg + std))
-
-    # Set the columns where y has NaNs to NaN.
-    avg[..., ix] = numpy.nan
-    CI[..., ix] = numpy.nan
-
-    return (avg, CI)
-
-
-def getpercentiles(x):
-    p = numpy.linspace(0, 100, 101)
-    # Plot the points near 50% last, so they show up clearest.
-    # This gives [0, 100, 1, 99, 2, 98, ..., 48, 52, 49, 51, 50].
-    M = len(p) // 2
-    p_ = numpy.column_stack((p[ : M], p[-1 : -(M + 1) : -1]))
-    p_ = p_.flatten()
-    if len(p) % 2 == 1:
-        p_ = numpy.hstack((p_, p[M]))
-    q = numpy.percentile(x, p_, axis = 0)
-    C = numpy.outer(p_, numpy.ones(numpy.shape(x)[1]))
-    return (q, C)
-
-
 class PercentFormatter(ticker.ScalarFormatter):
     def _set_format(self, vmin, vmax):
         super()._set_format(vmin, vmax)
@@ -229,10 +193,6 @@ def cmap_reflected(cmap_base):
         return f
     cdict = {k: cfunc(k) for k in ('red', 'green', 'blue')}
     return colors.LinearSegmentedColormap(cmap_base + '_reflected', cdict)
-
-
-_cmap_percentile_base = 'cubehelix'
-cmap_percentile = cmap_reflected(_cmap_percentile_base)
 
 
 def cmap_scaled(cmap_base, vmin = 0, vmax = 1, N = 256):
@@ -355,8 +315,7 @@ class DataGetter(dict):
 
     @staticmethod
     def viral_suppression_getter(results):
-        return (numpy.asarray(results.viral_suppression)
-                / numpy.asarray(results.infected))
+        return (results.viral_suppression / results.infected)
 
 data_getter = DataGetter()
 
