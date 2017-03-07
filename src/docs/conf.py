@@ -308,11 +308,10 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
     'ipython': ('https://ipython.org/', None),
     'matplotlib': ('http://matplotlib.org/', None),
-    'seaborn': ('https://web.stanford.edu/~mwaskom/software/seaborn/', None),
+    'seaborn': ('http://seaborn.pydata.org/', None),
     'joblib': ('https://pythonhosted.org/joblib/', None),
     'cartopy': ('http://scitools.org.uk/cartopy/docs/latest/', None),
     'geopy': ('https://geopy.readthedocs.io/en/latest/', None),
-    'tables': ('http://www.pytables.org/', None),
 }
 
 
