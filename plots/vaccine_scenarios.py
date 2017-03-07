@@ -71,7 +71,7 @@ def _get_kwds(label):
                     linestyle = 'solid')
 
 
-def _plot_cell(ax, country, treatment_target, stat,
+def _plot_cell(ax, results, country, targets, stat, treatment_target,
                country_label = None,
                country_short_name = True,
                stat_label = 'ylabel',
@@ -81,13 +81,10 @@ def _plot_cell(ax, country, treatment_target, stat,
     '''
     info = common.get_stat_info(stat)
 
-    targets = _get_targets(treatment_target)
-
     data = []
     for target in targets:
-        try:
-            r = model.results.load(country, target, parameters_type = 'mode')
-        except FileNotFoundError:
+        r = results[target]
+        if r is None:
             v = None
         else:
             v = getattr(r, stat)
@@ -98,11 +95,13 @@ def _plot_cell(ax, country, treatment_target, stat,
         info.autounits(data)
 
     # Plot simulation data.
-    for (v, target) in zip(data, targets):
-        if v is None:
+    for target in targets:
+        r = results[target]
+        if r is None:
             # Pop a style.
             next(ax._get_lines.prop_cycler)
         else:
+            v = getattr(r, stat)
             label = get_target_label(treatment_target, target)
             ax.plot(common.t, v / info.scale,
                     label = label,
@@ -113,8 +112,7 @@ def _plot_cell(ax, country, treatment_target, stat,
                        space_to_newline = space_to_newline)
 
 
-def _make_legend(fig, treatment_target):
-    targets = _get_targets(treatment_target)
+def _make_legend(fig, targets, treatment_target):
     colors = seaborn.color_palette()
     handles = []
     labels = []
@@ -143,14 +141,19 @@ def plot_one(country, treatment_target = model.target.StatusQuo()):
         fig, axes = pyplot.subplots(nrows, ncols,
                                     figsize = (8.5, 11),
                                     sharex = 'all', sharey = 'none')
+
+        targets = _get_targets(treatment_target)
+        results = common.get_country_results(country,
+                                             targets = targets,
+                                             parameters_type = 'mode')
         for (row, stat) in enumerate(common.effectiveness_measures):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
-            _plot_cell(ax, country, treatment_target, stat,
+            _plot_cell(ax, results, country, targets, stat, treatment_target,
                        country_label = country_label,
                        country_short_name = False)
 
-        _make_legend(fig, treatment_target)
+        _make_legend(fig, targets, treatment_target)
 
     fig.tight_layout(rect = (0, 0.055, 1, 1))
 
@@ -168,6 +171,7 @@ def plot_all(treatment_target = model.target.StatusQuo()):
 
 
 def plot_some(treatment_target = model.target.StatusQuo()):
+    targets = _get_targets(treatment_target)
     with seaborn.color_palette(colors):
         ncols = len(common.countries_to_plot)
         nrows = len(common.effectiveness_measures)
@@ -176,13 +180,17 @@ def plot_some(treatment_target = model.target.StatusQuo()):
                                     figsize = (common.width_1_5column, 4),
                                     sharex = 'all', sharey = 'none')
         for (col, country) in enumerate(common.countries_to_plot):
+            results = common.get_country_results(country,
+                                                 targets = targets,
+                                                 parameters_type = 'mode')
             for (row, stat) in enumerate(common.effectiveness_measures):
                 ax = axes[row, col]
 
                 stat_label = 'ylabel' if ax.is_first_col() else None
                 country_label = 'title' if ax.is_first_row() else None
 
-                _plot_cell(ax, country, treatment_target, stat,
+                _plot_cell(ax, results, country, targets,
+                           stat, treatment_target,
                            country_label = country_label,
                            stat_label = stat_label,
                            space_to_newline = True)
@@ -198,7 +206,7 @@ def plot_some(treatment_target = model.target.StatusQuo()):
                     elif stat == 'dead':
                         ax.yaxis.labelpad -= 5
 
-        _make_legend(fig, treatment_target)
+        _make_legend(fig, targets, treatment_target)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
                      rect = (0, 0.06, 1, 1))
@@ -215,3 +223,5 @@ if __name__ == '__main__':
     pyplot.show()
 
     # plot_all()
+
+
