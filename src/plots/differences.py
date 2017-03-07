@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Plot differences for samples from uncertainty analysis.
-
-.. todo:: Clean up.
 '''
 
 import operator
@@ -33,54 +31,6 @@ _cmap_base = 'cubehelix'
 cmap = common.cmap_reflected(_cmap_base)
 
 
-def _get_plot_info(results, country, targs, stat):
-    scale = None
-    percent = False
-    units = ''
-
-    if stat == 'infected':
-        label = 'PLHIV'
-        scale = 1e6
-    elif stat == 'prevalence':
-        label = 'Prevelance'
-        percent = True
-    elif stat == 'incidence_per_capita':
-        label = 'Incidence\n(per M per y)'
-        scale = 1e-6
-        units = ''
-    elif stat == 'AIDS':
-        label = 'AIDS'
-    elif stat == 'dead':
-        label = 'HIV-Related\nDeaths'
-    else:
-        raise ValueError("Unknown stat '{}'".format(stat))
-
-    v_base = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[0])],
-                                   stat))
-    v_intv = numpy.asarray(getattr(results['/{}/{}'.format(country, targs[1])],
-                                   stat))
-
-    data = v_base - v_intv
-    # data = (v_base - v_intv) / v_base
-
-    if percent:
-        scale = 1 / 100
-        units = '%%'
-    elif scale is None:
-        vmax = numpy.max(data)
-        if vmax > 1e6:
-            scale = 1e6
-            units = 'M'
-        elif vmax > 1e3:
-            scale = 1e3
-            units = 'k'
-        else:
-            scale = 1
-            units = ''
-
-    return (data, label, scale, units)
-
-
 def _get_percentiles(x):
     p = numpy.linspace(0, 100, 101)
     # Plot the points near 50% last, so they show up clearest.
@@ -95,52 +45,47 @@ def _get_percentiles(x):
     return (q, C)
 
 
-def _plot_cell(ax, results, country, targs, stat,
-               country_label = None,
-               attr_label = None):
-    '''
-    .. todo:: Do a better job with making the lower ylim 0.
-    '''
-    data, label, scale, unit = _get_plot_info(results, country, targs, stat)
+def _plot_cell(ax, results, country, targets, stat,
+               country_label = None, stat_label = None,
+               space_to_newline = False):
+    info = common.get_stat_info(stat)
 
-    # Drop infinite data.
-    ix = numpy.all(numpy.isfinite(data), axis = 0)
-    q, C = _get_percentiles(data[:, ix])
-    col = ax.pcolormesh(common.t[ix], q / scale, C,
-                        cmap = cmap)
-                        # shading = 'gouraud')
-    if numpy.all(q > 0):
-        ax.set_ylim(bottom = 0)
+    if ((results[targets[0]] is not None)
+        and (results[targets[1]] is not None)):
+        v_base = getattr(results[targets[0]], stat)
+        v_intv = getattr(results[targets[1]], stat)
+        data = v_base - v_intv
+        # data = (v_base - v_intv) / v_base
+        # Drop infinite data.
+        ix = numpy.all(numpy.isfinite(data), axis = 0)
+        q, C = _get_percentiles(data[:, ix])
 
-    tick_interval = 10
-    a = int(numpy.floor(common.t[0]))
-    b = int(numpy.ceil(common.t[-1]))
-    ticks = range(a, b, tick_interval)
-    if ((b - a) % tick_interval) == 0:
-        ticks = list(ticks) + [b]
-    ax.set_xticks(ticks)
-    ax.set_xlim(a, b)
+        if info.scale is None:
+            info.autoscale(data)
+        if info.units is None:
+            info.autounits(data)
 
-    ax.grid(True, which = 'both', axis = 'both')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 5))
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset = False))
-    # One minor tick between major ticks.
-    ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    ax.yaxis.set_major_formatter(common.UnitsFormatter(unit))
-    ax.grid(True, which = 'both', axis = 'both')
+        col = ax.pcolormesh(common.t[ix], q / info.scale, C,
+                            cmap = cmap)
+                            # shading = 'gouraud')
 
-    if country_label == 'ylabel':
-        ax.set_ylabel(country, size = 'medium')
-    elif country_label == 'title':
-        ax.set_title(country, size = 'medium')
+        # TODO: Do a better job with making the lower ylim 0.
+        if numpy.all(q > 0):
+            ax.set_ylim(bottom = 0)
 
-    if attr_label == 'ylabel':
-        ax.set_ylabel(label, size = 'medium')
-    elif attr_label == 'title':
-        ax.set_title(label, size = 'medium')
-    return col
+        tick_interval = 10
+        a = int(numpy.floor(common.t[0]))
+        b = int(numpy.ceil(common.t[-1]))
+        ticks = range(a, b, tick_interval)
+        if ((b - a) % tick_interval) == 0:
+            ticks = list(ticks) + [b]
+        ax.set_xticks(ticks)
+        ax.set_xlim(a, b)
+
+        common.format_axes(ax, country, info, country_label, stat_label,
+                           space_to_newline = space_to_newline)
+
+        return col
 
 
 def plot_selected():
@@ -155,25 +100,18 @@ def plot_selected():
         gs = gridspec.GridSpec(nrows, ncols,
                                height_ratios = ((1, ) * (nrows - 1)
                                                 + (legend_height_ratio, )))
-        with model.results.samples.h5.open_() as results:
-            for (col, country) in enumerate(common.countries_to_plot):
-                print('\t', country)
-                attr_label = 'ylabel' if (col == 0) else None
-                for (row, attr) in enumerate(common.effectiveness_measures):
-                    print('\t\t', attr)
-                    country_label = 'title' if (row == 0) else None
-                    ax = fig.add_subplot(gs[row, col])
-                    _plot_cell(ax,
-                               results,
-                               country,
-                               targs,
-                               attr,
-                               country_label = country_label,
-                               attr_label = attr_label)
-                    if row != nrows - 2:
-                        for l in ax.get_xticklabels():
-                            l.set_visible(False)
-                        ax.xaxis.offsetText.set_visible(False)
+        for (col, country) in enumerate(common.countries_to_plot):
+            print('\t', country)
+            results = common.get_country_results(country, targs)
+            for (row, stat) in enumerate(common.effectiveness_measures):
+                ax = fig.add_subplot(gs[row, col])
+
+                stat_label = 'ylabel' if ax.is_first_col() else None
+                country_label = 'title' if ax.is_first_row() else None
+
+                _plot_cell(ax, results, country, targs, stat,
+                           country_label = country_label,
+                           stat_label = stat_label)
 
         ax = fig.add_subplot(gs[-1, :])
         colorbar.ColorbarBase(ax,
@@ -205,38 +143,27 @@ def plot_all():
             gs = gridspec.GridSpec(nrows, ncols,
                                    height_ratios = ((1, ) * (nrows - 1)
                                                     + (legend_height_ratio, )))
-            with model.results.samples.h5.open_() as results:
-                for (i, country) in enumerate(common.countries_to_plot):
-                    print('\t', country)
-                    fig = pyplot.figure(figsize = (8.5, 11))
-                    try:
-                        for (row, attr) in enumerate(
-                                common.effectiveness_measures):
-                            print('\t\t', attr)
-                            country_label = 'title' if (row == 0) else None
-                            ax = fig.add_subplot(gs[row, 0])
-                            _plot_cell(ax,
-                                       results,
-                                       country,
-                                       targs,
-                                       attr,
-                                       country_label = country_label,
-                                       attr_label = 'ylabel')
-                            if row != nrows - 2:
-                                for l in ax.get_xticklabels():
-                                    l.set_visible(False)
-                                ax.xaxis.offsetText.set_visible(False)
-                    except tables.NoSuchNodeError:
-                        pass
-                    else:
-                        fig.tight_layout()
-                        pdf.savefig(fig)
-                    finally:
-                        pyplot.close(fig)
+            results = common.get_country_results(country, targs)
+            for country in common.countries_to_plot:
+                print('\t', country)
+                fig = pyplot.figure(figsize = (8.5, 11))
+                for (row, stat) in enumerate(common.effectiveness_measures):
+                    ax = fig.add_subplot(gs[row, 0])
+
+                    stat_label = 'ylabel' if ax.is_first_col() else None
+                    country_label = 'title' if ax.is_first_row() else None
+
+                    _plot_cell(ax, results, country, targs, stat,
+                               country_label = country_label,
+                               stat_label = stat_label,
+                               space_to_newline = True)
+                fig.tight_layout()
+                pdf.savefig(fig)
+                pyplot.close(fig)
 
 
 if __name__ == '__main__':
     plot_selected()
     # plot_all()
 
-    # pyplot.show()
+    pyplot.show()
