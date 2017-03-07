@@ -125,7 +125,6 @@ def _get_infections_per_capita_averted():
         index = common.all_countries)
     for country in common.all_countries:
         print(country)
-        # The median should probably be after the (x - y) arithmetic.
         try:
             x = stats.median(_get_infections_per_capita(country, baseline))
         except FileNotFoundError:
