@@ -35,18 +35,15 @@ template = r'''
 
 def plot_all(plotevery = 10, **kwargs):
     path = common.get_filebase()
-    with model.results.samples.stats.open_() as results:
-        for region_or_country in common.all_regions_and_countries:
-            print(region_or_country)
-            fig = effectiveness._plot_one(results,
-                                          region_or_country,
-                                          plotevery = plotevery,
-                                          **kwargs)
-            filebase = os.path.join(path, region_or_country.replace(' ', '_'))
-            filename = '{}.pgf'.format(filebase)
-            common.savefig(fig, filename,
-                           title = '{} effectiveness'.format(region_of_country))
-            pyplot.close(fig)
+    for region_or_country in common.all_regions_and_countries:
+        print(region_or_country)
+        fig = effectiveness.plot_one(region_or_country,
+                                     plotevery = plotevery,
+                                     **kwargs)
+        filebase = os.path.join(path, region_or_country.replace(' ', '_'))
+        filename = '{}.pgf'.format(filebase)
+        common.savefig(fig, filename)
+        pyplot.close(fig)
 
 
 def combine(prefix = '../src/plots'):
