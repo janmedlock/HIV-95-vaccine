@@ -257,7 +257,7 @@ class StatInfoEntry:
 
     def autoscale(self, data):
         if len(data) > 0:
-            vmax = numpy.max(data)
+            vmax = numpy.nanmax(data)
             if vmax > 1e6:
                 self.scale = 1e6
                 self.units = 'M'
