@@ -21,19 +21,17 @@ sys.path.append('..')
 import model
 
 
-def get_outcome_samples(results, country, targets, stat, times):
-    x, y =  (numpy.asarray(getattr(results[country][str(target)], stat))
-             for target in targets)
+def get_outcome_samples(results, targets, stat, times):
+    x, y = (getattr(results[target], stat) for target in targets)
     z = x - y
     interp = interpolate.interp1d(common.t, z, axis = -1)
     outcome_samples = interp(times)
     return outcome_samples
 
 
-def tornado(ax, results, country, targets, outcome, t, parameter_samples,
+def tornado(ax, results, targets, outcome, t, parameter_samples,
             colors, parameter_names = None, errorbars = False):
-    outcome_samples = get_outcome_samples(results, country, targets,
-                                          outcome, t)
+    outcome_samples = get_outcome_samples(results, targets, outcome, t)
 
     n = numpy.shape(parameter_samples)[-1]
 
@@ -88,51 +86,55 @@ def tornados():
         [model.target.StatusQuo(),
          model.target.UNAIDS95()],
         [model.target.StatusQuo(),
-         model.target.Vaccine(treatment_targets = model.target.StatusQuo())]]
-    titles = ['95–95–95', 'Vaccine']
+         model.target.Vaccine(treatment_target = model.target.StatusQuo())]]
     targets = [[str(x) for x in t] for t in targets]
+    titles = ['95–95–95', 'Vaccine']
     time = 2035
 
     figsize = (8.5 * 0.7, 6.5)
     palette = 'Dark2'
 
-    parameter_samples = model.samples.load()
+    parameter_samples = model.parameters._get_samples()
     # Get fancy names.
     parameter_names = common.parameter_names
 
-    with model.results.samples.h5.open_() as results:
-        # Order colors by order of prccs for 1st time.
-        outcome_samples = get_outcome_samples(results, country, targets[0],
-                                              outcome, time)
-        rho = stats.prcc(parameter_samples, outcome_samples)
-        ix = numpy.argsort(numpy.abs(rho))[ : : -1]
-        labels = [parameter_names[i] for i in ix]
-        colors_ = seaborn.color_palette(palette, len(parameter_names))
-        colors = {l: c for (l, c) in zip(labels, colors_)}
+    targets_flat = set(targets[0])
+    for t in targets[1 : ]:
+        targets_flat.update(t)
+    results = common.get_country_results(country, targets = targets_flat)
 
-        nrows = 1
-        ncols = len(targets)
-        with seaborn.axes_style('whitegrid'):
-            fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = figsize,
-                                        sharex = 'all')
+    # Order colors by order of prccs for 1st time.
+    outcome_samples = get_outcome_samples(results, targets[0],
+                                          outcome, time)
+    rho = stats.prcc(parameter_samples, outcome_samples)
+    ix = numpy.argsort(numpy.abs(rho))[ : : -1]
+    labels = [parameter_names[i] for i in ix]
+    colors_ = seaborn.color_palette(palette, len(parameter_names))
+    colors = {l: c for (l, c) in zip(labels, colors_)}
 
-            if isinstance(axes, pyplot.Axes):
-                axes = [axes]
+    nrows = 1
+    ncols = len(targets)
+    with seaborn.axes_style('whitegrid'):
+        fig, axes = pyplot.subplots(nrows, ncols,
+                                    figsize = figsize,
+                                    sharex = 'all')
 
-            for (ax, targets_, title) in zip(axes, targets, titles):
-                seaborn.despine(ax = ax, top = True, bottom = True)
-                ax.tick_params(labelsize = pyplot.rcParams['font.size'])
-                tornado(ax, results, country, targets_, outcome, time,
-                        parameter_samples, colors,
-                        parameter_names = parameter_names)
-                ax.set_xlabel('PRCC')
-                # Make x-axis limits symmetric.
-                # xmin, xmax = ax.get_xlim()
-                # xabs = max(abs(xmin), abs(xmax))
-                xabs = 1
-                ax.set_xlim(- xabs, xabs)
-                ax.set_title(title)
+        if isinstance(axes, pyplot.Axes):
+            axes = [axes]
+
+        for (ax, targets_, title) in zip(axes, targets, titles):
+            seaborn.despine(ax = ax, top = True, bottom = True)
+            ax.tick_params(labelsize = pyplot.rcParams['font.size'])
+            tornado(ax, results, targets_, outcome, time,
+                    parameter_samples, colors,
+                    parameter_names = parameter_names)
+            ax.set_xlabel('PRCC')
+            # Make x-axis limits symmetric.
+            # xmin, xmax = ax.get_xlim()
+            # xabs = max(abs(xmin), abs(xmax))
+            xabs = 1
+            ax.set_xlim(- xabs, xabs)
+            ax.set_title(title)
 
     fig.tight_layout(h_pad = 0, w_pad = 1)
 
