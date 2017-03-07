@@ -16,6 +16,7 @@ import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
+import stats
 sys.path.append('..')
 import model
 
@@ -26,52 +27,48 @@ regions = model.regions.all_
 if 'Global' in regions:
     regions.remove('Global')
 
-targets = model.target.all_
-
 region_labels = {
     'Global': 'Global',
-    'Asia Pacific': 'Asia\n& The\nPacific',
+    'Asia and The Pacific': 'Asia\n& The\nPacific',
     'Caribbean': 'The\nCarribean',
-    'East and Southern Africa': 'Eastern &\nSouthern\nAfrica',
+    'Eastern and Southern Africa': 'Eastern &\nSouthern\nAfrica',
     'Eastern Europe and Central Asia': 'Eastern\nEurope &\nCentral Asia',
     'Latin America': 'Latin\nAmerica',
     'Middle East and North Africa': 'Middle\nEast &\nNorth Africa',
     'North America': 'North\nAmerica',
-    'West and Central Africa': 'West &\nCentral\nAfrica',
-    'Western Europe': 'Western &\nCentral\nEurope'
+    'Western and Central Africa': 'Western &\nCentral\nAfrica',
+    'Western and Central Europe': 'Western &\nCentral\nEurope'
 }
 
 
-def _plot_stat(ax, results, regions, stat, confidence_level, **kwargs):
-    CIkey = 'CI{:g}'.format(100 * confidence_level)
-
+def _plot_stat(ax, results, regions, targets, stat, confidence_level,
+               **kwargs):
     info = common.get_stat_info(stat)
 
     idx = ['median', 'CIlower', 'CIupper']
     data = pandas.Panel(items = regions,
-                        major_axis = targets,
+                        major_axis = [str(t) for t in targets],
                         minor_axis = idx,
                         dtype = float)
     for region, target in itertools.product(regions, targets):
-        try:
-            v = results[region][target][stat]
-        except tables.NoSuchNodeError:
-            pass
-        else:
+        r = results[region][target]
+        if r is not None:
+            v = getattr(r, stat)
             # At the end time.
-            data.loc[region, target, 'median'] = v['median'][..., -1]
-            data.loc[region, target, ['CIlower', 'CIupper']] = v[CIkey][..., -1]
+            data.loc[region, str(target), 'median'] = stats.median(v[:, -1])
+            data.loc[region, str(target), ['CIlower', 'CIupper']] \
+                = stats.confidence_interval(v[:, -1], confidence_level)
 
     if info.scale is None:
-        info.autoscale(data.max().max())
+        info.autoscale(data.max().max().values)
 
     colors = seaborn.color_palette()
 
     pad = 0.2
     width = (1 - pad) / len(targets)
     for (i, target) in enumerate(targets):
-        median = data.loc[:, target, 'median'].values
-        CI = data.loc[:, target, ['CIlower', 'CIupper']].values
+        median = data.loc[:, str(target), 'median'].values
+        CI = data.loc[:, str(target), ['CIlower', 'CIupper']].values
         left = numpy.arange(len(regions)) + i * width + pad / 2
         height = median / info.scale
         yerr = numpy.row_stack((median - CI[0], CI[1] - median)) / info.scale
@@ -102,7 +99,7 @@ def _plot_stat(ax, results, regions, stat, confidence_level, **kwargs):
                   labelpad = 5)
 
 
-def _make_legend(fig):
+def _make_legend(fig, targets):
     colors = seaborn.color_palette()
     handles = []
     labels = []
@@ -116,40 +113,39 @@ def _make_legend(fig):
 
 
 def plot(confidence_level = 0.5, **kwargs):
-    global targets
-    targets = [str(t) for t in targets]
+    targets = model.target.all_
 
-    with model.results.samples.stats.open_() as results:
-        # Sort regions by first target, first stat.
-        data = pandas.Series(index = regions,
-                             dtype = float)
-        for region in regions:
-            try:
-                v = results[region][targets[0]][effectiveness_measures[0]]
-            except tables.NoSuchNodeError:
-                pass
-            else:
-                # At the end time.
-                data[region] = v['median'][..., -1]
-        regions_sorted = data.sort_values(ascending = False).index
+    results = {region: common.get_country_results(region, targets = targets)
+               for region in regions}
 
-        nrows = len(effectiveness_measures)
-        ncols = 1
-        with seaborn.color_palette(common.colors_paired):
-            with seaborn.axes_style('darkgrid'):
-                fig, axes = pyplot.subplots(nrows, ncols,
-                                            figsize = (common.width_1_5column,
-                                                       4),
-                                            sharex = 'col', sharey = 'none')
-                for (ax, stat) in zip(axes, effectiveness_measures):
-                    _plot_stat(ax, results, regions_sorted, stat,
-                               confidence_level, **kwargs)
-                    ax.tick_params(axis = 'x', pad = 11)
-                    labels = ax.get_xticklabels()
-                    ax.set_xticklabels(labels, verticalalignment = 'center')
+    # Sort regions by first target, first stat.
+    data = pandas.Series(index = regions,
+                         dtype = float)
+    for region in regions:
+        r = results[region][targets[0]]
+        if r is not None:
+            v = getattr(r, effectiveness_measures[0])
+            # At the end time.
+            data[region] = stats.median(v[:, -1])
+    regions_sorted = data.sort_values(ascending = False).index
 
-                    seaborn.despine(ax = ax, bottom = True, left = True)
-                _make_legend(fig)
+    nrows = len(effectiveness_measures)
+    ncols = 1
+    with seaborn.color_palette(common.colors_paired):
+        with seaborn.axes_style('darkgrid'):
+            fig, axes = pyplot.subplots(nrows, ncols,
+                                        figsize = (common.width_1_5column,
+                                                   4),
+                                        sharex = 'col', sharey = 'none')
+            for (ax, stat) in zip(axes, effectiveness_measures):
+                _plot_stat(ax, results, regions_sorted, targets, stat,
+                           confidence_level, **kwargs)
+                ax.tick_params(axis = 'x', pad = 11)
+                labels = ax.get_xticklabels()
+                ax.set_xticklabels(labels, verticalalignment = 'center')
+
+                seaborn.despine(ax = ax, bottom = True, left = True)
+            _make_legend(fig, targets)
 
     fig.tight_layout(h_pad = 1, w_pad = 0,
                      rect = (0, 0.06, 1, 1))
