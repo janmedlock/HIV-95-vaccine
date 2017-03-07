@@ -29,6 +29,10 @@ targets = [model.target.all_[i : i + 2]
            for i in range(0, len(model.target.all_), 2)]
 
 
+_cmap_base = 'cubehelix'
+cmap = common.cmap_reflected(_cmap_percentile_base)
+
+
 def _get_plot_info(results, country, targs, stat):
     scale = None
     percent = False
@@ -77,6 +81,20 @@ def _get_plot_info(results, country, targs, stat):
     return (data, label, scale, units)
 
 
+def _get_percentiles(x):
+    p = numpy.linspace(0, 100, 101)
+    # Plot the points near 50% last, so they show up clearest.
+    # This gives [0, 100, 1, 99, 2, 98, ..., 48, 52, 49, 51, 50].
+    M = len(p) // 2
+    p_ = numpy.column_stack((p[ : M], p[-1 : -(M + 1) : -1]))
+    p_ = p_.flatten()
+    if len(p) % 2 == 1:
+        p_ = numpy.hstack((p_, p[M]))
+    q = numpy.percentile(x, p_, axis = 0)
+    C = numpy.outer(p_, numpy.ones(numpy.shape(x)[1]))
+    return (q, C)
+
+
 def _plot_cell(ax, results, country, targs, stat,
                country_label = None,
                attr_label = None):
@@ -87,9 +105,9 @@ def _plot_cell(ax, results, country, targs, stat,
 
     # Drop infinite data.
     ix = numpy.all(numpy.isfinite(data), axis = 0)
-    q, C = common.getpercentiles(data[:, ix])
+    q, C = _get_percentiles(data[:, ix])
     col = ax.pcolormesh(common.t[ix], q / scale, C,
-                        cmap = common.cmap_percentile)
+                        cmap = cmap)
                         # shading = 'gouraud')
     if numpy.all(q > 0):
         ax.set_ylim(bottom = 0)
@@ -159,7 +177,7 @@ def plot_selected():
 
         ax = fig.add_subplot(gs[-1, :])
         colorbar.ColorbarBase(ax,
-                              cmap = common.cmap_percentile,
+                              cmap = cmap,
                               norm = colors.Normalize(vmin = 0, vmax = 100),
                               orientation = 'horizontal',
                               label = 'Percentile',

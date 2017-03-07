@@ -33,6 +33,28 @@ stats = ('median', 'CI0', 'CI1')
 alpha = 0.5
 
 
+def _get_stats(x, alpha = 0.05):
+    y = numpy.asarray(x).copy()
+
+    # Set columns with NaNs to 0.
+    ix = numpy.any(numpy.isnan(y), axis = 0)
+    y[..., ix] = 0
+
+    avg = numpy.median(y, axis = 0)
+    CI = numpy.percentile(y,
+                          [100 * alpha / 2, 100 * (1 - alpha / 2)],
+                          axis = 0)
+    # avg = numpy.mean(y, axis = 0)
+    # std = numpy.std(y, axis = 0, ddof = 1)
+    # CI = numpy.vstack((avg - std, avg + std))
+
+    # Set the columns where y has NaNs to NaN.
+    avg[..., ix] = numpy.nan
+    CI[..., ix] = numpy.nan
+
+    return (avg, CI)
+
+
 def _main():
     tuples = []
     for c in countries:
@@ -53,7 +75,7 @@ def _main():
             for attr in attrs:
                 for target in targets:
                     x = getattr(results[country][target], attr)
-                    avg, CI = common.getstats(x, alpha = alpha)
+                    avg, CI = _get_stats(x, alpha = alpha)
 
                     for (v, s) in zip((avg, CI[0], CI[1]), stats):
                         z = numpy.interp(times, common.t, v)
