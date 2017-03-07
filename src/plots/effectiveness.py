@@ -15,6 +15,7 @@ import seaborn
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
+import stats
 sys.path.append('..')
 import model
 
@@ -41,43 +42,34 @@ def _plot_cell(ax, results, country, targets, stat,
     if colors is None:
         colors = seaborn.color_palette()
 
-    CIkey = 'CI{:g}'.format(100 * confidence_level)
-    CIBkey = 'CI{:g}'.format(100 * ci_bar)
-
     info = common.get_stat_info(stat)
 
-    # Allow scaling across rows in _plot_one().
+    # Allow scaling across rows in plot_one().
     if scale is not None:
         info.scale = scale
     if units is not None:
         info.units = units
     data = []
     for target in targets:
-        try:
-            v = results[country][str(target)][stat]
-        except tables.NoSuchNodeError:
-            pass
-        else:
+        if results[target] is not None:
+            v = getattr(results[target], stat)
             # Store the largest one.
             if ci_bar > 0:
-                data.append(v[CIBkey])
+                data.append(stats.confidence_interval(v, ci_bar))
             elif confidence_level > 0:
-                data.append(v[CIkey])
+                data.append(stats.confidence_interval(v, confidence_level))
             else:
-                data.append(v['median'])
+                data.append(stats.median(v))
     if info.scale is None:
         info.autoscale(data)
     if info.units is None:
         info.autounits(data)
 
     for (i, target) in enumerate(targets):
-        try:
-            v = results[country][str(target)][stat]
-        except tables.NoSuchNodeError:
-            pass
-        else:
+        if results[target] is not None:
+            v = getattr(results[target], stat)
             t = common.t[ : : plotevery]
-            y = numpy.asarray(v['median'])[ : : plotevery] / info.scale
+            y = stats.median(v)[ : : plotevery] / info.scale
             l = ax.plot(t, y,
                         label = common.get_target_label(target),
                         color = colors[i],
@@ -85,7 +77,7 @@ def _plot_cell(ax, results, country, targets, stat,
                         zorder = 2)
 
             if confidence_level > 0:
-                CI = v[CIkey]
+                CI = stats.confidence_interval(v, confidence_level)
                 # Draw borders of CI with high alpha,
                 # which is why this is separate from fill_between().
                 # lw = l[0].get_linewidth() / 2
@@ -105,8 +97,8 @@ def _plot_cell(ax, results, country, targets, stat,
                                 alpha = alpha)
 
             if ci_bar > 0:
-                mid = v['median'][-1]
-                CIB = v[CIBkey][:, -1]
+                mid = stats.median(v)[-1]
+                CIB = stats.confidence_interval(v, ci_bar)[:, -1]
                 yerr = [mid - CIB[0], CIB[1] - mid]
                 eb = ax.errorbar(common.t[-1] + jitter * (i + 1),
                                  mid / info.scale,
@@ -127,7 +119,7 @@ def _make_legend(fig, **kwargs):
     colors = seaborn.color_palette()
     handles = []
     labels = []
-    for (t, c) in zip(model.targets.all_, colors):
+    for (t, c) in zip(model.target.all_, colors):
         handles.append(lines.Line2D([], [], color = c, alpha = alpha0))
         labels.append(common.get_target_label(t))
     if 'loc' not in kwargs:
@@ -140,12 +132,12 @@ def _make_legend(fig, **kwargs):
                       **kwargs)
 
 
-def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
-              figsize = (8.5 * 0.7, 6.5),
-              **kwargs):
+def plot_one(country, confidence_level = 0.5, ci_bar = 0.9,
+             figsize = (8.5 * 0.7, 6.5),
+             **kwargs):
     fig = pyplot.figure(figsize = figsize)
     nrows = len(common.effectiveness_measures)
-    ncols = int(numpy.ceil(len(model.targets.all_) / 2))
+    ncols = int(numpy.ceil(len(model.target.all_) / 2))
     gs = gridspec.GridSpec(nrows, ncols,
                            top = 0.975, bottom = 0.075,
                            left = 0.09, right = 0.98,
@@ -153,27 +145,22 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
 
     fig.suptitle(country, size = 10, va = 'baseline', x = 0.535)
 
-    CIkey = 'CI{:g}'.format(100 * confidence_level)
-    CIBkey = 'CI{:g}'.format(100 * ci_bar)
-
+    results = common.get_country_results(country)
     axes = []
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
         info = common.get_stat_info(stat)
         data = []
-        for target in model.targets.all_:
-            try:
-                v = results[country][str(target)][stat]
-            except tables.NoSuchNodeError:
-                pass
-            else:
+        for target in model.target.all_:
+            if results[target] is not None:
+                v = getattr(results[target], stat)
                 # Store the largest one.
                 if ci_bar > 0:
-                    data.append(v[CIBkey])
+                    data.append(stats.confidence_interval(v, ci_bar))
                 elif confidence_level > 0:
-                    data.append(v[CIkey])
+                    data.append(stats.confidence_interval(v, confidence_level))
                 else:
-                    data.append(v['median'])
+                    data.append(stats.median(v))
         if info.scale is None:
             info.autoscale(data)
         if info.units is None:
@@ -195,7 +182,7 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
                                  sharey = sharey)
             axes[row].append(ax)
 
-            targs = model.targets.all_[2 * col : 2 * (col + 1)]
+            targs = model.target.all_[2 * col : 2 * (col + 1)]
             colors = common.colors_paired[2 * col : 2 * (col + 1)]
 
             if ax.is_first_col():
@@ -236,46 +223,41 @@ def _plot_one(results, country, confidence_level = 0.5, ci_bar = 0.9,
     return fig
 
 
-def plot_one(country, **kwargs):
-    with model.results.samples.stats.open_() as results:
-        return _plot_one(results, country, **kwargs)
-
-
 def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
-    with model.results.samples.stats.open_() as results:
-        with seaborn.color_palette(common.colors_paired):
-            ncols = len(common.countries_to_plot)
-            nrows = len(common.effectiveness_measures)
-            fig, axes = pyplot.subplots(nrows, ncols,
-                                        figsize = (common.width_1_5column, 4),
-                                        sharex = 'all', sharey = 'none')
-            for (col, country) in enumerate(common.countries_to_plot):
-                for (row, stat) in enumerate(common.effectiveness_measures):
-                    ax = axes[row, col]
+    with seaborn.color_palette(common.colors_paired):
+        ncols = len(common.countries_to_plot)
+        nrows = len(common.effectiveness_measures)
+        fig, axes = pyplot.subplots(nrows, ncols,
+                                    figsize = (common.width_1_5column, 4),
+                                    sharex = 'all', sharey = 'none')
+        for (col, country) in enumerate(common.countries_to_plot):
+            results = common.get_country_results(country)
+            for (row, stat) in enumerate(common.effectiveness_measures):
+                ax = axes[row, col]
 
-                    stat_label = 'ylabel' if ax.is_first_col() else None
-                    country_label = 'title' if ax.is_first_row() else None
+                stat_label = 'ylabel' if ax.is_first_col() else None
+                country_label = 'title' if ax.is_first_row() else None
 
-                    _plot_cell(ax, results, country, model.targets.all_, stat,
-                               confidence_level,
-                               ci_bar = ci_bar,
-                               country_label = country_label,
-                               stat_label = stat_label,
-                               space_to_newline = True,
-                               **kwargs)
+                _plot_cell(ax, results, country, model.target.all_, stat,
+                           confidence_level,
+                           ci_bar = ci_bar,
+                           country_label = country_label,
+                           stat_label = stat_label,
+                           space_to_newline = True,
+                           **kwargs)
 
-                    ax.xaxis.set_tick_params(labelsize = 5)
-                    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
+                ax.xaxis.set_tick_params(labelsize = 5)
+                ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
 
-                    if stat_label is not None:
-                        if stat == 'new_infections':
-                            ax.yaxis.labelpad -= 2
-                        elif stat == 'infected':
-                            ax.yaxis.labelpad -= 6
-                        elif stat == 'dead':
-                            ax.yaxis.labelpad -= 5
+                if stat_label is not None:
+                    if stat == 'new_infections':
+                        ax.yaxis.labelpad -= 2
+                    elif stat == 'infected':
+                        ax.yaxis.labelpad -= 6
+                    elif stat == 'dead':
+                        ax.yaxis.labelpad -= 5
 
-            _make_legend(fig)
+        _make_legend(fig)
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
                      rect = (0, 0.05, 1, 1))
