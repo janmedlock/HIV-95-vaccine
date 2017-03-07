@@ -57,7 +57,7 @@ def get_target_info(baseline, target):
 
 def sensitivity(country, targets, stat, times):
     baseline = targets[1]
-    r = model.results.load(country, baseline, 'mode')
+    r = model.results.load(country, baseline, parameters_type = 'mode')
     y_b = getattr(r, stat)
     y_b = numpy.interp(times, common.t, y_b)
     rho = []
@@ -66,7 +66,7 @@ def sensitivity(country, targets, stat, times):
         x_b, x, label = get_target_info(baseline, t)
         dx = x - x_b
         labels.append(label)
-        r = model.results.load(country, t, 'mode')
+        r = model.results.load(country, t, parameters_type = 'mode')
         y = getattr(r, stat)
         y = numpy.interp(times, common.t, y)
         dy = y - y_b
