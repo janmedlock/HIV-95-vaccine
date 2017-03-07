@@ -82,6 +82,7 @@ def _plot_stat(ax, results, regions, targets, stat, confidence_level,
                                    capsize = 2,
                                    alpha = 0.1))
 
+    ax.autoscale(axis = 'x', tight = True)
     ax.set_xticks(numpy.arange(len(regions)) + 0.5)
     ax.set_xticklabels([region_labels[r] for r in regions],
                        size = pyplot.rcParams['font.size'] - 1)
