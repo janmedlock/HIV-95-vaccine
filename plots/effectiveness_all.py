@@ -5,6 +5,7 @@ Plot the effectiveness of interventions in all countries.
 
 import os.path
 import sys
+import unicodedata
 
 from matplotlib import pyplot
 
@@ -33,6 +34,17 @@ template = r'''
 '''
 
 
+def _get_filebase(country):
+    # Remove spaces.
+    retval = country.replace(' ', '_')
+    # Remove single quotes.
+    retval = retval.replace("'", '')
+    # Remove accents.
+    retval = ''.join(c for c in unicodedata.normalize('NFKD', retval)
+                     if not unicodedata.combining(c))
+    return retval
+
+
 def plot_all(plotevery = 10, **kwargs):
     path = common.get_filebase()
     for region_or_country in common.all_regions_and_countries:
@@ -40,8 +52,8 @@ def plot_all(plotevery = 10, **kwargs):
         fig = effectiveness.plot_one(region_or_country,
                                      plotevery = plotevery,
                                      **kwargs)
-        filebase = os.path.join(path, region_or_country.replace(' ', '_'))
-        filename = '{}.pgf'.format(filebase)
+        filebase = _get_filebase(region_or_country)
+        filename = os.path.join(path, '{}.pgf'.format(filebase))
         common.savefig(fig, filename)
         pyplot.close(fig)
 
@@ -52,7 +64,7 @@ def combine(prefix = '../src/plots'):
     with open(outfile, 'w') as fd:
         isfirst = True
         for region_or_country in common.all_regions_and_countries:
-            filebase = region_or_country.replace(' ', '_')
+            filebase = _get_filebase(region_or_country)
             filename = os.path.join(prefix, path,
                                     '{}.pgf'.format(filebase))
             filename = os.path.normpath(filename)
