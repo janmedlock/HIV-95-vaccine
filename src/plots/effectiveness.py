@@ -83,22 +83,22 @@ def _plot_cell(ax, results, country, targets, stat,
                 # lw = l[0].get_linewidth() / 2
                 # for j in range(2):
                 #     ax.plot(common.t,
-                #             numpy.asarray(CI[j]) / info.scale,
+                #             CI[j] / info.scale,
                 #             color = colors[i],
                 #             linewidth = lw,
                 #             alpha = alpha0,
                 #             zorder = 2)
                 # Shade interior of CI, with low alpha.
-                y1 = numpy.asarray(CI[0])[ : : plotevery] / info.scale
-                y2 = numpy.asarray(CI[1])[ : : plotevery] / info.scale
+                y1 = CI[0, : : plotevery] / info.scale
+                y2 = CI[1, : : plotevery] / info.scale
                 ax.fill_between(t, y1, y2,
                                 facecolor = colors[i],
                                 linewidth = 0,
                                 alpha = alpha)
 
             if ci_bar > 0:
-                mid = stats.median(v)[-1]
-                CIB = stats.confidence_interval(v, ci_bar)[:, -1]
+                mid = stats.median(v[:, -1])
+                CIB = stats.confidence_interval(v[:, -1], ci_bar)
                 yerr = [mid - CIB[0], CIB[1] - mid]
                 eb = ax.errorbar(common.t[-1] + jitter * (i + 1),
                                  mid / info.scale,

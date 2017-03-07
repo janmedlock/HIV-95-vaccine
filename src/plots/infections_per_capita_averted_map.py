@@ -120,8 +120,7 @@ def _get_infections_per_capita(country, target):
         person_years = integrate.trapz(alive, common.t)
         # exposure is number of 20-person-years lived.
         exposure = person_years / (common.t[-1] - common.t[0])
-        infections_per_capita = (numpy.asarray(new_infections)[:, -1]
-                                 / exposure)
+        infections_per_capita = new_infections[:, -1] / exposure
         return numpy.median(infections_per_capita)
 
 
