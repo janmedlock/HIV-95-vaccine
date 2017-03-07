@@ -13,7 +13,10 @@ def median(X, axis = 0):
     Handle NaNs when finding median.
     '''
     X = numpy.ma.array(X, mask = numpy.isnan(X))
-    return numpy.ma.median(X, axis = axis).filled(numpy.nan)
+    Y = numpy.ma.median(X, axis = axis)
+    if not numpy.isscalar(Y):
+        Y = Y.filled(numpy.nan)
+    return Y
 
 
 def quantile(X, q, axis = 0):
@@ -30,7 +33,7 @@ def quantile(X, q, axis = 0):
     isnanY = numpy.isnan(Y)
     if isnanY.ndim > isnanX.ndim:
         isnanY = numpy.any(isnanY, axis = 0)
-    assert all(isnanX == isnanY)
+    assert numpy.all(isnanX == isnanY)
     return Y
 
 
