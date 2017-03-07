@@ -132,9 +132,11 @@ parameter_names = [_parameter_names_map[p]
                    for p in model.parameters.Parameters.get_rv_names()]
 
 
-def get_country_results(country, parameters_type = 'sample'):
+def get_country_results(country,
+                        targets = model.target.all_,
+                        parameters_type = 'sample'):
     results = {}
-    for target in model.target.all_:
+    for target in targets:
         try:
             results[target] = model.results.load(
                 country, target, parameters_type = parameters_type)
