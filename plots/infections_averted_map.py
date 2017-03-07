@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections averted at different times.
+
+.. todo:: Move the median after the (x - y) / x arithmetic.
 '''
 
 import os.path
@@ -116,7 +118,6 @@ def _get_infections_averted():
         except FileNotFoundError:
             pass
         else:
-            # The median should probably be after the (x - y) / x arithmetic.
             x = stats.median(rb.new_infections[:, -1])
             for intv in interventions:
                 try:

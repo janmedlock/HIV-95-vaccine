@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections per capita averted at different times.
+
+.. todo:: Move the median after the (x - y) arithmetic.
 '''
 
 import os.path
