@@ -135,7 +135,7 @@ def plot_all():
         baseline = targs[0]
         print(baseline)
         filename = '{}_{}_all.pdf'.format(common.get_filebase(),
-                                          baseline.replace(' ', '_'))
+                                          str(baseline).replace(' ', '_'))
         with backend_pdf.PdfPages(filename) as pdf:
             nrows = len(common.effectiveness_measures) + 1
             ncols = 1
@@ -143,9 +143,9 @@ def plot_all():
             gs = gridspec.GridSpec(nrows, ncols,
                                    height_ratios = ((1, ) * (nrows - 1)
                                                     + (legend_height_ratio, )))
-            results = common.get_country_results(country, targs)
             for country in common.countries_to_plot:
                 print('\t', country)
+                results = common.get_country_results(country, targs)
                 fig = pyplot.figure(figsize = (8.5, 11))
                 for (row, stat) in enumerate(common.effectiveness_measures):
                     ax = fig.add_subplot(gs[row, 0])
@@ -160,10 +160,11 @@ def plot_all():
                 fig.tight_layout()
                 pdf.savefig(fig)
                 pyplot.close(fig)
+                break
 
 
 if __name__ == '__main__':
     plot_selected()
-    # plot_all()
-
     pyplot.show()
+
+    # plot_all()
