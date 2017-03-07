@@ -133,7 +133,7 @@ parameter_names = [_parameter_names_map[p]
 
 
 def get_country_results(country, parameters_type = 'sample'):
-    results = collections.OrderedDict()
+    results = {}
     for target in model.target.all_:
         try:
             results[target] = model.results.load(
