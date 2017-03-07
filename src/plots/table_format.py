@@ -48,12 +48,12 @@ if __name__ == '__main__':
         fd.write('\\\\\n')
 
         fd.write('\\multicolumn{2}{l|[3pt]}{} & ')
-        fd.write('\\multicolumn{3}{c|[1.5pt]}{New Infections} & ')
+        fd.write('\\multicolumn{3}{c|[1.5pt]}{Cum.~incidence} & ')
         fd.write('\\multicolumn{3}{c|[1.5pt]}{PLHIV} & ')
-        fd.write('\\multicolumn{3}{c|[3pt]}{People with AIDS} & ')
-        fd.write('\\multicolumn{3}{c|[1.5pt]}{New Infections} & ')
+        fd.write('\\multicolumn{3}{c|[3pt]}{PLAIDS} & ')
+        fd.write('\\multicolumn{3}{c|[1.5pt]}{Cum.~incidence} & ')
         fd.write('\\multicolumn{3}{c|[1.5pt]}{PLHIV} & ')
-        fd.write('\\multicolumn{3}{c|[3pt]}{People with AIDS}\n')
+        fd.write('\\multicolumn{3}{c|[3pt]}{PLAIDS}\n')
         fd.write('\\\\\n')
 
         for (x, c) in enumerate(countries):
@@ -67,7 +67,9 @@ if __name__ == '__main__':
 
                 if i == len(targets) - 1:
                     s = '\\raisebox{{1.5ex}}[0pt]{{\\textbf{{{}}}}} & '
-                    fd.write(s.format(common.get_country_short_name(c)))
+                    sn = common.get_country_short_name(c)
+                    sn = sn.replace('&', '\\&')
+                    fd.write(s.format(sn))
                 else:
                     fd.write(' & ')
                 fd.write('{}'.format(_format_target(target)))
@@ -80,12 +82,12 @@ if __name__ == '__main__':
 
         fd.write('\\tabucline[3pt]{-}\n')
         fd.write('\\multicolumn{2}{l|[3pt]}{} & ')
-        fd.write('\\multicolumn{3}{c|[1.5pt]}{New Infections} & ')
+        fd.write('\\multicolumn{3}{c|[1.5pt]}{Cum.~incidence} & ')
         fd.write('\\multicolumn{3}{c|[1.5pt]}{PLHIV} & ')
-        fd.write('\\multicolumn{3}{c|[3pt]}{People with AIDS} & ')
-        fd.write('\\multicolumn{3}{c|[1.5pt]}{New Infections} & ')
+        fd.write('\\multicolumn{3}{c|[3pt]}{PLAIDS} & ')
+        fd.write('\\multicolumn{3}{c|[1.5pt]}{Cum.~incidence} & ')
         fd.write('\\multicolumn{3}{c|[1.5pt]}{PLHIV} & ')
-        fd.write('\\multicolumn{3}{c|[3pt]}{People with AIDS}\n')
+        fd.write('\\multicolumn{3}{c|[3pt]}{PLAIDS}\n')
         fd.write('\\\\\n')
 
         fd.write('\\multicolumn{2}{l|[3pt]}{} & ')
