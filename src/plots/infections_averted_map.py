@@ -15,6 +15,7 @@ import pandas
 sys.path.append(os.path.dirname(__file__))
 import common
 import mapplot
+import stats
 sys.path.append('..')
 import model
 
@@ -31,8 +32,7 @@ interventions = list(map(str, interventions))
 time = 2035
 
 scale = 0.01
-title = 'Infections Averted (Compared to {})'.format(
-    baseline)
+title = 'Infections Averted (Compared to {})'.format(baseline)
 vmin = 0.1 / scale
 vmax = 0.9 / scale
 norm = mcolors.Normalize(vmin = vmin, vmax = vmax)
@@ -107,20 +107,25 @@ def plot(infections_averted):
 
 
 def _get_infections_averted():
-    with model.results.samples.stats.open_() as results:
-        countries = list(results.keys())
-
-        infections_averted = pandas.DataFrame(columns = interventions,
-                                              index = countries)
-        for country in countries:
-            if model.regions.is_country(country):
+    infections_averted = pandas.DataFrame(columns = interventions,
+                                          index = common.all_countries)
+    for country in common.all_countries:
+        print(country)
+        try:
+            rb = model.results.load(country, baseline)
+        except FileNotFoundError:
+            pass
+        else:
+            # The median should probably be after the (x - y) / x arithmetic.
+            x = stats.median(rb.new_infections[:, -1])
+            for intv in interventions:
                 try:
-                    x = results[country][baseline].new_infections.median[-1]
-                    for intv in interventions:
-                        y = results[country][intv].new_infections.median[-1]
-                        infections_averted.loc[country, intv] = (x - y) / x
-                except tables.exceptions.NoSuchNodeError:
+                    r = model.results.load(country, intv)
+                except FileNotFoundError:
                     pass
+                else:
+                    y = stats.median(r.new_infections[:, -1])
+                    infections_averted.loc[country, intv] = (x - y) / x
     return infections_averted
 
 
