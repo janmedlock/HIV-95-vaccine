@@ -22,7 +22,7 @@ import model
 alpha0 = 0.9
 
 
-def _plot_cell(ax, parameters, country, stat,
+def _plot_cell(ax, results, parameters, country, targets, stat,
                plot_hist = True,
                country_label = None,
                country_short_name = True,
@@ -33,13 +33,11 @@ def _plot_cell(ax, parameters, country, stat,
     info = common.get_stat_info(stat)
 
     data = []
-    for target in model.target.all_:
-        try:
-            r = model.results.load(country, target, parameters_type = 'mode')
-        except FileNotFoundError:
-            v = None
+    for target in targets:
+        if results[target] is not None:
+            v = getattr(results[target], stat)
         else:
-            v = getattr(r, stat)
+            v = None
         data.append(v)
     if info.scale is None:
         info.autoscale(data)
@@ -56,11 +54,13 @@ def _plot_cell(ax, parameters, country, stat,
                         zorder = 2,
                         **common.historical_data_style)
 
-    for (v, target) in zip(data, model.target.all_):
-        if v is None:
+    for target in targets:
+        r = results[target]
+        if r is None:
             # Pop a style.
             next(ax._get_lines.prop_cycler)
         else:
+            v = getattr(r, stat)
             ax.plot(common.t, v / info.scale,
                     label = common.get_target_label(target),
                     alpha = alpha0,
@@ -119,10 +119,13 @@ def plot_one(country, **kwargs):
                                     figsize = (8.5, 11),
                                     sharex = 'all', sharey = 'none')
 
+        results = common.get_country_results(country,
+                                             parameters_type = 'mode')
         for (row, stat) in enumerate(common.effectiveness_measures):
             ax = axes[row]
             country_label = 'title' if ax.is_first_row() else None
-            _plot_cell(ax, parameters, country, stat,
+            _plot_cell(ax, results, parameters, country,
+                       model.target.all_, stat,
                        country_label = country_label,
                        country_short_name = False,
                        **kwargs)
@@ -152,6 +155,8 @@ def plot_some(**kwargs):
                                     figsize = (common.width_2column, 4.75),
                                     sharex = 'all', sharey = 'none')
         for (col, country) in enumerate(common.countries_to_plot):
+            results = common.get_country_results(country,
+                                                 parameters_type = 'mode')
             parameters = model.parameters.get_parameters(country)
             for (row, stat) in enumerate(common.effectiveness_measures):
                 ax = axes[row, col]
@@ -159,7 +164,8 @@ def plot_some(**kwargs):
                 stat_label = 'ylabel' if ax.is_first_col() else None
                 country_label = 'title' if ax.is_first_row() else None
 
-                _plot_cell(ax, parameters, country, stat,
+                _plot_cell(ax, results, parameters, country,
+                           model.target.all_, stat,
                            country_label = country_label,
                            stat_label = stat_label,
                            plot_hist = False,
