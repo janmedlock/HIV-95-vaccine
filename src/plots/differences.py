@@ -30,7 +30,7 @@ targets = [model.target.all_[i : i + 2]
 
 
 _cmap_base = 'cubehelix'
-cmap = common.cmap_reflected(_cmap_percentile_base)
+cmap = common.cmap_reflected(_cmap_base)
 
 
 def _get_plot_info(results, country, targs, stat):
