@@ -15,7 +15,11 @@ class OneTargetZero:
     Fixed at 0.
     '''
     def __call__(self, initial_proportion, t):
-        return numpy.zeros_like(t, dtype = float)
+        if numpy.isscalar(initial_proportion):
+            return numpy.zeros_like(t, dtype = float)
+        else:
+            return numpy.outer(initial_proportion,
+                               numpy.zeros_like(t, dtype = float))
 
 
 class OneTargetStatusQuo:
@@ -23,7 +27,11 @@ class OneTargetStatusQuo:
     Fixed at the `initial_proportion`.
     '''
     def __call__(self, initial_proportion, t):
-        return initial_proportion * numpy.ones_like(t, dtype = float)
+        if numpy.isscalar(initial_proportion):
+            return initial_proportion * numpy.ones_like(t, dtype = float)
+        else:
+            return numpy.outer(initial_proportion,
+                               numpy.ones_like(t, dtype = float))
 
 
 class OneTargetLinear:
