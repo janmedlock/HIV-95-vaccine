@@ -259,5 +259,3 @@ if __name__ == '__main__':
     pyplot.show()
 
     # plot_all()
-
-
