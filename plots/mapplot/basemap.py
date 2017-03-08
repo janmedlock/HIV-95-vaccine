@@ -270,7 +270,7 @@ class Basemap:
         self.fig.set_size_inches(w, w * aspect, forward = True)
 
     def draw_borders(self, countries, facecolor = 'None',
-                     edgecolor = 'black', linewidth = 0.5, zorder = 0,
+                     edgecolor = 'black', linewidth = 0.2, zorder = 0,
                      *args, **kwargs):
         for c in _get_map_names(countries):
             try:
