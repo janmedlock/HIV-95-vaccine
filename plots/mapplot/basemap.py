@@ -269,7 +269,8 @@ class Basemap:
                   * aspect_adjustment)
         self.fig.set_size_inches(w, w * aspect, forward = True)
 
-    def draw_borders(self, countries, zorder = 0, facecolor = 'None',
+    def draw_borders(self, countries, facecolor = 'None',
+                     edgecolor = 'black', linewidth = 0.5, zorder = 0,
                      *args, **kwargs):
         for c in _get_map_names(countries):
             try:
@@ -277,11 +278,15 @@ class Basemap:
             except KeyError:
                 print('Country "{}" borders not in records.'.format(c))
             else:
-                self.ax.add_feature(border, facecolor = 'None',
+                self.ax.add_feature(border,
+                                    facecolor = facecolor,
+                                    edgecolor = edgecolor,
+                                    linewidth = linewidth,
                                     zorder = zorder,
                                     *args, **kwargs)
 
     def choropleth(self, countries, values, tiny_points_size = 0,
+                   edgecolor = 'black', linewidth = 0.5,
                    *args, **kwargs):
         '''
         Color whole countries depending on the values.
@@ -303,6 +308,8 @@ class Basemap:
                 else:
                     self.ax.add_feature(border,
                                         facecolor = color,
+                                        edgecolor = edgecolor,
+                                        linewidth = linewidth,
                                         *args,
                                         **kwargs)
 
@@ -339,6 +346,7 @@ class Basemap:
 
     def choropleth_preinit(self, countries, t, values,
                            label_coords = None,
+                           edgecolor = 'black', linewidth = 0.5,
                            *args, **kwargs):
         '''
         Set up animated choropleth.
@@ -362,6 +370,8 @@ class Basemap:
             else:
                 self._artists.append(self.ax.add_feature(border,
                                                          facecolor = 'None',
+                                                         edgecolor = edgecolor,
+                                                         linewidth = linewidth,
                                                          *args,
                                                          **kwargs))
                 self._artist_map[c] = i
