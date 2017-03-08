@@ -246,14 +246,14 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
                            space_to_newline = True,
                            **kwargs)
 
-                ax.xaxis.set_tick_params(labelsize = 5)
+                ax.xaxis.set_tick_params(labelsize = 4.5)
                 ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
 
                 if stat_label is not None:
                     if stat == 'new_infections':
                         ax.yaxis.labelpad -= 2
                     elif stat == 'infected':
-                        ax.yaxis.labelpad -= 6
+                        ax.yaxis.labelpad -= 5
                     elif stat == 'dead':
                         ax.yaxis.labelpad -= 5
 
@@ -261,10 +261,13 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
 
     # Tweak.
     axes[0, 0].yaxis.set_major_locator(ticker.MultipleLocator(10))
+    axes[0, 0].set_ylim(top = 50)
+    axes[0, 1].set_ylim(top = 1000)
     axes[0, 2].yaxis.set_major_locator(ticker.MultipleLocator(50))
     axes[0, 3].yaxis.set_major_locator(ticker.MultipleLocator(2.5))
     axes[0, 3].set_ylim(top = 10)
     axes[0, 4].yaxis.set_major_locator(ticker.MultipleLocator(100))
+    axes[0, 4].set_ylim(top = 400)
     axes[1, 0].yaxis.set_major_locator(ticker.MultipleLocator(100))
     axes[1, 0].set_ylim(bottom = 0)
     axes[1, 1].set_ylim(bottom = 0, top = 100)
@@ -276,7 +279,7 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     axes[1, 4].set_ylim(bottom = 0)
     axes[1, 5].yaxis.set_major_locator(ticker.MultipleLocator(50))
     axes[1, 5].set_ylim(bottom = 0, top = 250)
-    axes[2, 0].set_ylim(bottom = 25)
+    axes[2, 0].set_ylim(bottom = 25, top = 45)
     axes[2, 1].yaxis.set_major_locator(ticker.MultipleLocator(0.5))
     axes[2, 1].set_ylim(bottom = 0.5)
     axes[2, 2].yaxis.set_major_locator(ticker.MultipleLocator(25))
@@ -285,6 +288,7 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     axes[2, 3].set_ylim(bottom = 4, top = 7)
     axes[2, 5].yaxis.set_major_locator(ticker.MultipleLocator(50))
     axes[3, 0].yaxis.set_major_locator(ticker.MultipleLocator(25))
+    axes[3, 0].set_ylim(top = 125)
     axes[3, 2].yaxis.set_major_locator(ticker.MultipleLocator(25))
     axes[3, 2].set_ylim(top = 100)
     axes[3, 3].set_ylim(top = 8)
