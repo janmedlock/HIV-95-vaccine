@@ -36,27 +36,28 @@ def _main():
     vmax = 0.25
 
     cmap = 'YlOrRd'
-    norm = colors.LogNorm
+    norm = colors.LogNorm()
     ticks = ticker.LogLocator(10, [1, 2.5, 5])
     fig = pyplot.figure(figsize = (common.width_2column, 3))
     m = mapplot.Basemap()
     m.choropleth(countries, 100 * prevalence,
                  cmap = cmap,
-                 norm = norm(vmin = 100 * vmin,
-                             vmax = 100 * vmax),
+                 norm = norm,
                  vmin = 100 * vmin,
                  vmax = 100 * vmax)
-    cbar = m.colorbar(label = '2015 HIV Prevalence',
-                      format = '%g%%',
+    cbar = m.colorbar(format = '%g%%',
                       ticks = ticks)
 
+    cbar.set_label('2015 HIV Prevalence',
+                   fontsize = pyplot.rcParams['font.size'] + 5,
+                   labelpad = 10)
     ticklabels = cbar.ax.get_xticklabels()
     if prevalence.min() < vmin:
         ticklabels[0].set_text(r'$\leq\!$' + ticklabels[0].get_text())
     if prevalence.max() > vmax:
         ticklabels[-1].set_text(r'$\geq\!$' + ticklabels[-1].get_text())
     cbar.ax.set_xticklabels(ticklabels)
-    cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'])
+    cbar.ax.tick_params(labelsize = pyplot.rcParams['font.size'] + 3)
 
     m.tighten(aspect_adjustment = 1.35)
 
