@@ -11,7 +11,7 @@ def _get_linear_transform(a, b):
     '''
     Map [a, b] to [0, 1].
     '''
-    
+
     def f(x):
         '''
         Map [a, b] to [0, 1].
@@ -66,8 +66,8 @@ def combine(clist):
                 cdict[k].append((f(g(y)), c0, c1))
 
     return cdict.get_cmap('combined')
-        
-        
+
+
 def build(clist):
     '''
     Build a colormap from a list of colors and the points where they change.

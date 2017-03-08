@@ -588,11 +588,11 @@ class Basemap:
         self.draw_borders(countries)
 
     def pyramids(self, countries, values,
-             color = 'bright',
-             widthscale = 1,
-             heightscale = 1,
-             linewidth = 0,
-             *args, **kwargs):
+                 color = 'bright',
+                 widthscale = 1,
+                 heightscale = 1,
+                 linewidth = 0,
+                 *args, **kwargs):
         values = numpy.asarray(values)
         X, Y = self.locator.get_locations(_get_map_names(countries))
         coords_t = self.ax.projection.transform_points(
