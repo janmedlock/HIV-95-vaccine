@@ -2,6 +2,9 @@
 '''
 Using the modes of the parameter distributions,
 make simulation plots.
+
+.. todo:: Doesn't have all the pretty details of :mod:`~.plots.effectiveness`
+          or :mod:`~.plots.vaccine_scenarios`.
 '''
 
 import os.path
@@ -85,6 +88,9 @@ def _plot_cell(ax, results, parameters, country, targets, stat,
     common.format_axes(ax, country, info, country_label, stat_label,
                        plot_hist = plot_hist,
                        country_short_name = country_short_name)
+
+    if stat == 'incidence_per_capita':
+        ax.set_ylim(bottom = 0)
 
 
 def _make_legend(fig, plot_hist = True):

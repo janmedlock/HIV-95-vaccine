@@ -114,6 +114,9 @@ def _plot_cell(ax, results, country, targets, stat,
     common.format_axes(ax, country, info, country_label, stat_label,
                        space_to_newline = space_to_newline)
 
+    if stat == 'incidence_per_capita':
+        ax.set_ylim(bottom = 0)
+
 
 def _make_legend(fig, **kwargs):
     colors = seaborn.color_palette()
@@ -271,16 +274,12 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     axes[0, 5].yaxis.set_major_locator(ticker.MultipleLocator(250))
     axes[0, 5].set_ylim(top = 750)
     axes[1, 0].yaxis.set_major_locator(ticker.MultipleLocator(100))
-    axes[1, 0].set_ylim(bottom = 0)
-    axes[1, 1].set_ylim(bottom = 0, top = 100)
+    axes[1, 1].set_ylim(top = 100)
     axes[1, 2].yaxis.set_major_locator(ticker.MultipleLocator(0.5))
-    axes[1, 2].set_ylim(bottom = 0)
     axes[1, 3].yaxis.set_major_locator(ticker.MultipleLocator(5))
-    axes[1, 3].set_ylim(bottom = 0)
     axes[1, 4].yaxis.set_major_locator(ticker.MultipleLocator(10))
-    axes[1, 4].set_ylim(bottom = 0)
     axes[1, 5].yaxis.set_major_locator(ticker.MultipleLocator(50))
-    axes[1, 5].set_ylim(bottom = 0, top = 250)
+    axes[1, 5].set_ylim(top = 250)
     axes[2, 0].set_ylim(bottom = 25, top = 45)
     axes[2, 1].yaxis.set_major_locator(ticker.MultipleLocator(0.5))
     axes[2, 1].set_ylim(bottom = 0.5)
