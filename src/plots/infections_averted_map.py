@@ -76,15 +76,14 @@ def plot(infections_averted):
         X, Y = label_coords
         m.text_coords(
             X, Y, label,
-            fontdict = dict(size = pyplot.rcParams['font.size'] + 3,
-                            weight = 'bold'),
+            fontdict = dict(size = pyplot.rcParams['font.size'] + 3),
             horizontalalignment = 'center',
             verticalalignment = 'center')
 
     cbar = fig.colorbar(mappable,
                         label = title,
                         orientation = 'horizontal',
-                        fraction = 0.2,
+                        fraction = 0.23,
                         pad = cpad,
                         shrink = 0.8,
                         panchor = False,
