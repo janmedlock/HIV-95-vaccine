@@ -29,12 +29,26 @@ from . import simulation
 
 
 def QALYs(sim):
-    QALYs_rate = sim.state @ sim.parameters.QALY_rates_per_person
+    if sim.state.ndim == 2:
+        QALYs_rate = sim.state @ sim.parameters.QALY_rates_per_person
+    elif sim.state.ndim == 3:
+        b = sim.parameters.QALY_rates_per_person[:, numpy.newaxis, :]
+        QALYs_rate = (sim.state * b).sum(-1)
+    else:
+        msg = "I don't know how to handle sim.state.ndim == {}!"
+        raise ValueError(msg.format(sim.state.ndim))
     return integrate.simps(QALYs_rate, simulation.t)
 
 
 def DALYs(sim):
-    DALYs_rate = sim.state @ sim.parameters.DALY_rates_per_person
+    if sim.state.ndim == 2:
+        DALYs_rate = sim.state @ sim.parameters.DALY_rates_per_person
+    elif sim.state.ndim == 3:
+        b = sim.parameters.DALY_rates_per_person[:, numpy.newaxis, :]
+        DALYs_rate = (sim.state * b).sum(-1)
+    else:
+        msg = "I don't know how to handle sim.state.ndim == {}!"
+        raise ValueError(msg.format(sim.state.ndim))
     return integrate.simps(DALYs_rate, simulation.t)
 
 

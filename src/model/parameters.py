@@ -329,14 +329,16 @@ class Sample(_Super):
 class Samples:
     def __init__(self, country):
         self.country = country
+        parameters = Parameters(self.country)
+        self._samples = [Sample(parameters, s)
+                         for s in _get_samples()]
 
     def __iter__(self):
-        self._parameters = Parameters(self.country)
-        self._samples = iter(_get_samples())
-        return self
+        return self._samples
 
-    def __next__(self):
-        return Sample(self._parameters, next(self._samples))
+    def __getattr__(self, k):
+        return numpy.row_stack((getattr(s, k)
+                                for s in self._samples)).squeeze()
 
 
 class Mode(_Super):
