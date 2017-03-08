@@ -24,7 +24,7 @@ class shelved:
 
     def __call__(self, *args, **kwargs):
         key = str((args, set(kwargs.items())))
-        
+
         try:
             # Try to get value from the cache.
             val = self.cache[key]
