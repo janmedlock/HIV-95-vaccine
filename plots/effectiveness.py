@@ -264,10 +264,11 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     axes[0, 0].set_ylim(top = 50)
     axes[0, 1].set_ylim(top = 1000)
     axes[0, 2].yaxis.set_major_locator(ticker.MultipleLocator(50))
-    axes[0, 3].yaxis.set_major_locator(ticker.MultipleLocator(2.5))
+    axes[0, 3].yaxis.set_major_locator(ticker.MultipleLocator(2))
     axes[0, 3].set_ylim(top = 10)
     axes[0, 4].yaxis.set_major_locator(ticker.MultipleLocator(100))
     axes[0, 4].set_ylim(top = 400)
+    axes[0, 5].yaxis.set_major_locator(ticker.MultipleLocator(250))
     axes[1, 0].yaxis.set_major_locator(ticker.MultipleLocator(100))
     axes[1, 0].set_ylim(bottom = 0)
     axes[1, 1].set_ylim(bottom = 0, top = 100)
@@ -293,6 +294,7 @@ def plot_some(confidence_level = 0, ci_bar = 0, **kwargs):
     axes[3, 2].set_ylim(top = 100)
     axes[3, 3].set_ylim(top = 8)
     axes[3, 4].yaxis.set_major_locator(ticker.MultipleLocator(50))
+    axes[3, 5].yaxis.set_major_locator(ticker.MultipleLocator(250))
 
     fig.tight_layout(h_pad = 0.7, w_pad = 0,
                      rect = (0, 0.05, 1, 1))
