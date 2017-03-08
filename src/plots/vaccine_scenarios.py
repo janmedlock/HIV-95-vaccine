@@ -195,14 +195,14 @@ def plot_some(treatment_target = model.target.StatusQuo()):
                            stat_label = stat_label,
                            space_to_newline = True)
 
-                ax.xaxis.set_tick_params(labelsize = 5)
+                ax.xaxis.set_tick_params(labelsize = 4.5)
                 ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins = 4))
 
                 if stat_label is not None:
                     if stat == 'new_infections':
                         ax.yaxis.labelpad -= 2
                     elif stat == 'infected':
-                        ax.yaxis.labelpad -= 6
+                        ax.yaxis.labelpad -= 5
                     elif stat == 'dead':
                         ax.yaxis.labelpad -= 5
 
