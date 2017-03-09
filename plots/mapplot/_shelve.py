@@ -32,6 +32,3 @@ class shelved:
             # Get the value and store it in the cache.
             val = self.cache[key] = self._func(*args, **kwargs)
         return val
-
-    def __del__(self):
-        self.cache.close()
