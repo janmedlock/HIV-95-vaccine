@@ -41,6 +41,10 @@ initial_proportions_map
 -----------------------
 .. automodule:: plots.initial_proportions_map
 
+manuscript_stats
+----------------
+.. automodule:: plots.manuscript_stats
+
 prcc
 ----
 .. automodule:: plots.prcc
