@@ -1,8 +1,6 @@
 #!/usr/bin/python3
 '''
 Make maps of the infections per capita averted at different times.
-
-.. todo:: Move the median after the (x - y) arithmetic.
 '''
 
 import os.path
@@ -125,17 +123,18 @@ def _get_infections_per_capita_averted():
     for country in common.all_countries:
         print(country)
         try:
-            x = stats.median(_get_infections_per_capita(country, baseline))
+            x = _get_infections_per_capita(country, baseline)
         except FileNotFoundError:
             pass
         else:
             for intv in interventions:
                 try:
-                    y = stats.median(_get_infections_per_capita(country, intv))
+                    y = _get_infections_per_capita(country, intv)
                 except FileNotFoundError:
                     pass
                 else:
-                    infections_per_capita_averted.loc[country, intv] = x - y
+                    infections_per_capita_averted.loc[country, intv] \
+                        = stats.median(x - y)
     return infections_per_capita_averted
 
 
