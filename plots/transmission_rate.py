@@ -48,16 +48,17 @@ def plot_transmission_rates(countries, fig = None,
             ax.scatter(rv.mode, j,
                        marker = '|', s = 30, linewidth = 1,
                        color = 'black')
-    ax.xaxis.set_tick_params(labelsize = pyplot.rcParams['font.size'])
-    ax.set_xlabel('Transmission rate (per year)')
+    ax.xaxis.set_tick_params(labelsize = pyplot.rcParams['font.size'] + 1)
+    ax.set_xlabel('Transmission rate (per year)',
+                  size = pyplot.rcParams['font.size'] + 2)
     ax.set_xlim(0, 0.5001)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.05))
     ax.set_ylim(-1.5, n + 0.5)
     ax.set_yticks(range(n))
     yticklabels = (common.get_country_short_name(c).replace('&', '\&')
                    for c in reversed(countries))
-    ax.set_yticklabels(yticklabels, size = 5)
-    ax.grid(False, axis = 'y')
+    ax.set_yticklabels(yticklabels, size = 4.5)
+    ax.grid(False, axis = 'y', which = 'both')
     # Alternate right-left alignment.
     for (i, x) in enumerate(zip(ax.yaxis.get_major_ticks(),
                                 ax.yaxis.get_ticklabels())):
