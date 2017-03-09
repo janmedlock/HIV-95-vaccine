@@ -28,7 +28,7 @@ def plot_transmission_rates(countries, fig = None,
                             savefig = True):
     if fig is None:
         fig = pyplot.figure(figsize = (8.5, 11))
-    with seaborn.axes_style('whitegrid'):
+    with seaborn.axes_style('whitegrid', common.rc_black_text):
         ax = fig.add_subplot(1, 1, 1)
         seaborn.despine(ax = ax, top = True, bottom = True)
         n = len(countries)

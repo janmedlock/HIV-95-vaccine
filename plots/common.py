@@ -67,6 +67,11 @@ width_2column = 42.125 / 6  # inches
 height_max = 54 / 6         # inches
 
 
+rc_black_text = {'text.color': 'black',
+               'axes.labelcolor': 'black',
+               'xtick.color': 'black',
+               'ytick.color': 'black'}
+matplotlib.rcParams.update(**rc_black_text)
 fontdict = {'family': 'sans-serif',
             'sans-serif': 'DejaVu Sans',
             'size': 6}
@@ -82,7 +87,6 @@ matplotlib.rc('legend', fontsize = fontdict['size'],
               borderpad = 0,
               borderaxespad = 0)
 matplotlib.rc('lines', linewidth = 1.25)
-
 # matplotlib.rc('axes.grid', which = 'both')
 matplotlib.rc('axes.grid', which = 'major')
 

@@ -106,7 +106,7 @@ def tornados():
 
     nrows = 1
     ncols = len(targets)
-    with seaborn.axes_style('whitegrid'):
+    with seaborn.axes_style('whitegrid', common.rc_black_text):
         fig, axes = pyplot.subplots(nrows, ncols,
                                     figsize = figsize,
                                     sharex = 'all')

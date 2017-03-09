@@ -112,7 +112,7 @@ def tornados():
     palette = 'Dark2'
     colors = seaborn.color_palette(palette)
 
-    with seaborn.axes_style('whitegrid'):
+    with seaborn.axes_style('whitegrid', common.rc_black_text):
         fig, ax = pyplot.subplots(1, 1, figsize = figsize)
         seaborn.despine(ax = ax, top = True, bottom = True)
         ax.tick_params(labelsize = pyplot.rcParams['font.size'])

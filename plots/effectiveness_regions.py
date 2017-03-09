@@ -133,7 +133,7 @@ def plot(confidence_level = 0.5, **kwargs):
     nrows = len(effectiveness_measures)
     ncols = 1
     with seaborn.color_palette(common.colors_paired):
-        with seaborn.axes_style('darkgrid'):
+        with seaborn.axes_style('darkgrid', common.rc_black_text):
             fig, axes = pyplot.subplots(nrows, ncols,
                                         figsize = (common.width_1_5column,
                                                    4),
