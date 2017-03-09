@@ -3,7 +3,7 @@
 Make a table from the simulation output.
 '''
 
-import os
+import os.path
 import sys
 
 import numpy
