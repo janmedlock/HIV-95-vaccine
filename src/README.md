@@ -1,6 +1,6 @@
 # HIV-95-vaccine
 
-## HIV model with UNAIDS 90-90-90 & 95-95-95 and vaccine
+## HIV model with UNAIDS 90–90–90 & 95–95–95 and vaccine
 
 **[Jan Medlock](http://people.oregonstate.edu/~medlockj/)
 [\<jan.medlock@oregonstate.edu\>](mailto:jan.medlock@oregonstate.edu),
@@ -27,7 +27,7 @@ third-party libraries.  Most notably:
 [matplotlib](http://matplotlib.org/),
 [pandas](http://pandas.pydata.org/),
 [cartopy](http://scitools.org.uk/cartopy/),
-[Seaborn](https://stanford.edu/~mwaskom/software/seaborn/),
+[Seaborn](https://seaborn.pydata.org/),
 & [Sphinx](http://www.sphinx-doc.org/).
 See [module_versions.txt](module_versions.txt) for a full list: note
 that many of the modules listed there are dependencies of the modules
@@ -36,19 +36,20 @@ listed above.
 ### Documentation
 
 The full development documentation can be built using
-[Sphinx](http://www.sphinx-doc.org/).  `make html` (using
-[GNU make](https://www.gnu.org/software/make/) or similar) in either
-the root or [docs/](docs/) directories will build the documentation,
-which will then be in *docs/_build/html/*.  The scripts, modules,
-etc. mentioned below are covered in this documentation.
+[Sphinx](http://www.sphinx-doc.org/).  `make html` (using [GNU
+make](https://www.gnu.org/software/make/) or similar) in either the
+root or `docs` directories will build the documentation, which will
+then be in `docs/_build/html` (also accessible with the symlink
+`docs/html`).  The scripts, modules, etc. mentioned below are covered
+in this documentation.
 
 ### Parameter data
 
-* [data_sources/](data_sources/) contains the data used to
+* [data_sources](data_sources) contains the data used to
   parametrize the model and references to the sources of these data.
 
 * [data_sheet.xlsx](data_sheet.xlsx) contains a hand-curated version
-  of [data_sources/](data_sources/), with fewer references to sources
+  of [data_sources](data_sources), with fewer references to sources
   etc., that is parsed by the simulation code.
 
 * [data_sheet_report.py](data_sheet_report.py) reports on the
@@ -59,23 +60,23 @@ etc. mentioned below are covered in this documentation.
 * [run_modes.py](run_modes.py) runs simulations using the modal
   parameter values.  This is fairly fast, tens of seconds for each
   country-target combination, approximately 10 cpu-hours for 127
-  countries and 6 targets.  The resulting data will be in *sim_data/*,
-  under a directory for each country, with a *-mode.pkl* file for each target.
-  The resulting total data generated for 127 countries and 6 targets is
-  around 151MB.
+  countries and 6 targets.  The resulting data will be in `sim_data`,
+  under a directory for each country, with a `-mode.pkl` file for each
+  target.  The resulting total data generated for 127 countries and 6
+  targets is around 151MB.
 
 * [run_vaccine_scenarios.py](run_vaccine_scenarios.py) runs different
   vaccine scenarios using the modal parameter values.  This is about
   as fast as [run_modes.py](run_modes.py).  The resulting data will be
-  in *sim_data/*, under a directory for each country, with a
-  *-mode.pkl* file for each target.  The resulting total data
+  in `sim_data`, under a directory for each country, with a
+  `-mode.pkl` file for each target.  The resulting total data
   generated for 127 countries and 6 targets is around 151MB.
 
 * [run_samples.py](run_samples.py) runs simulations using parameter
   samples.  **This is very slow**: it is only tens of seconds per
   sample-country-target, but the default is 1000 samples, so it takes
   tens of cpu-**days** to run everything.  The data from the runs will
-  be in *sim_data/*, under a directory for each country, with a *.pkl*
+  be in `sim_data`, under a directory for each country, with a `.pkl`
   file for each target.  **The resulting total data generated for 127
   countries and 6 targets is around 147GB.**
 
@@ -84,7 +85,7 @@ simulation data we have generated.
 
 ### Plotting
 
-The plotting scripts are in the [plots/](plots/) directory.  They
+The plotting scripts are in the [plots](plots) directory.  They
 require having run the simulations unless otherwise noted.  A few highlights:
 * [effectiveness.py](plots/effectiveness.py) makes graphs of selected
   outcomes globally and for a few selected countries.
@@ -107,8 +108,8 @@ require having run the simulations unless otherwise noted.  A few highlights:
 
 ### Simulation code
 
-The simulation code is in [model/](model/).  A few development test
-scripts are in [tests/](tests/).  See the development documentation
+The simulation code is in [model](model).  A few development test
+scripts are in [tests](tests).  See the development documentation
 in for more information.
 
 ### Miscellany

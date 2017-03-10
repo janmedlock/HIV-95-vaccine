@@ -4,7 +4,6 @@ __pycache__/
 /drive/credentials.json
 /upload/
 /src/README.html
-/src/sim_data/
 /src/docs/_build/
 /src/plots/mapplot/_cartopy/
 /src/plots/mapplot/_shelve/
@@ -20,6 +19,7 @@ __pycache__/
 /src/plots/*.out
 /src/plots/table_sub.tex
 /src/plots/effectiveness_all/
+/src/sim_data/README.html
 /docs/**/*.pdf
 /docs/**/*.png
 /docs/**/.auto
