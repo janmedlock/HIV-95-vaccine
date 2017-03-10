@@ -7,13 +7,12 @@ import os.path
 import sys
 import unicodedata
 
+import matplotlib
 from matplotlib import pyplot
 
 sys.path.append(os.path.dirname(__file__))  # For Sphinx.
 import common
 import effectiveness
-sys.path.append('..')
-import model
 
 
 # [H] requires \usepackage{float}
@@ -32,6 +31,16 @@ template = r'''
   \label{{effectiveness_{base:}}}
 \end{{figure}}
 '''
+
+
+fontsize = 8
+matplotlib.rc('font', size = fontsize)
+matplotlib.rc('figure', titlesize = fontsize + 1)
+matplotlib.rc('axes', titlesize = fontsize + 1,
+              labelsize = fontsize + 1)
+matplotlib.rc('xtick', labelsize = fontsize - 1)
+matplotlib.rc('ytick', labelsize = fontsize - 1)
+matplotlib.rc('legend', fontsize = fontsize)
 
 
 def _get_filebase(country):
