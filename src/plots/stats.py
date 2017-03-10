@@ -12,11 +12,10 @@ def median(X, axis = 0):
     '''
     Handle NaNs when finding median.
     '''
-    X = numpy.ma.array(X, mask = numpy.isnan(X))
-    Y = numpy.ma.median(X, axis = axis)
-    if not numpy.isscalar(Y):
-        Y = Y.filled(numpy.nan)
-    return Y
+    # Suppress warnings about NaNs.
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        return numpy.median(X, axis = axis)
 
 
 def quantile(X, q, axis = 0):
