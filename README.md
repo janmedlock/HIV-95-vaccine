@@ -14,7 +14,10 @@ Released under the [GNU AGPL 3](LICENSE).**
 This repository contains Python code and data used to simulate and
 analyze HIV transmission in 127 countries around the world.
 <!---
-Add link to paper here.
+> Medlock J, Pandey A, Parpia AS, Tang A, Skrip LA, Galvani
+> AP. Effectiveness of UNAIDS targets and HIV vaccination across 127
+> countries. *Proc Natl Acad Sci USA*. 2017.
+> [doi:10.1073/pnas.1620788114](https://dx.doi.org/10.1073/pnas.1620788114).
 --->
 
 The scripts and model code are entirely written in Python3, using many
