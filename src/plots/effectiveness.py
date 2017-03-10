@@ -34,11 +34,10 @@ def _set_clip_on(obj, val):
 
 def _plot_cell(ax, results, country, targets, stat,
                confidence_level, ci_bar,
-               scale = None, units = None,
+               plotevery = 1, scale = None, units = None,
                country_label = None, stat_label = None,
                colors = None, alpha = 0.35,
-               jitter = 0.6, plotevery = 1,
-               space_to_newline = False):
+               jitter = 0.6, space_to_newline = False):
     if colors is None:
         colors = seaborn.color_palette()
 
@@ -49,27 +48,30 @@ def _plot_cell(ax, results, country, targets, stat,
         info.scale = scale
     if units is not None:
         info.units = units
-    data = []
-    for target in targets:
-        if results[target] is not None:
-            v = getattr(results[target], stat)
-            # Store the largest one.
-            if ci_bar > 0:
-                data.append(stats.confidence_interval(v, ci_bar))
-            elif confidence_level > 0:
-                data.append(stats.confidence_interval(v, confidence_level))
-            else:
-                data.append(stats.median(v))
-    if info.scale is None:
-        info.autoscale(data)
-    if info.units is None:
-        info.autounits(data)
+    if (scale is None) or (units is None):
+        # Find scale and units.
+        data = []
+        for target in targets:
+            if results[target] is not None:
+                v = getattr(results[target], stat)
+                # Store the largest one.
+                if ci_bar > confidence_level:
+                    data.append(stats.confidence_interval(v[:, -1], ci_bar))
+                elif confidence_level > 0:
+                    data.append(stats.confidence_interval(v[:, : : plotevery],
+                                                          confidence_level))
+                else:
+                    data.append(stats.median(v[:, : : plotevery]))
+        if info.scale is None:
+            info.autoscale(data)
+        if info.units is None:
+            info.autounits(data)
 
     for (i, target) in enumerate(targets):
         if results[target] is not None:
-            v = getattr(results[target], stat)
+            v = getattr(results[target], stat) / info.scale
             t = common.t[ : : plotevery]
-            y = stats.median(v)[ : : plotevery] / info.scale
+            y = stats.median(v[:, : : plotevery])
             l = ax.plot(t, y,
                         label = common.get_target_label(target),
                         color = colors[i],
@@ -77,21 +79,19 @@ def _plot_cell(ax, results, country, targets, stat,
                         zorder = 2)
 
             if confidence_level > 0:
-                CI = stats.confidence_interval(v, confidence_level)
+                CI = stats.confidence_interval(v[:, : : plotevery],
+                                               confidence_level)
                 # Draw borders of CI with high alpha,
                 # which is why this is separate from fill_between().
                 # lw = l[0].get_linewidth() / 2
                 # for j in range(2):
-                #     ax.plot(common.t,
-                #             CI[j] / info.scale,
+                #     ax.plot(common.t, CI[j],
                 #             color = colors[i],
                 #             linewidth = lw,
                 #             alpha = alpha0,
                 #             zorder = 2)
                 # Shade interior of CI, with low alpha.
-                y1 = CI[0, : : plotevery] / info.scale
-                y2 = CI[1, : : plotevery] / info.scale
-                ax.fill_between(t, y1, y2,
+                ax.fill_between(t, CI[0], CI[1],
                                 facecolor = colors[i],
                                 linewidth = 0,
                                 alpha = alpha)
@@ -99,11 +99,9 @@ def _plot_cell(ax, results, country, targets, stat,
             if ci_bar > 0:
                 mid = stats.median(v[:, -1])
                 CIB = stats.confidence_interval(v[:, -1], ci_bar)
-                yerr = [mid - CIB[0], CIB[1] - mid]
+                yerr = numpy.reshape([mid - CIB[0], CIB[1] - mid], (-1, 1))
                 eb = ax.errorbar(common.t[-1] + jitter * (i + 1),
-                                 mid / info.scale,
-                                 yerr = (numpy.reshape(yerr, (-1, 1))
-                                         / info.scale),
+                                 mid, yerr = yerr,
                                  fmt = 'none',  # Don't show midpoint.
                                  ecolor = colors[i],
                                  capsize = 3,
@@ -136,38 +134,42 @@ def _make_legend(fig, **kwargs):
 
 
 def plot_one(country, confidence_level = 0.5, ci_bar = 0.9,
-             figsize = (8.5 * 0.7, 6.5),
+             figsize = (8.5 * 0.7, 6.5), plotevery = 1,
              **kwargs):
     fig = pyplot.figure(figsize = figsize)
     nrows = len(common.effectiveness_measures)
     ncols = int(numpy.ceil(len(model.target.all_) / 2))
     gs = gridspec.GridSpec(nrows, ncols,
                            top = 0.975, bottom = 0.075,
-                           left = 0.09, right = 0.98,
-                           wspace = 0.15)
+                           left = 0.11, right = 0.98,
+                           wspace = 0.2)
 
-    fig.suptitle(country, size = 10, va = 'baseline', x = 0.535)
+    fig.suptitle(country, size = 10, va = 'baseline', x = 0.545)
 
     results = common.get_country_results(country)
     axes = []
     for (row, stat) in enumerate(common.effectiveness_measures):
         # Get common scale for row.
         info = common.get_stat_info(stat)
-        data = []
-        for target in model.target.all_:
-            if results[target] is not None:
-                v = getattr(results[target], stat)
-                # Store the largest one.
-                if ci_bar > 0:
-                    data.append(stats.confidence_interval(v, ci_bar))
-                elif confidence_level > 0:
-                    data.append(stats.confidence_interval(v, confidence_level))
-                else:
-                    data.append(stats.median(v))
-        if info.scale is None:
-            info.autoscale(data)
-        if info.units is None:
-            info.autounits(data)
+        if (info.scale is None) or (info.units is None):
+            data = []
+            for target in model.target.all_:
+                if results[target] is not None:
+                    v = getattr(results[target], stat)
+                    # Store the largest one.
+                    if ci_bar > confidence_level:
+                        data.append(stats.confidence_interval(v[:, -1],
+                                                              ci_bar))
+                    elif confidence_level > 0:
+                        data.append(
+                            stats.confidence_interval(v[:, : : plotevery],
+                                                      confidence_level))
+                    else:
+                        data.append(stats.median(v[:, : : plotevery]))
+            if info.scale is None:
+                info.autoscale(data)
+            if info.units is None:
+                info.autounits(data)
 
         axes.append([])
         for col in range(ncols):
@@ -196,6 +198,7 @@ def plot_one(country, confidence_level = 0.5, ci_bar = 0.9,
             _plot_cell(ax, results, country, targs, stat,
                        confidence_level,
                        ci_bar = ci_bar,
+                       plotevery = plotevery,
                        stat_label = stat_label,
                        colors = colors,
                        scale = info.scale, units = info.units,
@@ -203,9 +206,9 @@ def plot_one(country, confidence_level = 0.5, ci_bar = 0.9,
 
             if stat_label == 'ylabel':
                 if stat == 'infected':
-                    offset = -0.165
-                else:
                     offset = -0.2
+                else:
+                    offset = -0.25
                 ax.yaxis.set_label_coords(offset, 0.5)
 
             if not ax.is_last_row():
@@ -220,8 +223,8 @@ def plot_one(country, confidence_level = 0.5, ci_bar = 0.9,
 
     with seaborn.color_palette(common.colors_paired):
         _make_legend(fig,
-                     loc = (0.132, 0),
-                     columnspacing = 6.8)
+                     loc = (0.12, 0),
+                     columnspacing = 3.1)
 
     return fig
 
