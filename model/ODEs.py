@@ -104,7 +104,7 @@ def rhs(t, state, target, parameters):
     dQ = (control_rates_.vaccination * S
           - (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.death_rate * Q)
-    
+
     dA = (force_of_infection * S
           + (1 - target.vaccine_efficacy) * force_of_infection * Q
           - parameters.progression_rate_acute * A
