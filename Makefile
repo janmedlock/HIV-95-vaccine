@@ -4,5 +4,6 @@ NULL:
 github:
 	git subtree push -P src github github
 
-sim_data.tar:
-	tar cf $@ -v -C src --exclude-ignore=archive_exclude sim_data
+sim_data.tar.xz:
+	tar cf $@ -v -I 'pixz -9' -C src --exclude-ignore=archive_exclude \
+		sim_data
