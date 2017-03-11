@@ -1,0 +1,4 @@
+archive_exclude
+data_sheet.pkl
+README.md
+Makefile
