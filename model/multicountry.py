@@ -139,6 +139,6 @@ def build_regionals(targets = target.all_,
     '''
     From the results of the country simulations, build the regional results.
     '''
-    for region in regions.all_:
+    for region in regions.regions:
         for target_ in targets:
                 build_regional(region, target_, parameters_type)

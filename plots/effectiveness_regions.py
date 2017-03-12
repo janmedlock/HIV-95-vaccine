@@ -23,12 +23,9 @@ import model
 
 effectiveness_measures = ['new_infections', 'infected']
 
-regions = model.regions.all_
-if 'Global' in regions:
-    regions.remove('Global')
+regions = list(model.regions._regions)
 
 region_labels = {
-    'Global': 'Global',
     'Asia and The Pacific': 'Asia\n& The\nPacific',
     'Caribbean': 'The\nCarribean',
     'Eastern and Southern Africa': 'Eastern &\nSouthern\nAfrica',
@@ -84,7 +81,7 @@ def _plot_stat(ax, results, regions, targets, stat, confidence_level,
 
     ax.autoscale(axis = 'x', tight = True)
     ax.set_xticks(numpy.arange(len(regions)) + 0.5)
-    ax.set_xticklabels([region_labels[r] for r in regions],
+    ax.set_xticklabels([region_labels.get(r, r) for r in regions],
                        size = pyplot.rcParams['font.size'] - 1)
 
     ax.grid(False, which = 'both', axis = 'x')
