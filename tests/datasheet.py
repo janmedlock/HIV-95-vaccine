@@ -29,7 +29,7 @@ def test_all():
 
 def _main():
     test_one('South Africa')
-    
+
     test_all()
 
 
