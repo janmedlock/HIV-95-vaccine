@@ -9,7 +9,7 @@ import model.datasheet
 
 
 if __name__ == '__main__':
-    alldata = model.datasheet.CountryData._get_all()
+    alldata = model.datasheet.CountryData.get_all()
     countries_any = model.datasheet.get_country_list('any', alldata)
     countries_all = model.datasheet.get_country_list('all', alldata)
     print('Country: Missing Datasheets')

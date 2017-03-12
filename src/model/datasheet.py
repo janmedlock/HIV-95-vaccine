@@ -5,8 +5,8 @@ Load data from the datafile.
           a new version of the datasheet.
 '''
 
+import abc
 import collections.abc
-import itertools
 import os.path
 import pickle
 import sys
@@ -17,10 +17,10 @@ import pandas
 from . import output_dir
 
 
-datafile = '../data_sheet.xlsx'
-# It's relative to this module file,
-# not files that might import it.
-datapath = os.path.join(os.path.dirname(__file__), datafile)
+datasheet = '../data_sheet.xlsx'
+# It is relative to this module file,
+# not to files that might import it.
+datasheet = os.path.join(os.path.dirname(__file__), datasheet)
 
 
 def isyear(x):
@@ -30,9 +30,21 @@ def isyear(x):
         return False
 
 
-class Sheet:
+class _Sheet(metaclass = abc.ABCMeta):
+    '''
+    An abstract base class for workbook sheets.
+    '''
+
     # By default, don't allow a country to have no data.
     allow_missing = False
+
+    @property
+    @abc.abstractmethod
+    def sheetname(self):
+        '''
+        Must be defined by subclasses.
+        '''
+        pass
 
     @classmethod
     def clean(cls, sheet):
@@ -54,9 +66,9 @@ class Sheet:
             sheet = alldata[cls.__name__]
         else:
             if wb is None:
-                wb = CountryData._open_wb()
-            sheet_ = wb.parse(cls.sheetname, index_col = 0)
-            sheet = cls.clean(sheet_)
+                wb = CountryData.open_wb()
+            sheet = wb.parse(cls.sheetname, index_col = 0)
+            sheet = cls.clean(sheet)
             sheet.index = cls.get_index(sheet)
         return sheet
 
@@ -103,7 +115,7 @@ class Sheet:
 
     @classmethod
     def set_attrs(cls, country_data, data):
-        for n, v in zip(cls.parameter_names, data):
+        for n, v in data.items():
             setattr(country_data, n, v)
 
     @classmethod
@@ -128,12 +140,12 @@ class Sheet:
         return list(sheet.columns[hasdata])
 
 
-class Parameters(Sheet):
+class Parameters(_Sheet):
     sheetname = 'Parameters'
     parameter_names = ('birth_rate', 'death_rate')
 
 
-class InitialConditions(Sheet):
+class InitialConditions(_Sheet):
     sheetname = 'Initial Conditions'
     parameter_names = ('S', 'A', 'U', 'D', 'T', 'V')
 
@@ -151,7 +163,7 @@ class InitialConditions(Sheet):
         return sheet_[goodcols]
 
 
-class Cost(Sheet):
+class Cost(_Sheet):
     sheetname = 'Costs'
     parameter_names = ('cost_test', 'cost_CD4', 'cost_viral_load',
                        'cost_ART_annual', 'cost_AIDS_annual',
@@ -159,20 +171,20 @@ class Cost(Sheet):
     allow_missing = True
 
 
-class GDP(Sheet):
+class GDP(_Sheet):
     sheetname = 'GDP'
     parameter_names = ('GDP_per_capita', 'GDP_PPP_per_capita')
     allow_missing = True
 
 
-class IncidencePrevalence(Sheet):
+class IncidencePrevalence(_Sheet):
     sheetname = 'IncidencePrevalence'
 
-    _incidence_start_string = 'INCIDENCE (15-49)'
-    _prevalence_start_string = 'PREVALENCE (15-49)'
+    incidence_start_string = 'INCIDENCE (15-49)'
+    prevalence_start_string = 'PREVALENCE (15-49)'
 
     @classmethod
-    def _clean_entry(cls, x):
+    def clean_entry(cls, x):
         '''
         Strip trailing '*' etc.
         '''
@@ -205,7 +217,7 @@ class IncidencePrevalence(Sheet):
         Finally, divide everything by 100 because data use percent.
         '''
         if isinstance(x, str):
-            x = cls._clean_entry(x)
+            x = cls.clean_entry(x)
             if '-' in x and not ('E-' in x or 'e-' in x):
                 y = x.split('-')
                 # Recursively call this function in case
@@ -233,10 +245,10 @@ class IncidencePrevalence(Sheet):
         years = []
         indata = False
         for (i, v) in enumerate(sheet.index):
-            if v == cls._incidence_start_string:
+            if v == cls.incidence_start_string:
                 datatype = 'incidence_per_capita'
                 indata = True
-            elif v == cls._prevalence_start_string:
+            elif v == cls.prevalence_start_string:
                 datatype = 'prevalence'
                 indata = True
             elif indata:
@@ -308,7 +320,7 @@ class IncidencePrevalence(Sheet):
         return list(countries[hasdata])
 
 
-class AnnualSheet(Sheet):
+class _AnnualSheet(_Sheet):
     @staticmethod
     def clean(sheet):
         '''
@@ -349,11 +361,11 @@ class AnnualSheet(Sheet):
         return pandas.Series()
 
 
-class Population(AnnualSheet):
+class Population(_AnnualSheet):
     sheetname = 'Population (15-49)'
 
 
-class Treated(AnnualSheet):
+class Treated(_AnnualSheet):
     sheetname = 'ARV'
     allow_missing = True
 
@@ -407,30 +419,30 @@ class CountryData:
     '''
     def __init__(self, country, alldata = None, allow_missing = None):
         '''
-        `allow_missing = None` uses Sheet defaults.
+        `allow_missing = None` uses _Sheet defaults.
         '''
         self.country = country
 
         if alldata is None:
-            alldata = self._get_all()
+            alldata = self.get_all()
 
         for cls in sheets:
             cls.get_country_data_and_set_attrs(self, alldata = alldata,
                                                allow_missing = allow_missing)
 
     @staticmethod
-    def _open_wb():
+    def open_wb():
         '''
         Open the datasheet.
         '''
-        return pandas.ExcelFile(datapath)
+        return pandas.ExcelFile(datasheet)
 
     @classmethod
-    def _get_all(cls):
+    def get_all(cls):
         '''
         For speed, load all the sheets at once.
         '''
-        with cls._open_wb() as wb:
+        with cls.open_wb() as wb:
             alldata = {cls.__name__: cls.get_all(wb = wb)
                        for cls in sheets}
         return alldata
@@ -454,72 +466,72 @@ class CountryDataShelf(collections.abc.Mapping):
     Disk cache for :class:`CountryData` for speed.
     '''
     def __init__(self):
-        _, datafile = os.path.split(datapath)
-        root, _ = os.path.splitext(datafile)
+        _, basename = os.path.split(datasheet)
+        root, _ = os.path.splitext(basename)
         filename = '{}.pkl'.format(root)
-        self._shelfpath = os.path.join(output_dir.output_dir, filename)
+        self.shelfpath = os.path.join(output_dir.output_dir, filename)
         # Delay opening shelf.
-        # self._open_shelf()
+        # self.open_shelf()
 
-    def _open_shelf(self):
-        assert not hasattr(self, '_shelf')
-        if self._is_current():
-            with open(self._shelfpath, 'rb') as fd:
+    def open_shelf(self):
+        assert not hasattr(self, 'shelf')
+        if self.is_current():
+            with open(self.shelfpath, 'rb') as fd:
                 try:
-                    self._shelf = pickle.load(fd)
+                    self.shelf = pickle.load(fd)
                 except:
-                    self._build_all()
+                    self.build_all()
         else:
-            self._build_all()
+            self.build_all()
 
-    def _open_shelf_if_needed(self):
-        if not hasattr(self, '_shelf'):
-            self._open_shelf()
+    def open_shelf_if_needed(self):
+        if not hasattr(self, 'shelf'):
+            self.open_shelf()
 
-    def _build_all(self):
-        print('Rebuilding cache of {}.'.format(os.path.relpath(datapath)))
-        alldata = CountryData._get_all()
-        countries = _get_country_list('all', alldata = alldata)
-        self._shelf = {country: CountryData(country,
-                                            alldata = alldata,
-                                            allow_missing = True)
-                       for country in countries}
-        with open(self._shelfpath, 'wb') as fd:
-            pickle.dump(self._shelf, fd, protocol = -1)
+    def build_all(self):
+        print('Rebuilding cache of {}.'.format(os.path.relpath(datasheet)))
+        alldata = CountryData.get_all()
+        countries = get_country_list_noshelf('all', alldata = alldata)
+        self.shelf = {country: CountryData(country,
+                                           alldata = alldata,
+                                           allow_missing = True)
+                      for country in countries}
+        with open(self.shelfpath, 'wb') as fd:
+            pickle.dump(self.shelf, fd, protocol = -1)
 
-    def _is_current(self):
-        mtime_data = os.path.getmtime(datapath)
+    def is_current(self):
+        mtime_data = os.path.getmtime(datasheet)
         try:
-            mtime_shelf = os.path.getmtime(self._shelfpath)
+            mtime_shelf = os.path.getmtime(self.shelfpath)
         except FileNotFoundError:
             return False
         else:
             return (mtime_data <= mtime_shelf)
 
     def __getitem__(self, country):
-        self._open_shelf_if_needed()
-        return self._shelf[country]
+        self.open_shelf_if_needed()
+        return self.shelf[country]
 
     def __len__(self):
-        self._open_shelf_if_needed()
-        return len(self._shelf)
+        self.open_shelf_if_needed()
+        return len(self.shelf)
 
     def __iter__(self):
-        self._open_shelf_if_needed()
-        return iter(self._shelf)
+        self.open_shelf_if_needed()
+        return iter(self.shelf)
 
 
-_shelf = CountryDataShelf()
+shelf = CountryDataShelf()
 
 
 def get_country_data(country):
-    return _shelf[country]
+    return shelf[country]
 
 
-def _get_country_list(sheet = 'all', alldata = None):
+def get_country_list_noshelf(sheet = 'all', alldata = None):
     if sheet in ('all', 'any'):
         if alldata is None:
-            alldata = CountryData._get_all()
+            alldata = CountryData.get_all()
     if sheet == 'all':
         # Return countries that are in *all* sheets that
         # must be present (allow_missing == False).
@@ -540,21 +552,21 @@ def _get_country_list(sheet = 'all', alldata = None):
             cls = getattr(sys.modules[__name__], sheet)
             return cls.get_country_list(alldata = alldata)
         except AttributeError:
-            msg = ("I don't know how to parse '{}' sheet from DataSheet!  "
+            msg = ("I don't know how to parse '{}' sheet from datasheet!  "
                    + "Valid sheets are {}.").format(sheet, sheets)
             raise AttributeError(msg)
 
 
 def get_country_list(sheet = 'all', alldata = None):
     if sheet == 'all':
-        return sorted(_shelf.keys())
+        return sorted(shelf.keys())
     else:
-        return _get_country_list(sheet = sheet, alldata = alldata)
+        return get_country_list_noshelf(sheet = sheet, alldata = alldata)
 
 
 def whats_missing(country, alldata = None):
     if alldata is None:
-        alldata = CountryData._get_all()
+        alldata = CountryData.get_all()
     missing = []
     for cls in sheets:
         if not cls.allow_missing:
