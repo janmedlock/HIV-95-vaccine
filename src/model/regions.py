@@ -2,6 +2,9 @@
 Countries by region.
 '''
 
+import collections.abc
+import itertools
+
 from . import datasheet
 
 
@@ -53,23 +56,22 @@ _regions = {
 }
 
 
-class _Regions(dict):
+class _Regions(collections.abc.Mapping):
     '''
-    Delay evaluation of 'Global'.
+    Delay evaluation of 'Global' so that datasheet.CountryDataShelf
+    does not get built when this module is imported.
     '''
-
-    def __init__(self):
-        super().__init__(_regions)
-
-    @property
-    def _global(self):
-        return datasheet.get_country_list()
-
     def __getitem__(self, k):
         if k == 'Global':
-            return self._global
+            return datasheet.get_country_list()
         else:
-            return super().__getitem__(k)
+            return _regions[k]
+
+    def __iter__(self):
+        return itertools.chain(['Global'], _regions.keys())
+
+    def __len__(self):
+        return 1 + len(_regions)
 
 
 regions = _Regions()
