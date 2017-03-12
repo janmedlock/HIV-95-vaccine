@@ -388,11 +388,11 @@ class Mode(_Super):
 
 class GlobalParameters:
     def __init__(self):
-        with datasheet.CountryData._open_wb() as wb:
-            pi = datasheet.IncidencePrevalence.get_country_data('Global',
-                                                                wb = wb)
-            pop = datasheet.Population.get_country_data('Global',
-                                                        wb = wb)
+        alldata = datasheet.CountryData.get_all()
+        pi = datasheet.IncidencePrevalence.get_country_data('Global',
+                                                            alldata = alldata)
+        pop = datasheet.Population.get_country_data('Global',
+                                                    alldata = alldata)
         self.prevalence = pi.prevalence
         self.incidence_per_capita = pi.incidence_per_capita
         self.population = pop
