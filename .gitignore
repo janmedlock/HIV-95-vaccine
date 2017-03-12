@@ -1,5 +1,6 @@
 __pycache__/
 *.pkl
+/sim_data.tar.xz
 /drive/client_secret.json
 /drive/credentials.json
 /upload/
