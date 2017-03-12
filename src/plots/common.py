@@ -95,7 +95,7 @@ def get_country_short_name(c):
     return country_short_names.get(c, c)
 
 
-all_regions = model.regions.all_
+all_regions = list(model.regions.regions)
 # all_regions is already sorted by 'Global', then alphabetical.
 all_countries = model.datasheet.get_country_list()
 # all_countries needs to be sorted by the name on graph.

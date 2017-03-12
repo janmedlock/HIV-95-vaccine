@@ -51,7 +51,7 @@ def load(place, target, parameters_type = 'sample'):
     if place == 'Global':
         return multicountry.Global._from_state(target,
                                                state)
-    elif place in regions.all_:
+    elif place in regions.regions:
         return multicountry.MultiCountry._from_state(place,
                                                      target,
                                                      state)

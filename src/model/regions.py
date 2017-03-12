@@ -3,7 +3,6 @@ Countries by region.
 '''
 
 import collections.abc
-import itertools
 
 from . import datasheet
 
@@ -58,17 +57,26 @@ _regions = {
 
 class _Regions(collections.abc.Mapping):
     '''
-    Delay evaluation of 'Global' so that datasheet.CountryDataShelf
-    does not get built when this module is imported.
+    Delay evaluation of 'Global' and 'PEPFAR'
+    so that datasheet.CountryDataShelf does not get built
+    when this module is imported.
     '''
+    @property
+    def Global(self):
+        return datasheet.get_country_list()
+
+    @property
+    def PEPFAR(self):
+        return datasheet.get_country_list('PEPFAR')
+
     def __getitem__(self, k):
-        if k == 'Global':
-            return datasheet.get_country_list()
-        else:
+        try:
+            return getattr(self, k)
+        except AttributeError:
             return _regions[k]
 
     def __iter__(self):
-        return itertools.chain(['Global'], _regions.keys())
+        return iter(['Global', 'PEPFAR'] + sorted(_regions.keys()))
 
     def __len__(self):
         return 1 + len(_regions)
@@ -77,12 +85,9 @@ class _Regions(collections.abc.Mapping):
 regions = _Regions()
 
 
-all_ = ['Global'] + sorted(regions.keys())
-
-
 def is_region(x):
-    return (x in all_)
+    return (x in regions)
 
 
 def is_country(x):
-    return (not is_region(x))
+    return (x not in regions)
