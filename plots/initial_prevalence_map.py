@@ -48,7 +48,7 @@ def _main():
     cbar = m.colorbar(format = '%g%%',
                       ticks = ticks)
 
-    cbar.set_label('2015 HIV Prevalence',
+    cbar.set_label('{:g} HIV Prevalence'.format(common.t[0]),
                    fontsize = pyplot.rcParams['font.size'] + 5,
                    labelpad = 10)
     ticklabels = cbar.ax.get_xticklabels()
