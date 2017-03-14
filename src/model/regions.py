@@ -57,17 +57,13 @@ _regions = {
 
 class _Regions(collections.abc.Mapping):
     '''
-    Delay evaluation of 'Global' and 'PEPFAR'
+    Delay evaluation of 'Global'
     so that datasheet.CountryDataShelf does not get built
     when this module is imported.
     '''
     @property
     def Global(self):
         return datasheet.get_country_list()
-
-    @property
-    def PEPFAR(self):
-        return datasheet.get_country_list('PEPFAR')
 
     def __getitem__(self, k):
         try:
@@ -76,7 +72,7 @@ class _Regions(collections.abc.Mapping):
             return _regions[k]
 
     def __iter__(self):
-        return iter(['Global', 'PEPFAR'] + sorted(_regions.keys()))
+        return iter(['Global'] + sorted(_regions.keys()))
 
     def __len__(self):
         return 1 + len(_regions)
