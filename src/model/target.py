@@ -120,8 +120,6 @@ class Target:
     suppressed = None
     vaccinated = None
 
-    vaccine_efficacy = 0
-
     def __call__(self, t, parameters):
         '''
         Get numerical values for the target at different points in time.
@@ -211,7 +209,7 @@ class Vaccine(Target):
                  coverage = 0.7,
                  time_to_start = 2020,
                  time_to_fifty_percent = 2):
-        self._efficacy = efficacy
+        self.vaccine_efficacy = efficacy
         self._coverage = coverage
         self._time_to_start = time_to_start
         self._time_to_fifty_percent = time_to_fifty_percent
@@ -220,9 +218,6 @@ class Vaccine(Target):
         self.diagnosed = self._treatment_target.diagnosed
         self.treated = self._treatment_target.treated
         self.suppressed = self._treatment_target.suppressed
-
-        # Set vaccine efficacy
-        self.vaccine_efficacy = self._efficacy
 
         time_to_target = (self._coverage / 0.5 * self._time_to_fifty_percent
                           + self._time_to_start)
@@ -241,7 +236,7 @@ class Vaccine(Target):
             raise ValueError
 
         params = [
-            'efficacy={}'.format(self._efficacy),
+            'efficacy={}'.format(self.vaccine_efficacy),
             'coverage={}'.format(self._coverage),
             'time_to_start={}'.format(self._time_to_start),
             'time_to_fifty_percent={}'.format(self._time_to_fifty_percent),
@@ -260,7 +255,7 @@ class Vaccine(Target):
             raise ValueError
 
         params = [
-            'efficacy={:g}%'.format(100 * self._efficacy),
+            'efficacy={:g}%'.format(100 * self.vaccine_efficacy),
             'coverage={:g}%'.format(100 * self._coverage),
             'time_to_start={}'.format(self._time_to_start),
             'time_to_fifty_percent={}y'.format(self._time_to_fifty_percent)]
