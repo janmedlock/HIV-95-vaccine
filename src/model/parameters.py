@@ -334,7 +334,7 @@ class Samples:
                          for s in _get_samples()]
 
     def __iter__(self):
-        return self._samples
+        return iter(self._samples)
 
     def __getattr__(self, k):
         return numpy.row_stack((getattr(s, k)
