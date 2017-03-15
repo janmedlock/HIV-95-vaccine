@@ -1,5 +1,5 @@
 '''
-HIV 90-90-90 model.
+HIV model.
 '''
 
 from . import datasheet
