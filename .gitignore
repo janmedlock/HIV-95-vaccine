@@ -12,6 +12,7 @@ __pycache__/
 /src/plots/**/*.pdf
 /src/plots/**/*.pgf
 /src/plots/**/*.png
+/src/plots/**/*.svg
 /src/plots/**/*.mp4
 /src/plots/**/*.csv
 /src/plots/.auto
