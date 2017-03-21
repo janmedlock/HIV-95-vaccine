@@ -16,7 +16,7 @@ analyze HIV transmission in 127 countries around the world.
 > Medlock J, Pandey A, Parpia AS, Tang A, Skrip LA, Galvani
 > AP. Effectiveness of UNAIDS targets and HIV vaccination across 127
 > countries. *Proc Natl Acad Sci USA*. 2017.
-> [doi:10.1073/pnas.1620788114](https://dx.doi.org/10.1073/pnas.1620788114).
+> [doi:10.1073/pnas.1620788114](https://doi.org/10.1073/pnas.1620788114).
 
 The scripts and model code are entirely written in Python3, using many
 third-party libraries.  Most notably:
@@ -55,6 +55,16 @@ in this documentation.
 
 ### Simulations
 
+Listed below are scripts to generate the simulation data: running them
+requires **tens of cpu-days**.
+
+Alternatively, running `make sim_data` in the root directory will
+automatically download and extract the all of the simulation data
+(about **150GB**) from
+[https://hdl.handle.net/1957/60549](https://hdl.handle.net/1957/60549).
+If that link is broken, try
+[doi:10.5072/FK20005Q3C](https://doi.org/10.5072/FK20005Q3C).
+
 * [run_modes.py](run_modes.py) runs simulations using the modal
   parameter values.  This is fairly fast, tens of seconds for each
   country-target combination, approximately 10 cpu-hours for 127
@@ -77,9 +87,6 @@ in this documentation.
   be in `sim_data`, under a directory for each country, with a `.pkl`
   file for each target.  **The resulting total data generated for 127
   countries and 6 targets is around 147GB.**
-
-We are currently exploring options for a public archive of the
-simulation data we have generated.
 
 ### Plotting
 
