@@ -20,7 +20,7 @@ appears in the paper
 > Medlock J, Pandey A, Parpia AS, Tang A, Skrip LA, Galvani
 > AP. Effectiveness of UNAIDS targets and HIV vaccination across 127
 > countries. *Proc Natl Acad Sci USA*. 2017.
-> [doi:10.1073/pnas.1620788114](https://dx.doi.org/10.1073/pnas.1620788114).
+> [doi:10.1073/pnas.1620788114](https://doi.org/10.1073/pnas.1620788114).
 
 In this paper, we estimated the global and country-specific impacts of
 UNAIDS 90–90–90 and 95–95–95 targets for HIV diagnosis and treatment, and

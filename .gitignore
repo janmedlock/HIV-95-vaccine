@@ -1,9 +1,10 @@
 __pycache__/
 *.pkl
-/sim_data.tar.xz
 /drive/client_secret.json
 /drive/credentials.json
 /upload/
+/src/sim_data.tar.xz
+/src/sim_data.torrent
 /src/README.html
 /src/docs/_build/
 /src/plots/mapplot/_cartopy/
